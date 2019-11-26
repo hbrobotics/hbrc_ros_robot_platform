@@ -1,0 +1,31 @@
+.PHONY: all clean test
+
+PY_FILES := \
+    romi_model/romi_model.py
+PYL_FILES := ${PY_FILES:%.py=%.pyl}
+COVER_FILES := ${PY_FILES:%=%,cover}
+
+all: ${PYL_FILES}
+	pip install .
+
+foo:
+	echo ${PY_FILES}
+	echo ${PYL_FILES}
+
+clean:
+	rm -f ${PYL_FILES}
+
+test: all
+	pytest --cov=bom_manager --cov-report=annotate
+	@grep -H -n "^!" ${COVER_FILES} || true
+
+# Pattern rule for running `mypy`, `flake8`, and `pydocstyle` over a `.py` Python file.
+# The `.pyl` suffix is used to remember that the linting has occured:
+%.pyl: %.py
+	mypy                         $<
+	flake8 --max-line-length=100 $<
+	pydocstyle                   $<
+	touch $@
+
+
+

@@ -1,6 +1,6 @@
 # HBRC ROS Robot
 
-The HBRC ROS () Robot platform (ie. HR<sup>2</Sub> or just plain HR2)
+The HBRC ROS () Robot platform (ie. HR<Sup>2</Sup> or just plain HR2)
 is a pedagogical robotic platform developed for teach various
 robotics skills.  For example:
 
