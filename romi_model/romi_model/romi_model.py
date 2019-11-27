@@ -2,16 +2,8 @@
 
 """Code to genarate and openscad model of the Pololu Romi Base."""
 
-from typing import Any, IO, List, Tuple
-from math import asin, ceil, cos, pi, sin, sqrt
-
-
-class Points:
-    """TODO."""
-
-    def __init__(self):
-        """TODO."""
-        self.points: List[P] = list()
+from typing import Any, Dict, IO, List, Tuple
+from math import asin, atan2, ceil, cos, pi, sin, sqrt
 
 
 class P:
@@ -27,10 +19,10 @@ class P:
         point1: P = self
         return P(point1.x + point2.x, point1.y + point2.y)
 
-    def __sub__(self, point2: "P") -> "P":
-        """Subtract two points from one another."""
-        point1: P = self
-        return P(point1.x - point2.x, point1.y - point2.y)
+    def __truediv__(self, scale: float) -> "P":
+        """Divide a point by a scale factor."""
+        point: P = self
+        return P(point.x / scale, point.y / scale)
 
     def __mul__(self, scale: float) -> "P":
         """Multiply a point by a scale factor."""
@@ -41,6 +33,16 @@ class P:
         """Multiply a point by a scale factor."""
         point: P = self
         return P(point.x * scale, point.y * scale)
+
+    def __sub__(self, point2: "P") -> "P":
+        """Subtract two points from one another."""
+        point1: P = self
+        return P(point1.x - point2.x, point1.y - point2.y)
+
+    def __str__(self) -> str:
+        """Convert a point to a string."""
+        point: P = self
+        return f"P({point.x}, {point.y})"
 
     def distance(self, point2) -> float:
         """Compute the distance between two points."""
@@ -224,12 +226,41 @@ class Polygon:
                                   f"{start_index + slice_end - 1}")
         return end_index
 
+    def slot(self, hole1: P, hole2: P,
+             slot_length: float, slot_radius: float, points_count: int) -> None:
+        """TODO."""
+        polygon: Polygon = self
+        degrees90: float = pi / 2.0
+        degrees180: float = pi
+        center: P = (hole1 + hole2) / 2.0
+        slot_angle: float = atan2(hole1.y - hole2.y, hole1.x - hole2.x)
+        half_slot_length: float = slot_length / 2.0
+        center1: P = P(center.x + half_slot_length * cos(slot_angle),
+                       center.y + half_slot_length * sin(slot_angle))
+        center2: P = P(center.x + half_slot_length * cos(slot_angle + degrees180),
+                       center.y + half_slot_length * sin(slot_angle + degrees180))
+        polygon.arc(center1, slot_radius,
+                    slot_angle - degrees90,
+                    slot_angle + degrees90, 8)
+        polygon.arc(center2, slot_radius,
+                    slot_angle + degrees180 - degrees90,
+                    slot_angle + degrees180 + degrees90, points_count)
+
 
 class Romi:
     """Model the Polol Romi platform in OpenSCAD."""
 
     def __init__(self) -> None:
         """Initialize and create the Romi Platform."""
+        outer_polygon: Polygon = Polygon("Romi Outer Polygon")
+        self.outer_polygon: Polygon = outer_polygon
+        self.complex_polygon: ComplexPolygon = ComplexPolygon("Romi Base", outer_polygon)
+
+    def generate(self) -> None:
+        """TODO."""
+        romi: Romi = self
+        complex_polygon: ComplexPolygon = romi.complex_polygon
+
         # These other dimensions are read off of the drawings in section 6 of the
         # the "Pololu Romi Chasis User's Guide":
         diameter: float = 163.0
@@ -275,7 +306,7 @@ class Romi:
         # Now we can draw the outer outline of the Romi platform.  It conists of two arcs
         # with some straight line segments to form the wheel well.  Start by creating
         # an empty *outer_polygon*:a
-        outer_polygon: Polygon = Polygon("Base Perimeter")
+        outer_polygon: Polygon = self.outer_polygon
 
         # Create the upper arc:
         upper_start_angle: float = wheel_well_angle
@@ -295,9 +326,6 @@ class Romi:
         # Create the right wheel well:
         outer_polygon.append(P(half_wheel_well_dx, -half_wheel_well_dy))
         outer_polygon.append(P(half_wheel_well_dx, half_wheel_well_dy))
-
-        # Now create the *romi* *ComplexPolygon* and initialize with *outer_polygon*:
-        romi: ComplexPolygon = ComplexPolygon("Base", outer_polygon)
 
         # Figuring out where everything is located is done with a combination of reading
         # drawing in section 6 of the "Pololu Romi Chassis User's Guide" and extracting
@@ -331,6 +359,7 @@ class Romi:
         dxf_reference_hole_right: float = -3.822591
         dxf_reference_hole_above: float = 3.376610
         dxf_reference_hole_below: float = 3.286051
+        dxf_x_origin: float = (dxf_reference_hole_right + dxf_reference_hole_left) / 2.0
 
         # The dxf reference hole X/Y/Diameter are computed as follows:
         # dxf_reference_hole_x: float = (dxf_reference_hole_right + dxf_reference_hole_left) / 2.0
@@ -338,7 +367,6 @@ class Romi:
         dxf_reference_hole_dx: float = dxf_reference_hole_right - dxf_reference_hole_left
         dxf_reference_hole_dy: float = dxf_reference_hole_above - dxf_reference_hole_below
         dxf_reference_hole_diameter: float = (dxf_reference_hole_dx + dxf_reference_hole_dy) / 2.0
-        # dxf_x_origin: float = dxf_reference_hole_x
 
         # Now convert various values from inches to millimeters:
         reference_hole_y: float = (dxf_reference_hole_y - dxf_y_origin) * inches2mm
@@ -346,6 +374,8 @@ class Romi:
 
         # Perform any requested *debugging*:
         if debugging:
+            print(f"dxf_x_origin={dxf_x_origin}")
+            print(f"dxf_y_origin={dxf_y_origin}")
             print(f"dxf_reference_hole_y={dxf_reference_hole_y}")
             print(f"dxf_reference_hole_dx={dxf_reference_hole_dx}")
             print(f"dxf_reference_hole_dy={dxf_reference_hole_dy}")
@@ -360,7 +390,7 @@ class Romi:
             reference_hole_y - 12.3,
             reference_hole_y - 12.3 - 12.3
         )
-        lower_row_pattern: Tuple[str, ...] = (
+        lower_battery_rows: Tuple[str, ...] = (
             "--*****--",  # Row with reference hole
             "--*****--",  # Row below reference hole
             "*-*****-*")  # Two rows below referene hole
@@ -370,13 +400,15 @@ class Romi:
         for x_index in range(9):
             x: float = column0_x + x_index * hole_dx_pitch
             y_index: int
-            for y_index in range(3):
-                if lower_row_pattern[y_index][x_index] == '*':
+            lower_battery_row: str
+            for y_index, lower_battery_row in enumerate(lower_battery_rows):
+                if lower_battery_row[x_index] == '*':
                     # We need a hole:
                     y: float = lower_row_ys[y_index]
                     hole: Polygon = Polygon(f"Lower Battery Hole ({2-x_index}, {y_index})")
-                    hole.circle(P(x, y), reference_hole_diameter / 2.0, 8)
-                    romi.hole_append(hole)
+                    hole_center: P = P(x, y)
+                    hole.circle(hole_center, reference_hole_diameter / 2.0, 8)
+                    complex_polygon.hole_append(hole)
 
         # The battery holes above the motors is organized as 3 rows by 9 columns.  All holes
         # are populated:
@@ -392,7 +424,19 @@ class Romi:
                 y = upper_row_ys[y_index]
                 hole = Polygon(f"Upper Battery Hole ({2-x_index}, {y_index})")
                 hole.circle(P(x, y), reference_hole_diameter / 2.0, 8)
-                romi.hole_append(hole)
+                complex_polygon.hole_append(hole)
+
+        # One of the vertical slots on the `.dxf` has the following bounding box in inches:
+        vertical_slot_left_x: float = -2.437146
+        vertical_slot_right_x: float = -2.346591
+        vertical_slot_top_y: float = 1.339205
+        vertical_slot_bottom_y: float = 1.051803
+        vertical_slot_dx: float = vertical_slot_right_x - vertical_slot_left_x
+        vertical_slot_dy: float = vertical_slot_top_y - vertical_slot_bottom_y
+        # *slot_length* is from center to center, *NOT* edge to edge:
+        slot_length: float = (vertical_slot_dy - vertical_slot_dx) * inches2mm
+        large_diameter: float = vertical_slot_dx * inches2mm
+        # large_diameter = 0.5
 
         # The hexagonal slots and hole pattern is present on both the top and the
         # bottom of the platform.  The "User's Guide" implies that holes are space
@@ -410,127 +454,66 @@ class Romi:
         hex_dx_pitch += 0.0
         hex_x_origin: float = x_origin + 37.5
         hex_y_origin: float = reference_hole_y - 46.8
-        patterns: Tuple[str, ...] = (
-            "*-*------",  # [0]
-            "-*-*-----",  # [1]
-            "--*-*-*--",  # [2]
-            "---*-*-*-",  # [3]
-            "--*-O-*-*",  # [4]
-            "-*-*-*-*-"   # [5]
+        # Using the `.dxf` image, the pattern below represent the locations of the hex pattern
+        # holes in the lower left quadrant.  'O' is at (*hex_x_origin*, *hex_y_origin*).
+        # Upper case letters indicate the location of a hole.  Lower case letters indicate
+        # the end-point of a slot.  There is a weird little half slot above 'O' that is
+        # not currently modeled:
+        lower_pattern_rows: Tuple[str, ...] = (
+            "---A-B-C-D-",  # [-1]
+            "----E-O-F-G",  # [0]
+            "---a-H-I-J-",  # [1]
+            "----K-L-M--",  # [2]
+            "---N-Q-----",  # [3]
+            "R-S---------"  # [4]
         )
-        # patterns = ("--*-O-*-*",)
-        pattern_index: int
-        pattern: str
-        for pattern_index, pattern in enumerate(patterns):
-            y = hex_y_origin + (pattern_index - 4) * hex_dy_pitch
-            # y = hex_y_origin
-            character: str
-            for x_index, character in enumerate(pattern):
-                if character != '-':
-                    x = hex_x_origin + (x_index - 4) * hex_dx_pitch
-                    # x = hex_x_origin
-                    hole = Polygon(f"Right Hex Hole ({x_index}, {pattern_index})")
-                    hole.circle(P(x, y), 1.5, 8)
-                    romi.hole_append(hole)
-                    hole = Polygon(f"Left Hex Hole ({x_index}, {pattern_index})")
-                    hole.circle(P(-x, y), 1.5, 8)
-                    romi.hole_append(hole)
+        # *lower_slot_pairs* specifies the holes that bracket a slot.:
+        lower_slot_pairs: List[str] = "AO:OD:Aa:aO:JO:DJ:OL:aL:LJ:aN:NL:RN".split(':')
 
-        # base_complex_polygon.dxf_hole_append("Bat1a", -5.442673, 2.321484, 0.282635)
-        # base_complex_polygon.dxf_hole_append("Bat1b", -4.655272, 2.321484, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Bat1c", -4.261563, 2.321484, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Bat1d", -3.867870, 2.321484, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Bat1e", -3.474161, 2.321484, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Bat1f", -3.080465, 2.321484, 0.282649)
-        # base_complex_polygon.dxf_hole_append("Bat1g", -2.293063, 2.321484, 0.282652)
+        lower_hex_x_origin: float = hex_x_origin - 6 * hex_dx_pitch
+        lower_hex_y_origin: float = hex_y_origin + 1 * hex_dy_pitch
+        lower_holes_table: Dict[str, P] = romi.hex_pattern(lower_pattern_rows, lower_slot_pairs,
+                                                           lower_hex_x_origin, lower_hex_y_origin,
+                                                           large_diameter, slot_length,
+                                                           hex_dx_pitch, hex_dy_pitch)
+        lower_holes_table[""] = P(0.0, 0.0)
 
-        # base_complex_polygon.dxf_hole_append("Bat2a", -4.655272, 2.803776, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Bat2b", -4.261563, 2.803776, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Bat2c", -3.867870, 2.803776, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Bat2d", -3.474161, 2.803776, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Bat2e", -3.080465, 2.803776, 0.282649)
+        upper_pattern_rows: Tuple[str, ...] = (
+            "a------",
+            "-A-B---",
+            "b-C-D-c",
+            "---d---",
+        )
+        upper_slot_pairs: List[str] = "aB:bB:dB:cB".split(':')
 
-        # base_complex_polygon.dxf_hole_append("Bat3a", -4.655272, 3.286051, 0.282656)
-        # base_complex_polygon.dxf_hole_append("Bat3b", -4.261563, 3.286051, 0.282656)
-        # base_complex_polygon.dxf_hole_append("Bat3c", -3.867870, 3.286051, 0.282656)
-        # base_complex_polygon.dxf_hole_append("Bat3d", -3.474161, 3.286051, 0.282656)b
-        # base_complex_polygon.dxf_hole_append("Bat3e", -3.080465, 3.286051, 0.282664)
+        right_upper_hex_hole_left: float = -2.964937
+        right_upper_hex_hole_right: float = -3.090492
+        right_upper_hex_hole_x: float = (right_upper_hex_hole_right +
+                                         right_upper_hex_hole_left) / 2.0
+        right_upper_hex_hole_above: float = 5.441567
+        right_upper_hex_hole_below: float = 5.316441
+        right_upper_hex_hole_y: float = (right_upper_hex_hole_above +
+                                         right_upper_hex_hole_below) / 2.0
 
-        # base_complex_polygon.dxf_hole_append("Bat4a", -5.639520, 3.561650, 0.282643)
-        # base_complex_polygon.dxf_hole_append("Bat4b", -5.245811, 3.561650, 0.282632)
-        # base_complex_polygon.dxf_hole_append("Bat4c", -4.852118, 3.561650, 0.282649)
-        # base_complex_polygon.dxf_hole_append("Bat4d", -4.458409, 3.561650, 0.282632)
-        # base_complex_polygon.dxf_hole_append("Bat4e", -4.064717, 3.561650, 0.282640)
-        # base_complex_polygon.dxf_hole_append("Bat4f", -3.671020, 3.561650, 0.282635)
-        # base_complex_polygon.dxf_hole_append("Bat4g", -3.277311, 3.561650, 0.282645)
-        # base_complex_polygon.dxf_hole_append("Bat4h", -2.883618, 3.561650, 0.282632)
-        # base_complex_polygon.dxf_hole_append("Bat4i", -2.489909, 3.561650, 0.282647)
-        # base_complex_polygon.dxf_hole_append("Bat4g", -2.096217, 3.561650, 0.282637)
+        upper_hex_x_origin: float = (right_upper_hex_hole_x - dxf_x_origin) * inches2mm
+        upper_hex_y_origin: float = (right_upper_hex_hole_y -
+                                     dxf_y_origin) * inches2mm + hex_dy_pitch
+        print(f"upper_hex_x_origin={upper_hex_x_origin}")
+        print(f"upper_hex_y_origin={upper_hex_y_origin}")
+        upper_holes_table: Dict[str, P] = romi.hex_pattern(upper_pattern_rows, upper_slot_pairs,
+                                                           upper_hex_x_origin, upper_hex_y_origin,
+                                                           large_diameter, slot_length,
+                                                           hex_dx_pitch, hex_dy_pitch)
+        upper_holes_table[""] = P(0.0, 0.0)
 
-        # base_complex_polygon.dxf_hole_append("Bat5a", -5.639520, 4.043929, 0.282657)
-        # base_complex_polygon.dxf_hole_append("Bat5b", -5.245811, 4.043929, 0.282645)
-        # base_complex_polygon.dxf_hole_append("Bat5c", -4.832437, 4.043929, 0.332260)
-        # base_complex_polygon.dxf_hole_append("Bat5d", -4.458409, 4.043929, 0.282645)
-        # base_complex_polygon.dxf_hole_append("Bat5e", -4.064717, 4.043929, 0.282653)
-        # base_complex_polygon.dxf_hole_append("Bat5f", -3.671020, 4.043929, 0.282648)
-        # base_complex_polygon.dxf_hole_append("Bat5g", -3.277311, 4.043929, 0.282658)
-        # base_complex_polygon.dxf_hole_append("Bat5h", -2.883618, 4.036051, 0.332260)
-        # base_complex_polygon.dxf_hole_append("Bat5i", -2.489909, 4.043929, 0.282661)
-        # base_complex_polygon.dxf_hole_append("Bat5j", -2.096217, 4.043929, 0.282650)
 
-        # base_complex_polygon.dxf_hole_append("Bat6a", -5.639520, 4.526220, 0.282647)
-        # base_complex_polygon.dxf_hole_append("Bat6b", -5.245811, 4.526220, 0.282635)
-        # base_complex_polygon.dxf_hole_append("Bat6c", -4.852118, 4.526220, 0.282653)
-        # base_complex_polygon.dxf_hole_append("Bat6d", -4.458409, 4.526220, 0.282636)
-        # base_complex_polygon.dxf_hole_append("Bat6e", -4.064717, 4.526220, 0.282643)
-        # base_complex_polygon.dxf_hole_append("Bat6f", -3.671020, 4.526220, 0.282639)
-        # base_complex_polygon.dxf_hole_append("Bat6g", -3.277311, 4.526220, 0.282648)
-        # base_complex_polygon.dxf_hole_append("Bat6h", -2.883618, 4.526220, 0.282635)
-        # base_complex_polygon.dxf_hole_append("Bat6i", -2.489909, 4.526220, 0.282651)
-        # base_complex_polygon.dxf_hole_append("Bat6j", -2.096217, 4.526220, 0.282640)
-
-        # base_complex_polygon.dxf_hole_append("Up1a", -6.315453, 4.526346, 0.393990)
-        # base_complex_polygon.dxf_hole_append("Up1b", -1.420283, 4.526346, 0.394003)
-
-        # base_complex_polygon.dxf_hole_append("Up2a", -6.205327, 4.707232, 0.282641)
-        # base_complex_polygon.dxf_hole_append("Up2b", -1.530398, 4.707232, 0.282645)
-
-        # base_complex_polygon.dxf_hole_append("Up3a", -5.219453, 5.146287, 0.393981)
-        # base_complex_polygon.dxf_hole_append("Up3b", -4.878492, 5.146287, 0.393989)
-        # base_complex_polygon.dxf_hole_append("Up3c", -2.857244, 5.146287, 0.393995)
-        # base_complex_polygon.dxf_hole_append("Up3d", -2.516283, 5.146287, 0.393997)
-
-        # base_complex_polygon.dxf_hole_append("Up4a", -5.816591, 5.119469, 0.282634)
-        # base_complex_polygon.dxf_hole_append("Up4b", -1.919146, 5.119469, 0.282647)
-
-        # base_complex_polygon.dxf_hole_append("Up5a", -5.672008, 5.238122, 0.282637)
-        # base_complex_polygon.dxf_hole_append("Up5b", -2.063728, 5.238122, 0.282633)
-
-        # base_complex_polygon.dxf_hole_append("Up6a", -5.508327, 5.329760, 0.394006)
-        # base_complex_polygon.dxf_hole_append("Up6b", -2.227398, 5.329760, 0.393990)
-
-        # base_complex_polygon.dxf_hole_append("Up7a", -5.048965, 5.441567, 0.393991)
-        # base_complex_polygon.dxf_hole_append("Up7b", -4.708008, 5.441567, 0.393975)
-        # base_complex_polygon.dxf_hole_append("Up7c", -3.027717, 5.441567, 0.393987)
-        # base_complex_polygon.dxf_hole_append("Up7d", -2.686756, 5.441567, 0.393979)
-
-        # base_complex_polygon.dxf_hole_append("Up8a", -5.344661, 5.456846, 0.282649)
-        # base_complex_polygon.dxf_hole_append("Up8b", -2.391075, 5.456846, 0.282656)
-
-        # base_complex_polygon.dxf_hole_append("Up9a", -5.179701, 5.545012, 0.282654)
-        # base_complex_polygon.dxf_hole_append("Up9b", -2.556035, 5.545012, 0.282652)
-
-        # base_complex_polygon.dxf_hole_append("Up10a", -4.997839, 5.602638, 0.393987)
-        # base_complex_polygon.dxf_hole_append("Up10b", -2.737898, 5.602638, 0.394002)
-
-        # base_complex_polygon.dxf_hole_append("Up11a", -4.815965, 5.695677, 0.282650)
-        # base_complex_polygon.dxf_hole_append("Up11b", -2.919756, 5.695677, 0.282650)
-
-        # base_complex_polygon.dxf_hole_append("Up12a", -4.636992, 5.749969, 0.282642)
-        # base_complex_polygon.dxf_hole_append("Up12b", -3.098744, 5.749969, 0.282661)
-
+    def output(self):
+        """TODO."""
+        romi: Romi = self
+        complex_polygon: ComplexPolygon = romi.complex_polygon
+        # Now we can output the `romi.scad` file:
         scad_lines: List[str] = list()
-        romi.scad_lines_append(scad_lines, "")
+        complex_polygon.scad_lines_append(scad_lines, "")
         scad_lines.append("")
         scad_text: str = '\n'.join(scad_lines)
         # print(scad_text)
@@ -538,9 +521,65 @@ class Romi:
         with open("romi.scad", "w") as scad_file:
             scad_file.write(scad_text)
 
+    def hex_pattern(self, pattern_rows: Tuple[str, ...], slot_pairs: List[str],
+                    hex_x_origin: float, hex_y_origin, diameter: float, slot_length: float,
+                    hex_dx_pitch: float, hex_dy_pitch: float) -> Dict[str, P]:
+        """TODO."""
+        romi: Romi = self
+        complex_polygon: ComplexPolygon = romi.complex_polygon
+        radius: float = diameter / 2.0
+
+        # *locations* contains the end-point locations for the hex pattern:
+        points_count: int = 8
+        locations: Dict[str, P] = dict()
+        pattern_index: int
+        pattern_row: str
+        for y_index, pattern_row in enumerate(pattern_rows):
+            y = hex_y_origin - (y_index * hex_dy_pitch)
+            pattern_character: str
+            for x_index, pattern_character in enumerate(pattern_row):
+                if pattern_character != '-':
+                    # Enter *left_hole_center* into *locations* keyed by *pattern_character*:
+                    x = hex_x_origin + (x_index * hex_dx_pitch)
+                    right_hole_center: P = P(x, y)
+                    locations[pattern_character] = right_hole_center
+
+                    # Put in the *right_hole*:
+                    right_hole: Polygon = Polygon(f"Right Hex Hole ({x_index}, {y_index})")
+                    right_hole.circle(right_hole_center, radius, points_count)
+                    complex_polygon.hole_append(right_hole)
+
+                    # Put in the mirrored *left_hole*:
+                    left_hole: Polygon = Polygon(f"Left Hex Hole ({x_index}, {y_index})")
+                    left_hole_center: P = P(-x, y)
+                    left_hole.circle(left_hole_center, radius, points_count)
+                    complex_polygon.hole_append(left_hole)
+
+        # Now sweep through *slot_pairs* and install all of the slots:
+        slot_pair: str
+        for slot_pair in slot_pairs:
+            # Do the right slots:
+            hole1: P = locations[slot_pair[0]]
+            hole2: P = locations[slot_pair[1]]
+            right_slot: Polygon = Polygon(f"Right Slot '{slot_pair}'")
+            right_slot.slot(hole1, hole2, slot_length, radius, points_count)
+            complex_polygon.hole_append(right_slot)
+
+            # Mirror the left left slots:
+            mirror_hole1: P = P(-hole1.x, hole1.y)
+            mirror_hole2: P = P(-hole2.x, hole2.y)
+            left_slot: Polygon = Polygon(f"Left Slot '{slot_pair}'")
+            left_slot.slot(mirror_hole1, mirror_hole2, slot_length, radius, points_count)
+            complex_polygon.hole_append(left_slot)
+
+        # Return the *locations* table for further hole drilling:
+        return locations
+
 
 def main() -> int:
     """Generate the openscand file."""
     print("romi_model.main() called")
-    Romi()
+    romi: Romi = Romi()
+    romi.generate()
+    romi.output()
     return 0

@@ -2,7 +2,11 @@
 
 The HBRC ROS () Robot platform (ie. HR<Sup>2</Sup> or just plain HR2)
 is a pedagogical robotic platform developed for teach various
-robotics skills.  For example:
+robotics skills.
+
+## Possible Classes
+
+The list of possible classes for HR2 platform are:
 
 * Low level robot peripheral drivers.
   * C/C++
@@ -16,18 +20,19 @@ robotics skills.  For example:
 * Arm manipulation
 * PCB design
 * MCAD design
-  * openscad
-  * fusion360
-  * freecad
+  * OpenSCAD
+  * Fusion 360
+  * FreeCAD
 * FPGA class
 * Soldering Skills
   * Basic Through Hole
   * Surface Mount
-* PCB prototyping w/Bantum Labs
+* Rapid PCB prototyping w/Bantum Labs
+* etc.
 
 ## Goals/Requirements
 
-Random Thoughts:
+Initial Thoughts:
 
 * Start with the Pololu Romi platform used by FPGA class.
 * Use Patrick's PCB breakout board as a starting point.
@@ -71,3 +76,23 @@ Random Thoughts:
     * https://www.servocity.com/ddt500
 * Misc:
   * What issues are missing?
+
+## Mechanical
+
+The mechanical tasks are:
+
+* Model the Romi platform in OpenSCAD to ensure that the PCB outline
+  and mounting holes are correct.
+* Model the Romi arm in OpenSCAD to make sure that the Arm does not
+  interfere with anything.
+* Model both a RasPi 3B+ and RasPi4 for attaching to PCB.
+
+## Electrical
+
+Some comments on the electrical:
+
+* The design is to be done using KiCad, since KiCad is 100% free.
+* It would be nice to be a two layer PCB.
+* It would be nice to be able to take power from a USB Power pack
+  or the on board AA batteries.
+
