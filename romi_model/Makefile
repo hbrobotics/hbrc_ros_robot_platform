@@ -4,16 +4,18 @@ PY_FILES := \
     romi_model/romi_model.py
 PYL_FILES := ${PY_FILES:%.py=%.pyl}
 COVER_FILES := ${PY_FILES:%=%,cover}
+SCAD_FILES := romi.scad
 
 all: ${PYL_FILES}
 	pip install .
-
+	rm -f ${SCAD_FILES}
+	romi_model
 foo:
 	echo ${PY_FILES}
 	echo ${PYL_FILES}
 
 clean:
-	rm -f ${PYL_FILES}
+	rm -f ${PYL_FILES} ${SCAD_FILES}
 
 test: all
 	pytest --cov=bom_manager --cov-report=annotate

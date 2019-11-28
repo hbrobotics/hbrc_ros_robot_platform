@@ -1,8 +1,15 @@
-# HBRC ROS Robot
+# HBRC ROS Robot Platform
 
-The HBRC ROS () Robot platform (ie. HR<Sup>2</Sup> or just plain HR2)
-is a pedagogical robotic platform developed for teach various
-robotics skills.
+The HBRC ROS Robot platform (ie. HR<Sup>2</Sup> or just plain HR2)
+is a pedagogical robotic platform developed for teach various robotics skills.
+
+There is a Google Groups mailing list to discuss this project at
+[HbrcRosRobotPlatform@GoogleGroups.Com](mailto:HbrcRosRobotPlatform@GoogleGroups.Com).
+To join the group, visit the
+[HBRC ROS Robot Platform web page](https://groups.google.com/d/forum/hbrcrosrobotplatform)
+(i.e. `https://groups.google.com/d/forum/hbrcrosrobotplatform`) and request to join.
+If that does not work, squirt a quick message to the group manager
+[Wayne@Gramlich.Net](mailto:Wayne@Gramlich.Net) and request and invitation.
 
 ## Possible Classes
 
@@ -96,3 +103,47 @@ Some comments on the electrical:
 * It would be nice to be able to take power from a USB Power pack
   or the on board AA batteries.
 
+## Software
+
+Terminology:
+
+* Single Board Computer (SBC):
+  The nominal SBC for the platform is either the RasPi 3B+
+  or the RasPi 4.  Other boards that are compatible with the RasPi
+  pin-out *can* be supported, but somebody will have to step up to
+  the task of doing the actual support.  The SBC resides on the robot.
+* Micro-Processor Unit (MPU):
+  This is the micro-controller that is on the main board.
+  The nominal processor is ST32Fxxx, where xxx is to be decided.
+  The MPU resides on the robot.
+* Robot Processors: The robot processors are the SBC and the MPU.
+* Development Processor: The development processor is not physically
+  attached to the robot.  Instead, it communicates with the robot SBC
+  via WiFi.
+
+The software goals are:
+
+* The platform runs ROS on the SBC.
+  * Both ROS 1 and ROS 2 are goals with ROS 1 eventually being
+    deprecated.
+* We need to be able download firmware into the MPU from the SBC.
+  This needs to be hands off.
+  * Custom C/C++ drivers.
+  * MicroPython.
+  * Micro ROS.
+* The development processor needs to be able to debug code
+  running on the robot:
+  * Debugging ROS nodes running on the SBC should be relatively easy.
+  * Debugging C/C++ code running on the MPU is going to need JTAG
+    support.  This can be done with a JTAG chip like the FTDI FT2232.
+    This *may* be an "add-on".  OpenOCD can talk to this JTAG chip
+    and `gdb` can talk to openocd.
+  * Debugging MicroPython is tough.  It currently supports breakpoints
+    but does not support data/stack inspection (yet!)
+  * As a total stretch, it would be nice to support ARM ETM CoreSight.
+    This requires a seriously expensive brick that weighs a ton.
+    It is probably a fantasy.
+* We need to support FPGA development:
+  * We need to be able to download the FPGA chip from the SBC.
+  * The FPGA compliation stack needs to run on the SBC and the development
+    processor.

@@ -18,7 +18,7 @@ systems and Linux distributions you are on your own.
 
 * Setup a Python Virtual Environment:
 
-        mkvertualenv -a .../somewhere -p python3.6 hr2
+        mkvirtualenv -a .../somewhere -p python3.6 hr2
 	workon python hr2
 
 * Install the required development tools:
