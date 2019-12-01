@@ -44,6 +44,13 @@ systems and Linux distributions you are on your own.
 
 * That is as far as we have gotten so far.
 
+## Documentation:
+
+* [Pololu Romi Chasis User's Guide](https://www.pololu.com/docs/0J68/all):
+
+* [`romi-chassis.dxf`](romi-chassis.dxf):
+  This is the `.dxf` file that can be used to pick out hole and slot locations.
+
 Regards,
 
 -Wayne

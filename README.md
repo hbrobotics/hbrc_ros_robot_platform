@@ -1,7 +1,7 @@
 # HBRC ROS Robot Platform
 
-The HBRC ROS Robot platform (ie. HR<Sup>2</Sup> or just plain HR2)
-is a pedagogical robotic platform developed for teach various robotics skills.
+The HBRC ROS Robot platform (ie. HR<Sup>2</Sup> or just plain HR2) is a
+pedagogical robotic platform developed for teaching various robotics skills.
 
 There is a Google Groups mailing list to discuss this project at
 [HbrcRosRobotPlatform@GoogleGroups.Com](mailto:HbrcRosRobotPlatform@GoogleGroups.Com).
@@ -9,7 +9,8 @@ To join the group, visit the
 [HBRC ROS Robot Platform web page](https://groups.google.com/d/forum/hbrcrosrobotplatform)
 (i.e. `https://groups.google.com/d/forum/hbrcrosrobotplatform`) and request to join.
 If that does not work, squirt a quick message to the group manager
-(`Wayne` ATSIGN `Gramlich` PERIOD `Net`)
+(`Wayne` ATSIGN `Gramlich` PERIOD `Net`) requesting an invitation to join
+the group.
 
 ## Possible Classes
 
