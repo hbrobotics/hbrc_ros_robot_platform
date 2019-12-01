@@ -23,10 +23,10 @@
 # <======================================= 100 characters =======================================> #
 import os
 import setuptools  # type: ignore
-from typing import Dict, TextIO
+from typing import Any, Dict, IO
 
 def long_description_read() -> str:
-    readme_file: TextIO
+    readme_file: IO[Any]
     with open("README.md") as readme_file:
         long_description: str = readme_file.read()
     return long_description

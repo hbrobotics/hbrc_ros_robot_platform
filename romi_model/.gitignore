@@ -1,5 +1,6 @@
 *.pyl
 *.scad
+*,cover
 .coverage
 .mypy_cache
 __pycache__

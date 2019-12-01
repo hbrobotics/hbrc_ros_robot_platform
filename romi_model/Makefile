@@ -1,6 +1,7 @@
 .PHONY: all clean test
 
-PY_FILES := \
+PY_FILES :=                  \
+    romi_model/scad.py       \
     romi_model/romi_model.py
 PYL_FILES := ${PY_FILES:%.py=%.pyl}
 COVER_FILES := ${PY_FILES:%=%,cover}
@@ -18,7 +19,9 @@ clean:
 	rm -f ${PYL_FILES} ${SCAD_FILES}
 
 test: all
-	pytest --cov=bom_manager --cov-report=annotate
+	rm -f ${COVER_FILES} .coverage
+	pytest --cov=romi_model romi_model/scad.py tests/test_scad.py  \
+            tests/test_romi_model.py --cov-report=annotate tests
 	@grep -H -n "^!" ${COVER_FILES} || true
 
 # Pattern rule for running `mypy`, `flake8`, and `pydocstyle` over a `.py` Python file.
