@@ -9,7 +9,7 @@ To join the group, visit the
 [HBRC ROS Robot Platform web page](https://groups.google.com/d/forum/hbrcrosrobotplatform)
 (i.e. `https://groups.google.com/d/forum/hbrcrosrobotplatform`) and request to join.
 If that does not work, squirt a quick message to the group manager
-[Wayne@Gramlich.Net](mailto:Wayne@Gramlich.Net) and request and invitation.
+(`Wayne` ATSIGN `Gramlich` PERIOD `Net`)
 
 ## Possible Classes
 
@@ -86,6 +86,9 @@ Initial Thoughts:
 
 ## Mechanical
 
+The mechanical issues are worked out in greater detail in the
+[mechancial directory](mechanical/README.md).
+
 The mechanical tasks are:
 
 * Model the Romi platform in OpenSCAD to ensure that the PCB outline
@@ -96,6 +99,9 @@ The mechanical tasks are:
 
 ## Electrical
 
+The electrical issues are worked out in greater detail in the
+[electrical directory](electrical/README.md).
+
 Some comments on the electrical:
 
 * The design is to be done using KiCad, since KiCad is 100% free.
@@ -104,6 +110,9 @@ Some comments on the electrical:
   or the on board AA batteries.
 
 ## Software
+
+The software issues are worked out in greater detail in the
+[software directory](software/README.md).
 
 Terminology:
 

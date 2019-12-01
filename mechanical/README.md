@@ -1,4 +1,4 @@
-# HBRC ROS Robot Mechanical Model
+# HBRC ROS Robot Mechanical Issues
 
 ## Installation and Use
 
