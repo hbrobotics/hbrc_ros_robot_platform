@@ -202,6 +202,8 @@ class Romi:
         # Grab some values from *romi* (i.e. *self*):
         romi: Romi = self
         # debugging: bool = romi.debugging
+        inches2mm: float = romi.inches2mm
+        origin_offset: P = romi.origin_offset
 
         # All of the battery holes are done relative to the *battery_reference_hole*
         # indicated on the drawing of the dimensions and mounting holes seciont of the
@@ -219,8 +221,8 @@ class Romi:
         # *battery_reference_hole_center*:
         lower_battery_y_offsets: Tuple[float, ...] = (0.0, -12.3, -12.3 - 12.3)
         lower_battery_patterns: Tuple[str, ...] = (
-            "--**O**--",  # Row with reference hole in the middle (at the 'O' location)
-            "--*****--",  # Row below reference hole
+            "*-**O**-*",  # Row with reference hole in the middle (at the 'O' location)
+            "*-*****-*",  # Row below reference hole
             "*-*****-*")  # Two rows below referene hole
         polygons: List[Polygon] = list()
         reference_hole_center_y: float = reference_hole_center.y
@@ -253,6 +255,96 @@ class Romi:
                                                       f"({2-x_index}, {y_index})")
                 upper_hole_polygon.circle_append(upper_hole_center, reference_hole_diameter, 8)
                 polygons.append(upper_hole_polygon)
+
+        # There are 6 rectangular slots that have a nub on the end to cleverly indicate battery
+        # polarity direction.  We will model these as simple rectangular slots and skip the
+        # cleverly battery nubs.  There are 4 batteries slots at the top called
+        # *upper_left_battery_slot*, *upper_right_battery_slot*, *lower_left_battery_slot*, and
+        # *lower_righ_battery_slot*.  Underneath these 4 batteries are 2 more centered battery
+        # slots that are called *upper_center_battery_slot* and *lower_center_battery_slot*:
+        upper_left_battery_slot: Polygon = romi.rectangle_locate("Upper Left Battery Slot",
+                                                                 -5.550937, 4.252594,
+                                                                 -4.074563, 4.473067)
+        upper_right_battery_slot: Polygon = romi.rectangle_locate("Upper Right Battery Slot",
+                                                                  -3.621799, 4.252594,
+                                                                  -2.145425, 4.473067)
+        lower_left_battery_slot: Polygon = romi.rectangle_locate("Lower Left Battery Slot",
+                                                                 -5.590311, 3.705346,
+                                                                 -4.113925, 3.925815)
+        lower_right_battery_slot: Polygon = romi.rectangle_locate("Lower Right Battery Slot",
+                                                                  -3.661173, 3.705346,
+                                                                  -2.184799, 3.925815)
+        upper_center_battery_slot: Polygon = romi.rectangle_locate("Upper Center Battery Slot",
+                                                                   -4.58637, 3.012429,
+                                                                   -3.109992, 3.232913)
+        lower_center_battery_slot: Polygon = romi.rectangle_locate("Lower Center Battery Slot",
+                                                                   -4.625744, 2.465193,
+                                                                   -3.149354, 2.685665)
+
+        # *battery_slot_polygons* list and append them to *polygons*:
+        battery_slot_polygons: List[Polygon] = [
+            upper_left_battery_slot, upper_right_battery_slot,
+            lower_left_battery_slot, lower_right_battery_slot,
+            upper_center_battery_slot, lower_center_battery_slot
+        ]
+        polygons.extend(battery_slot_polygons)
+
+        # There 4 cutouts across the top of the battery case and 3 cutouts along the bottom.
+        # The 4 upper cutouts are called *upper_outer_left_cutout*, *upper_inner_left_cutout*,
+        # *upper_inner_right_cutout*, and *upper_outer_right_cutout*.
+        upper_outer_left_cutout: Polygon = romi.rectangle_locate("Upper Outer Left Cutout",
+                                                                 -5.984008, 4.74865,
+                                                                 -5.302909, 4.965193)
+        upper_inner_left_cutout: Polygon = romi.rectangle_locate("Upper Inner Left Cutout",
+                                                                 -5.23598, 4.669913,
+                                                                 -4.861965, 4.858886)
+        upper_inner_right_cutout: Polygon = romi.rectangle_locate("Upper Inner Right Cutout",
+                                                                  -2.873772, 4.669913,
+                                                                  -2.499756, 4.858886)
+        upper_outer_right_cutout: Polygon = romi.rectangle_locate("Upper Outer Right Cutout",
+                                                                  -2.432827, 4.74865,
+                                                                  -1.751728, 4.965193)
+
+        # Thre are three cutouts across the bottom of the battery case and they are called
+        # *lower_left_cutout*, *lower_center_cutout*, and *lower_right_cutout*:
+        lower_left_cutout: Polygon = romi.rectangle_locate("Lower Left Cutout",
+                                                           -5.572591, 1.939594,
+                                                           -4.655272, 2.189594)
+        lower_center_cutout: Polygon = romi.rectangle_locate("Lower Center Cutout",
+                                                             -4.340311, 2.032122,
+                                                             -3.395425, 2.189594)
+        lower_right_cutout: Polygon = romi.rectangle_locate("Lower Right Cutout",
+                                                            -3.080465, 1.939594,
+                                                            -2.163146, 2.189594)
+
+        # Collect all of the cutouts into *cutout_polygons* and append to *polygons*:
+        cutout_polygons: List[Polygon] = [
+            upper_outer_left_cutout, upper_inner_left_cutout,
+            upper_inner_right_cutout, upper_outer_right_cutout,
+            lower_left_cutout, lower_center_cutout, lower_right_cutout
+        ]
+        polygons.extend(cutout_polygons)
+
+        # There are 4 slots for where the encoder connectors through hole pins land.
+        # We will measure two on the right side and mirror them to the left side:
+        x1: float = -2.031646 * inches2mm - origin_offset.x - 8.85
+        dx: float = 2.5
+        x2: float = x1 - dx
+        x3: float = x2 - 1.65
+        x4: float = x3 - dx
+        dy: float = 0.70 * inches2mm
+        outer_encoder_slot: Polygon = Polygon("Outer Encoder Slot")
+        outer_encoder_slot.rotated_rectangle_append(P((x1 + x2) / 2.0, 0.0), dx, dy, 0.0)
+        inner_encoder_slot: Polygon = Polygon("Inner Encoder Slot")
+        inner_encoder_slot.rotated_rectangle_append(P((x3 + x4) / 2.0, 0.0), dx, dy, 0.0)
+
+        # Collect the encoder slots into *encoder_slot_polygons* and append to *polygons*:
+        encoder_slot_polygons: List[Polygon] = [
+            outer_encoder_slot, outer_encoder_slot.y_mirror(),
+            inner_encoder_slot, inner_encoder_slot.y_mirror()
+        ]
+        polygons.extend(encoder_slot_polygons)
+
         return polygons
 
     # Romi.hex_pattern_get():
@@ -595,6 +687,45 @@ class Romi:
                                                                      lower_hex_hole_center,
                                                                      lower_hex_hole_diameter)
         return lower_hex_polygons, lower_holes_table
+
+    # Romi.rectangle_locate():
+    def rectangle_locate(self, name: str, x1: float, y1: float,
+                         x2: float, y2: float) -> Polygon:
+        """Locate a rectangle and return it as a Polygon.
+
+        Args:
+            *name* (*str*): The name to assign to the returned
+                *Polygon*.
+            *x1* (*float*): One of sides of the rectangle in inches.
+            *y1* (*float*): Either the top or bottom edge the rectangle
+                in inches.
+            *x1* (*float*): One of sides of the rectangle in inches.
+            *y2* (*float*): The other top/bottom edge of the rectangle
+                in inches:
+
+        Returns:
+            (*Polygon*) Returns a *Polygon* that represents the
+            rectangle.
+
+        """
+        # Grab some values from *romi* (i.e. *self*):
+        romi: Romi = self
+        origin_offset: P = romi.origin_offset
+        inches2mm: float = romi.inches2mm
+
+        # Convert *x1*, *y1*, *x2*, and *y2* from inches to millimeters:
+        x1 *= inches2mm
+        y1 *= inches2mm
+        x2 *= inches2mm
+        y2 *= inches2mm
+        dx: float = abs(x2 - x1)
+        dy: float = abs(y2 - y1)
+        center: P = P((x1 + x2) / 2.0, (y1 + y2) / 2.0) - origin_offset
+
+        # Create and return the *rectangle_polygon*:
+        rectangle_polygon: Polygon = Polygon(name)
+        rectangle_polygon.rotated_rectangle_append(center, dx, dy, 0.0)
+        return rectangle_polygon
 
     # Romi.upper_arc_hole_rectangle_polygons_get():
     def upper_arc_hole_rectangle_polygons_get(self) -> List[Polygon]:
