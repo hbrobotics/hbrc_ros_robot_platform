@@ -174,11 +174,21 @@ class Romi:
         lower_arc_hole_rectangle_polygons: List[Polygon]
         lower_arc_hole_rectangle_polygons = romi.lower_arc_hole_rectangle_polygons_get()
 
+        upper_arc_hole_rectangle_polygons: List[Polygon]
+        upper_arc_hole_rectangle_polygons = romi.upper_arc_hole_rectangle_polygons_get()
+
         # Concatenate all of the polygons together into *all_polygons* with *base_outline_polygon*
         # being the required first *Polygon*:
-        all_polygons: List[Polygon] = ([base_outline_polygon] + upper_hex_polygons +
-                                       lower_hex_polygons + battery_polygons +
-                                       line_hole_polygons + lower_arc_hole_rectangle_polygons)
+        mirrorable_polygons: List[Polygon] = (upper_hex_polygons + lower_hex_polygons +
+                                              line_hole_polygons +
+                                              lower_arc_hole_rectangle_polygons +
+                                              upper_arc_hole_rectangle_polygons)
+        mirrorable_polygon: Polygon
+        mirrored_polygons: List[Polygon] = [mirrorable_polygon.y_mirror()
+                                            for mirrorable_polygon in mirrorable_polygons]
+        all_polygons: List[Polygon] = ([base_outline_polygon] + battery_polygons +
+                                       mirrorable_polygons + mirrored_polygons)
+
         if debugging:  # pragma: no cover
             print(f"len(all_polygons)={len(all_polygons)}")
 
@@ -461,10 +471,14 @@ class Romi:
             print(f"lower_start_center={lower_start_center}")
             print(f"lower_start_angle={degrees(lower_arc_start_angle)}deg")
 
+        # We pick the smallest hole that is next to the hole at the end to get the
+        # *small_hole_diameter*:
         lower_end_diameter: float
         lower_end_center: P
-        lower_end_diameter, lower_end_center = romi.hole_locate(-3.229035, -3.354591,
-                                                                0.10461, -0.020516)
+        lower_end_diameter, lower_end_center = romi.hole_locate(-3.14402, -3.053465,
+                                                                0.125287, 0.034732)
+        small_hole_diameter: float = lower_end_diameter
+
         lower_arc_end_angle: float = atan2(lower_end_center.y, lower_end_center.x)
         if debugging:  # pragma: no cover
             print(f"lower_start_diameter={lower_start_diameter}")
@@ -501,12 +515,12 @@ class Romi:
             print(f"rectangle_center={rectangle_center}")
             print(f"small_rectangle_length={small_rectangle_length}")
 
-        # There *lower_holes_count* holes to create along the arc:
-        small_hole_diameter = 1.2  # Kludge
-        lower_holes_count: int = 13
+        # There are *lower_holes_count* + 1 holes to create along the arc. There are
+        # *lower_holes_count* + 3 rectangles to create along the arc:
+        lower_holes_count: int = 12
         delta_angle: float = (lower_arc_end_angle - lower_arc_start_angle) / (lower_holes_count - 1)
         lower_hole_index: int
-        for lower_hole_index in range(lower_holes_count):
+        for lower_hole_index in range(lower_holes_count + 3):
             # The same *lower_arc_hole_diameter* is used for both the left and right arc holes:
             lower_arc_hole_diameter: float = (lower_start_diameter if lower_hole_index % 3 == 0
                                               else small_hole_diameter)
@@ -522,7 +536,8 @@ class Romi:
             lower_hole_center = P(lower_hole_x, lower_hole_y)
             lower_hole: Polygon = Polygon(f"Lower hole {lower_hole_index}")
             lower_hole.circle_append(lower_hole_center, lower_arc_hole_diameter, 8)
-            lower_arc_hole_rectangle_polygons.append(lower_hole)
+            if lower_hole_index < lower_holes_count + 1:
+                lower_arc_hole_rectangle_polygons.append(lower_hole)
 
             # Next do the *lower_right_rectangle*:
             lower_rectangle_x: float = rectangle_radius * cos(lower_hole_angle)
@@ -581,19 +596,109 @@ class Romi:
                                                                      lower_hex_hole_diameter)
         return lower_hex_polygons, lower_holes_table
 
-    # Romi.output():
-    # def output(self):
-    #     """TODO."""
-    #     romi: Romi = self
-    #     # Now we can output the `romi.scad` file:
-    #     scad_lines: List[str] = list()
-    #     complex_polygon.scad_lines_append(scad_lines, "")
-    #     scad_lines.append("")
-    #     scad_text: str = '\n'.join(scad_lines)
-    #     # print(scad_text)
-    #     scad_file: IO[Any]
-    #     with open("romi.scad", "w") as scad_file:
-    #         scad_file.write(scad_text)
+    # Romi.upper_arc_hole_rectangle_polygons_get():
+    def upper_arc_hole_rectangle_polygons_get(self) -> List[Polygon]:
+        """TODO."""
+        # Grab some values from *romi*:
+        romi: Romi = self
+        debugging: bool = romi.debugging
+        inches2mm: float = romi.inches2mm
+        origin_offset: P = romi.origin_offset
+
+        # The resulting *Polygon*'s are collected into *upper_arc_hole_rectangle_polygons*:
+        upper_arc_hole_rectangle_polygons: List[Polygon] = list()
+
+        # There are arcs of holes and and rectangular slots along the upper and lower rims.
+        # Since they are mirrored across the Y axis, we only worry about the right side.
+        # The hole closest to the wheel is the "start" hole and the one farthest from the
+        # wheel is the "end" hole.  We have to locate each of these holes:
+        upper_start_diameter: float
+        upper_start_center: P
+        upper_start_diameter, upper_start_center = romi.hole_locate(-1.483063, -1.357508,
+                                                                    4.651469, 4.526346)
+        upper_arc_start_angle: float = atan2(upper_start_center.y, upper_start_center.x)
+        if debugging:  # pragma: no cover
+            print(f"upper_start_diameter={upper_start_diameter}")
+            print(f"upper_start_center={upper_start_center}")
+            print(f"upper_start_angle={degrees(upper_arc_start_angle)}deg")
+
+        upper_end_diameter: float
+        upper_end_center: P
+        upper_end_diameter, upper_end_center = romi.hole_locate(-3.14402, -3.053465,
+                                                                5.840524, 5.749969)
+        upper_arc_end_angle: float = atan2(upper_end_center.y, upper_end_center.x)
+        if debugging:  # pragma: no cover
+            print(f"upper_end_diameter={upper_end_diameter}")
+            print(f"upper_end_center={upper_end_center}")
+
+        # Compute the *upper_hole_radius*:
+        origin: P = P()
+        upper_hole_radius: float = origin.distance(upper_start_center)
+
+        # There are two sizes of rectangle -- small and large.  The width appears to
+        # be the same for both, so we only need *rectangle_width*, *small_rectangle_length*
+        # and *large_rectangle_length*.  Lastly, we need to find one *rectangle_center*
+        # so we can determine the *rectangle_radius* from the *origin*:
+        large_upper_inner_corner: P = (P(-1.33137 * inches2mm, 4.739012 * inches2mm) -
+                                       origin_offset)
+        large_lower_inner_corner: P = (P(-1.248201 * inches2mm, 4.615776 * inches2mm) -
+                                       origin_offset)
+        large_lower_outer_corner: P = (P(-1.205772 * inches2mm, 4.644402 * inches2mm) -
+                                       origin_offset)
+        large_rectangle_length: float = large_upper_inner_corner.distance(large_lower_inner_corner)
+        rectangle_width: float = large_lower_inner_corner.distance(large_lower_outer_corner)
+        rectangle_center: P = (large_upper_inner_corner + large_lower_outer_corner) / 2.0
+        rectangle_radius: float = origin.distance(rectangle_center)
+        small_upper_inner_corner: P = (P(-1.431575 * inches2mm, 4.887512 * inches2mm) -
+                                       origin_offset)
+        small_lower_inner_corner: P = (P(-1.368228 * inches2mm, 4.793638 * inches2mm) -
+                                       origin_offset)
+        small_rectangle_length: float = small_upper_inner_corner.distance(small_lower_inner_corner)
+        if debugging:  # pragma: no cover
+            print(f"upper_hole_radius={upper_hole_radius}")
+            print(f"rectangle_radius={rectangle_radius}")
+            print(f"rectangle_width={rectangle_width}")
+            print(f"large_rectangle_length={large_rectangle_length}")
+            print(f"rectangle_center={rectangle_center}")
+            print(f"small_rectangle_length={small_rectangle_length}")
+
+        # There *upper_holes_count* holes and rectangles to create along the arc. Not holes are
+        # created.  There are *upper_holes_count* + 1 rectangles and all of these are poplulated:
+        small_hole_diameter = upper_end_diameter
+        upper_holes_count: int = 12
+        delta_angle: float = (upper_arc_end_angle - upper_arc_start_angle) / (upper_holes_count - 1)
+        upper_hole_index: int
+        for upper_hole_index in range(upper_holes_count + 1):
+            # The same *upper_arc_hole_diameter* is used for both the left and right arc holes:
+            upper_arc_hole_diameter: float = (upper_start_diameter if upper_hole_index % 3 == 0
+                                              else small_hole_diameter)
+
+            # Likewise the *lower_rectangle_length* is used both the left and right rectangle arcs:
+            upper_rectangle_length: float = (large_rectangle_length if upper_hole_index % 3 == 0
+                                             else small_rectangle_length)
+
+            # Do the *lower_right_hole* first:
+            upper_hole_angle: float = upper_arc_start_angle + float(upper_hole_index) * delta_angle
+            upper_hole_x: float = upper_hole_radius * cos(upper_hole_angle)
+            upper_hole_y: float = upper_hole_radius * sin(upper_hole_angle)
+            upper_hole_center = P(upper_hole_x, upper_hole_y)
+            upper_hole: Polygon = Polygon(f"Upper hole {upper_hole_index}")
+            upper_hole.circle_append(upper_hole_center, upper_arc_hole_diameter, 8)
+            # Skip 3 of the holes:
+            if upper_hole_index not in (2, 3, 12, 13):
+                upper_arc_hole_rectangle_polygons.append(upper_hole)
+
+            # Next do the *lower_right_rectangle*:
+            upper_rectangle_x: float = rectangle_radius * cos(upper_hole_angle)
+            upper_rectangle_y: float = rectangle_radius * sin(upper_hole_angle)
+            upper_rectangle_center: P = P(upper_rectangle_x, upper_rectangle_y)
+            upper_rectangle: Polygon = Polygon(f"Upper right rectangle {upper_hole_index}")
+            upper_rectangle.rotated_rectangle_append(upper_rectangle_center, rectangle_width,
+                                                     upper_rectangle_length, upper_hole_angle)
+            upper_arc_hole_rectangle_polygons.append(upper_rectangle)
+
+        # Return the resuting *arc_hole_rectangle_polygons*:
+        return upper_arc_hole_rectangle_polygons
 
     # Romi.upper_hex_polygons_get():
     def upper_hex_polygons_get(self) -> List[Polygon]:

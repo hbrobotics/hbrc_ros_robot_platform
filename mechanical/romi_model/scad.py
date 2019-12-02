@@ -443,6 +443,18 @@ class Polygon:
                            slot_angle + degrees180 - degrees90,
                            slot_angle + degrees180 + degrees90, points_count)
 
+    # Polygon.y_mirror():
+    def y_mirror(self) -> "Polygon":
+        """Return a copy Y axis mirrored polygon."""
+        # Grab some values from *polygon* (i.e. *self*):
+        polygon: Polygon = self
+        name: str = polygon.name
+        points: List[P] = polygon.points
+        point: P
+        mirrored_points: List[P] = [P(-point.x, point.y) for point in points]
+        mirrored_polygon: Polygon = Polygon(f"Y-Mirror {name}", mirrored_points)
+        return mirrored_polygon
+
 
 # Scad:
 class Scad:

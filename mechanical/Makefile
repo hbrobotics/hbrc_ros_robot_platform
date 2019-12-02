@@ -1,11 +1,15 @@
 .PHONY: all clean test
 
-PY_FILES :=                  \
-    romi_model/scad.py       \
+PY_FILES :=                      \
+    romi_model/__init__.py       \
+    romi_model/scad.py           \
     romi_model/romi_model.py
+PYCACHE_DIRECTORIES :=           \
+    romi_model/__pycache__       \
+    tests/__pycache__
 PYL_FILES := ${PY_FILES:%.py=%.pyl}
 COVER_FILES := ${PY_FILES:%=%,cover}
-SCAD_FILES := romi.scad
+SCAD_FILES := romi_base.scad
 
 all: ${PYL_FILES}
 	pip install .
@@ -16,7 +20,8 @@ foo:
 	echo ${PYL_FILES}
 
 clean:
-	rm -f ${PYL_FILES} ${SCAD_FILES}
+	rm -f ${PYL_FILES} ${SCAD_FILES} ${COVER_FILES}
+	rm -rf ${PYCACHE_DIRECTORIES}
 
 test: all
 	rm -f ${COVER_FILES} .coverage
