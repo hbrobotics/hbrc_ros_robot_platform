@@ -44,7 +44,7 @@ setuptools.setup(
     description="Bill Of Materials Manager",
     entry_points={
         "console_scripts": [
-            "romi_model=romi_model.romi_model:main",
+            "scad_models=scad_models.scad_models:main",
         ],
     },
     include_package_data=True,
@@ -52,9 +52,9 @@ setuptools.setup(
     license="MIT",
     long_description=long_description_read(),
     long_description_content_type="text/markdown",
-    name=("romi_model"),
+    name=("scad_models"),
     packages=[
-        "romi_model",
+        "scad_models",
     ],
     python_requires=">=3.6",
     url="https://github.com/hbrobotics/hbrc_ros_robot_platform",

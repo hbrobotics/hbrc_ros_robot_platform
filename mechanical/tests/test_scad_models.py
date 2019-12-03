@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from romi_model.romi_model import Romi
+from scad_models.scad_models import Romi
 
 def test_romi():
     romi: Romi = Romi()

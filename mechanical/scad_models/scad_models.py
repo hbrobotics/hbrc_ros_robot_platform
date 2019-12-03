@@ -8,7 +8,7 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from romi_model.scad import P, Polygon, Scad3DUnion, ScadLinearExtrude, ScadPolygon
+from scad_models.scad import P, Polygon, Scad3DUnion, ScadLinearExtrude, ScadPolygon
 from typing import Any, Dict, IO, List, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 

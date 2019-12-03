@@ -26,8 +26,8 @@
 
 import io
 from math import pi
-import romi_model.scad
-from romi_model.scad import P, Polygon, Scad, ScadPolygon
+import scad_models.scad
+from scad_models.scad import P, Polygon, Scad, ScadPolygon
 
 def test_point():
     """Test the point class."""

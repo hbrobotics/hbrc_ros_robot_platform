@@ -1,11 +1,11 @@
 .PHONY: all clean test
 
 PY_FILES :=                      \
-    romi_model/__init__.py       \
-    romi_model/scad.py           \
-    romi_model/romi_model.py
+    scad_models/__init__.py       \
+    scad_models/scad.py           \
+    scad_models/scad_models.py
 PYCACHE_DIRECTORIES :=           \
-    romi_model/__pycache__       \
+    scad_models/__pycache__       \
     tests/__pycache__
 PYL_FILES := ${PY_FILES:%.py=%.pyl}
 COVER_FILES := ${PY_FILES:%=%,cover}
@@ -14,7 +14,7 @@ SCAD_FILES := romi_base.scad
 all: ${PYL_FILES}
 	pip install .
 	rm -f ${SCAD_FILES}
-	romi_model
+	scad_models
 foo:
 	echo ${PY_FILES}
 	echo ${PYL_FILES}
@@ -25,8 +25,8 @@ clean:
 
 test: all
 	rm -f ${COVER_FILES} .coverage
-	pytest --cov=romi_model romi_model/scad.py tests/test_scad.py  \
-            tests/test_romi_model.py --cov-report=annotate tests
+	pytest --cov=scad_models scad_models/scad.py tests/test_scad.py  \
+            tests/test_scad.py --cov-report=annotate tests
 	@grep -H -n "^!" ${COVER_FILES} || true
 
 # Pattern rule for running `mypy`, `flake8`, and `pydocstyle` over a `.py` Python file.
