@@ -520,8 +520,167 @@ class Scad:
         assert False, f"{class_name}.scad_lines_append not implemented yet."
 
 
-# Scad Polygon:
-class ScadPolygon(Scad):
+# Scad2D:
+class Scad2D(Scad):
+    """Represents 2-dimensional Scad objects."""
+
+    def __init__(self, name: str) -> None:
+        """Set the name of the 2-dimensional SCAD object."""
+        super().__init__(name)
+
+
+# Scad3D:
+class Scad3D(Scad):
+    """Represents 3-dimensional Scad objects."""
+
+    def __init__(self, name: str) -> None:
+        """Set the name of the 3-dimensional SCAD object."""
+        super().__init__(name)
+
+
+class Scad3DUnion(Scad3D):
+    """Represents a boolean union of 3D SCAD objects."""
+
+    # Scad3dUnion.__init__():
+    def __init__(self, name: str, scad3ds: List[Scad3D]) -> None:
+        """Initialize a Scad3dUnion object.
+
+        Args:
+            *name* (*str*): The name that is output to the `.scad`
+                file.
+            *scad3ds* (*List*[*Scad3D*]): A list of *Scad3D* object
+                to be unioned together.
+
+        """
+        # Initialize the base class:
+        super().__init__(name)
+
+        # Stuff *scad3ds* into *scad_3d_union* (i.e. *self*):
+        # scad_3d_union: Scad3DUnion = self
+        self.scad3ds: List[Scad3D] = scad3ds
+
+    # Scad3dUnion.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Union to list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *scad_polygon* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *scad_3d_union* (i.e: *self*):
+        scad_3d_union: Scad3DUnion = self
+        name: str = scad_3d_union.name
+        scad3ds: List[Scad3D] = scad_3d_union.scad3ds
+
+        # Append the lines to *scad_lines*:
+        scad_lines.append(f"{indent}// Union '{name}'")
+        scad_lines.append(f"{indent}union() {{")
+        next_indent: str = indent + " "
+        scad3d: Scad3D
+        for scad3d in scad3ds:
+            scad3d.scad_lines_append(scad_lines, next_indent)
+        scad_lines.append(f"{indent}// End Union '{name}'")
+        scad_lines.append(f"{indent}}}")
+
+
+# ScadLinearExtrude():
+class ScadLinearExtrude(Scad3D):
+    """Represents an OpenScad `linear_extrude` command."""
+
+    def __init__(self, name: str, scad2d: Scad2D, height: float, center: bool = False,
+                 twist: float = 0.0, convexity: int = -1, slices: int = -1,
+                 initial_scale: float = 1.0, final_scale: float = 1.0) -> None:
+        """Initialize a `linear_extrude` command.
+
+        Args:
+            *name* (*str*): A name that will be output to the
+                `.scad` file.
+            *scad2d*: (*Scad2D*): A 2-dimensional *Scad* object to
+                perform the linear extrusion on.
+            *height* (*float*): The height of the extrusion.
+            *center* (*bool*): If *True*, the extrusion is from
+                -*height*/2 to *height*/2 in the Z direction;
+                otherwise, it is from 0 to *height* in the Z direction.
+            *convexity* (*int*): Specifies the complexity level to
+                support for preview rendering.  Higher numbers support
+                more complex objects.
+            *twist* (*float*): Specifies the amount of twist around the
+                Z axis in radians.
+            *slices*: (*int*): Specifies
+            *initial_scale* (*float*): Specifies the initial scale
+                of the linear extrusion.
+            *final_scale* (*float*): Specifies the final scale of
+                the linear extrusion.
+
+        """
+        # Initialize the *Scad* base-class:
+        super().__init__(name)
+
+        # Do some argument range validation:
+        assert final_scale > 0.0, f"final_scale={final_scale}; it needs to be positive"
+        assert height > 0.0, f"height={height}; it needs to be positive"
+        assert initial_scale > 0.0, f"initial_scale={initial_scale}; it needs to be positive"
+
+        # Initialize the *scad_linear_extrude* (i.e. *self*):
+        self.center: bool = center
+        self.convexity: int = 10 if convexity <= 0 else convexity
+        self.final_scale: float = final_scale
+        self.height: float = height
+        self.initial_scale: float = initial_scale
+        self.scad2d: Scad2D = scad2d
+        self.slices: int = slices
+        self.twist: float = twist
+
+    # ScadLinearExtrude.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append ScadLinearExtrude to list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *scad_polygon* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *scad_linear_extrude* (i.e. *self*):
+        scad_linear_extrude: ScadLinearExtrude = self
+        center: bool = scad_linear_extrude.center
+        convexity: int = scad_linear_extrude.convexity
+        final_scale: float = scad_linear_extrude.final_scale
+        initial_scale: float = scad_linear_extrude.initial_scale
+        height: float = scad_linear_extrude.height
+        name: str = scad_linear_extrude.name
+        scad2d: Scad2D = scad_linear_extrude.scad2d
+        slices: int = scad_linear_extrude.slices
+        twist: float = scad_linear_extrude.twist
+
+        # Compute *scale_text* and *slices_text*:
+        scale_text: str = ""
+        if initial_scale != 1.0:
+            scale_text = ", scale=[{0:.3f}, {1:.3f}]".format(initial_scale, final_scale)
+        elif final_scale != 1.0:
+            scale_text = ", scale={0:.3f}".format(final_scale)
+        slices_text: str = f", slices={slices}" if slices > 0 else ""
+
+        # Perform the the `linear_extrude` command append to *scad_lines*:
+        scad_lines.append(f"{indent}// LinearExtrude '{name}'")
+        scad_lines.append(f"{indent}linear_extrude("
+                          f"height={height}"
+                          f", center={str(center).lower()}"
+                          f", convexity={convexity}"
+                          f", twist={degrees(twist)}"
+                          f"{slices_text}{scale_text})")
+
+        # Append the *scad2d* object next:
+        scad2d.scad_lines_append(scad_lines, indent + " ")
+
+        # Outut an end comment:
+        scad_lines.append(f"{indent}// End LinearExtrude '{name}'")
+
+
+# ScadPolygon:
+class ScadPolygon(Scad2D):
     """Represents an OpenScad `polygon` command."""
 
     # ScadPolygon.__init__():

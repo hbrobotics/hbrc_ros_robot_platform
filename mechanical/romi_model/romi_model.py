@@ -8,7 +8,7 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from romi_model.scad import P, Polygon, ScadPolygon
+from romi_model.scad import P, Polygon, Scad3DUnion, ScadLinearExtrude, ScadPolygon
 from typing import Any, Dict, IO, List, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -688,7 +688,19 @@ class Romi:
                                                                      lower_hex_hole_diameter)
         return lower_hex_polygons, lower_holes_table
 
-    # Romi.rectangle_locate():
+    # Romi.lower_miscellaneous_polygons_get():
+    def lower_miscellaneous_polygons_get(self) -> List[Polygon]:
+        """Return the miscellaneous holes from bottom base."""
+        # Grab some values from *romi* (i.e. *self*):
+
+        misc_polygons: List[Polygon] = []
+        # lower_left_misc_diameter: float
+        # lower_left_misc_center: P
+        # lower_left_misc_diameter, lower_left_misc_center = romi.hole_locate(-3.119047, -3.028492,
+        # lower_left_misc_polygon: Polygon = Polygon("Lower Left Misc")
+        # lower_left_misc_polygon.circle_append(lower_left_misc_center, lower_left_misc_diameter)
+        return misc_polygons
+
     def rectangle_locate(self, name: str, x1: float, y1: float,
                          x2: float, y2: float) -> Polygon:
         """Locate a rectangle and return it as a Polygon.
@@ -876,6 +888,14 @@ def main() -> int:  # pragma: no cover
     romi: Romi = Romi()
     romi_base_scad_polygon: ScadPolygon = romi.base_scad_polygon_generate()
     scad_file: IO[Any]
-    with open("romi_base.scad", "w") as scad_file:
+    with open("romi_base_dxf.scad", "w") as scad_file:
         romi_base_scad_polygon.file_write(scad_file)
+
+    extruded_romi_base_scad_polygon: ScadLinearExtrude
+    extruded_romi_base_scad_polygon = ScadLinearExtrude("Romi Base Extrude",
+                                                        romi_base_scad_polygon, 9.6)
+    union: Scad3DUnion = Scad3DUnion("Base Union", [extruded_romi_base_scad_polygon])
+    with open("romi_base.scad", "w") as scad_file:
+        # extruded_romi_base_scad_polygon.file_write(scad_file)
+        union.file_write(scad_file)
     return 0
