@@ -39,7 +39,7 @@ class Romi:
         # methods need to have *offset_origin* to convert to a robot center in millimeters.
 
         # Set *debugging* to *True* to print out debugging messages:
-        debugging: bool = True
+        debugging: bool = False  # True
 
         # Let's get started computing *origin_offet*:
         #

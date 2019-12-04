@@ -26,8 +26,9 @@
 
 import io
 from math import pi
-import scad_models.scad
-from scad_models.scad import P, Polygon, Scad, ScadPolygon
+from scad_models.scad import P, Polygon, ScadPolygon
+from typing import Any, IO, List
+
 
 def test_point():
     """Test the point class."""
@@ -46,7 +47,7 @@ def test_point():
 
     # Left/Right Multiplication:
     assert f"{p123 * 2.0}" == "P(2.000, 4.000, 6.000)"
-    assert f"{2.0 * p123}" == "P(2.000, 4.000, 6.000)"    
+    assert f"{2.0 * p123}" == "P(2.000, 4.000, 6.000)"
 
     # Test distance:
     p100: P = P(1.0, 0.0, 0.0)
@@ -58,14 +59,16 @@ def test_point():
 
     # Division scaling:
     assert f"{p123 / 2.0}" == "P(0.500, 1.000, 1.500)"
-    
+
     # P.rotate2d:
     assert f"{p100.rotate2d(pi/2.0)}" == "P(0.000, 1.000, 0.000)"
 
     # P.y_mirror:
     assert f"{p123.y_mirror()}" == "P(-1.000, 2.000, -3.000)"
 
+
 def test_polygon():
+    """Test the Polygon class and associated methods."""
     # Test *empty_polygon*:
     empty_polygon: Polygon = Polygon("Empty")
     assert f"{empty_polygon}" == "Polygon('Empty', [])"
@@ -74,13 +77,12 @@ def test_polygon():
     p11: P = P(1.0, 1.0)
     p22: P = P(2.0, 2.0)
     p33: P = P(3.0, 3.0)
-    no_points: List[P] = []
-    one_point: List[P] = [p11]
-    two_points: List[P] = [p11, p22]
-    three_points: List[P] = [p11, p22, p33]
-    polygon0: Polygon = Polygon("No Points")
+    polygon0: Polygon = Polygon("No Points 1")
     assert len(polygon0) == 0
-    assert f"{polygon0}" == "Polygon('No Points', [])"
+    assert f"{polygon0}" == "Polygon('No Points 1', [])"
+    polygon0: Polygon = Polygon("No Points 2", [])
+    assert f"{polygon0}" == "Polygon('No Points 2', [])"
+    assert len(polygon0) == 0
     polygon1: Polygon = Polygon("One Point", [p11])
     assert len(polygon1) == 1
     assert f"{polygon1}" == "Polygon('One Point', [P[1.000, 1.000]])"
@@ -90,7 +92,7 @@ def test_polygon():
     polygon3: Polygon = Polygon("Three Points", [p11, p22, p33])
     assert len(polygon3) == 3
     assert f"{polygon3}" == "Polygon('Three Points', [P[1.000, 1.000], ..., P[3.000, 3.000]])"
-    
+
     # Now test the *Polygon*.*__getitem__*() method:
     assert f"{polygon1[0]}" == "P(1.000, 1.000, 0.000)"
     assert f"{polygon2[0]}" == "P(1.000, 1.000, 0.000)"
@@ -114,7 +116,7 @@ def test_polygon():
     assert f"{slot[5]}" == "P(-2.000, 0.000, 0.000)"
     assert f"{slot[6]}" == "P(-1.000, -1.000, 0.000)"
     assert f"{slot[7]}" == "P(0.000, -2.000, 0.000)"
-    
+
     # Test Polygon.circle():
     hole: Polygon = Polygon("Circle")
     center: P = P(1.0, 0.0)
@@ -129,13 +131,12 @@ def test_polygon():
 
     # Test Polygon.rotated_rectangle_append():
     rotated_rectangle: Polygon = Polygon("Rotated Rectangle")
-    rectangle_center: P = P(2.0, 2.0)
     rotated_rectangle.rotated_rectangle_append(P(2.0, 3.0), 2.0, 4.0, pi/2)
     assert f"{rotated_rectangle[0]}" == "P(0.000, 4.000, 0.000)", "Index 0 failed"
     assert f"{rotated_rectangle[1]}" == "P(4.000, 4.000, 0.000)", "Index 1 failed"
     assert f"{rotated_rectangle[2]}" == "P(4.000, 2.000, 0.000)", "Index 2 failed"
     assert f"{rotated_rectangle[3]}" == "P(0.000, 2.000, 0.000)", "Index 3 failed"
-    
+
     # Test Polygon.slot_append():
     slot: Polygon = Polygon("Slot")
     slot.slot_append(P(1.0, 1.0), P(3.0, 1.0), 4.0, 2.0, 3)
@@ -167,6 +168,7 @@ def test_polygon():
 
 
 def test_scad_polygon():
+    """Test ScadPolygon class and associated methods."""
     # Define the four corners of a square:
     print("Entered test_scad_polygon")
     upper_right: P = P(2.0, 2.0)
@@ -204,7 +206,7 @@ def test_scad_polygon():
         assert input_scad_lines[0] == "// 'Square SCADPolygon' File", "Index 0 failed"
         assert input_scad_lines[1] == "// ScadPolygon 'Square SCADPolygon [0-0]'", "Index 1 failed"
         assert input_scad_lines[2] == "polygon(points = [", "Index 2 failed"
-        assert input_scad_lines[3] ==  "  // Polygon 'Square Polygon' 0:3", "Index 3 failed"
+        assert input_scad_lines[3] == "  // Polygon 'Square Polygon' 0:3", "Index 3 failed"
         assert input_scad_lines[4] == ("   [2.000, 2.000], [2.000, -2.000], [-2.000, -2.000], "
                                        "[-2.000, 2.000], // 0:3"), "Index 4 failed"
         assert input_scad_lines[5] == " ], paths = [", "Index 5 failed"
