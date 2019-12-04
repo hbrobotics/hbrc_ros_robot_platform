@@ -30,9 +30,9 @@ This module provides a Python interface to OpenSCAD.
 
 # <----------------------------------------100 Characters----------------------------------------> #
 
+# Import stuff from other libraries:
 from math import atan2, ceil, cos, degrees, pi, sin, sqrt
-from typing import Any, IO, List
-# import io
+from typing import Any, IO, List, Optional, Tuple
 
 
 # P:
@@ -119,12 +119,169 @@ class P:
         return P(-point.x, point.y, -point.z)
 
 
+# Info:
+class Info:
+    """Base class for storing meta data."""
+
+    # Info.__init__():
+    def __init__(self, name: str) -> None:
+        """Initialize Info base class."""
+        # Stuff values into *Info* (i.e. *self*):
+        # info: Info = self
+        self.name: str = name
+
+    # Info.__str__():
+    def __str__(self) -> str:
+        """Provide short string for Info object."""
+        # Grab some values from *info* (i.e. *self*):
+        info: Info = self
+        class_name: str = info.__class__.__name__
+        assert False, f"{class_name}.__str__() not implemented."
+        return "Info('??')"
+
+    # Info.key():
+    def key(self) -> Tuple[Any, ...]:
+        """Provide a key suitable for sorting."""
+        # Grab some values from *info* (i.e. *self*):
+        info: Info = self
+        class_name: str = info.__class__.__name__
+        assert False, f"{class_name}.key() not implemented."
+        return ("??",)
+
+
+# InfoPolygon:
+class InfoPolygon(Info):
+    """Represents informat about a polygon."""
+
+    # InfoPolygon.__init__():
+    def __init__(self, name: str) -> None:
+        """Initialize InfoPolygon sub-class of Info."""
+        super().__init__(name)
+
+
+# InfoHole:
+class InfoHole(InfoPolygon):
+    """A InfoPolygon sub-class that describes a hole."""
+
+    # InfoHole.__init__():
+    def __init__(self, name: str, center: P, diameter: float) -> None:
+        """Initialize InfoHole base class."""
+        super().__init__(name)
+        # Stuff values into *info_hole* (i.e. *self*):
+        # info_hole: InfoHole = self
+        self.center: P = center
+        self.diameter: float = diameter
+
+    # InfoHole.__str__()
+    def __str__(self) -> str:
+        """Provide short string for InfoHole object."""
+        # Grab some values from *info_hole* (i.e. *self*):
+        info_hole: InfoHole = self
+        name: str = info_hole.name
+        center: P = info_hole.center
+        diameter: float = info_hole.diameter
+        diameter_text: str = "{0:.3f}".format(diameter)
+        return f"InfoHole('{name}',{center},{diameter_text})"
+
+    # InfoHole.key():
+    def key(self) -> Tuple[Any, ...]:
+        """Provide a key suitable for sorting."""
+        # Grab some values from *info_hole* (i.e. *self*):
+        info_hole: InfoHole = self
+        name: str = info_hole.name
+        center: P = info_hole.center
+        diameter: float = info_hole.diameter
+        return ("Hole", name, center.x, center.y, diameter)
+
+
+# InfoRectangle:
+class InfoRectangle(InfoPolygon):
+    """A InfoPolygon sub-class that describes a rectangle."""
+
+    # InfoRectangle.__init__():
+    def __init__(self, name: str, center: P, dx: float, dy: float, angle: float) -> None:
+        """Initialize InfoHole base class."""
+        super().__init__(name)
+        # Stuff values into *info_rectangle* (i.e. *self*):
+        # info_rectangle: InfoRectangle = self
+        self.center: P = center
+        self.dx: float = dx
+        self.dy: float = dy
+        self.angle: float = angle
+
+    # InfoRectangle.__str__()
+    def __str__(self) -> str:
+        """Provide short string for InfoRectangle object."""
+        # Grab some values from *info_rectangle* (i.e. *self*):
+        info_rectangle: InfoRectangle = self
+        name: str = info_rectangle.name
+        center: P = info_rectangle.center
+        dx: float = info_rectangle.dx
+        dy: float = info_rectangle.dy
+        angle: float = info_rectangle.angle
+        return f"InfoHole('{name}',{center},{dx},{dy},{degrees(angle)})"
+
+    # InfoRectangle.key():
+    def key(self) -> Tuple[Any, ...]:
+        """Provide a key suitable for sorting an InfoRectangle."""
+        # Grab some values from *info_hole* (i.e. *self*):
+        info_rectangle: InfoRectangle = self
+        name: str = info_rectangle.name
+        center: P = info_rectangle.center
+        dx: float = info_rectangle.dx
+        dy: float = info_rectangle.dy
+        angle: float = info_rectangle.angle
+        return ("Hole", name, center.x, center.y, dx, dy, angle)
+
+
+# InfoSlot:
+class InfoSlot(InfoPolygon):
+    """Sub-class that represent Slot other InfoPology."""
+
+    # InfoSlot.__init__():
+    def __init__(self, name: str, center: P, dx: float, dy: float, angle: float) -> None:
+        """Initialize InfoSlot base class."""
+        # Stuff values into *info_slot* (i.e. *self*):
+        super().__init__(name)
+        # info_slot: InfoSlot = self
+        self.center: P = center
+        self.dx: float = dx
+        self.dy: float = dy
+        self.angle: float = angle
+
+    # InfoSlot.__str__():
+    def __str__(self) -> str:
+        """Provide short string for InfoSlot object."""
+        # Grab some values from *info_slot* (i.e. *self*):
+        info_slot: InfoSlot = self
+        name: str = info_slot.name
+        center: P = info_slot.center
+        dx: float = info_slot.dx
+        dy: float = info_slot.dy
+        dx_dy_text: str = "{0:.3f},{1:.3f}".format(dx, dy)
+        angle: float = info_slot.angle
+        return f"InfoSlot('{name}',{center},{dx_dy_text},{degrees(angle)})"
+
+    # Infoslot.key()
+    def key(self) -> Tuple[Any, ...]:
+        """Provide a key suitable for sorting an InfoSlot."""
+        # Grab some values from *info_slot (i.e. *self*):
+        info_slot: InfoSlot = self
+        name: str = info_slot.name
+        center: P = info_slot.center
+        dx: float = info_slot.dx
+        dy: float = info_slot.dy
+        angle: float = info_slot.angle
+        return ("Slot", name, center.x, center.y, dx, dy, angle)
+
+
 # Polygon:
 class Polygon:
     """Represents a closed polygon of points."""
 
     # Polygon.__init__():
-    def __init__(self, name: str, points: List[P] = []) -> None:
+    def __init__(self, name: str, points: List[P] = [],
+                 info_polygon: Optional[InfoPolygon] = None) -> None:
         """Initialize a Polygon.
 
         Args:
@@ -136,6 +293,7 @@ class Polygon:
         # Stuff values into *polygon* (i.e. *self*):
         self.name: str = name
         self.points: List[P] = points[:]  # Copy the contents of *points*
+        self.info_polygon: Optional[InfoPolygon] = info_polygon
 
     # Polygon.__getitem__():
     def __getitem__(self, index: int) -> P:
