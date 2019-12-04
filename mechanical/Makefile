@@ -19,6 +19,9 @@ CLEAN_DIRECTORIES :=				\
     scad_models/__pycache__			\
     tests/__pycache__
 
+ALL_PY_FILES :=					\
+    ${SCAD_MODELS_PY_FILES}			\
+    ${TESTS_PY_FILES}
 ALL_PYL_FILES :=				\
     ${SCAD_MODELS_PYL_FILES}			\
     ${TESTS_PYL_FILES}
@@ -37,18 +40,31 @@ clean:
 	rm -f ${ALL_PYL_FILES} ${ALL_COVER_FILES} .coverage
 	rm -rf ${CLEAN_DIRECTORIES}
 
+# The documentation for `pytest` and `pytest-cov` is a bit weak.  None of this makes
+# much sense and was arrived at by tedious trial and error.  There may be some strange
+# interaction between `pytest` and Python Virtual Environments that is causing all of
+# this strangeness.  Altenatively, this might just be poor integration between the
+# overall `pytest` package and the `pytest-cov` plugin for `pytest`.  Extensive web
+# searching did not uncover any real hints.
+#
+# We specify:
+# * `-cov=DIR`: for each directory that contain `.py` files to generate coverate for.
+# * `--cov-append` makes sure that each test run appends to the overal coverage rather
+#   than reseting `.coverage` file after every test.
+# * `--cov_report annoate` generates a list of `*.py,cover` files.  Statements that
+#   have no coverate will be preceeded by an exclaimation point (`!`).  These lines
+#   can be `grep`'ed for to show un-executed statements.  `# pragma: no cover` is attached
+#   to debugging and error statements for which no coverage is expected.
+# * `*.py`: explicity list each `.py` file that is to be covered.  It is really unclear
+#   why `-cov=DIR` does not do this; but it does not.
+# * `tests`: The directory containing the `test_*.py` test files.  These files are
+#   have individual `test_*()` functions that are exectutedy by `pytest`.
+# What a total pain in the tush!
 test: all
 	rm -f ${ALL_COVER_FILES} .coverage
-	pytest --cov=scad_models scad_models/scad.py tests/test_scad.py  \
-            tests/test_scad.py --cov-report=annotate tests
+	pytest --cov=scad_models --cov=tests --cov-append --cov-report=annotate \
+	    ${ALL_PY_FILES} tests
 	@grep -H -n "^!" ${ALL_COVER_FILES} || true
-
-foo:
-	echo ALL_PYL_FILES=${ALL_PYL_FILES}
-
-#	pytest --cov=scad_models scad_models/scad.py tests/test_scad.py  \
-#            tests/test_scad.py --cov-report=annotate tests
-
 
 # Pattern rule for running `mypy`, `flake8`, and `pydocstyle` over a `.py` Python file.
 # The `.pyl` suffix is used to remember that the linting has occured:
