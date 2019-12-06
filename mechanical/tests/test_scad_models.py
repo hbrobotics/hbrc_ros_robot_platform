@@ -23,12 +23,12 @@
 # SOFTWARE.
 
 from scad_models.scad_models import Romi
-from scad_models.scad import ScadPolygon
+from scad_models.scad import Polygon
 
 
 def test_romi():
     """Run the various Romi methods."""
     romi: Romi = Romi()
     romi.debugging = False
-    romi_base_scad_polygon: ScadPolygon = romi.base_scad_polygon_generate()
-    romi_base_scad_polygon = romi_base_scad_polygon
+    romi_base_polygon: Polygon = romi.base_scad_polygon_generate()
+    romi_base_polygon = romi_base_polygon
