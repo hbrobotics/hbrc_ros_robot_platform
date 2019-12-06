@@ -32,91 +32,164 @@ This module provides a Python interface to OpenSCAD.
 
 # Import stuff from other libraries:
 from math import atan2, ceil, cos, degrees, pi, sin, sqrt
-from typing import Any, IO, List, Optional, Tuple
+from typing import Any, IO, List, Tuple
 
 
-# P:
-class P:
+# P3D:
+class P3D:
     """Represents a 3 dimensional point."""
 
-    # P.__init__():
+    # P3D.__init__():
     def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
         """Initialize the point contents."""
+        # Load values into *p3d* (i.e. *self*):
+        # p3d: P3D = self
         self.x: float = x
         self.y: float = y
         self.z: float = z
 
-    # P.__add__():
-    def __add__(self, point2: "P") -> "P":
+    # P3D.__add__():
+    def __add__(self, p3d2: "P3D") -> "P3D":
         """Add two points together."""
-        point1: P = self
-        return P(point1.x + point2.x, point1.y + point2.y, point1.z + point2.z)
+        # Use *p3d1* instead of *self*:
+        p3d1: P3D = self
+        return P3D(p3d1.x + p3d2.x, p3d1.y + p3d2.y, p3d1.z + p3d2.z)
 
-    # P.__mul__():
-    def __mul__(self, scale: float) -> "P":
-        """Multiply a point by a scale factor."""
-        point: P = self
-        return P(point.x * scale, point.y * scale, point.z * scale)
+    # P3D.__mul__():
+    def __mul__(self, scale: float) -> "P3D":
+        """Multiply a p3d by a scale factor."""
+        # Use *p3d* instead of *self*:
+        p3d: P3D = self
+        return P3D(p3d.x * scale, p3d.y * scale, p3d.z * scale)
 
-    # P.__rmul__():
-    def __rmul__(self, scale: float) -> "P":
-        """Multiply a point by a scale factor."""
-        point: P = self
-        return P(point.x * scale, point.y * scale, point.z * scale)
+    # P3D.__rmul__():
+    def __rmul__(self, scale: float) -> "P3D":
+        """Multiply a p3d by a scale factor."""
+        # Use *p3d* instead of *self*:
+        p3d: P3D = self
+        return P3D(p3d.x * scale, p3d.y * scale, p3d.z * scale)
 
-    # P.__sub__():
-    def __sub__(self, point2: "P") -> "P":
-        """Subtract two points from one another."""
-        point1: P = self
-        return P(point1.x - point2.x, point1.y - point2.y, point1.z - point2.z)
+    # P3D.__sub__():
+    def __sub__(self, p3d2: "P3D") -> "P3D":
+        """Subtract two p3ds from one another."""
+        # Use *p3d1* instead of *self*:
+        p3d1: P3D = self
+        return P3D(p3d1.x - p3d2.x, p3d1.y - p3d2.y, p3d1.z - p3d2.z)
 
-    # P.__str__():
+    # P3D.__str__():
     def __str__(self) -> str:
-        """Convert a point to a string."""
-        point: P = self
-        x_text: str = "{0:.3f}".format(point.x)
-        y_text: str = "{0:.3f}".format(point.y)
-        z_text: str = "{0:.3f}".format(point.z)
+        """Convert a p3d to a string."""
+        # Use *p3d* instead of *self*:
+        p3d: P3D = self
+        x_text: str = "{0:.3f}".format(p3d.x)
+        y_text: str = "{0:.3f}".format(p3d.y)
+        z_text: str = "{0:.3f}".format(p3d.z)
         x_text = "0.000" if x_text == "-0.000" else x_text
         y_text = "0.000" if y_text == "-0.000" else y_text
         z_text = "0.000" if z_text == "-0.000" else z_text
-        return f"P({x_text}, {y_text}, {z_text})"
+        return f"P3D({x_text},{y_text},{z_text})"
 
-    # P.__truediv__():
-    def __truediv__(self, scale: float) -> "P":
-        """Divide a point by a scale factor."""
-        point: P = self
-        return P(point.x / scale, point.y / scale, point.z / scale)
+    # P3D.__truediv__():
+    def __truediv__(self, scale: float) -> "P3D":
+        """Divide a p3d by a scale factor."""
+        p3d: P3D = self
+        return P3D(p3d.x / scale, p3d.y / scale, p3d.z / scale)
 
-    # P.distance():
-    def distance(self, point2) -> float:
-        """Compute the distance between two points."""
-        point1: P = self
-        dx: float = point1.x - point2.x
-        dy: float = point1.y - point2.y
-        dz: float = point1.z - point2.z
+    # P3D.distance():
+    def distance(self, p3d2) -> float:
+        """Compute the distance between two p3ds."""
+        p3d1: P3D = self
+        dx: float = p3d1.x - p3d2.x
+        dy: float = p3d1.y - p3d2.y
+        dz: float = p3d1.z - p3d2.z
         return sqrt(dx * dx + dy * dy + dz * dz)
 
-    # P.rotate2d():
-    def rotate2d(self, angle: float):
-        """Rotate a point by angle around the origin."""
-        # To rotate a point (x, y) around the origin, use the following formula:
+
+# P2D:
+class P2D:
+    """Represents a point in 2 demensions."""
+
+    # P2D.__init__():
+    def __init__(self, x: float, y: float):
+        """Initialize a P2D."""
+        # Load *x* and *y* into *p2d* (i.e. *self*):
+        # p2d: P2D = self
+        self.x: float = x
+        self.y: float = y
+
+    # P2D.__add__():
+    def __add__(self, p2d2: "P2D") -> "P2D":
+        """Add two two P2D's together."""
+        # Use *p2d1* instead of *self*:
+        p2d1: P2D = self
+        return P2D(p2d1.x + p2d2.x, p2d1.y + p2d2.y)
+
+    # P2D.__mul__():
+    def __mul__(self, scale: float) -> "P2D":
+        """Multiply a P2D by a scale factor."""
+        # Use *p2d* instead of *self*:
+        p2d: P2D = self
+        return P2D(p2d.x * scale, p2d.y * scale)
+
+    # P2D.__rmul__():
+    def __rmul__(self, scale: float) -> "P2D":
+        """Multiply a P2D by a scale factor."""
+        # Use *p2d* instead of *self*:
+        p2d: P2D = self
+        return P2D(p2d.x * scale, p2d.y * scale)
+
+    # P2D.__sub__():
+    def __sub__(self, p2d2: "P2D") -> "P2D":
+        """Subtract two P2D's from one another."""
+        # Use *p2d1* instead of *self*:
+        p2d1: P2D = self
+        return P2D(p2d1.x - p2d2.x, p2d1.y - p2d2.y)
+
+    # P2D.__str__():
+    def __str__(self) -> str:
+        """Convert a P2D to a string."""
+        # Use *p2d* instead of *self*:
+        p2d: P2D = self
+        x_text: str = "{0:.3f}".format(p2d.x)
+        y_text: str = "{0:.3f}".format(p2d.y)
+        x_text = "0.000" if x_text == "-0.000" else x_text
+        y_text = "0.000" if y_text == "-0.000" else y_text
+        return f"P2D({x_text},{y_text})"
+
+    # P2D.__truediv__():
+    def __truediv__(self, scale: float) -> "P2D":
+        """Divide a P2D by a scale factor."""
+        p2d: P2D = self
+        return P2D(p2d.x / scale, p2d.y / scale)
+
+    # P2D.distance():
+    def distance(self, p2d2: "P2D") -> float:
+        """Compute the distance between two P2D's."""
+        p2d1: P2D = self
+        dx: float = p2d1.x - p2d2.x
+        dy: float = p2d1.y - p2d2.y
+        return sqrt(dx * dx + dy * dy)
+
+    # P2D.rotate2d():
+    def rotate2d(self, angle: float) -> "P2D":
+        """Rotate a P2D by angle around the origin."""
+        # To rotate a *p2d* (i.e. self) around the origin, use the following formula:
         #
         #   x' = x * cos(angle) - y * sin(angle)
         #   y' = y * cos(angle) + x * sin(angle)
-        point: P = self
-        x: float = point.x
-        y: float = point.y
+        p2d: P2D = self
+        x: float = p2d.x
+        y: float = p2d.y
         sin_angle: float = sin(angle)
         cos_angle: float = cos(angle)
-        rotated_point: P = P(x * cos_angle - y * sin_angle, y * cos_angle + x * sin_angle, 0.0)
-        return rotated_point
+        rotated_p2d: P2D = P2D(x * cos_angle - y * sin_angle, y * cos_angle + x * sin_angle)
+        return rotated_p2d
 
-    # P.y_mirror():
-    def y_mirror(self) -> "P":
-        """Return the point mirrored across the Y axis."""
-        point: P = self
-        return P(-point.x, point.y, -point.z)
+    # PD2.y_mirror():
+    def y_mirror(self) -> "P2D":
+        """Return the p3d mirrored across the Y axis."""
+        p2d: P2D = self
+        return P2D(-p2d.x, p2d.y)
 
 
 # Info:
@@ -149,139 +222,12 @@ class Info:
         return ("??",)
 
 
-# InfoPolygon:
-class InfoPolygon(Info):
-    """Represents informat about a polygon."""
-
-    # InfoPolygon.__init__():
-    def __init__(self, name: str) -> None:
-        """Initialize InfoPolygon sub-class of Info."""
-        super().__init__(name)
-
-
-# InfoHole:
-class InfoHole(InfoPolygon):
-    """A InfoPolygon sub-class that describes a hole."""
-
-    # InfoHole.__init__():
-    def __init__(self, name: str, center: P, diameter: float) -> None:
-        """Initialize InfoHole base class."""
-        super().__init__(name)
-        # Stuff values into *info_hole* (i.e. *self*):
-        # info_hole: InfoHole = self
-        self.center: P = center
-        self.diameter: float = diameter
-
-    # InfoHole.__str__()
-    def __str__(self) -> str:
-        """Provide short string for InfoHole object."""
-        # Grab some values from *info_hole* (i.e. *self*):
-        info_hole: InfoHole = self
-        name: str = info_hole.name
-        center: P = info_hole.center
-        diameter: float = info_hole.diameter
-        diameter_text: str = "{0:.3f}".format(diameter)
-        return f"InfoHole('{name}',{center},{diameter_text})"
-
-    # InfoHole.key():
-    def key(self) -> Tuple[Any, ...]:
-        """Provide a key suitable for sorting."""
-        # Grab some values from *info_hole* (i.e. *self*):
-        info_hole: InfoHole = self
-        name: str = info_hole.name
-        center: P = info_hole.center
-        diameter: float = info_hole.diameter
-        return ("Hole", name, center.x, center.y, diameter)
-
-
-# InfoRectangle:
-class InfoRectangle(InfoPolygon):
-    """A InfoPolygon sub-class that describes a rectangle."""
-
-    # InfoRectangle.__init__():
-    def __init__(self, name: str, center: P, dx: float, dy: float, angle: float) -> None:
-        """Initialize InfoHole base class."""
-        super().__init__(name)
-        # Stuff values into *info_rectangle* (i.e. *self*):
-        # info_rectangle: InfoRectangle = self
-        self.center: P = center
-        self.dx: float = dx
-        self.dy: float = dy
-        self.angle: float = angle
-
-    # InfoRectangle.__str__()
-    def __str__(self) -> str:
-        """Provide short string for InfoRectangle object."""
-        # Grab some values from *info_rectangle* (i.e. *self*):
-        info_rectangle: InfoRectangle = self
-        name: str = info_rectangle.name
-        center: P = info_rectangle.center
-        dx: float = info_rectangle.dx
-        dy: float = info_rectangle.dy
-        angle: float = info_rectangle.angle
-        return f"InfoHole('{name}',{center},{dx},{dy},{degrees(angle)})"
-
-    # InfoRectangle.key():
-    def key(self) -> Tuple[Any, ...]:
-        """Provide a key suitable for sorting an InfoRectangle."""
-        # Grab some values from *info_hole* (i.e. *self*):
-        info_rectangle: InfoRectangle = self
-        name: str = info_rectangle.name
-        center: P = info_rectangle.center
-        dx: float = info_rectangle.dx
-        dy: float = info_rectangle.dy
-        angle: float = info_rectangle.angle
-        return ("Hole", name, center.x, center.y, dx, dy, angle)
-
-
-# InfoSlot:
-class InfoSlot(InfoPolygon):
-    """Sub-class that represent Slot other InfoPology."""
-
-    # InfoSlot.__init__():
-    def __init__(self, name: str, center: P, dx: float, dy: float, angle: float) -> None:
-        """Initialize InfoSlot base class."""
-        # Stuff values into *info_slot* (i.e. *self*):
-        super().__init__(name)
-        # info_slot: InfoSlot = self
-        self.center: P = center
-        self.dx: float = dx
-        self.dy: float = dy
-        self.angle: float = angle
-
-    # InfoSlot.__str__():
-    def __str__(self) -> str:
-        """Provide short string for InfoSlot object."""
-        # Grab some values from *info_slot* (i.e. *self*):
-        info_slot: InfoSlot = self
-        name: str = info_slot.name
-        center: P = info_slot.center
-        dx: float = info_slot.dx
-        dy: float = info_slot.dy
-        dx_dy_text: str = "{0:.3f},{1:.3f}".format(dx, dy)
-        angle: float = info_slot.angle
-        return f"InfoSlot('{name}',{center},{dx_dy_text},{degrees(angle)})"
-
-    # Infoslot.key()
-    def key(self) -> Tuple[Any, ...]:
-        """Provide a key suitable for sorting an InfoSlot."""
-        # Grab some values from *info_slot (i.e. *self*):
-        info_slot: InfoSlot = self
-        name: str = info_slot.name
-        center: P = info_slot.center
-        dx: float = info_slot.dx
-        dy: float = info_slot.dy
-        angle: float = info_slot.angle
-        return ("Slot", name, center.x, center.y, dx, dy, angle)
-
-
 # Polygon:
 class Polygon:
     """Represents a closed polygon of points."""
 
     # Polygon.__init__():
-    def __init__(self, name: str, points: List[P] = [],
-                 info_polygon: Optional[InfoPolygon] = None) -> None:
+    def __init__(self, name: str, points: List[P2D] = []) -> None:
         """Initialize a Polygon.
 
         Args:
@@ -292,11 +238,10 @@ class Polygon:
         """
         # Stuff values into *polygon* (i.e. *self*):
         self.name: str = name
-        self.points: List[P] = points[:]  # Copy the contents of *points*
-        self.info_polygon: Optional[InfoPolygon] = info_polygon
+        self.points: List[P2D] = points[:]  # Copy the contents of *points*
 
     # Polygon.__getitem__():
-    def __getitem__(self, index: int) -> P:
+    def __getitem__(self, index: int) -> P2D:
         """Fetch a Point from the Polygon.
 
         Args:
@@ -310,11 +255,11 @@ class Polygon:
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
         name: str = polygon.name
-        points: List[P] = polygon.points
+        points: List[P2D] = polygon.points
         points_size: int = len(points)
         assert 0 <= index < points_size, (f"There are {points_size} Points in Polygon '{name}' "
                                           f"and index={index} is either negative or too big.")
-        point: P = points[index]
+        point: P2D = points[index]
         return point
 
     # Polygon.__len__():
@@ -322,7 +267,7 @@ class Polygon:
         """Return the number of points currently in the Polygon."""
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
-        points: List[P] = polygon.points
+        points: List[P2D] = polygon.points
         size: int = len(points)
         return size
 
@@ -332,18 +277,17 @@ class Polygon:
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
         name: str = polygon.name
-        points: List[P] = polygon.points
-        selected_points: List[P] = points if len(points) <= 2 else [points[0]] + [points[-1]]
+        points: List[P2D] = polygon.points
+        selected_points: List[P2D] = points if len(points) <= 2 else [points[0]] + [points[-1]]
         join_text: str = ", " if len(points) <= 2 else ", ..., "
-        selected_point: P
-        selected_point_texts: List[str] = ["P[{0:.3f}, {1:.3f}]".format(selected_point.x,
-                                                                        selected_point.y)
+        selected_point: P2D
+        selected_point_texts: List[str] = [f"{selected_point}"
                                            for selected_point in selected_points]
         selected_points_text = join_text.join(selected_point_texts)
         return f"Polygon('{name}', [{selected_points_text}])"
 
     # Polygon.arc():
-    def arc_append(self, center: P, radius: float, start_angle: float, end_angle: float,
+    def arc_append(self, center: P2D, radius: float, start_angle: float, end_angle: float,
                    points_count: int) -> None:
         """Append an arc of points to a Polygon.
 
@@ -357,7 +301,7 @@ class Polygon:
         """
         # Grab some values from *polygon*:
         polygon: Polygon = self
-        points: List[P] = polygon.points
+        points: List[P2D] = polygon.points
 
         # Compute the total angle spanned and the delta angle increments:
         span_angle: float = end_angle - start_angle
@@ -374,10 +318,10 @@ class Polygon:
             x: float = center_x + radius * cos(angle)
             y: float = center_y + radius * sin(angle)
             # print(f"[{index}]angle={degrees(angle} x={x} y={y}")
-            points.append(P(x, y))
+            points.append(P2D(x, y))
 
     # Polygon.circle():
-    def circle_append(self, center: P, diameter: float, points_count: int) -> None:
+    def circle_append(self, center: P2D, diameter: float, points_count: int) -> None:
         """Append a circle to Polygon.
 
         Args:
@@ -386,7 +330,7 @@ class Polygon:
         """
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
-        points: List[P] = polygon.points
+        points: List[P2D] = polygon.points
 
         # Compute some values that do not change over the loop iterations:
         delta_angle: float = (2 * pi) / points_count
@@ -401,7 +345,7 @@ class Polygon:
             angle: float = index * delta_angle
             x: float = center_x + radius * cos(angle)
             y: float = center_y + radius * sin(angle)
-            point: P = P(x, y)
+            point: P2D = P2D(x, y)
             points.append(point)
 
     # Polygon.indices_scad_lines_append():
@@ -423,7 +367,7 @@ class Polygon:
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
         name: str = polygon.name
-        points: List[P] = polygon.points
+        points: List[P2D] = polygon.points
 
         # Compute *end_index* from *start_index* and *points_size*:
         points_size: int = len(points)
@@ -456,11 +400,11 @@ class Polygon:
         return end_index
 
     # Polygon.point_append():
-    def point_append(self, point: P) -> None:
+    def point_append(self, point: P2D) -> None:
         """Append a point to a Polygon."""
         # Grab *points* from *polygon* (i.e. *self*) and tack *point* onto the end:
         polygon: Polygon = self
-        points: List[P] = polygon.points
+        points: List[P2D] = polygon.points
         points.append(point)
 
     # Polygon.points_scad_lines_append():
@@ -481,7 +425,7 @@ class Polygon:
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
         name: str = polygon.name
-        points: List[P] = polygon.points
+        points: List[P2D] = polygon.points
 
         # Compute *end_index* from *start_index* and *points_size*:
         points_size: int = len(points)
@@ -500,13 +444,13 @@ class Polygon:
             # Extract the next chunk of *slice_points*:
             slice_start: int = slice_index * slice_size
             slice_end: int = min((slice_index + 1) * slice_size, points_size)
-            slice_points: List[P] = points[slice_start:slice_end]
+            slice_points: List[P2D] = points[slice_start:slice_end]
 
             # Just to be paranoid, make sure we actually have at least one point:
             if slice_points:
                 # Splice *splice_point* together as a comma separated list:
                 point_texts: List[str] = []
-                slice_point: P
+                slice_point: P2D
                 for slice_point in slice_points:
                     x_text: str = "{0:.3f}".format(slice_point.x)
                     y_text: str = "{0:.3f}".format(slice_point.y)
@@ -519,19 +463,19 @@ class Polygon:
                                   f"{start_index + slice_end - 1}")
         return end_index
 
-    def rotated_rectangle_append(self, center: P, dx: float, dy: float, angle: float):
+    def rotated_rectangle_append(self, center: P2D, dx: float, dy: float, angle: float):
         """Append a rotated rectangle to Polygon."""
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
-        points: List[P] = polygon.points
+        points: List[P2D] = polygon.points
 
         # Compute some useful values:
         half_dx: float = dx / 2.0
         half_dy: float = dy / 2.0
-        upper_right_corner: P = P(half_dx, half_dy)
-        lower_right_corner: P = P(half_dx, -half_dy)
-        upper_left_corner: P = P(-half_dx, half_dy)
-        lower_left_corner: P = P(-half_dx, -half_dy)
+        upper_right_corner: P2D = P2D(half_dx, half_dy)
+        lower_right_corner: P2D = P2D(half_dx, -half_dy)
+        upper_left_corner: P2D = P2D(-half_dx, half_dy)
+        lower_left_corner: P2D = P2D(-half_dx, -half_dy)
 
         # Set *debugging* to *True* to print out some debugging information:
         debugging: bool = False
@@ -542,10 +486,10 @@ class Polygon:
             #       f"{upper_left_corner}, {lower_left_corner}")
 
         # Compute the 4 rotated corners offset by *center*:
-        rotated_upper_right_corner: P = upper_right_corner.rotate2d(angle)
-        rotated_lower_right_corner: P = lower_right_corner.rotate2d(angle)
-        rotated_upper_left_corner: P = upper_left_corner.rotate2d(angle)
-        rotated_lower_left_corner: P = lower_left_corner.rotate2d(angle)
+        rotated_upper_right_corner: P2D = upper_right_corner.rotate2d(angle)
+        rotated_lower_right_corner: P2D = lower_right_corner.rotate2d(angle)
+        rotated_upper_left_corner: P2D = upper_left_corner.rotate2d(angle)
+        rotated_lower_left_corner: P2D = lower_left_corner.rotate2d(angle)
         if debugging:  # pragma: no cover
             print(f"4 rotated corners = {rotated_upper_right_corner}, "
                   f"{rotated_lower_right_corner}, "
@@ -557,7 +501,7 @@ class Polygon:
         points.append(center + rotated_lower_left_corner)
         points.append(center + rotated_upper_left_corner)
 
-    def slot_append(self, end_point1: P, end_point2: P,
+    def slot_append(self, end_point1: P2D, end_point2: P2D,
                     slot_length: float, slot_width: float, points_count: int) -> None:
         """Append a slot to a Polygon.
 
@@ -579,17 +523,17 @@ class Polygon:
 
         """
         # Compute the *center* and *slot_angle* in radians:
-        center: P = (end_point1 + end_point2) / 2.0
+        center: P2D = (end_point1 + end_point2) / 2.0
         slot_angle: float = atan2(end_point1.y - end_point2.y, end_point1.x - end_point2.x)
 
         # Compute the two arc centers:
         slot_radius: float = slot_width / 2.0
         half_slot_length: float = slot_length / 2.0
         degrees180: float = pi
-        center1: P = P(center.x + half_slot_length * cos(slot_angle),
-                       center.y + half_slot_length * sin(slot_angle))
-        center2: P = P(center.x + half_slot_length * cos(slot_angle + degrees180),
-                       center.y + half_slot_length * sin(slot_angle + degrees180))
+        center1: P2D = P2D(center.x + half_slot_length * cos(slot_angle),
+                           center.y + half_slot_length * sin(slot_angle))
+        center2: P2D = P2D(center.x + half_slot_length * cos(slot_angle + degrees180),
+                           center.y + half_slot_length * sin(slot_angle + degrees180))
 
         # Append the two slot arcs to *polygon* (i.e. *self*):
         polygon: Polygon = self
@@ -607,9 +551,9 @@ class Polygon:
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
         name: str = polygon.name
-        points: List[P] = polygon.points
-        point: P
-        mirrored_points: List[P] = [P(-point.x, point.y) for point in points]
+        points: List[P2D] = polygon.points
+        point: P2D
+        mirrored_points: List[P2D] = [P2D(-point.x, point.y) for point in points]
         mirrored_polygon: Polygon = Polygon(f"Y-Mirror {name}", mirrored_points)
         return mirrored_polygon
 

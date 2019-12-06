@@ -8,7 +8,7 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from scad_models.scad import P, Polygon, Scad3DUnion, ScadLinearExtrude, ScadPolygon
+from scad_models.scad import P2D, Polygon, Scad3DUnion, ScadLinearExtrude, ScadPolygon
 from typing import Any, Dict, IO, List, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -59,10 +59,10 @@ class Romi:
 
         # Finally we have *origin_offset* in millimeters and can save it back into *romi*
         # (i.e. *self*):
-        origin_offset = P(x_origin_offset, y_origin_offset)
+        origin_offset = P2D(x_origin_offset, y_origin_offset)
         self.debugging = debugging
         self.inches2mm: float = inches2mm
-        self.origin_offset: P = origin_offset
+        self.origin_offset: P2D = origin_offset
         if debugging:  # pragma: no cover
             print(f"origin_offset={origin_offset}")
 
@@ -103,7 +103,7 @@ class Romi:
         wheel_well_angle: float = asin(half_wheel_well_dy / radius)  # radians
         wheel_well_x: float = radius * cos(wheel_well_angle)  # mm (upper right)
         wheel_well_y: float = radius * sin(wheel_well_angle)  # mm (upper right)
-        wheel_well_corner: P = P(wheel_well_x, wheel_well_y)
+        wheel_well_corner: P2D = P2D(wheel_well_x, wheel_well_y)
 
         # Perform any requested *debugging*:
         if debugging:  # pragma: no cover
@@ -111,7 +111,7 @@ class Romi:
             print(f"wheel_well_corner={wheel_well_corner}")
 
         # Verify that the *distance* from the *origin* to the *wheel_well_corner* matches *radius*:
-        origin: P = P(0.0, 0.0)
+        origin: P2D = P2D(0.0, 0.0)
         wheel_well_radius: float = origin.distance(wheel_well_corner)
         assert abs(radius - wheel_well_radius) < .00001, "Something is not right"
 
@@ -127,8 +127,8 @@ class Romi:
         outline_polygon.arc_append(origin, radius, upper_start_angle, upper_end_angle, arc_count)
 
         # Create the left wheel well:
-        outline_polygon.point_append(P(-half_wheel_well_dx, half_wheel_well_dy))
-        outline_polygon.point_append(P(-half_wheel_well_dx, -half_wheel_well_dy))
+        outline_polygon.point_append(P2D(-half_wheel_well_dx, half_wheel_well_dy))
+        outline_polygon.point_append(P2D(-half_wheel_well_dx, -half_wheel_well_dy))
 
         # Create the lower arc:
         lower_start_angle: float = wheel_well_angle + pi
@@ -136,8 +136,8 @@ class Romi:
         outline_polygon.arc_append(origin, radius, lower_start_angle, lower_end_angle, arc_count)
 
         # Create the right wheel well:
-        outline_polygon.point_append(P(half_wheel_well_dx, -half_wheel_well_dy))
-        outline_polygon.point_append(P(half_wheel_well_dx, half_wheel_well_dy))
+        outline_polygon.point_append(P2D(half_wheel_well_dx, -half_wheel_well_dy))
+        outline_polygon.point_append(P2D(half_wheel_well_dx, half_wheel_well_dy))
         assert len(outline_polygon) == 2 * arc_count + 4
 
         # *outline_polygon* is done and can be returned:
@@ -164,7 +164,7 @@ class Romi:
 
         # Grab the *lower_hex_polygons* and *lower_hex_table*:
         lower_hex_polygons: List[Polygon]
-        lower_hex_table: Dict[str, P]
+        lower_hex_table: Dict[str, P2D]
         lower_hex_polygons, lower_hex_table = romi.lower_hex_polygons_table_get()
         if debugging:  # pragma: no cover
             print(f"len(lower_hex_polygons)={len(lower_hex_polygons)}")
@@ -203,13 +203,13 @@ class Romi:
         romi: Romi = self
         # debugging: bool = romi.debugging
         inches2mm: float = romi.inches2mm
-        origin_offset: P = romi.origin_offset
+        origin_offset: P2D = romi.origin_offset
 
         # All of the battery holes are done relative to the *battery_reference_hole*
         # indicated on the drawing of the dimensions and mounting holes seciont of the
         # "Pololu Romi Chassis User's Guide".
         reference_hole_diameter: float
-        reference_hole_center: P
+        reference_hole_center: P2D
         reference_hole_diameter, reference_hole_center = romi.hole_locate(-3.913146, -3.822591,
                                                                           3.376610, 3.286051)
 
@@ -237,7 +237,7 @@ class Romi:
                 if lower_battery_pattern[x_index] != '-':
                     # We need a hole:
                     y: float = reference_hole_center_y + lower_battery_y_offsets[y_index]
-                    lower_hole_center: P = P(x, y)
+                    lower_hole_center: P2D = P2D(x, y)
                     lower_hole: Polygon = Polygon(f"Lower Battery Hole ({2-x_index}, {y_index})")
                     lower_hole.circle_append(lower_hole_center, reference_hole_diameter, 8)
                     polygons.append(lower_hole)
@@ -250,7 +250,7 @@ class Romi:
             x = column0_x + x_index * hole_dx_pitch
             for y_index in range(3):
                 y = reference_hole_center_y + upper_battery_y_offsets[y_index]
-                upper_hole_center: P = P(x, y)
+                upper_hole_center: P2D = P2D(x, y)
                 upper_hole_polygon: Polygon = Polygon("Upper Battery Hole "
                                                       f"({2-x_index}, {y_index})")
                 upper_hole_polygon.circle_append(upper_hole_center, reference_hole_diameter, 8)
@@ -334,9 +334,9 @@ class Romi:
         x4: float = x3 - dx
         dy: float = 0.70 * inches2mm
         outer_encoder_slot: Polygon = Polygon("Outer Encoder Slot")
-        outer_encoder_slot.rotated_rectangle_append(P((x1 + x2) / 2.0, 0.0), dx, dy, 0.0)
+        outer_encoder_slot.rotated_rectangle_append(P2D((x1 + x2) / 2.0, 0.0), dx, dy, 0.0)
         inner_encoder_slot: Polygon = Polygon("Inner Encoder Slot")
-        inner_encoder_slot.rotated_rectangle_append(P((x3 + x4) / 2.0, 0.0), dx, dy, 0.0)
+        inner_encoder_slot.rotated_rectangle_append(P2D((x3 + x4) / 2.0, 0.0), dx, dy, 0.0)
 
         # Collect the encoder slots into *encoder_slot_polygons* and append to *polygons*:
         encoder_slot_polygons: List[Polygon] = [
@@ -348,8 +348,8 @@ class Romi:
         return polygons
 
     # Romi.hex_pattern_get():
-    def hex_pattern_get(self, pattern_rows: Tuple[str, ...], slot_pairs: List[str],
-                        hex_origin: P, hole_diameter: float) -> Tuple[List[Polygon], Dict[str, P]]:
+    def hex_pattern_get(self, pattern_rows: Tuple[str, ...], slot_pairs: List[str], hex_origin: P2D,
+                        hole_diameter: float) -> Tuple[List[Polygon], Dict[str, P2D]]:
         """Generate a hexagonal pattern of holes and slots.
 
         The Romi base and shelf have pattern of holes and slot that are
@@ -445,7 +445,7 @@ class Romi:
 
         # The return values are *polygons* and *locations*:
         polygons: List[Polygon] = list()
-        locations: Dict[str, P] = dict()
+        locations: Dict[str, P2D] = dict()
 
         # *pattern_rows* contain the end-point locations for the hex pattern.
         # We iterate across *pattern_rows* in Y first and X second.
@@ -460,7 +460,7 @@ class Romi:
                 if pattern_character != '-':
                     # Enter *left_hole_center* into *locations* keyed by *pattern_character*:
                     x = upper_left_origin_x + (x_index * half_hex_dx_pitch)
-                    hole_center: P = P(x, y)
+                    hole_center: P2D = P2D(x, y)
                     locations[pattern_character] = hole_center
 
                     # Only create holes when *pattern_character* is upper case:
@@ -474,8 +474,8 @@ class Romi:
         slot_pair: str
         for slot_pair in slot_pairs:
             # Do one slot for each *slot_pair8:
-            hole1: P = locations[slot_pair[0]]
-            hole2: P = locations[slot_pair[1]]
+            hole1: P2D = locations[slot_pair[0]]
+            hole2: P2D = locations[slot_pair[1]]
             slot_polygon: Polygon = Polygon(f"Slot '{slot_pair}'")
             slot_polygon.slot_append(hole1, hole2, slot_length, slot_width, points_count)
             polygons.append(slot_polygon)
@@ -485,10 +485,10 @@ class Romi:
 
     # Romi.hole_locate():
     def hole_locate(self, left_x: float, right_x: float,
-                    above_y: float, below_y: float) -> Tuple[float, P]:
+                    above_y: float, below_y: float) -> Tuple[float, P2D]:
         """TODO."""
         romi: Romi = self
-        origin_offset: P = romi.origin_offset
+        origin_offset: P2D = romi.origin_offset
         inches2mm: float = romi.inches2mm
         left_x *= inches2mm
         right_x *= inches2mm
@@ -500,11 +500,11 @@ class Romi:
         x: float = (left_x + right_x) / 2.0
         y: float = (above_y + below_y) / 2.0
         diameter: float = ((dx + dy) / 2.0)
-        center: P = P(x, y) - origin_offset
+        center: P2D = P2D(x, y) - origin_offset
         return diameter, center
 
     # Romi.line_hole_polygons_get():
-    def line_hole_polygons_get(self, lower_hex_table: Dict[str, P]) -> List[Polygon]:
+    def line_hole_polygons_get(self, lower_hex_table: Dict[str, P2D]) -> List[Polygon]:
         """TODO."""
         # Grab some values from *romi* (i.e. *self*):
         romi: Romi = self
@@ -513,7 +513,7 @@ class Romi:
         # There is a line of holes along the bottom that have a smaller hole diameter.
         # We locate the smallest hole at the end of the line:
         small_hole_diameter: float
-        small_hole_center: P
+        small_hole_center: P2D
         small_hole_diameter, small_hole_center = romi.hole_locate(-3.289535, -3.198980,
                                                                   0.256524, 0.165984)
         if debugging:  # pragma: no cover
@@ -524,13 +524,13 @@ class Romi:
         # We enter holes that do not over lap with the larger holes.  We wind up skipping
         # one hole in 3:
         line_hole_polygons: List[Polygon] = list()
-        s_center: P = lower_hex_table["S"]
-        q_center: P = lower_hex_table["Q"]
-        hole_vector: P = q_center - s_center
+        s_center: P2D = lower_hex_table["S"]
+        q_center: P2D = lower_hex_table["Q"]
+        hole_vector: P2D = q_center - s_center
         for vector_hole_index in range(9):
             if vector_hole_index % 3 != 1:
                 # Do the hole on the right first:
-                hole_center: P = (s_center + (vector_hole_index - 1) * hole_vector / 3.0)
+                hole_center: P2D = (s_center + (vector_hole_index - 1) * hole_vector / 3.0)
                 hole_polygon: Polygon = Polygon(f"Vector Hole {vector_hole_index}")
                 hole_polygon.circle_append(hole_center, small_hole_diameter, 8)
                 line_hole_polygons.append(hole_polygon)
@@ -544,7 +544,7 @@ class Romi:
         romi: Romi = self
         debugging: bool = romi.debugging
         inches2mm: float = romi.inches2mm
-        origin_offset: P = romi.origin_offset
+        origin_offset: P2D = romi.origin_offset
 
         # The resulting *Polygon*'s are collected into *lower_arc_hole_rectangle_polygons*:
         lower_arc_hole_rectangle_polygons: List[Polygon] = list()
@@ -554,7 +554,7 @@ class Romi:
         # The hole closest to the wheel is the "start" hole and the one farthest from the
         # wheel is the "end" hole.  We have to locate each of these holes:
         lower_start_diameter: float
-        lower_start_center: P
+        lower_start_center: P2D
         lower_start_diameter, lower_start_center = romi.hole_locate(-1.483063, -1.357508,
                                                                     1.348929, 1.223803)
         lower_arc_start_angle: float = atan2(lower_start_center.y, lower_start_center.x)
@@ -566,7 +566,7 @@ class Romi:
         # We pick the smallest hole that is next to the hole at the end to get the
         # *small_hole_diameter*:
         lower_end_diameter: float
-        lower_end_center: P
+        lower_end_center: P2D
         lower_end_diameter, lower_end_center = romi.hole_locate(-3.14402, -3.053465,
                                                                 0.125287, 0.034732)
         small_hole_diameter: float = lower_end_diameter
@@ -577,27 +577,27 @@ class Romi:
             print(f"lower_start_center={lower_start_center}")
 
         # Compute the *lower_arc_radius*:
-        origin: P = P()
+        origin: P2D = P2D(0.0, 0.0)
         lower_hole_radius: float = origin.distance(lower_start_center)
 
         # There are two sizes of rectangle -- small and large.  The width appears to
         # be the same for both, so we only need *rectangle_width*, *small_rectangle_length*
         # and *large_rectangle_length*.  Lastly, we need to find one *rectangle_center*
         # so we can determine the *rectangle_radius* from the *origin*:
-        large_upper_left_corner: P = (P(-1.248201 * inches2mm, 1.259484 * inches2mm) -
-                                      origin_offset)
-        large_lower_left_corner: P = (P(-1.33137 * inches2mm, 1.136248 * inches2mm) -
-                                      origin_offset)
-        large_upper_right_corner: P = (P(-1.205772 * inches2mm, 1.230858 * inches2mm) -
-                                       origin_offset)
+        large_upper_left_corner: P2D = (P2D(-1.248201 * inches2mm, 1.259484 * inches2mm) -
+                                        origin_offset)
+        large_lower_left_corner: P2D = (P2D(-1.33137 * inches2mm, 1.136248 * inches2mm) -
+                                        origin_offset)
+        large_upper_right_corner: P2D = (P2D(-1.205772 * inches2mm, 1.230858 * inches2mm) -
+                                         origin_offset)
         large_rectangle_length: float = large_upper_left_corner.distance(large_lower_left_corner)
         rectangle_width: float = large_upper_left_corner.distance(large_upper_right_corner)
-        rectangle_center: P = (large_upper_right_corner + large_lower_left_corner) / 2.0
+        rectangle_center: P2D = (large_upper_right_corner + large_lower_left_corner) / 2.0
         rectangle_radius: float = origin.distance(rectangle_center)
-        small_upper_left_corner: P = (P(-1.368228 * inches2mm, 1.081638 * inches2mm) -
-                                      origin_offset)
-        small_lower_left_corner: P = (P(-1.431575 * inches2mm, 0.987760 * inches2mm) -
-                                      origin_offset)
+        small_upper_left_corner: P2D = (P2D(-1.368228 * inches2mm, 1.081638 * inches2mm) -
+                                        origin_offset)
+        small_lower_left_corner: P2D = (P2D(-1.431575 * inches2mm, 0.987760 * inches2mm) -
+                                        origin_offset)
         small_rectangle_length: float = small_upper_left_corner.distance(small_lower_left_corner)
         if debugging:  # pragma: no cover
             print(f"lower_hole_radius={lower_hole_radius}")
@@ -625,7 +625,7 @@ class Romi:
             lower_hole_angle: float = lower_arc_start_angle + float(lower_hole_index) * delta_angle
             lower_hole_x: float = lower_hole_radius * cos(lower_hole_angle)
             lower_hole_y: float = lower_hole_radius * sin(lower_hole_angle)
-            lower_hole_center = P(lower_hole_x, lower_hole_y)
+            lower_hole_center: P2D = P2D(lower_hole_x, lower_hole_y)
             lower_hole: Polygon = Polygon(f"Lower hole {lower_hole_index}")
             lower_hole.circle_append(lower_hole_center, lower_arc_hole_diameter, 8)
             if lower_hole_index < lower_holes_count + 1:
@@ -634,7 +634,7 @@ class Romi:
             # Next do the *lower_right_rectangle*:
             lower_rectangle_x: float = rectangle_radius * cos(lower_hole_angle)
             lower_rectangle_y: float = rectangle_radius * sin(lower_hole_angle)
-            lower_rectangle_center: P = P(lower_rectangle_x, lower_rectangle_y)
+            lower_rectangle_center: P2D = P2D(lower_rectangle_x, lower_rectangle_y)
             lower_rectangle: Polygon = Polygon(f"Lower left rectangle {lower_hole_index}")
             lower_rectangle.rotated_rectangle_append(lower_rectangle_center, rectangle_width,
                                                      lower_rectangle_length, lower_hole_angle)
@@ -644,7 +644,7 @@ class Romi:
         return lower_arc_hole_rectangle_polygons
 
     # Romi.lower_hex_polygons_table_get():
-    def lower_hex_polygons_table_get(self) -> Tuple[List[Polygon], Dict[str, P]]:
+    def lower_hex_polygons_table_get(self) -> Tuple[List[Polygon], Dict[str, P2D]]:
         """TODO."""
         # The "User's Guide" identifies the lower hex whole used to reference the hex
         # pattern off of:
@@ -653,7 +653,7 @@ class Romi:
         debugging: bool = romi.debugging
 
         # Extract the origin hole information for the lower hexagon pattern:
-        lower_hex_hole_center: P
+        lower_hex_hole_center: P2D
         lower_hex_hole_diameter: float
         lower_hex_hole_diameter, lower_hex_hole_center = romi.hole_locate(-2.454646, -2.329091,
                                                                           1.553776, 1.428650)
@@ -679,7 +679,7 @@ class Romi:
 
         # Now we can invoke the *hex_pattern* method to fill in the hex pattern and
         # mirror it across the Y axis to the other sise:
-        lower_hex_holes_table: Dict[str, P]
+        lower_hex_holes_table: Dict[str, P2D]
 
         lower_hex_polygons: List[Polygon]
         lower_hex_polygons, lower_holes_table = romi.hex_pattern_get(lower_pattern_rows,
@@ -722,7 +722,7 @@ class Romi:
         """
         # Grab some values from *romi* (i.e. *self*):
         romi: Romi = self
-        origin_offset: P = romi.origin_offset
+        origin_offset: P2D = romi.origin_offset
         inches2mm: float = romi.inches2mm
 
         # Convert *x1*, *y1*, *x2*, and *y2* from inches to millimeters:
@@ -732,7 +732,7 @@ class Romi:
         y2 *= inches2mm
         dx: float = abs(x2 - x1)
         dy: float = abs(y2 - y1)
-        center: P = P((x1 + x2) / 2.0, (y1 + y2) / 2.0) - origin_offset
+        center: P2D = P2D((x1 + x2) / 2.0, (y1 + y2) / 2.0) - origin_offset
 
         # Create and return the *rectangle_polygon*:
         rectangle_polygon: Polygon = Polygon(name)
@@ -746,7 +746,7 @@ class Romi:
         romi: Romi = self
         debugging: bool = romi.debugging
         inches2mm: float = romi.inches2mm
-        origin_offset: P = romi.origin_offset
+        origin_offset: P2D = romi.origin_offset
 
         # The resulting *Polygon*'s are collected into *upper_arc_hole_rectangle_polygons*:
         upper_arc_hole_rectangle_polygons: List[Polygon] = list()
@@ -756,7 +756,7 @@ class Romi:
         # The hole closest to the wheel is the "start" hole and the one farthest from the
         # wheel is the "end" hole.  We have to locate each of these holes:
         upper_start_diameter: float
-        upper_start_center: P
+        upper_start_center: P2D
         upper_start_diameter, upper_start_center = romi.hole_locate(-1.483063, -1.357508,
                                                                     4.651469, 4.526346)
         upper_arc_start_angle: float = atan2(upper_start_center.y, upper_start_center.x)
@@ -766,7 +766,7 @@ class Romi:
             print(f"upper_start_angle={degrees(upper_arc_start_angle)}deg")
 
         upper_end_diameter: float
-        upper_end_center: P
+        upper_end_center: P2D
         upper_end_diameter, upper_end_center = romi.hole_locate(-3.14402, -3.053465,
                                                                 5.840524, 5.749969)
         upper_arc_end_angle: float = atan2(upper_end_center.y, upper_end_center.x)
@@ -775,27 +775,27 @@ class Romi:
             print(f"upper_end_center={upper_end_center}")
 
         # Compute the *upper_hole_radius*:
-        origin: P = P()
+        origin: P2D = P2D(0.0, 0.0)
         upper_hole_radius: float = origin.distance(upper_start_center)
 
         # There are two sizes of rectangle -- small and large.  The width appears to
         # be the same for both, so we only need *rectangle_width*, *small_rectangle_length*
         # and *large_rectangle_length*.  Lastly, we need to find one *rectangle_center*
         # so we can determine the *rectangle_radius* from the *origin*:
-        large_upper_inner_corner: P = (P(-1.33137 * inches2mm, 4.739012 * inches2mm) -
-                                       origin_offset)
-        large_lower_inner_corner: P = (P(-1.248201 * inches2mm, 4.615776 * inches2mm) -
-                                       origin_offset)
-        large_lower_outer_corner: P = (P(-1.205772 * inches2mm, 4.644402 * inches2mm) -
-                                       origin_offset)
+        large_upper_inner_corner: P2D = (P2D(-1.33137 * inches2mm, 4.739012 * inches2mm) -
+                                         origin_offset)
+        large_lower_inner_corner: P2D = (P2D(-1.248201 * inches2mm, 4.615776 * inches2mm) -
+                                         origin_offset)
+        large_lower_outer_corner: P2D = (P2D(-1.205772 * inches2mm, 4.644402 * inches2mm) -
+                                         origin_offset)
         large_rectangle_length: float = large_upper_inner_corner.distance(large_lower_inner_corner)
         rectangle_width: float = large_lower_inner_corner.distance(large_lower_outer_corner)
-        rectangle_center: P = (large_upper_inner_corner + large_lower_outer_corner) / 2.0
+        rectangle_center: P2D = (large_upper_inner_corner + large_lower_outer_corner) / 2.0
         rectangle_radius: float = origin.distance(rectangle_center)
-        small_upper_inner_corner: P = (P(-1.431575 * inches2mm, 4.887512 * inches2mm) -
-                                       origin_offset)
-        small_lower_inner_corner: P = (P(-1.368228 * inches2mm, 4.793638 * inches2mm) -
-                                       origin_offset)
+        small_upper_inner_corner: P2D = (P2D(-1.431575 * inches2mm, 4.887512 * inches2mm) -
+                                         origin_offset)
+        small_lower_inner_corner: P2D = (P2D(-1.368228 * inches2mm, 4.793638 * inches2mm) -
+                                         origin_offset)
         small_rectangle_length: float = small_upper_inner_corner.distance(small_lower_inner_corner)
         if debugging:  # pragma: no cover
             print(f"upper_hole_radius={upper_hole_radius}")
@@ -824,7 +824,7 @@ class Romi:
             upper_hole_angle: float = upper_arc_start_angle + float(upper_hole_index) * delta_angle
             upper_hole_x: float = upper_hole_radius * cos(upper_hole_angle)
             upper_hole_y: float = upper_hole_radius * sin(upper_hole_angle)
-            upper_hole_center = P(upper_hole_x, upper_hole_y)
+            upper_hole_center = P2D(upper_hole_x, upper_hole_y)
             upper_hole: Polygon = Polygon(f"Upper hole {upper_hole_index}")
             upper_hole.circle_append(upper_hole_center, upper_arc_hole_diameter, 8)
             # Skip 3 of the holes:
@@ -834,7 +834,7 @@ class Romi:
             # Next do the *lower_right_rectangle*:
             upper_rectangle_x: float = rectangle_radius * cos(upper_hole_angle)
             upper_rectangle_y: float = rectangle_radius * sin(upper_hole_angle)
-            upper_rectangle_center: P = P(upper_rectangle_x, upper_rectangle_y)
+            upper_rectangle_center: P2D = P2D(upper_rectangle_x, upper_rectangle_y)
             upper_rectangle: Polygon = Polygon(f"Upper right rectangle {upper_hole_index}")
             upper_rectangle.rotated_rectangle_append(upper_rectangle_center, rectangle_width,
                                                      upper_rectangle_length, upper_hole_angle)
@@ -852,7 +852,7 @@ class Romi:
 
         # For the upper hex pattern, the hole that is at the end of the 4 slots is selected
         # as the upper hex hole:
-        upper_hex_hole_center: P
+        upper_hex_hole_center: P2D
         upper_hex_hole_diameter: float
         upper_hex_hole_diameter, upper_hex_hole_center = romi.hole_locate(-2.749535, -2.629075,
                                                                           5.441567, 5.316441)
@@ -871,7 +871,7 @@ class Romi:
         # *upper_slot_pairs* specifies which slots to render.  Now we can invoke the *hex_pattern*
         # method to render the hex pattern and mirror it across to the other side:
         upper_slot_pairs: List[str] = "aO:bO:dO:cO".split(':')
-        upper_holes_table: Dict[str, P]
+        upper_holes_table: Dict[str, P2D]
         upper_hex_polygons: List[Polygon]
         upper_hex_polygons, upper_holes_table = romi.hex_pattern_get(upper_pattern_rows,
                                                                      upper_slot_pairs,

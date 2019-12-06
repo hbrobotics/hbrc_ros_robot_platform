@@ -26,45 +26,39 @@
 
 import io
 from math import pi
-from scad_models.scad import P, Polygon, ScadPolygon
+from scad_models.scad import P2D, P3D, Polygon, ScadPolygon
 from typing import Any, IO, List
 
 
-def test_point():
+def test_p3d():
     """Test the point class."""
-    origin: P = P()
-    assert f"{origin}" == "P(0.000, 0.000, 0.000)"
-    p111: P = P(1.0, 1.0, 1.0)
-    assert f"{p111}" == "P(1.000, 1.000, 1.000)"
-    p123: P = P(1.0, 2.0, 3.0)
-    assert f"{p123}" == "P(1.000, 2.000, 3.000)"
+    origin: P3D = P3D(0.0, 0.0, 0.0)
+    assert f"{origin}" == "P3D(0.000,0.000,0.000)"
+    p111: P3D = P3D(1.0, 1.0, 1.0)
+    assert f"{p111}" == "P3D(1.000,1.000,1.000)"
+    p123: P3D = P3D(1.0, 2.0, 3.0)
+    assert f"{p123}" == "P3D(1.000,2.000,3.000)"
 
     # Addition:
-    assert f"{origin + p111}" == "P(1.000, 1.000, 1.000)"
+    assert f"{origin + p111}" == "P3D(1.000,1.000,1.000)"
 
     # Subtraction:
-    assert f"{p123 - p111}" == "P(0.000, 1.000, 2.000)"
+    assert f"{p123 - p111}" == "P3D(0.000,1.000,2.000)"
 
     # Left/Right Multiplication:
-    assert f"{p123 * 2.0}" == "P(2.000, 4.000, 6.000)"
-    assert f"{2.0 * p123}" == "P(2.000, 4.000, 6.000)"
+    assert f"{p123 * 2.0}" == "P3D(2.000,4.000,6.000)"
+    assert f"{2.0 * p123}" == "P3D(2.000,4.000,6.000)"
 
     # Test distance:
-    p100: P = P(1.0, 0.0, 0.0)
+    p100: P3D = P3D(1.0, 0.0, 0.0)
     assert f"{origin.distance(p100)}" == "1.0"
-    p010: P = P(0.0, 1.0, 0.0)
+    p010: P3D = P3D(0.0, 1.0, 0.0)
     assert f"{origin.distance(p010)}" == "1.0"
-    p001: P = P(0.0, 0.0, 1.0)
+    p001: P3D = P3D(0.0, 0.0, 1.0)
     assert f"{origin.distance(p001)}" == "1.0"
 
     # Division scaling:
-    assert f"{p123 / 2.0}" == "P(0.500, 1.000, 1.500)"
-
-    # P.rotate2d:
-    assert f"{p100.rotate2d(pi/2.0)}" == "P(0.000, 1.000, 0.000)"
-
-    # P.y_mirror:
-    assert f"{p123.y_mirror()}" == "P(-1.000, 2.000, -3.000)"
+    assert f"{p123 / 2.0}" == "P3D(0.500,1.000,1.500)"
 
 
 def test_polygon():
@@ -74,9 +68,9 @@ def test_polygon():
     assert f"{empty_polygon}" == "Polygon('Empty', [])"
 
     # Test both *Polygon.*__str__*() and the *Polygon*.size_get*() methods:
-    p11: P = P(1.0, 1.0)
-    p22: P = P(2.0, 2.0)
-    p33: P = P(3.0, 3.0)
+    p11: P2D = P2D(1.0, 1.0)
+    p22: P2D = P2D(2.0, 2.0)
+    p33: P2D = P2D(3.0, 3.0)
     polygon0: Polygon = Polygon("No Points 1")
     assert len(polygon0) == 0
     assert f"{polygon0}" == "Polygon('No Points 1', [])"
@@ -85,67 +79,67 @@ def test_polygon():
     assert len(polygon0) == 0
     polygon1: Polygon = Polygon("One Point", [p11])
     assert len(polygon1) == 1
-    assert f"{polygon1}" == "Polygon('One Point', [P[1.000, 1.000]])"
+    assert f"{polygon1}" == "Polygon('One Point', [P2D(1.000,1.000)])"
     polygon2: Polygon = Polygon("Two Points", [p11, p22])
     assert len(polygon2) == 2
-    assert f"{polygon2}" == "Polygon('Two Points', [P[1.000, 1.000], P[2.000, 2.000]])"
+    assert f"{polygon2}" == "Polygon('Two Points', [P2D(1.000,1.000), P2D(2.000,2.000)])"
     polygon3: Polygon = Polygon("Three Points", [p11, p22, p33])
     assert len(polygon3) == 3
-    assert f"{polygon3}" == "Polygon('Three Points', [P[1.000, 1.000], ..., P[3.000, 3.000]])"
+    assert f"{polygon3}" == "Polygon('Three Points', [P2D(1.000,1.000), ..., P2D(3.000,3.000)])"
 
     # Now test the *Polygon*.*__getitem__*() method:
-    assert f"{polygon1[0]}" == "P(1.000, 1.000, 0.000)"
-    assert f"{polygon2[0]}" == "P(1.000, 1.000, 0.000)"
-    assert f"{polygon2[1]}" == "P(2.000, 2.000, 0.000)"
-    assert f"{polygon3[0]}" == "P(1.000, 1.000, 0.000)"
-    assert f"{polygon3[1]}" == "P(2.000, 2.000, 0.000)"
-    assert f"{polygon3[2]}" == "P(3.000, 3.000, 0.000)"
+    assert f"{polygon1[0]}" == "P2D(1.000,1.000)"
+    assert f"{polygon2[0]}" == "P2D(1.000,1.000)"
+    assert f"{polygon2[1]}" == "P2D(2.000,2.000)"
+    assert f"{polygon3[0]}" == "P2D(1.000,1.000)"
+    assert f"{polygon3[1]}" == "P2D(2.000,2.000)"
+    assert f"{polygon3[2]}" == "P2D(3.000,3.000)"
 
     # Test Polygon.arc_append() and Polygon.point_append:
     slot: Polygon = Polygon("Slot")
-    slot.arc_append(P(1.0, 0.0), 1.0, -pi/2, pi/2, 3)
-    slot.point_append(P(0.0, 2.0))
-    slot.arc_append(P(-1.0, 0.0), 1.0, pi/2, 3.0 * pi/2, 3)
-    slot.point_append(P(0.0, -2.0))
+    slot.arc_append(P2D(1.0, 0.0), 1.0, -pi/2, pi/2, 3)
+    slot.point_append(P2D(0.0, 2.0))
+    slot.arc_append(P2D(-1.0, 0.0), 1.0, pi/2, 3.0 * pi/2, 3)
+    slot.point_append(P2D(0.0, -2.0))
     assert len(slot) == 8
-    assert f"{slot[0]}" == "P(1.000, -1.000, 0.000)"
-    assert f"{slot[1]}" == "P(2.000, 0.000, 0.000)"
-    assert f"{slot[2]}" == "P(1.000, 1.000, 0.000)"
-    assert f"{slot[3]}" == "P(0.000, 2.000, 0.000)"
-    assert f"{slot[4]}" == "P(-1.000, 1.000, 0.000)"
-    assert f"{slot[5]}" == "P(-2.000, 0.000, 0.000)"
-    assert f"{slot[6]}" == "P(-1.000, -1.000, 0.000)"
-    assert f"{slot[7]}" == "P(0.000, -2.000, 0.000)"
+    assert f"{slot[0]}" == "P2D(1.000,-1.000)"
+    assert f"{slot[1]}" == "P2D(2.000,0.000)"
+    assert f"{slot[2]}" == "P2D(1.000,1.000)"
+    assert f"{slot[3]}" == "P2D(0.000,2.000)"
+    assert f"{slot[4]}" == "P2D(-1.000,1.000)"
+    assert f"{slot[5]}" == "P2D(-2.000,0.000)"
+    assert f"{slot[6]}" == "P2D(-1.000,-1.000)"
+    assert f"{slot[7]}" == "P2D(0.000,-2.000)"
 
     # Test Polygon.circle():
     hole: Polygon = Polygon("Circle")
-    center: P = P(1.0, 0.0)
+    center: P2D = P2D(1.0, 0.0)
     hole.circle_append(center, 2.0, 4)
     # assert False, [f"{point}" for point in hole.points]
 
     assert len(hole) == 4
-    assert f"{hole[0]}" == "P(2.000, 0.000, 0.000)"
-    assert f"{hole[1]}" == "P(1.000, 1.000, 0.000)"
-    assert f"{hole[2]}" == "P(0.000, 0.000, 0.000)"
-    assert f"{hole[3]}" == "P(1.000, -1.000, 0.000)"
+    assert f"{hole[0]}" == "P2D(2.000,0.000)"
+    assert f"{hole[1]}" == "P2D(1.000,1.000)"
+    assert f"{hole[2]}" == "P2D(0.000,0.000)"
+    assert f"{hole[3]}" == "P2D(1.000,-1.000)"
 
     # Test Polygon.rotated_rectangle_append():
     rotated_rectangle: Polygon = Polygon("Rotated Rectangle")
-    rotated_rectangle.rotated_rectangle_append(P(2.0, 3.0), 2.0, 4.0, pi/2)
-    assert f"{rotated_rectangle[0]}" == "P(0.000, 4.000, 0.000)", "Index 0 failed"
-    assert f"{rotated_rectangle[1]}" == "P(4.000, 4.000, 0.000)", "Index 1 failed"
-    assert f"{rotated_rectangle[2]}" == "P(4.000, 2.000, 0.000)", "Index 2 failed"
-    assert f"{rotated_rectangle[3]}" == "P(0.000, 2.000, 0.000)", "Index 3 failed"
+    rotated_rectangle.rotated_rectangle_append(P2D(2.0, 3.0), 2.0, 4.0, pi/2)
+    assert f"{rotated_rectangle[0]}" == "P2D(0.000,4.000)", "Index 0 failed"
+    assert f"{rotated_rectangle[1]}" == "P2D(4.000,4.000)", "Index 1 failed"
+    assert f"{rotated_rectangle[2]}" == "P2D(4.000,2.000)", "Index 2 failed"
+    assert f"{rotated_rectangle[3]}" == "P2D(0.000,2.000)", "Index 3 failed"
 
     # Test Polygon.slot_append():
     slot: Polygon = Polygon("Slot")
-    slot.slot_append(P(1.0, 1.0), P(3.0, 1.0), 4.0, 2.0, 3)
-    assert f"{slot[0]}" == "P(0.000, 2.000, 0.000)", "Index 0 failed"
-    assert f"{slot[1]}" == "P(-1.000, 1.000, 0.000)", "Index 1 failed"
-    assert f"{slot[2]}" == "P(0.000, 0.000, 0.000)", "Index 2 failed"
-    assert f"{slot[3]}" == "P(4.000, 0.000, 0.000)", "Index 3 failed"
-    assert f"{slot[4]}" == "P(5.000, 1.000, 0.000)", "Index 4 failed"
-    assert f"{slot[5]}" == "P(4.000, 2.000, 0.000)", "Index 5 failed"
+    slot.slot_append(P2D(1.0, 1.0), P2D(3.0, 1.0), 4.0, 2.0, 3)
+    assert f"{slot[0]}" == "P2D(0.000,2.000)", "Index 0 failed"
+    assert f"{slot[1]}" == "P2D(-1.000,1.000)", "Index 1 failed"
+    assert f"{slot[2]}" == "P2D(0.000,0.000)", "Index 2 failed"
+    assert f"{slot[3]}" == "P2D(4.000,0.000)", "Index 3 failed"
+    assert f"{slot[4]}" == "P2D(5.000,1.000)", "Index 4 failed"
+    assert f"{slot[5]}" == "P2D(4.000,2.000)", "Index 5 failed"
 
     # Test Polygon.points_scad_lines_append():
     scad_lines: List[str] = []
@@ -171,10 +165,10 @@ def test_scad_polygon():
     """Test ScadPolygon class and associated methods."""
     # Define the four corners of a square:
     print("Entered test_scad_polygon")
-    upper_right: P = P(2.0, 2.0)
-    lower_right: P = P(2.0, -2.0)
-    lower_left: P = P(-2.0, -2.0)
-    upper_left: P = P(-2.0, 2.0)
+    upper_right: P2D = P2D(2.0, 2.0)
+    lower_right: P2D = P2D(2.0, -2.0)
+    lower_left: P2D = P2D(-2.0, -2.0)
+    upper_left: P2D = P2D(-2.0, 2.0)
 
     # Convert the four corners into an *outer_polygon*:
     square_polygon: Polygon = Polygon("Square Polygon",
@@ -230,7 +224,7 @@ def test_scad_polygon():
     for x in (-1.0, 0.0, 1.0):
         y: float
         for y in (-1.0, 0.0, 1.0):
-            center: P = P(x, y)
+            center: P2D = P2D(x, y)
             hole_polygon: Polygon = Polygon(f"Hole[{x, y}]")
             hole_polygon.circle_append(center, diameter, 8)
             hole_polygons.append(hole_polygon)
