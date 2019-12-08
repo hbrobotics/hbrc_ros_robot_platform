@@ -276,7 +276,7 @@ class Scad:
 
     # Scad.polygon_scad_lines_append():
     def polygon_scad_lines_append(self, simple_polygons: "List[SimplePolygon]",
-                                  scad_lines: List[str], indent: str) -> None:
+                                  scad_lines: List[str], indent: str) -> None:  # pragma: no cover
         """`Polygon` template command to a list of lines."""
         # Grab *class_name* from *scad* (i.e *self*) and fail with a reasonable error message:
         scad: Scad = self
@@ -284,7 +284,7 @@ class Scad:
         assert False, f"{class_name}.polygon_scad_lines_append() is not implemented yet."
 
     # Scad.scad_lines_append():
-    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:  # pragma: no cover
         """Place holder for virtual *scad_lines_append* method."""
         scad: Scad = self
         class_name: str = scad.__class__.__name__
@@ -1233,10 +1233,11 @@ class LinearExtrude(Scad3D):
 
         # Compute *scale_text* and *slices_text*:
         scale_text: str = ""
+        float_format: Callable[[float], str] = Scad.float_format
         if initial_scale != 1.0:
-            scale_text = ", scale=[{0:.3f}, {1:.3f}]".format(initial_scale, final_scale)
+            scale_text = f", scale=[{float_format(initial_scale)}, {float_format(final_scale)}]"
         elif final_scale != 1.0:
-            scale_text = ", scale={0:.3f}".format(final_scale)
+            scale_text = f", scale={float_format(final_scale)}"
         slices_text: str = f", slices={slices}" if slices > 0 else ""
 
         # Perform the the `linear_extrude` command append to *scad_lines*:
@@ -1459,7 +1460,7 @@ class Union(Scad):
             for scad_index, scad in enumerate(scads):
                 scad_class_name: str = scad.__class__.__name__
                 if scads0_class_name != scad_class_name:
-                    raise ValueError("Index 0 of union is class '{scads0_class_name_},' "
+                    raise ValueError(f"Index 0 of Union is class '{scads0_class_name},' "
                                      f"but index {scad_index} is class '{scad_class_name}'")
 
         # If we get there far, we can stuf *scads* into *union* (i.e. *self*):

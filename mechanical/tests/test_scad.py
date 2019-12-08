@@ -27,9 +27,9 @@
 import io
 from math import pi
 from scad_models.scad import (Circle, LinearExtrude, P2D, P3D, Polygon, Scad, SimplePolygon,
-                              Square)
+                              Square, Union)
 import scad_models.scad as scad
-from typing import Any, IO, List
+from typing import Any, IO, List, Tuple
 
 
 def scad_writer(scad: Scad, scad_lines: List[str]) -> None:
@@ -273,20 +273,40 @@ def test_polygon() -> None:
     new_square_polygon.append(square_polygon)
     assert len(new_square_polygon) == 1
     assert new_square_polygon[0] is square_polygon
+    assert f"{new_square_polygon}" == ("Polygon('New Square Polygon',"
+                                       "len(simple_polygons)=1,convexity=-1)")
 
     # Now Test the *Polygon*.*append*() and *Polygon*.*extend*() methods:
     hole_polygons: List[SimplePolygon] = list()
+    hole_polygon: SimplePolygon
     diameter: float = 0.25
     x: float
     for x in (-1.0, 0.0, 1.0):
         y: float
         for y in (-1.0, 0.0, 1.0):
             center: P2D = P2D(x, y)
-            hole_polygon: SimplePolygon = SimplePolygon(f"Hole[{x, y}]")
+            hole_polygon = SimplePolygon(f"Hole[{x, y}]")
             hole_polygon.circle_append(center, diameter, 8)
             hole_polygons.append(hole_polygon)
     new_square_polygon.extend(hole_polygons)
     assert len(new_square_polygon) == 10
+
+    # Test *Polygon*.*__get__item__*() method:
+    hole_index: int
+    for hole_index, hole_polygon in enumerate(hole_polygons):
+        assert new_square_polygon[hole_index + 1] is hole_polygons[hole_index]
+    try:
+        new_square_polygon[10]
+    except IndexError as index_error:
+        assert f"{index_error}" == "index=10 and it is not in range 0:9"
+
+    # Verify lock detection:
+    simple_polygon: SimplePolygon = SimplePolygon("Unlocked SimplePolygon")
+    try:
+        Polygon("Unlocked Polygon", [simple_polygon])
+    except ValueError as value_error:
+        assert f"{value_error}" == ("SimplePolygon ('Unlocked SimplePolygon') "
+                                    "at index 0 is not locked.")
 
     # Test Polygon.append() and Polygon.extend():
 
@@ -307,6 +327,10 @@ def test_circle() -> None:
     assert len(scad_lines) == 2
     assert scad_lines[0] == "translate([2.000, 3.000])"
     assert scad_lines[1] == " circle(d=2.000, $fn=8);  // Circle 'Circle'"
+
+    # Validate *Circle*.*key*() method:
+    key: Tuple[Any] = circle.key()
+    assert key == ("Circle", "Circle", 2.0, 3.0, 2.0, 2.0, 0.0), f"Bad key: {key}"
 
 
 def test_linear_extrude() -> None:
@@ -496,6 +520,13 @@ def test_union() -> None:
     scad_lines: List[str] = []
     union.scad_lines_append(scad_lines, "")
     scad_writer(union, scad_lines)
+
+    cube0: LinearExtrude = LinearExtrude("Cube", square0, 2.0)
+    try:
+        Union("Bogus Union", [cube0, square0])
+    except ValueError as value_error:
+        assert f"{value_error}" == ("Index 0 of Union is class 'LinearExtrude,' "
+                                    "but index 1 is class 'Square'")
 
 
 if __name__ == "__main__":  # pragma: no cover
