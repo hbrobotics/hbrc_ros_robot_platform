@@ -140,7 +140,8 @@ class Romi:
         outline_polygon.point_append(P2D(half_wheel_well_dx, half_wheel_well_dy))
         assert len(outline_polygon) == 2 * arc_count + 4
 
-        # *outline_polygon* is done and can be returned:
+        # Lock and return *outline_polygon*:
+        outline_polygon.lock()
         return outline_polygon
 
     # Romi.base_scad_polygon_generate()
@@ -193,7 +194,7 @@ class Romi:
             print(f"len(all_polygons)={len(all_polygons)}")
 
         # Create the final *base_scad_polygon*, write it out to disk and return it.
-        base_scad_polygon: Polygon = Polygon("Romi Base ScadPolygon", all_polygons)
+        base_scad_polygon: Polygon = Polygon("Romi Base ScadPolygon", all_polygons, lock=True)
         return base_scad_polygon
 
     # Romi.battery_polygons_get():
@@ -241,6 +242,7 @@ class Romi:
                     lower_hole: SimplePolygon = SimplePolygon("Lower Battery Hole "
                                                               f"({2-x_index}, {y_index})")
                     lower_hole.circle_append(lower_hole_center, reference_hole_diameter, 8)
+                    lower_hole.lock()
                     simple_polygons.append(lower_hole)
 
         # The upper battery holes above the lower battery motor holes are organized as
@@ -255,6 +257,7 @@ class Romi:
                 upper_hole_polygon: SimplePolygon = SimplePolygon("Upper Battery Hole "
                                                                   f"({2-x_index}, {y_index})")
                 upper_hole_polygon.circle_append(upper_hole_center, reference_hole_diameter, 8)
+                upper_hole_polygon.lock()
                 simple_polygons.append(upper_hole_polygon)
 
         # There are 6 rectangular slots that have a nub on the end to cleverly indicate battery
@@ -266,23 +269,29 @@ class Romi:
         upper_left_battery_slot: SimplePolygon = romi.rectangle_locate("Upper Left Battery Slot",
                                                                        -5.550937, 4.252594,
                                                                        -4.074563, 4.473067)
+        upper_left_battery_slot.lock()
         upper_right_battery_slot: SimplePolygon = romi.rectangle_locate("Upper Right Battery Slot",
                                                                         -3.621799, 4.252594,
                                                                         -2.145425, 4.473067)
+        upper_right_battery_slot.lock()
         lower_left_battery_slot: SimplePolygon = romi.rectangle_locate("Lower Left Battery Slot",
                                                                        -5.590311, 3.705346,
                                                                        -4.113925, 3.925815)
+        lower_left_battery_slot.lock()
         lower_right_battery_slot: SimplePolygon = romi.rectangle_locate("Lower Right Battery Slot",
                                                                         -3.661173, 3.705346,
                                                                         -2.184799, 3.925815)
+        lower_right_battery_slot.lock()
         upper_center_battery_slot: SimplePolygon = romi.rectangle_locate("Upper Center "
                                                                          "Battery Slot",
                                                                          -4.58637, 3.012429,
                                                                          -3.109992, 3.232913)
+        upper_center_battery_slot.lock()
         lower_center_battery_slot: SimplePolygon = romi.rectangle_locate("Lower Center "
                                                                          "Battery Slot",
                                                                          -4.625744, 2.465193,
                                                                          -3.149354, 2.685665)
+        lower_center_battery_slot.lock()
 
         # *battery_slot_polygons* list and append them to *polygons*:
         battery_slot_polygons: List[SimplePolygon] = [
@@ -298,27 +307,34 @@ class Romi:
         upper_outer_left_cutout: SimplePolygon = romi.rectangle_locate("Upper Outer Left Cutout",
                                                                        -5.984008, 4.74865,
                                                                        -5.302909, 4.965193)
+        upper_outer_left_cutout.lock()
         upper_inner_left_cutout: SimplePolygon = romi.rectangle_locate("Upper Inner Left Cutout",
                                                                        -5.23598, 4.669913,
                                                                        -4.861965, 4.858886)
+        upper_inner_left_cutout.lock()
         upper_inner_right_cutout: SimplePolygon = romi.rectangle_locate("Upper Inner Right Cutout",
                                                                         -2.873772, 4.669913,
                                                                         -2.499756, 4.858886)
+        upper_inner_right_cutout.lock()
         upper_outer_right_cutout: SimplePolygon = romi.rectangle_locate("Upper Outer Right Cutout",
                                                                         -2.432827, 4.74865,
                                                                         -1.751728, 4.965193)
+        upper_outer_right_cutout.lock()
 
         # Thre are three cutouts across the bottom of the battery case and they are called
         # *lower_left_cutout*, *lower_center_cutout*, and *lower_right_cutout*:
         lower_left_cutout: SimplePolygon = romi.rectangle_locate("Lower Left Cutout",
                                                                  -5.572591, 1.939594,
                                                                  -4.655272, 2.189594)
+        lower_left_cutout.lock()
         lower_center_cutout: SimplePolygon = romi.rectangle_locate("Lower Center Cutout",
                                                                    -4.340311, 2.032122,
                                                                    -3.395425, 2.189594)
+        lower_center_cutout.lock()
         lower_right_cutout: SimplePolygon = romi.rectangle_locate("Lower Right Cutout",
                                                                   -3.080465, 1.939594,
                                                                   -2.163146, 2.189594)
+        lower_right_cutout.lock()
 
         # Collect all of the cutouts into *cutout_polygons* and append to *polygons*:
         cutout_polygons: List[SimplePolygon] = [
@@ -338,8 +354,10 @@ class Romi:
         dy: float = 0.70 * inches2mm
         outer_encoder_slot: SimplePolygon = SimplePolygon("Outer Encoder Slot")
         outer_encoder_slot.rotated_rectangle_append(P2D((x1 + x2) / 2.0, 0.0), dx, dy, 0.0)
+        outer_encoder_slot.lock()
         inner_encoder_slot: SimplePolygon = SimplePolygon("Inner Encoder Slot")
         inner_encoder_slot.rotated_rectangle_append(P2D((x3 + x4) / 2.0, 0.0), dx, dy, 0.0)
+        inner_encoder_slot.lock()
 
         # Collect the encoder slots into *encoder_slot_polygons* and append to *polygons*:
         encoder_slot_polygons: List[SimplePolygon] = [
@@ -473,6 +491,7 @@ class Romi:
                         hole_polygon: SimplePolygon = SimplePolygon("Hex Hole "
                                                                     f"({x_index}, {y_index})")
                         hole_polygon.circle_append(hole_center, hole_diameter, points_count)
+                        hole_polygon.lock()
                         simple_polygons.append(hole_polygon)
 
         # Now sweep through *slot_pairs* and install all of the slots:
@@ -483,6 +502,7 @@ class Romi:
             hole2: P2D = locations[slot_pair[1]]
             slot_polygon: SimplePolygon = SimplePolygon(f"Slot '{slot_pair}'")
             slot_polygon.slot_append(hole1, hole2, slot_length, slot_width, points_count)
+            slot_polygon.lock()
             simple_polygons.append(slot_polygon)
 
         # Return the *simple_polygons* and *locations*:
@@ -538,6 +558,7 @@ class Romi:
                 hole_center: P2D = (s_center + (vector_hole_index - 1) * hole_vector / 3.0)
                 hole_polygon: SimplePolygon = SimplePolygon(f"Vector Hole {vector_hole_index}")
                 hole_polygon.circle_append(hole_center, small_hole_diameter, 8)
+                hole_polygon.lock()
                 line_hole_polygons.append(hole_polygon)
 
         return line_hole_polygons
@@ -632,6 +653,7 @@ class Romi:
             lower_hole_y: float = lower_hole_radius * sin(lower_hole_angle)
             lower_hole_center: P2D = P2D(lower_hole_x, lower_hole_y)
             lower_hole: SimplePolygon = SimplePolygon(f"Lower hole {lower_hole_index}")
+            lower_hole.lock()
             lower_hole.circle_append(lower_hole_center, lower_arc_hole_diameter, 8)
             if lower_hole_index < lower_holes_count + 1:
                 lower_arc_hole_rectangle_polygons.append(lower_hole)
@@ -644,6 +666,7 @@ class Romi:
                                                            f"{lower_hole_index}")
             lower_rectangle.rotated_rectangle_append(lower_rectangle_center, rectangle_width,
                                                      lower_rectangle_length, lower_hole_angle)
+            lower_rectangle.lock()
             lower_arc_hole_rectangle_polygons.append(lower_rectangle)
 
         # Return the resuting *arc_hole_rectangle_polygons*:
@@ -833,6 +856,7 @@ class Romi:
             upper_hole_center = P2D(upper_hole_x, upper_hole_y)
             upper_hole: SimplePolygon = SimplePolygon(f"Upper hole {upper_hole_index}")
             upper_hole.circle_append(upper_hole_center, upper_arc_hole_diameter, 8)
+            upper_hole.lock()
             # Skip 3 of the holes:
             if upper_hole_index not in (2, 3, 12, 13):
                 upper_arc_hole_rectangle_polygons.append(upper_hole)
@@ -843,6 +867,7 @@ class Romi:
             upper_rectangle_center: P2D = P2D(upper_rectangle_x, upper_rectangle_y)
             upper_rectangle: SimplePolygon = SimplePolygon("Upper right rectangle "
                                                            f"{upper_hole_index}")
+            upper_rectangle.lock()
             upper_rectangle.rotated_rectangle_append(upper_rectangle_center, rectangle_width,
                                                      upper_rectangle_length, upper_hole_angle)
             upper_arc_hole_rectangle_polygons.append(upper_rectangle)

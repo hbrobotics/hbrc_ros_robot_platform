@@ -26,13 +26,24 @@
 
 import io
 from math import pi
-from scad_models.scad import P2D, P3D, SimplePolygon, Polygon
+from scad_models.scad import (Circle, LinearExtrude, P2D, P3D, Polygon, Scad, SimplePolygon,
+                              Square)
+import scad_models.scad as scad
 from typing import Any, IO, List
 
 
-def test_p2d():
+def scad_writer(scad: Scad, scad_lines: List[str]) -> None:
+    """Write out a Square to a `.scad` file."""
+    scad_file: IO[Any]
+    name: str = scad.name
+    with open(name.replace(' ', '_') + ".scad", "w") as scad_file:
+        scad_text: str = '\n'.join(scad_lines)
+        scad_file.write(scad_text + "\n")
+
+
+def test_p2d() -> None:
     """Test the point class."""
-    origin: P3D = P2D(0.0, 0.0)
+    origin: P2D = P2D(0.0, 0.0)
     assert f"{origin}" == "P2D(0.000,0.000)"
     p11: P2D = P2D(1.0, 1.0)
     assert f"{p11}" == "P2D(1.000,1.000)"
@@ -62,7 +73,7 @@ def test_p2d():
     assert f"{p23.y_mirror()}" == "P2D(-2.000,3.000)"
 
 
-def test_p3d():
+def test_p3d() -> None:
     """Test the point class."""
     origin: P3D = P3D(0.0, 0.0, 0.0)
     assert f"{origin}" == "P3D(0.000,0.000,0.000)"
@@ -93,7 +104,7 @@ def test_p3d():
     assert f"{p123 / 2.0}" == "P3D(0.500,1.000,1.500)"
 
 
-def test_simple_polygon():
+def test_simple_polygon() -> None:
     """Test the SimplePolygon class and associated methods."""
     # Test *empty_polygon*:
     empty_polygon: SimplePolygon = SimplePolygon("Empty")
@@ -103,12 +114,12 @@ def test_simple_polygon():
     p11: P2D = P2D(1.0, 1.0)
     p22: P2D = P2D(2.0, 2.0)
     p33: P2D = P2D(3.0, 3.0)
-    simple_polygon0: SimplePolygon = SimplePolygon("No Points 1")
-    assert len(simple_polygon0) == 0
-    assert f"{simple_polygon0}" == "SimplePolygon('No Points 1', [])"
-    simple_polygon0: SimplePolygon = SimplePolygon("No Points 2", [])
-    assert f"{simple_polygon0}" == "SimplePolygon('No Points 2', [])"
-    assert len(simple_polygon0) == 0
+    simple_polygon0a: SimplePolygon = SimplePolygon("No Points A")
+    assert len(simple_polygon0a) == 0
+    assert f"{simple_polygon0a}" == "SimplePolygon('No Points A', [])"
+    simple_polygon0b: SimplePolygon = SimplePolygon("No Points B", [])
+    assert f"{simple_polygon0b}" == "SimplePolygon('No Points B', [])"
+    assert len(simple_polygon0b) == 0
     simple_polygon1: SimplePolygon = SimplePolygon("One Point", [p11])
     assert len(simple_polygon1) == 1
     assert f"{simple_polygon1}" == "SimplePolygon('One Point', [P2D(1.000,1.000)])"
@@ -176,14 +187,14 @@ def test_simple_polygon():
     assert f"{rotated_rectangle[3]}" == "P2D(0.000,2.000)", "Index 3 failed"
 
     # Test Polygon.slot_append():
-    slot: SimplePolygon = SimplePolygon("Slot")
-    slot.slot_append(P2D(1.0, 1.0), P2D(3.0, 1.0), 4.0, 2.0, 3)
-    assert f"{slot[0]}" == "P2D(0.000,2.000)", "Index 0 failed"
-    assert f"{slot[1]}" == "P2D(-1.000,1.000)", "Index 1 failed"
-    assert f"{slot[2]}" == "P2D(0.000,0.000)", "Index 2 failed"
-    assert f"{slot[3]}" == "P2D(4.000,0.000)", "Index 3 failed"
-    assert f"{slot[4]}" == "P2D(5.000,1.000)", "Index 4 failed"
-    assert f"{slot[5]}" == "P2D(4.000,2.000)", "Index 5 failed"
+    slot2: SimplePolygon = SimplePolygon("Slot2")
+    slot2.slot_append(P2D(1.0, 1.0), P2D(3.0, 1.0), 4.0, 2.0, 3)
+    assert f"{slot2[0]}" == "P2D(0.000,2.000)", "Index 0 failed"
+    assert f"{slot2[1]}" == "P2D(-1.000,1.000)", "Index 1 failed"
+    assert f"{slot2[2]}" == "P2D(0.000,0.000)", "Index 2 failed"
+    assert f"{slot2[3]}" == "P2D(4.000,0.000)", "Index 3 failed"
+    assert f"{slot2[4]}" == "P2D(5.000,1.000)", "Index 4 failed"
+    assert f"{slot2[5]}" == "P2D(4.000,2.000)", "Index 5 failed"
 
     # Test Polygon.points_scad_lines_append():
     scad_lines: List[str] = []
@@ -191,21 +202,22 @@ def test_simple_polygon():
     end_index: int = slot.points_scad_lines_append(scad_lines, " ", start_index)
     assert end_index == start_index + len(slot)
     assert len(scad_lines) == 3
-    assert scad_lines[0] == "  // Polygon 'Slot' 3:8", "Index 0 failed"
-    assert scad_lines[1] == ("   [0.000, 2.000], [-1.000, 1.000], "
-                             "[0.000, 0.000], [4.000, 0.000], // 3:6"), "Index 1 failed"
-    assert scad_lines[2] == ("   [5.000, 1.000], [4.000, 2.000], // 7:8"), "Index 2 failed"
+    assert scad_lines[0] == "  // Polygon 'Slot' 3:10", "Index 0 failed"
+    assert scad_lines[1] == ("   [1.000, -1.000], [2.000, 0.000], [1.000, 1.000], "
+                             "[0.000, 2.000], // 3:6"), "Index 1 failed"
+    assert scad_lines[2] == ("   [-1.000, 1.000], [-2.000, 0.000], [-1.000, -1.000], "
+                             "[0.000, -2.000], // 7:10"), "Index 2 failed"
 
     # Test Polygon.indices_scad_lines_append():
     scad_lines = []
-    end_index: int = slot.indices_scad_lines_append(scad_lines, " ", start_index)
+    end_index = slot.indices_scad_lines_append(scad_lines, " ", start_index)
     assert end_index == start_index + len(slot)
     assert len(scad_lines) == 2
-    assert scad_lines[0] == "  // Polygon 'Slot' 3:8"
-    assert scad_lines[1] == "   [3, 4, 5, 6, 7, 8],"
+    assert scad_lines[0] == "  // Polygon 'Slot' 3:10"
+    assert scad_lines[1] == "   [3, 4, 5, 6, 7, 8, 9, 10],"
 
 
-def test_polygon():
+def test_polygon() -> None:
     """Test Polygon class and associated methods."""
     # Define the four corners of a square:
     print("Entered test_scad_polygon")
@@ -217,7 +229,7 @@ def test_polygon():
     # Convert the four corners into an *outer_polygon*:
     square_polygon: SimplePolygon = SimplePolygon("Square Polygon",
                                                   [upper_right, lower_right,
-                                                   lower_left, upper_left])
+                                                   lower_left, upper_left], lock=True)
 
     # Create *square_scad_polygon*:
     square_scad_polygon: Polygon = Polygon("Square Polygon", [square_polygon])
@@ -279,5 +291,212 @@ def test_polygon():
     # Test Polygon.append() and Polygon.extend():
 
 
-if __name__ == "__main__":
+def test_circle() -> None:
+    """Test Circle class."""
+    center: P2D = P2D(2.0, 3.0)
+    circle: Circle = Circle("Circle", 2.0, 8, center)
+    assert f"{circle}" == "Circle('Circle',2.0,8,P2D(2.000,3.000),4)"
+
+    scad_lines: List[str] = []
+    circle.scad_lines_append(scad_lines, "")
+    scad_text: str = '\n'.join(scad_lines)
+    scad_file: IO[Any]
+    with open("circle.scad", "w") as scad_file:
+        scad_file.write(scad_text)
+    assert len(circle) == 8
+    assert len(scad_lines) == 2
+    assert scad_lines[0] == "translate([2.000, 3.000])"
+    assert scad_lines[1] == " circle(d=2.000, $fn=8);  // Circle 'Circle'"
+
+
+def test_linear_extrude() -> None:
+    """Test LinearExtrude class."""
+    unit_square: Square = Square("Unit Square", 1.0, 1.0)
+    linear_extrude: LinearExtrude = LinearExtrude("Linear Extrude", unit_square, 1.0)
+    scad_lines: List[str] = []
+    linear_extrude.scad_lines_append(scad_lines, "")
+    scad_writer(linear_extrude, scad_lines)
+    assert len(scad_lines) == 5
+    assert scad_lines[0] == ("// Begin LinearExtrude 'Linear Extrude'"), "[0]!"
+    assert scad_lines[1] == ("linear_extrude(height=1.0, center=false, "
+                             "convexity=10, twist=0.0)"), "[1]!"
+    assert scad_lines[2] == (" // Square 'Unit Square' dx=1.000 dy=1.000 center=P2D(0.000,0.000) "
+                             "corner_radius=0.000 corner_count=3"), "[2]!"
+    assert scad_lines[3] == (" square([1.000, 1.000], center = true);"), "[3]!"
+    assert scad_lines[4] == ("// End LinearExtrude 'Linear Extrude'"), "[4]!"
+
+
+def test_square() -> None:
+    """Test Square class."""
+    # Start by pushing the *Square*.*__str__*() method through its paces:
+    origin_square: Square = Square("Origin Square", 2.0, 3.0)
+    assert f"{origin_square}" == "Square('Origin Square',2.000,3.000)"
+    center: P2D = P2D(3.0, 2.0)
+    offset_square: Square = Square("Offset Square", 2.5, 3.5, center)
+    assert f"{offset_square}" == "Square('Offset Square',2.500,3.500,center=P2D(3.000,2.000))"
+    rotated_square: Square = Square("Rotated Square", 2.0, 3.0, rotate=pi/2)
+    assert f"{rotated_square}" == "Square('Rotated Square',2.000,3.000,rotate=90.000deg)"
+    slot_square: Square = Square("Slot Square", 2.0, 4.0, corner_radius=1.0)
+    assert f"{slot_square}" == "Square('Slot Square',2.000,4.000,corner_radius=1.000)"
+    slot_square2: Square = Square("Slot Square2", 4.0, 2.0, corner_radius=1.0)
+    assert f"{slot_square}" == "Square('Slot Square',2.000,4.000,corner_radius=1.000)"
+    rounded_square: Square = Square("Rounded Square", 2.0, 4.0, corner_radius=0.5, corner_count=2)
+    assert f"{rounded_square}" == ("Square('Rounded Square',2.000,4.000,"
+                                   "corner_radius=0.500,corner_count=2)")
+
+    # Perform some *ValueError* tests:
+    value_error: ValueError
+    try:
+        Square("Negative dx", -1.0, 2.0)
+    except ValueError as value_error:
+        assert f"{value_error}" == "dx=-1.000 is not positive for 'Negative dx'"
+    try:
+        Square("Negative dy", 1.0, -2.0)
+    except ValueError as value_error:
+        assert f"{value_error}" == "dy=-2.000 is not positive for 'Negative dy'"
+    try:
+        Square("Negative corner_radius", 1.0, 2.0, corner_radius=-1.0)
+    except ValueError as value_error:
+        assert f"{value_error}" == ("corner_radius=-1.000 must be non-negative for "
+                                    "'Negative corner_radius'")
+    try:
+        Square("Negative corner_count", 1.0, 2.0, corner_radius=0.25, corner_count=-1)
+    except ValueError as value_error:
+        assert f"{value_error}" == ("corner_count=-1 must be non-negative for "
+                                    "'Negative corner_count'")
+    try:
+        Square("Large corner_radius", 2.0, 2.0, corner_radius=2.0)
+    except ValueError as value_error:
+        assert f"{value_error}" == ("corner radius=2.000 is larger than "
+                                    "half of min(2.000, 2.000)/2.0 for 'Large corner_radius'")
+    try:
+        Square("Circular Square", 2.0, 2.0, corner_radius=1.0)
+    except ValueError as value_error:
+        assert f"{value_error}" == ("dx/2=1.000, dy/2=1.000, "
+                                    "corner_radius=1.000; use Circle instead!")
+
+    # Now valid that the *Square*.*scad_lines_append*() method works:
+
+    # Make sure that *origin_square* looks right:
+    scad_lines: List[str] = []
+    origin_square.scad_lines_append(scad_lines, "")
+    scad_writer(origin_square, scad_lines)
+    assert len(scad_lines) == 2
+    assert scad_lines[0] == ("// Square 'Origin Square' dx=2.000 dy=3.000 center=P2D(0.000,0.000) "
+                             "corner_radius=0.000 corner_count=3"), "Index 0 failed"
+    assert scad_lines[1] == "square([2.000, 3.000], center = true);", "Index 1 failed"
+
+    # Make sure that *offset_square* looks right:
+    scad_lines = []
+    offset_square.scad_lines_append(scad_lines, "")
+    scad_writer(offset_square, scad_lines)
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == ("// Square 'Offset Square' dx=2.500 dy=3.500 center=P2D(3.000,2.000) "
+                             "corner_radius=0.000 corner_count=3"), "Index 0 failed"
+    assert scad_lines[1] == "translate([3.000, 2.000])"
+    assert scad_lines[2] == " square([2.500, 3.500], center = true);", "Index 2 failed"
+
+    # Make sure that *rotated_square* looks right:
+    scad_lines = []
+    rotated_square.scad_lines_append(scad_lines, "")
+    scad_writer(rotated_square, scad_lines)
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == ("// Square 'Rotated Square' dx=2.000 dy=3.000 center=P2D(0.000,0.000) "
+                             "corner_radius=0.000 corner_count=3"), "Index 0 failed"
+    assert scad_lines[1] == "rotate(a = [0, 0, 90.000])", "Index 1 failed"
+    assert scad_lines[2] == " square([2.000, 3.000], center = true);", "Index 2 failed"
+
+    # Make sure that *slotted_square* looks right:
+    scad_lines = []
+    slot_square.scad_lines_append(scad_lines, "")
+    scad_writer(slot_square, scad_lines)
+    assert len(scad_lines) == 13
+    assert scad_lines[0] == ("// Square 'Slot Square' dx=2.000 dy=4.000 center=P2D(0.000,0.000) "
+                             "corner_radius=1.000 corner_count=3"), "Index 0 failed"
+    assert scad_lines[1] == ("polygon(points = [  "
+                             "// Begin Square 'Slot Square' 0:17"), "Index 1 failed"
+    assert scad_lines[2] == (" // Square 'Slot Square' 0-17"), "Index 2 failed"
+    assert scad_lines[3] == ("  [1.000, 1.000], [0.924, 1.383], [0.707, 1.707], "
+                             "[0.383, 1.924],  // 0-4"), "Index 3 failed"
+    assert scad_lines[4] == ("  [0.000, 2.000], [-0.383, 1.924], [-0.707, 1.707], "
+                             "[-0.924, 1.383],  // 4-8"), "Index 4 failed"
+    assert scad_lines[5] == ("  [-1.000, 1.000], [-1.000, -1.000], [-0.924, -1.383], "
+                             "[-0.707, -1.707],  // 8-12"), "Index 5 failed"
+    assert scad_lines[6] == ("  [-0.383, -1.924], [0.000, -2.000], [0.383, -1.924], "
+                             "[0.707, -1.707],  // 12-16"), "Index 6 failed"
+    assert scad_lines[7] == ("  [0.924, -1.383], [1.000, -1.000]  // 16-18"), "Index 8 failed"
+    assert scad_lines[8] == (" ], paths = ["), "Index 8 failed"
+    assert scad_lines[9] == ("  // Square 'Slot Square' 0-17"), "Index 9 failed"
+    assert scad_lines[10] == ("  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "
+                              "11, 12, 13, 14, 15, 16, 17]"), "Index 10 failed"
+    assert scad_lines[11] == (" ], convexity=4);  "
+                              "// End Square 'Slot Square' 0:17"), "Index 11 failed"
+
+    # Make sure that *slotted_square2* looks right:
+    scad_lines = []
+    slot_square2.scad_lines_append(scad_lines, "")
+    scad_writer(slot_square2, scad_lines)
+    assert len(scad_lines) == 13
+    assert scad_lines[0] == ("// Square 'Slot Square2' dx=4.000 dy=2.000 center=P2D(0.000,0.000) "
+                             "corner_radius=1.000 corner_count=3"), "Index 0 failed"
+    assert scad_lines[1] == ("polygon(points = [  "
+                             "// Begin Square 'Slot Square2' 0:17"), "Index 1 failed"
+    assert scad_lines[2] == (" // Square 'Slot Square2' 0-17"), "Index 2 failed"
+
+    assert scad_lines[3] == ("  [1.000, -1.000], [1.383, -0.924], [1.707, -0.707], "
+                             "[1.924, -0.383],  // 0-4"), "Index 3 failed"
+    assert scad_lines[4] == ("  [2.000, 0.000], [1.924, 0.383], [1.707, 0.707], "
+                             "[1.383, 0.924],  // 4-8"), "Index 4 failed"
+    assert scad_lines[5] == ("  [1.000, 1.000], [-1.000, 1.000], [-1.383, 0.924], "
+                             "[-1.707, 0.707],  // 8-12"), "Index 5 failed"
+    assert scad_lines[6] == ("  [-1.924, 0.383], [-2.000, 0.000], [-1.924, -0.383], "
+                             "[-1.707, -0.707],  // 12-16"), "Index 6 failed"
+    assert scad_lines[7] == ("  [-1.383, -0.924], [-1.000, -1.000]  // 16-18"), "Index 8 failed"
+
+    assert scad_lines[8] == (" ], paths = ["), "Index 8 failed"
+    assert scad_lines[9] == ("  // Square 'Slot Square2' 0-17"), "Index 9 failed"
+    assert scad_lines[10] == ("  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "
+                              "11, 12, 13, 14, 15, 16, 17]"), "Index 10 failed"
+    assert scad_lines[11] == (" ], convexity=4);  "
+                              "// End Square 'Slot Square2' 0:17"), "Index 11 failed"
+
+    # Make sure that *rounded_square* looks right:
+    scad_lines = []
+    rounded_square.scad_lines_append(scad_lines, "")
+    scad_writer(rounded_square, scad_lines)
+    assert len(scad_lines) == 12
+    assert scad_lines[0] == ("// Square 'Rounded Square' dx=2.000 dy=4.000 "
+                             "center=P2D(0.000,0.000) corner_radius=0.500 corner_count=2"), "[0]!"
+    assert scad_lines[1] == ("polygon(points = [  // Begin Square 'Rounded Square' 0:15"), "[1]!"
+    assert scad_lines[2] == (" // Square 'Rounded Square' 0-15"), "[2]!"
+    assert scad_lines[3] == ("  [1.000, 1.500], [0.933, 1.750], [0.750, "
+                             "1.933], [0.500, 2.000],  // 0-4"), "[3]!"
+    assert scad_lines[4] == ("  [-0.500, 2.000], [-0.750, 1.933], [-0.933, 1.750], "
+                             "[-1.000, 1.500],  // 4-8"), "[4]!"
+    assert scad_lines[5] == ("  [-1.000, -1.500], [-0.933, -1.750], [-0.750, -1.933], "
+                             "[-0.500, -2.000],  // 8-12"), "[5]!"
+    assert scad_lines[6] == ("  [0.500, -2.000], [0.750, -1.933], [0.933, -1.750], "
+                             "[1.000, -1.500]  // 12-16"), "[6]!"
+    assert scad_lines[7] == (" ], paths = ["), "[7]!"
+    assert scad_lines[8] == ("  // Square 'Rounded Square' 0-15"), "[8]!"
+    assert scad_lines[9] == ("  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]"), "[9]!"
+    assert scad_lines[10] == (" ], convexity=4);  // End Square 'Rounded Square' 0:15"), "[10]!"
+
+    # Test *Square*.*key*() method:
+    assert rounded_square.key() == ("Square", "Rounded Square", 0.0, 0.0, 2.0,
+                                    4.0, 0.0, 0.5, 2), "key failed"
+
+
+def test_union() -> None:
+    """Test Union class."""
+    square0: Square = Square("Square 0", 2.0, 2.0)
+    square1: Square = Square("Square 1", 2.0, 2.0, center=P2D(1.0, 1.0))
+    square2: Square = Square("Square 2", 2.0, 2.0, center=P2D(-1.0, -1.0))
+    union: scad.Union = scad.Union("Squares Union", [square0, square1, square2])
+    scad_lines: List[str] = []
+    union.scad_lines_append(scad_lines, "")
+    scad_writer(union, scad_lines)
+
+
+if __name__ == "__main__":  # pragma: no cover
     test_polygon()

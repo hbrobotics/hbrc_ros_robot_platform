@@ -4,6 +4,23 @@
 
 This module provides a Python interface to OpenSCAD.
 
+The basic class tree is:
+
+* P: Generic point
+  * P2D: 2-dimensional Point
+  * P2D: 3-dimensional Point
+* Scad: Basic Scad Command
+  * Scad2D: 2-dimensional Objects
+    * Circle: A circle
+    * Square: Rectangle
+    * SimplePolygon: Contructed of line segments and arc.
+    * Polygon: A SimplePolygon with multiple SimplePolygon holes.
+    * LinearExtrude: Linear extrusion of SCAD2D object
+    * RotateExtrude: Rotational extrusion of SCAD2D object
+  * Scad3D:
+    *
+  * Transformations:
+
 """
 
 # MIT License
@@ -32,7 +49,7 @@ This module provides a Python interface to OpenSCAD.
 
 # Import stuff from other libraries:
 from math import atan2, ceil, cos, degrees, pi, sin, sqrt
-from typing import Any, IO, List
+from typing import Any, Callable, IO, List, Optional, Tuple
 
 
 # P3D:
@@ -40,6 +57,7 @@ class P3D:
     """Represents a 3 dimensional point."""
 
     # P3D.__init__():
+
     def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
         """Initialize the point contents."""
         # Load values into *p3d* (i.e. *self*):
@@ -170,20 +188,30 @@ class P2D:
         dy: float = p2d1.y - p2d2.y
         return sqrt(dx * dx + dy * dy)
 
-    # P2D.rotate2d():
-    def rotate2d(self, angle: float) -> "P2D":
+    # P2D.rotate():
+    def rotate(self, angle: float, center: "Optional[P2D]" = None) -> "P2D":
         """Rotate a P2D by angle around the origin."""
         # To rotate a *p2d* (i.e. self) around the origin, use the following formula:
         #
         #   x' = x * cos(angle) - y * sin(angle)
         #   y' = y * cos(angle) + x * sin(angle)
         p2d: P2D = self
-        x: float = p2d.x
-        y: float = p2d.y
+        center_x: float
+        center_y: float
+        if center is None:
+            center_x = 0.0
+            center_y = 0.0
+        else:
+            center_x = center.x
+            center_y = center.y
+        x: float = p2d.x - center_x
+        y: float = p2d.y - center_y
         sin_angle: float = sin(angle)
         cos_angle: float = cos(angle)
-        rotated_p2d: P2D = P2D(x * cos_angle - y * sin_angle, y * cos_angle + x * sin_angle)
-        return rotated_p2d
+        rotated_x: float = center_x + x * cos_angle - y * sin_angle
+        rotated_y: float = center_y + y * cos_angle + x * sin_angle
+        rotated_point: P2D = P2D(rotated_x, rotated_y)
+        return rotated_point
 
     # PD2.y_mirror():
     def y_mirror(self) -> "P2D":
@@ -238,52 +266,209 @@ class Scad:
         assert scad_file.writable(), f"Unable to write out .scad for '{name}'"
         scad_file.write(scad_text)
 
-    # Scad.scad_lines_append():
-    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:  # pragma: no cover
-        """Generate OpenSCAD lines (template method).
+    # Scad.float_format():
+    @staticmethod
+    def float_format(value: float) -> str:
+        """Convert a float into a string."""
+        value_text: str = "{0:.3f}".format(value)
+        value_text = "0.000" if value_text == "-0.000" else value_text
+        return value_text
 
-        This method is a place holder template that is sub-classed
-        for generating OpenSCAD output lines.
-
-        Args:
-            *scad_lines* (*List*[*str*]): The list of lines to
-                 append to.
-            *indent* (*str*): The line indentation prefixe.
-
-        """
+    # Scad.polygon_scad_lines_append():
+    def polygon_scad_lines_append(self, simple_polygons: "List[SimplePolygon]",
+                                  scad_lines: List[str], indent: str) -> None:
+        """`Polygon` template command to a list of lines."""
+        # Grab *class_name* from *scad* (i.e *self*) and fail with a reasonable error message:
         scad: Scad = self
         class_name: str = scad.__class__.__name__
-        assert False, f"{class_name}.scad_lines_append not implemented yet."
+        assert False, f"{class_name}.polygon_scad_lines_append() is not implemented yet."
+
+    # Scad.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Place holder for virtual *scad_lines_append* method."""
+        scad: Scad = self
+        class_name: str = scad.__class__.__name__
+        assert False, f"{class_name}.scad_lines_append() not implemented yet"
 
 
 # Scad2D:
 class Scad2D(Scad):
     """Represents 2-dimensional Scad objects."""
 
+    # Scad2D.__init__():
     def __init__(self, name: str) -> None:
         """Set the name of the 2-dimensional SCAD object."""
         super().__init__(name)
+
+    # Scad2D.polygon_scad_lines_append():
+    def polygon_scad_lines_append(self, simple_polygons: "List[SimplePolygon]",
+                                  scad_lines: List[str], indent: str) -> None:
+        """Append an OpenSCAD `polygon` command as a list of lines.
+
+        Args:
+            *simple_polygons* (*List*[*SimplePolygon*]): A list of
+                *SimplePolygon*'s where the first one is the outer
+                perimiter of the polygon, and the remaining
+                *SimplePolygon*'s are "hole" inside of the outer
+                polygon perimeter.  None of these *SimplePolygon*'s
+                are allowed to overlap in any way.
+            *scad_lines* (*List*[*str*]): A list of strings to which
+                individual lines of OpenSCAD code are appended.
+            *indent* (*str*): The indentation text to prefixe each
+                line with.
+
+        """
+        # Grab the *class_name* from *scad2d* (i.e. *self*):
+        scad2d: Scad2D = self
+        scad_name: str = scad2d.name
+        scad_class_name: str = scad2d.__class__.__name__
+
+        # Sweep through all of *simple_polygon*'s and compute *maximum_convexity* and
+        # *all_points_size*:
+        maximum_convexity: int = 1
+        all_points_size: int = 0
+        simple_polygon: SimplePolygon
+        for simple_polygon in simple_polygons:
+            assert simple_polygon.is_locked()
+            convexity: int = simple_polygon.convexity
+            maximum_convexity = max(maximum_convexity, convexity)
+            all_points_size += len(simple_polygon)
+
+        # This code outputs an OpenSCAD `polygon` command in following format:
+        #
+        #     polygon(points = [ // Begin CLASS_NAME 0-TOTAL_POINTS
+        #      // POLYGON1_CLASS 'POLYGON1_NAME' START_INDEX-END_INDEX
+        #       [x1, y1], ... , [xN, yN]  // INDEX_RANGE
+        #      // POLYGON2_CLASS 'POLYGON2_NAME' START_INDEX-END_INDEX
+        #       [x1, y1], ... , [xN, yN]  // INDEX_RANGE
+        #      ...
+        #      // POLYGONn_CLASS 'POLYGONn_NAME' START_INDEX-END_INDEX
+        #       [x1, y1], ... , [xN, yN]  // INDEX_RANGE
+        #      ], paths = [
+        #       // POLYGON1_CLASS 'POLYGON1_NAME' START_INDEX-END_INDEX
+        #       [[x1, y1], ... , [xN, yN]],  // INDEX_RANGE
+        #       // POLYGON2_CLASS 'POLYGON2_NAME' START_INDEX-END_INDEX
+        #       [[x1, y1], ... , [xN, yN]],  // INDEX_RANGE
+        #       ...
+        #       // POLYGONn_CLASS 'POLYGONn_NAME' START_INDEX-END_INDEX
+        #       [[x1, y1], ... , [xN, yN]  // INDEX_RANGE
+        #      ], convexity=CONVEXITY; // End CLASS_NAME 0-TOTAL_POINTS
+
+        # Now start the output of the OpenScad `polygon` command:
+        scad_lines.append(f"{indent}polygon(points = [  // Begin {scad_class_name} "
+                          f"'{scad_name}' {0}:{all_points_size-1}")
+
+        # Define some variables and constants (alphabetical order):
+        polygon_class_name: str
+        float_format: Callable[[float], str] = Scad.float_format
+        indices_slice_size: int = 25
+        slice_begin_index: int
+        slice_end_index: int
+        points_slice_size: int = 4
+        polygon_name: str
+        polygon_size: int
+        polygons_size: int = len(simple_polygons)
+
+        # Step 1: Output all of the points first:
+        begin_index: int = 0
+        end_index: int
+        for polygon_index, polygon in enumerate(simple_polygons):
+            # Output the *simple* polygon name and its index range:
+            polygon_size = len(polygon)
+            end_index = begin_index + polygon_size - 1
+            polygon_name = polygon.name
+            polygon_class_name = polygon.__class__.__name__
+            last_polygon: bool = polygon_index == polygons_size - 1
+            scad_lines.append(f"{indent} // {polygon_class_name} '{polygon_name}' "
+                              f"{begin_index}-{end_index}")
+
+            points: List[P2D] = simple_polygon.points_get()
+            slices_count: int = int((ceil(float(polygon_size) / float(points_slice_size))))
+            slice_index: int
+            for slice_index in range(slices_count):
+                # Extract the *slice* of points from *points*:
+                slice_begin_index = begin_index + slice_index * points_slice_size
+                slice_end_index = min(slice_begin_index + points_slice_size, polygon_size)
+                slice: List[P2D] = list(points[slice_begin_index:slice_end_index])
+
+                # Figure out all of the text to output for the *slice*:
+                point: P2D
+                points_text: str = ", ".join([f"[{float_format(point.x)}, {float_format(point.y)}]"
+                                              for point in slice])
+                end_text: str = "" if last_polygon and slice_index == slices_count - 1 else ","
+
+                # Perform the append to *scad_lines*:
+                scad_lines.append(f"{indent}  {points_text}{end_text}  "
+                                  f"// {slice_begin_index}-{slice_end_index}")
+
+            # Update *begin_index* for the next batch of *points*:
+            begin_index += polygon_size
+
+        # Step 2: Output all of the indices second:
+        scad_lines.append(f"{indent} ], paths = [")
+        begin_index = 0
+        for polygon_index, polygon in enumerate(simple_polygons):
+            # Output the *simple* polygon name and its index range:
+            polygon_size = len(simple_polygon)
+            end_index = begin_index + polygon_size - 1
+            polygon_name = polygon.name
+            polygon_class_name = polygon.__class__.__name__
+            scad_lines.append(f"{indent}  // {polygon_class_name} '{polygon_name}' "
+                              f"{begin_index}-{end_index}")
+            last_polygon = polygon_index == polygons_size - 1
+
+            slices_count = int((ceil(float(polygon_size) / float(indices_slice_size))))
+            for slice_index in range(slices_count):
+                slice_begin_index = begin_index + slice_index * indices_slice_size
+                slice_end_index = min(slice_begin_index + indices_slice_size, polygon_size)
+                index: int
+                indices: List[str] = [str(index)
+                                      for index in range(slice_begin_index, slice_end_index)]
+                indices_text: str = ", ".join(indices)
+                begin_text: str = "[" if slice_index == 0 else " "
+                end_text = ("," if slice_index < slices_count - 1
+                            else (f"]" if last_polygon else "],"))
+                scad_lines.append(f"{indent}  {begin_text}{indices_text}{end_text}")
+
+            # Update *begin_index* for the next batch of *points*:
+            begin_index += polygon_size
+
+        # Close out the paths and output the *maximum_convexity*:
+        scad_lines.append(f"{indent} ], convexity={maximum_convexity});  "
+                          f"// End {scad_class_name} '{scad_name}' {0}:{all_points_size-1}")
+
+        # Output the ending debugging comment:
+        scad_lines.append(f"{indent}")
 
 
 # SimplePolygon:
 class SimplePolygon(Scad2D):
     """Represents a simple closed polygon of points."""
 
-    # Simple_Polygon.__init__():
-    def __init__(self, name: str, points: List[P2D] = [], locked: bool = False) -> None:
+    # SimplePolygon.__init__():
+    def __init__(self, name: str, points: List[P2D] = [],
+                 lock: bool = False, convexity: int = -1) -> None:
         """Initialize a SimplePolygon.
 
         Args:
             *name* (*str*): The name for the polygon.
             *points* (*List*[*P2D*]): The list of points to initialize
                 *close_polygon* (i.e. *self* with.)
+            *lock* (*bool*): If *True* no additional points can be
+                appended to *simple_polygon* (*i.e. *self*); othewise
+                additional points can be appended.
+            *convexity* (*int*): Specifies the complexity of the
+                polygon.  Larger numbers are needed render ever
+                complex polygons.  The default is -1, which cause
+                a reasonable initial guess to occur.
 
         """
         # Stuff values into *simpl_polygon* (i.e. *self*):
         # simple_polygon: SimplePolygon = self
-        self.locked: bool = locked
+        self.locked: bool = lock
         self.name: str = name
         self.points: List[P2D] = points[:]  # Copy the contents of *points*
+        self.convexity: int = 4 if convexity <= 0 else convexity
 
     # SimplePolygon.__getitem__():
     def __getitem__(self, index: int) -> P2D:
@@ -443,13 +628,60 @@ class SimplePolygon(Scad2D):
             scad_lines.append(f"{indent}{front_text}{line_text}{end_text}")
         return end_index
 
+    # SimplePolygon.is_locked():
+    def is_locked(self) -> bool:
+        """Return whether SimplePolygon is locked or not."""
+        # Grab *locked* flag from *simple_polygon* (i.e. *self*) and return it:
+        simple_polygon: SimplePolygon = self
+        locked: bool = simple_polygon.locked
+        return locked
+
+    # SimplePolygon.lock():
+    def lock(self) -> None:
+        """Force SimplePolygon to be locked."""
+        simple_polygon: SimplePolygon = self
+        simple_polygon.locked = True
+
     # SimplePolygon.point_append():
     def point_append(self, point: P2D) -> None:
-        """Append a point to a SimplePolygon."""
+        """Append a point to a SimplePolygon.
+
+        Args:
+            *point* (*P2D*): The 2-dimensional point to the
+            to *simple_polygon* (i.e. *self*.)
+
+        Raises:
+            *ValueError*(*str*): if *simple_polygon* (i.e. *self*.)
+            is locked.
+
+        """
         # Grab *points* from *simple_polygon* (i.e. *self*) and tack *point* onto the end:
         simple_polygon: SimplePolygon = self
         points: List[P2D] = simple_polygon.points
         points.append(point)
+
+    # Scad.points_get():
+    def points_get(self) -> List[P2D]:
+        """Return the points associated with SimplePolygon."""
+        simple_polygon: SimplePolygon = self
+        points: List[P2D] = simple_polygon.points
+        # Make a copy:
+        points = list(points[:])
+        return points
+
+    # SimplePolygon.points_rotoate():
+    def points_rotate(self, angle: float, center: P2D):
+        """Rotate all SimplePolygon points by an angle."""
+        # Grab some values from *simple_polygon* (i.e. *self*):
+        simple_polygon: SimplePolygon = self
+        locked: bool = simple_polygon.locked
+        points: List[P2D] = simple_polygon.points
+        if locked:
+            raise ValueError(f"'{simple_polygon.name}' is locked")
+        index: int
+        point: P2D
+        for index, point in enumerate(points):
+            points[index] = point.rotate(angle, center)
 
     # SimplePolygon.points_scad_lines_append():
     def points_scad_lines_append(self, scad_lines: List[str], indent: str, start_index: int) -> int:
@@ -531,10 +763,10 @@ class SimplePolygon(Scad2D):
             #       f"{upper_left_corner}, {lower_left_corner}")
 
         # Compute the 4 rotated corners offset by *center*:
-        rotated_upper_right_corner: P2D = upper_right_corner.rotate2d(angle)
-        rotated_lower_right_corner: P2D = lower_right_corner.rotate2d(angle)
-        rotated_upper_left_corner: P2D = upper_left_corner.rotate2d(angle)
-        rotated_lower_left_corner: P2D = lower_left_corner.rotate2d(angle)
+        rotated_upper_right_corner: P2D = upper_right_corner.rotate(angle)
+        rotated_lower_right_corner: P2D = lower_right_corner.rotate(angle)
+        rotated_upper_left_corner: P2D = upper_left_corner.rotate(angle)
+        rotated_lower_left_corner: P2D = lower_left_corner.rotate(angle)
         if debugging:  # pragma: no cover
             print(f"4 rotated corners = {rotated_upper_right_corner}, "
                   f"{rotated_lower_right_corner}, "
@@ -545,6 +777,16 @@ class SimplePolygon(Scad2D):
         points.append(center + rotated_lower_right_corner)
         points.append(center + rotated_lower_left_corner)
         points.append(center + rotated_upper_left_corner)
+
+    # SimplePolygon.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """TODO."""
+        # Grab *class_name* from *simple_polygon* (i.e. *self*):
+        simple_polygon: SimplePolygon = self
+
+        # Use the parent *Scad2D*.*scad_lines_append* method to actually ouput the OpenSCAD
+        # `polygon` command:
+        super().polygon_scad_lines_append([simple_polygon], scad_lines, indent)
 
     # SimplePolygon.slot_append():
     def slot_append(self, end_point1: P2D, end_point2: P2D,
@@ -600,8 +842,314 @@ class SimplePolygon(Scad2D):
         points: List[P2D] = simple_polygon.points
         point: P2D
         mirrored_points: List[P2D] = [P2D(-point.x, point.y) for point in points]
-        mirrored_polygon: SimplePolygon = SimplePolygon(f"Y-Mirror {name}", mirrored_points)
+        mirrored_polygon: SimplePolygon = SimplePolygon(f"Y-Mirror {name}",
+                                                        mirrored_points, lock=True)
         return mirrored_polygon
+
+
+# Circle:
+class Circle(SimplePolygon):
+    """Represents a circular SimplePolygon."""
+
+    # Circle.__init__():
+    def __init__(self, name: str, diameter: float, points_count: int,
+                 center: P2D = P2D(0.0, 0.0)) -> None:
+        """Create a circular SimplePolygon.
+
+        Args:
+            *name* (*str*): The debugging text name to output to the
+                `.scad` file
+            *diameter* (*float*): The diameter of the circle.,
+            *points_count* (*int*): The number of points to approixmate
+                the circle with.
+            *center* (*P2D*): The center of the circle.  This defaults
+                to the origin (i.e. *P2D*(0.0, 0.0).)
+
+        """
+        # Create the *radius *of *circle_points* list of *P2D*'s centered around *center*:
+        center_x: float = center.x
+        center_y: float = center.y
+        radius: float = diameter / 2.0
+        circle_points: List[P2D] = []
+        delta_angle: float = (2 * pi) / float(points_count)
+        point_index: int
+        for point_index in range(points_count):
+            angle: float = float(point_index) * delta_angle  # Radians
+            x: float = center_x + radius * cos(angle)
+            y: float = center_y + radius * sin(angle)
+            circle_point: P2D = P2D(x, y)
+            circle_points.append(circle_point)
+
+        # Initialize the *SimplePolygon* parent class with *name* and *cicular_points*
+        # and *lock* it:
+        super().__init__(name, circle_points, lock=True)
+
+        # Load values into *circle* (i.e. *self*):
+        # circle: Circle = self
+        self.center: P2D = center
+        self.diameter: float = diameter
+        self.points_count: int = points_count
+        self.convexty: int = 4
+
+    def __str__(self) -> str:
+        """Return a string representation of Circle*."""
+        # Grab some values from *Circle* (i.e. *self*):
+        circle: Circle = self
+        center: P2D = circle.center
+        convexity: int = circle.convexity
+        diameter: float = circle.diameter
+        name: str = circle.name
+        points_count: int = circle.points_count
+
+        # Return the formatted string reprentation:
+        return f"Circle('{name}',{diameter},{points_count},{center},{convexity})"
+
+    # Circle.key():
+    def key(self) -> Tuple[Any]:
+        """Return an immutable sorting key for a Circle."""
+        # Grab some values from *circle* (i.e. *self*):
+        circle: Circle = self
+        center: P2D = circle.center
+        diameter: float = circle.diameter
+        name: str = circle.name
+
+        # (TYPE, NAME, CENTER_X, CENTER_Y, DX, DY, ROTATE):
+        key: Any[Tuple] = ("Circle", name, center.x, center.y, diameter, diameter, 0.0)
+        return key
+
+    # Circle.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Circle to lines list.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *circle* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *circle* (i.e. *self*):
+        circle: Circle = self
+        center: P2D = circle.center
+        diameter: float = circle.diameter
+        points_count: int = circle.points_count
+        name: str = circle.name
+
+        # Derives some values:
+        center_x: float = center.x
+        center_y: float = center.y
+        float_format: Callable[[float], str] = Scad.float_format
+        circle_indent: str = indent
+        if abs(center_x) != 0.0 or abs(center_y) != 0.0:
+            # We have to output a translate transform first:
+            scad_lines.append(f"{indent}translate([{float_format(center_x)}, "
+                              f"{float_format(center_y)}])")
+            circle_indent += " "
+        scad_lines.append(f"{circle_indent}circle(d={float_format(diameter)}, "
+                          f"$fn={points_count});  // Circle '{name}'")
+
+
+# Square:
+class Square(SimplePolygon):
+    """Represents a rectangular SimplePolygon."""
+
+    # Square.__init__():
+    def __init__(self, name: str, dx: float, dy: float, center: P2D = P2D(0.0, 0.0),
+                 rotate: float = 0.0, corner_radius: float = 0.0, corner_count: int = 3) -> None:
+        """Create a translated/rotated rectangular SimplePolygon.
+
+        Args:
+            *name* (*str*): The debugging text name to output to the
+                `.scad` file.
+            *dx* (*float*): The X dimension of the initial rectangle.
+            *dy* (*float*): The Y dimension of the initial rectangle.
+            *center* (*P2D*): The center of the rectangle.  This defaults
+                to the origin (i.e. *P2D*(0.0, 0.0).)
+            *rotate* (*float*): The amount to rotate the rectangle about
+                its center (in radians.)  This defaults to 0.0.
+            *corner_radius* (*float*): The amount to round all 4 corners by.
+                This defaults to 0.0
+            *corner_count* (*int*): The number points on along corner arc
+                excluding the arc end-points.  This defaults to 3.
+
+        """
+        # Compute some intermediate values:
+        center_x: float = center.x
+        center_y: float = center.y
+        half_dx: float = dx / 2.0
+        half_dy: float = dy / 2.0
+        half_pi: float = pi / 2.0
+
+        # Do some argument validation:
+        float_format: Callable[[float], str] = Scad.float_format
+        if dx <= 0.0:
+            raise ValueError(f"dx={float_format(dx)} is not positive for '{name}'")
+        if dy <= 0.0:
+            raise ValueError(f"dy={float_format(dy)} is not positive for '{name}'")
+        if corner_radius < 0.0:
+            raise ValueError(f"corner_radius={float_format(corner_radius)} "
+                             f"must be non-negative for '{name}'")
+        if corner_radius > 0.0 and corner_count < 0:
+            raise ValueError(f"corner_count={corner_count} must be non-negative for '{name}'")
+        half_dx_dy_minimum: float = min(dx, dy) / 2.0
+        if corner_radius > half_dx_dy_minimum:
+            raise ValueError(f"corner radius={float_format(corner_radius)} is larger than half of"
+                             f" min({float_format(dx)}, {float_format(dy)})/2.0 for '{name}'")
+        if half_dx == half_dy == corner_radius:
+            raise ValueError(f"dx/2={float_format(half_dx)}, dy/2={float_format(half_dy)}, "
+                             f"corner_radius={float_format(corner_radius)}; use Circle instead!")
+
+        # Initialize the *SimplePolygon* parent class:
+        super().__init__(name, [])
+
+        # Fill in *square* based on *dx*, *dy*, *corner_radius* and *corner_count*
+        # with *center_x* and *center_y* offseting:
+        square: Square = self
+        if corner_radius <= 0.0:
+            # No *corner_radius*, so we cand do simple 4 point *square* (i.e. *self*):
+            square.point_append(P2D(center_x + half_dx, center_y + half_dy))
+            square.point_append(P2D(center_x + half_dx, center_y - half_dy))
+            square.point_append(P2D(center_x - half_dx, center_y - half_dy))
+            square.point_append(P2D(center_x - half_dx, center_y + half_dy))
+        elif corner_radius == half_dx_dy_minimum:
+            # A *square* (i.e. *self*) rectangle with fully rounded corners:
+            if dx < dy:
+                # The rounded ends are on the top and bottom:
+                upper_center: P2D = P2D(center_x, center_y + half_dy - half_dx)
+                lower_center: P2D = P2D(center_x, center_y + half_dx - half_dy)
+                square.arc_append(upper_center, corner_radius, 0.0, pi, 2 * corner_count + 3)
+                square.arc_append(lower_center, corner_radius, pi, 2 * pi, 2 * corner_count + 3)
+            elif dy < dx:
+                # The rounded ends are on the left and right:
+                right_center: P2D = P2D(center_x + half_dx - half_dy, center_y)
+                left_center: P2D = P2D(center_x + half_dy - half_dx, center_y)
+                square.arc_append(right_center, corner_radius,
+                                  -half_pi, half_pi, 2 * corner_count + 3)
+                square.arc_append(left_center, corner_radius,
+                                  half_pi, 3 * half_pi, 2 * corner_count + 3)
+            else:  # pragma: no cover
+                assert False, "This should not be possible"
+        elif 0.0 < corner_radius < half_dx_dy_minimum:
+            # A significantly more complicated *Rectangle* with 4 rounded corners:
+            corner_center_dx: float = half_dx - corner_radius
+            corner_center_dy: float = half_dy - corner_radius
+            upper_right_center: P2D = P2D(center_x + corner_center_dx, center_y + corner_center_dy)
+            upper_left_center: P2D = P2D(center_x - corner_center_dx, center_y + corner_center_dy)
+            lower_left_center: P2D = P2D(center_x - corner_center_dx, center_y - corner_center_dy)
+            lower_right_center: P2D = P2D(center_x + corner_center_dx, center_y - corner_center_dy)
+            square.arc_append(upper_right_center, corner_radius, 0.0, half_pi, corner_count + 2)
+            square.arc_append(upper_left_center, corner_radius, half_pi, pi, corner_count + 2)
+            square.arc_append(lower_left_center, corner_radius, pi, 3 * half_pi, corner_count + 2)
+            square.arc_append(lower_right_center, corner_radius,
+                              3 * half_pi, 2 * pi, corner_count + 2)
+        else:  # pragma: no cover
+            assert False, "Problem with corner_radius; this should not happen."
+
+        # If *rotate* is non-zero, we replace *square_points* with a verision where each
+        # point is rotated by *rotate* around *center*:
+        if rotate != 0.0:
+            square.points_rotate(rotate, center)
+
+        # Load values into *square* (i.e. *self*) and *lock* it:
+        self.center: P2D = center
+        self.corner_count: int = corner_count
+        self.corner_radius: float = corner_radius
+        self.dx: float = dx
+        self.dy: float = dy
+        self.rotate: float = rotate
+        square.lock()
+
+    # Square.__str__():
+    def __str__(self) -> str:
+        """Return a string representation of Circle*."""
+        # Grab some values from *square* (i.e. *self*):
+        square: Square = self
+        center: P2D = square.center
+        corner_count: int = square.corner_count
+        corner_radius: float = square.corner_radius
+        dx: float = square.dx
+        dy: float = square.dy
+        name: str = square.name
+        rotate: float = square.rotate
+
+        # Only provide *center_text*, *rotate_text*, and *corner_text* if appropriate:
+        float_format: Callable[[float], str] = Scad.float_format
+        center_text: str = "" if center.x == 0.0 and center.y == 0.0 else f",center={center}"
+        rotate_text: str = "" if rotate == 0.0 else f",rotate={float_format(degrees(rotate))}deg"
+        corner_radius_text: str = ("" if corner_radius <= 0.0
+                                   else f",corner_radius={float_format(corner_radius)}")
+        corner_count_text: str = ("" if corner_radius <= 0.0 or corner_count == 3
+                                  else f",corner_count={corner_count}")
+
+        # Return the formatted string reprentation:
+        return (f"Square('{name}',{float_format(dx)},{float_format(dy)}"
+                f"{center_text}{rotate_text}{corner_radius_text}{corner_count_text})")
+
+    # Square.key():
+    def key(self) -> Tuple[Any]:
+        """Return an immutable sorting key for a Circle."""
+        # Grab some values from *square* (i.e. *self*):
+        square: Square = self
+        center: P2D = square.center
+        corner_count: int = square.corner_count
+        corner_radius: float = square.corner_radius
+        dx: float = square.dx
+        dy: float = square.dy
+        name: str = square.name
+        rotate: float = square.rotate
+
+        # (TYPE, NAME, CENTER_X, CENTER_Y, DX, DY, ROTATE, CORNER_RADIUS, CORNER_COUNT):
+        key: Any[Tuple] = ("Square", name, center.x, center.y, dx, dy, degrees(rotate),
+                           corner_radius, corner_count)
+        return key
+
+    # Square.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Circle to lines list.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *square* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *circle* (i.e. *self*):
+        # Grab some values from *square* (i.e. *self*):
+        square: Square = self
+        center: P2D = square.center
+        corner_count: float = square.corner_count
+        corner_radius: float = square.corner_radius
+        dx: float = square.dx
+        dy: float = square.dy
+        name: str = square.name
+        rotate: float = square.rotate
+
+        # Output a debugging line
+        float_format: Callable[[float], str] = Scad.float_format
+        assert isinstance(scad_lines, list)
+        scad_lines.append(f"{indent}// Square '{name}' dx={float_format(dx)} "
+                          f"dy={float_format(dy)} center={center} "
+                          f"corner_radius={float_format(corner_radius)} "
+                          f"corner_count={corner_count}")
+
+        if corner_radius == 0.0:
+            # We can use the OpenSCAD `square` command with optional `translate` and
+            # `rotate` transforms:
+            center_x: float = center.x
+            center_y: float = center.y
+            square_indent: str = indent
+            if center_x != 0.0 and center_y != 0.0:
+                scad_lines.append(f"{square_indent}translate([{float_format(center.x)}, "
+                                  f"{float_format(center_y)}])")
+                square_indent += " "
+            if rotate != 0.0:
+                scad_lines.append(f"{square_indent}rotate(a = "
+                                  f"[0, 0, {float_format(degrees(rotate))}])")
+                square_indent += " "
+            scad_lines.append(f"{square_indent}square([{float_format(dx)}, {float_format(dy)}], "
+                              "center = true);")
+        else:
+            # Rounded corners need to be done with an OpenSCAD `polygon` command:
+            square.polygon_scad_lines_append([square], scad_lines, indent)
 
 
 # Scad3D:
@@ -692,7 +1240,7 @@ class LinearExtrude(Scad3D):
         slices_text: str = f", slices={slices}" if slices > 0 else ""
 
         # Perform the the `linear_extrude` command append to *scad_lines*:
-        scad_lines.append(f"{indent}// LinearExtrude '{name}'")
+        scad_lines.append(f"{indent}// Begin LinearExtrude '{name}'")
         scad_lines.append(f"{indent}linear_extrude("
                           f"height={height}"
                           f", center={str(center).lower()}"
@@ -713,20 +1261,50 @@ class Polygon(Scad2D):
 
     # Polygon.__init__():
     def __init__(self, name: str, simple_polygons: List[SimplePolygon],
-                 convexity: int = -1) -> None:
+                 convexity: int = -1, lock=True) -> None:
         """Initialize an OpenSCAD polygon command.
+
+        Initialze a *Polygon* object to initially contain a list of
+        *simple_polygons.*  If *locked* is *True*, no additional
+        *SimplePolygon*'s can be append to *polygon* (i.e. *self*);
+        otherwise both the *Polygon*.*append*() and the
+        *Polygon*.*extend*() methods can be used to append additional
+        *SimplePolygon*'s.  The *Polygon*.*lock() forces *polygon*
+        to be locked and it can not be unlocked afterwards.
+
 
         Args:
             *name*: (*str*): The name of OpenSCAD polygon command.
-            *simple_polygons* (*List*[*SimplePolygon*]):
+            *simple_polygons* (*List*[*SimplePolygon*]): A list of
+                *SimplePolygon*'s to install into *polygon*
+                (i.e. *self*).  Each of these *SimplePolygon*"s must
+                be locked.
             *convexity* (*int*): A number to estimate the complexit
-                of the polygon.  Higher numbers are needed for accurate
-                complex polygon rendering.  If no value is provided,
-                a resonable default is provided.
+                of the polygon.  Higher numbers are needed for
+                accurate complex polygon rendering.  If no value is
+                provided, a resonable default is provided.
+            *lock* (*bool*): If *True* the initialized *polygon*
+                object (i.e. *self*) is locked from having additional
+                *SimplePolygon*'s appended to it; other no additional
+                *SimplePolygon*'s can be appended.
+
+        Raises:
+            *ValueError*(*str*): if any of the *SimplePolygon*'s in
+                *simple_polygons* are not locked .
 
         """
+        # Valid that all of the *simple_polygons* are locked:
+        simple_polygon_index: int
+        simple_polygon: SimplePolygon
+        for simple_polygon_index, simple_polygon in enumerate(simple_polygons):
+            if not simple_polygon.is_locked():
+                simple_polygon_name: str = simple_polygon.name
+                raise ValueError(f"SimplePolygon ('{simple_polygon_name}') "
+                                 f"at index {simple_polygon_index} is not locked.")
+
         # Intilize the base class and stuff values into *scad_polygon* (i.e. *self*):
         super().__init__(name)
+        self.locked: bool = lock
         self.convexity: int = convexity
         self.simple_polygons: List[SimplePolygon] = simple_polygons[:]
 
