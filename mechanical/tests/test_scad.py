@@ -330,6 +330,14 @@ def test_circle() -> None:
     assert scad_lines[0] == "translate([2.000, 3.000])"
     assert scad_lines[1] == " circle(d=2.000, $fn=8);  // Circle 'Circle'"
 
+    # Try out the *Circle*.*copy*() method:
+    small_circle: Circle = Circle("Small Circle", 2.0, 8, center)
+    assert f"{small_circle}" == "Circle('Small Circle',2.0,8,P2D(2.000,3.000),4)"
+    new_center: P2D = P2D(4.0, 5.0)
+    big_circle: Circle = small_circle.copy("Small", diameter=8.0,
+                                           points_count=16, center=new_center, replace="Big")
+    assert f"{big_circle}" == "Circle('Big Circle',8.0,16,P2D(4.000,5.000),4)"
+
     # Validate *Circle*.*key*() method:
     key: Tuple[Any] = circle.key()
     assert key == ("Circle", "Circle", 2.0, 3.0, 2.0, 2.0, 0.0), f"Bad key: {key}"
@@ -506,6 +514,28 @@ def test_square() -> None:
     assert scad_lines[9] == "  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,", "[9]!"
     assert scad_lines[10] == "   10, 11, 12, 13, 14, 15]", "[10]!"
     assert scad_lines[11] == (" ], convexity=4);  // End Square 'Rounded Square' 0:15"), "[11]!"
+
+    # Try out the *Square*.*copy*() method:
+    small_center: P2D = P2D(2.0, 3.0)
+    small_rotate: float = pi/2.0
+    small_corner_radius: float = 0.5
+    small_corner_count: int = 4
+    small_square: Square = Square("Small Square", 1.0, 2.0, small_center,
+                                  small_rotate, small_corner_radius, small_corner_count)
+    assert f"{small_square}" == ("Square('Small Square',1.000,2.000,center=P2D(2.000,3.000),"
+                                 "rotate=90.000deg,corner_radius=0.500,corner_count=4)")
+    big_center: P2D = P2D(4.0, 5.0)
+    big_rotate: float = -pi/2.0
+    big_corner_radius: float = 0.75
+    big_corner_count: int = 5
+    big_square: Square = small_square.copy("Small", dx=2.0, dy=4.0,
+                                           rotate=big_rotate,
+                                           center=big_center,
+                                           corner_radius=big_corner_radius,
+                                           corner_count=big_corner_count,
+                                           replace="Big")
+    assert f"{big_square}" == ("Square('Big Square',2.000,4.000,center=P2D(4.000,5.000),"
+                               "rotate=-90.000deg,corner_radius=0.750,corner_count=5)")
 
     # Test *Square*.*key*() method:
     assert rounded_square.key() == ("Square", "Rounded Square", 0.0, 0.0, 2.0,

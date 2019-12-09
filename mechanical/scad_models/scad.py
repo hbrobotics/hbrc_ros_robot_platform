@@ -780,6 +780,7 @@ class Circle(SimplePolygon):
         self.points_count: int = points_count
         self.convexty: int = 4
 
+    # Circle.__str__():
     def __str__(self) -> str:
         """Return a string representation of Circle*."""
         # Grab some values from *Circle* (i.e. *self*):
@@ -792,6 +793,46 @@ class Circle(SimplePolygon):
 
         # Return the formatted string reprentation:
         return f"Circle('{name}',{diameter},{points_count},{center},{convexity})"
+
+    # Circle.copy():
+    def copy(self, name: str, diameter: Optional[float], points_count: Optional[int],
+             center: Optional[P2D], replace: str = "") -> "Circle":
+        """Copy a circle replacing various values during copy.
+
+        Returns a copy of *circle* (i.e. *self*) replacing any
+        specified values.  A new *name* must be specified.  If
+        *replace* is spacified, the new name is constructed by
+        replacing all occurances of *name* in the original *circle*
+        (i.e. *self*) name with *replace*.
+
+        Args:
+            *name* (*str*): The name of the new *Circle* object.  This
+                is modified if the *replace* argument is present (see
+                below.)
+            *diameter* (*float*): (Optional) The replacement value for
+                the  circle diameter.
+            *center* (*P2D*): (Optional) The replacement value for the
+                rectangle center.
+            *replace* (*str*): (Optional) If present, all occurances
+                of *name* in the original *circle* (i.e. *self*) name
+                are replaced with *replace*.
+
+        Returns:
+            (*Circle*): Returns a new *Circle* with the appropriate
+                values updated.
+
+        """
+        # Grab some values from *circle* (i.e. *self*) or use the one new ones present from
+        # the arguments:
+        circle: Circle = self
+        diameter = circle.diameter if diameter is None else diameter
+        center = circle.center if center is None else center
+        points_count = circle.points_count if points_count is None else points_count
+        name = circle.name if replace is None else circle.name.replace(name, replace)
+
+        # Create and return the *new_circle*:
+        new_circle: Circle = Circle(name, diameter, points_count, center)
+        return new_circle
 
     # Circle.key():
     def key(self) -> Tuple[Any]:
@@ -857,8 +898,8 @@ class Square(SimplePolygon):
                 its center (in radians.)  This defaults to 0.0.
             *corner_radius* (*float*): The amount to round all 4 corners by.
                 This defaults to 0.0
-            *corner_count* (*int*): The number points on along corner arc
-                excluding the arc end-points.  This defaults to 3.
+            *corner_count* (*int*): The number of points on along corner
+                arc excluding the arc end-points.  This defaults to 3.
 
         """
         # Compute some intermediate values:
@@ -972,6 +1013,59 @@ class Square(SimplePolygon):
         # Return the formatted string reprentation:
         return (f"Square('{name}',{float_format(dx)},{float_format(dy)}"
                 f"{center_text}{rotate_text}{corner_radius_text}{corner_count_text})")
+
+    # Square.copy():
+    def copy(self, name: str, dx: Optional[float], dy: Optional[float],
+             center: Optional[P2D], rotate: Optional[float],
+             corner_radius: Optional[float], corner_count: Optional[int],
+             replace: str = "") -> "Square":
+        """Copy a square replacing various values during copy.
+
+        Returns a copy of *square* (i.e. *self*) replacing any
+        specified values.  A new *name* must be specified.  If
+        *replace* is spacified, the new name is constructed by
+        replacing all occurances of *name* in the original *square*
+        (i.e. *self*) name with *replace*.
+
+        Args:
+            *name* (*str*): The name of the new *Square* object.  This
+                is modified if the *replace* argument is present (see
+                below.)
+            *dx* (*float*): (Optional) The replacement value for the
+                rectangle width.
+            *dy* (*float*): (Optional) The replacement value for the
+                rectangle height.
+            *center* (*P2D*): (Optional) The replacement value for the
+                rectangle center.
+            *rotate* (*float*): (Optional) The replacement rotation
+                value (in radians) for the rectangle rotataion.
+            *corner_radius* (*float*): (Optional)The replacement value
+                to to round all 4 corners by.
+            *corner_count* (*int*): (Optional) The replacement number
+                points on along corner arc excluding the arc end-points.
+            *replace* (*str*): (Optional) If present, all occurances
+                of *name* in the original *square* (i.e. *self*) name
+                are replaced with *replace*.
+
+        Returns:
+            (*Square*): Returns a new *Square* with the appropriate values
+                updated.
+
+        """
+        # Grab some values from *square* (i.e. *self*) or use the one new ones present from
+        # the arguments:
+        square: Square = self
+        dx = square.dx if dx is None else dx
+        dy = square.dx if dy is None else dy
+        center = square.center if center is None else center
+        rotate = square.rotate if rotate is None else rotate
+        corner_radius = square.corner_radius if corner_radius is None else corner_radius
+        corner_count = square.corner_count if corner_count is None else corner_count
+        name = square.name if replace is None else square.name.replace(name, replace)
+
+        # Create and return the *new_square*:
+        new_square: Square = Square(name, dx, dy, center, rotate, corner_radius, corner_count)
+        return new_square
 
     # Square.key():
     def key(self) -> Tuple[Any]:
