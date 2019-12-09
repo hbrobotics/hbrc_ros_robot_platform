@@ -667,45 +667,6 @@ class SimplePolygon(Scad2D):
                                   f"{start_index + slice_end - 1}")
         return end_index
 
-    # SimplePolygon.rotated_rectangle_append():
-    def rotated_rectangle_append(self, center: P2D, dx: float, dy: float, angle: float):
-        """Append a rotated rectangle to Polygon."""
-        # Grab some values from *polygon* (i.e. *self*):
-        simple_polygon: SimplePolygon = self
-        points: List[P2D] = simple_polygon.points
-
-        # Compute some useful values:
-        half_dx: float = dx / 2.0
-        half_dy: float = dy / 2.0
-        upper_right_corner: P2D = P2D(half_dx, half_dy)
-        lower_right_corner: P2D = P2D(half_dx, -half_dy)
-        upper_left_corner: P2D = P2D(-half_dx, half_dy)
-        lower_left_corner: P2D = P2D(-half_dx, -half_dy)
-
-        # Set *debugging* to *True* to print out some debugging information:
-        debugging: bool = False
-        if debugging:  # pragma: no cover
-            print(f"center={center} dx={dx} dy={dy} angle={degrees(angle)}deg")
-            print(f"half_dx={half_dx} half_dy={half_dy}")
-            # print(f"4 corners = {upper_right_corner}, {lower_right_corner}, "
-            #       f"{upper_left_corner}, {lower_left_corner}")
-
-        # Compute the 4 rotated corners offset by *center*:
-        rotated_upper_right_corner: P2D = upper_right_corner.rotate(angle)
-        rotated_lower_right_corner: P2D = lower_right_corner.rotate(angle)
-        rotated_upper_left_corner: P2D = upper_left_corner.rotate(angle)
-        rotated_lower_left_corner: P2D = lower_left_corner.rotate(angle)
-        if debugging:  # pragma: no cover
-            print(f"4 rotated corners = {rotated_upper_right_corner}, "
-                  f"{rotated_lower_right_corner}, "
-                  f"{rotated_upper_left_corner}, {rotated_lower_left_corner}")
-
-        # Append the points to the polygon:
-        points.append(center + rotated_upper_right_corner)
-        points.append(center + rotated_lower_right_corner)
-        points.append(center + rotated_lower_left_corner)
-        points.append(center + rotated_upper_left_corner)
-
     # SimplePolygon.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
         """TODO."""

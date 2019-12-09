@@ -8,7 +8,7 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from scad_models.scad import Circle, LinearExtrude, P2D, Polygon, SimplePolygon, Union
+from scad_models.scad import Circle, LinearExtrude, P2D, Polygon, SimplePolygon, Square, Union
 from typing import Any, Dict, IO, List, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -348,19 +348,20 @@ class Romi:
         x3: float = x2 - 1.65
         x4: float = x3 - dx
         dy: float = 0.70 * inches2mm
-        outer_encoder_slot: SimplePolygon = SimplePolygon("Outer Encoder Slot")
-        outer_encoder_slot.rotated_rectangle_append(P2D((x1 + x2) / 2.0, 0.0), dx, dy, 0.0)
-        outer_encoder_slot.lock()
-        inner_encoder_slot: SimplePolygon = SimplePolygon("Inner Encoder Slot")
-        inner_encoder_slot.rotated_rectangle_append(P2D((x3 + x4) / 2.0, 0.0), dx, dy, 0.0)
-        inner_encoder_slot.lock()
 
-        # Collect the encoder slots into *encoder_slot_polygons* and append to *polygons*:
-        encoder_slot_polygons: List[SimplePolygon] = [
+        outer_center: P2D = P2D((x1 + x2) / 2.0, 0.0)
+        outer_encoder_slot: Square = Square("Outer Encoder Slot", dx, dy, outer_center,
+                                            corner_radius=dx/2.0, corner_count=3)
+        inner_center: P2D = P2D((x3 + x4) / 2.0, 0.0)
+        inner_encoder_slot: Square = Square("Inner Encoder Slot", dx, dy, inner_center,
+                                            corner_radius=dx/2.0, corner_count=3)
+
+        # Collect the encoder slots into *encoder_slots* and append to *polygons*:
+        encoder_slots: List[SimplePolygon] = [
             outer_encoder_slot, outer_encoder_slot.y_mirror(),
             inner_encoder_slot, inner_encoder_slot.y_mirror()
         ]
-        simple_polygons.extend(encoder_slot_polygons)
+        simple_polygons.extend(encoder_slots)
 
         return simple_polygons
 
@@ -654,11 +655,9 @@ class Romi:
             lower_rectangle_x: float = rectangle_radius * cos(lower_hole_angle)
             lower_rectangle_y: float = rectangle_radius * sin(lower_hole_angle)
             lower_rectangle_center: P2D = P2D(lower_rectangle_x, lower_rectangle_y)
-            lower_rectangle: SimplePolygon = SimplePolygon("Lower left rectangle "
-                                                           f"{lower_hole_index}")
-            lower_rectangle.rotated_rectangle_append(lower_rectangle_center, rectangle_width,
-                                                     lower_rectangle_length, lower_hole_angle)
-            lower_rectangle.lock()
+            lower_rectangle: Square = Square(f"Lower left Rectangle {lower_hole_index}",
+                                             rectangle_width, lower_rectangle_length,
+                                             lower_rectangle_center, lower_hole_angle)
             lower_arc_hole_rectangle_polygons.append(lower_rectangle)
 
         # Return the resuting *arc_hole_rectangle_polygons*:
@@ -722,9 +721,10 @@ class Romi:
         # lower_left_misc_polygon.circle_append(lower_left_misc_center, lower_left_misc_diameter)
         return misc_polygons
 
+    # Romi.rectangle_locate():
     def rectangle_locate(self, name: str, x1: float, y1: float,
-                         x2: float, y2: float) -> SimplePolygon:
-        """Locate a rectangle and return it as a Polygon.
+                         x2: float, y2: float) -> Square:
+        """Locate a non-rotated rectangle and return it as a Square.
 
         Args:
             *name* (*str*): The name to assign to the returned
@@ -755,10 +755,9 @@ class Romi:
         dy: float = abs(y2 - y1)
         center: P2D = P2D((x1 + x2) / 2.0, (y1 + y2) / 2.0) - origin_offset
 
-        # Create and return the *rectangle_polygon*:
-        rectangle_polygon: SimplePolygon = SimplePolygon(name)
-        rectangle_polygon.rotated_rectangle_append(center, dx, dy, 0.0)
-        return rectangle_polygon
+        # Create and return the *rectangle* (which is stored in a *Square* object):
+        rectangle: Square = Square(name, dx, dy, center)
+        return rectangle
 
     # Romi.upper_arc_hole_rectangle_polygons_get():
     def upper_arc_hole_rectangle_polygons_get(self) -> List[SimplePolygon]:
@@ -857,11 +856,9 @@ class Romi:
             upper_rectangle_x: float = rectangle_radius * cos(upper_hole_angle)
             upper_rectangle_y: float = rectangle_radius * sin(upper_hole_angle)
             upper_rectangle_center: P2D = P2D(upper_rectangle_x, upper_rectangle_y)
-            upper_rectangle: SimplePolygon = SimplePolygon("Upper right rectangle "
-                                                           f"{upper_hole_index}")
-            upper_rectangle.lock()
-            upper_rectangle.rotated_rectangle_append(upper_rectangle_center, rectangle_width,
-                                                     upper_rectangle_length, upper_hole_angle)
+            upper_rectangle: Square = Square(f"Upper Right Rectangle {upper_hole_index}",
+                                             rectangle_width, upper_rectangle_length,
+                                             upper_rectangle_center, upper_hole_angle)
             upper_arc_hole_rectangle_polygons.append(upper_rectangle)
 
         # Return the resuting *arc_hole_rectangle_polygons*:

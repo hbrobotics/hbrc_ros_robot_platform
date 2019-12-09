@@ -179,12 +179,12 @@ def test_simple_polygon() -> None:
     # assert f"{hole[3]}" == "P2D(1.000,-1.000)"
 
     # Test Polygon.rotated_rectangle_append():
-    rotated_rectangle: SimplePolygon = SimplePolygon("Rotated Rectangle")
-    rotated_rectangle.rotated_rectangle_append(P2D(2.0, 3.0), 2.0, 4.0, pi/2)
-    assert f"{rotated_rectangle[0]}" == "P2D(0.000,4.000)", "Index 0 failed"
-    assert f"{rotated_rectangle[1]}" == "P2D(4.000,4.000)", "Index 1 failed"
-    assert f"{rotated_rectangle[2]}" == "P2D(4.000,2.000)", "Index 2 failed"
-    assert f"{rotated_rectangle[3]}" == "P2D(0.000,2.000)", "Index 3 failed"
+    # rotated_rectangle: SimplePolygon = SimplePolygon("Rotated Rectangle")
+    # rotated_rectangle.rotated_rectangle_append(P2D(2.0, 3.0), 2.0, 4.0, pi/2)
+    # assert f"{rotated_rectangle[0]}" == "P2D(0.000,4.000)", "Index 0 failed"
+    # assert f"{rotated_rectangle[1]}" == "P2D(4.000,4.000)", "Index 1 failed"
+    # assert f"{rotated_rectangle[2]}" == "P2D(4.000,2.000)", "Index 2 failed"
+    # assert f"{rotated_rectangle[3]}" == "P2D(0.000,2.000)", "Index 3 failed"
 
     # Test Polygon.slot_append():
     slot2: SimplePolygon = SimplePolygon("Slot2")
