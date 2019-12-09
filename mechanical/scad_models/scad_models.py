@@ -8,7 +8,7 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from scad_models.scad import LinearExtrude, P2D, Polygon, SimplePolygon, Union
+from scad_models.scad import Circle, LinearExtrude, P2D, Polygon, SimplePolygon, Union
 from typing import Any, Dict, IO, List, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -239,10 +239,8 @@ class Romi:
                     # We need a hole:
                     y: float = reference_hole_center_y + lower_battery_y_offsets[y_index]
                     lower_hole_center: P2D = P2D(x, y)
-                    lower_hole: SimplePolygon = SimplePolygon("Lower Battery Hole "
-                                                              f"({2-x_index}, {y_index})")
-                    lower_hole.circle_append(lower_hole_center, reference_hole_diameter, 8)
-                    lower_hole.lock()
+                    lower_hole: Circle = Circle(f"Lower Battery Hole ({2-x_index}, {y_index})",
+                                                reference_hole_diameter, 8, lower_hole_center)
                     simple_polygons.append(lower_hole)
 
         # The upper battery holes above the lower battery motor holes are organized as
@@ -254,11 +252,9 @@ class Romi:
             for y_index in range(3):
                 y = reference_hole_center_y + upper_battery_y_offsets[y_index]
                 upper_hole_center: P2D = P2D(x, y)
-                upper_hole_polygon: SimplePolygon = SimplePolygon("Upper Battery Hole "
-                                                                  f"({2-x_index}, {y_index})")
-                upper_hole_polygon.circle_append(upper_hole_center, reference_hole_diameter, 8)
-                upper_hole_polygon.lock()
-                simple_polygons.append(upper_hole_polygon)
+                upper_hole: Circle = Circle(f"Upper Battery Hole ({2-x_index}, {y_index})",
+                                            reference_hole_diameter, 8, upper_hole_center)
+                simple_polygons.append(upper_hole)
 
         # There are 6 rectangular slots that have a nub on the end to cleverly indicate battery
         # polarity direction.  We will model these as simple rectangular slots and skip the
@@ -488,11 +484,9 @@ class Romi:
                     # Only create holes when *pattern_character* is upper case:
                     if pattern_character.isupper():
                         # Put in the *right_hole*:
-                        hole_polygon: SimplePolygon = SimplePolygon("Hex Hole "
-                                                                    f"({x_index}, {y_index})")
-                        hole_polygon.circle_append(hole_center, hole_diameter, points_count)
-                        hole_polygon.lock()
-                        simple_polygons.append(hole_polygon)
+                        hole: Circle = Circle(f"Hex Hole ({x_index}, {y_index})",
+                                              hole_diameter, points_count, hole_center)
+                        simple_polygons.append(hole)
 
         # Now sweep through *slot_pairs* and install all of the slots:
         slot_pair: str
@@ -556,10 +550,9 @@ class Romi:
             if vector_hole_index % 3 != 1:
                 # Do the hole on the right first:
                 hole_center: P2D = (s_center + (vector_hole_index - 1) * hole_vector / 3.0)
-                hole_polygon: SimplePolygon = SimplePolygon(f"Vector Hole {vector_hole_index}")
-                hole_polygon.circle_append(hole_center, small_hole_diameter, 8)
-                hole_polygon.lock()
-                line_hole_polygons.append(hole_polygon)
+                hole: Circle = Circle(f"Vector Hole {vector_hole_index}",
+                                      small_hole_diameter, 8, hole_center)
+                line_hole_polygons.append(hole)
 
         return line_hole_polygons
 
@@ -652,9 +645,8 @@ class Romi:
             lower_hole_x: float = lower_hole_radius * cos(lower_hole_angle)
             lower_hole_y: float = lower_hole_radius * sin(lower_hole_angle)
             lower_hole_center: P2D = P2D(lower_hole_x, lower_hole_y)
-            lower_hole: SimplePolygon = SimplePolygon(f"Lower hole {lower_hole_index}")
-            lower_hole.lock()
-            lower_hole.circle_append(lower_hole_center, lower_arc_hole_diameter, 8)
+            lower_hole: Circle = Circle(f"Lower hole {lower_hole_index}",
+                                        lower_arc_hole_diameter, 8, lower_hole_center)
             if lower_hole_index < lower_holes_count + 1:
                 lower_arc_hole_rectangle_polygons.append(lower_hole)
 
@@ -854,9 +846,9 @@ class Romi:
             upper_hole_x: float = upper_hole_radius * cos(upper_hole_angle)
             upper_hole_y: float = upper_hole_radius * sin(upper_hole_angle)
             upper_hole_center = P2D(upper_hole_x, upper_hole_y)
-            upper_hole: SimplePolygon = SimplePolygon(f"Upper hole {upper_hole_index}")
-            upper_hole.circle_append(upper_hole_center, upper_arc_hole_diameter, 8)
-            upper_hole.lock()
+            upper_hole: Circle = Circle(f"Upper hole {upper_hole_index}",
+                                        upper_arc_hole_diameter, 8, upper_hole_center)
+
             # Skip 3 of the holes:
             if upper_hole_index not in (2, 3, 12, 13):
                 upper_arc_hole_rectangle_polygons.append(upper_hole)

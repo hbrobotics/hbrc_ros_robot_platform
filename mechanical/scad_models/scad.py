@@ -359,79 +359,86 @@ class Scad2D(Scad):
                           f"'{scad_name}' {0}:{all_points_size-1}")
 
         # Define some variables and constants (alphabetical order):
-        polygon_class_name: str
         float_format: Callable[[float], str] = Scad.float_format
-        indices_slice_size: int = 25
+        indices_slice_size: int = 10
+        points_slice_size: int = 4
+        polygon_class_name: str
+        polygon_name: str
         slice_begin_index: int
         slice_end_index: int
-        points_slice_size: int = 4
-        polygon_name: str
-        polygon_size: int
-        polygons_size: int = len(simple_polygons)
+        slice_index: int
+        slice_last_index: int
+        slices_count: int
+        simple_polygon_size: int
+        simple_polygons_size: int = len(simple_polygons)
+        simple_polygon_last_index = simple_polygons_size - 1
 
         # Step 1: Output all of the points first:
         begin_index: int = 0
         end_index: int
-        for polygon_index, polygon in enumerate(simple_polygons):
+        for simple_polygon_index, simple_polygon in enumerate(simple_polygons):
             # Output the *simple* polygon name and its index range:
-            polygon_size = len(polygon)
-            end_index = begin_index + polygon_size - 1
-            polygon_name = polygon.name
-            polygon_class_name = polygon.__class__.__name__
-            last_polygon: bool = polygon_index == polygons_size - 1
-            scad_lines.append(f"{indent} // {polygon_class_name} '{polygon_name}' "
+            simple_polygon_size = len(simple_polygon)
+            end_index = begin_index + simple_polygon_size - 1
+            simple_polygon_name = simple_polygon.name
+            simple_polygon_class_name = simple_polygon.__class__.__name__
+            last_simple_polygon: bool = simple_polygon_index == simple_polygon_last_index
+            scad_lines.append(f"{indent} // {simple_polygon_class_name} '{simple_polygon_name}' "
                               f"{begin_index}-{end_index}")
 
+            # Now output 1 or more rows of *points* from *simple_polygon*, truncating to
+            # *point_slice_size* to prevent excessively long lines in the `.scad` file:
             points: List[P2D] = simple_polygon.points_get()
-            slices_count: int = int((ceil(float(polygon_size) / float(points_slice_size))))
-            slice_index: int
+            slices_count = int((ceil(float(simple_polygon_size) / float(points_slice_size))))
+            slice_last_index = slices_count - 1
             for slice_index in range(slices_count):
                 # Extract the *slice* of points from *points*:
-                slice_begin_index = begin_index + slice_index * points_slice_size
-                slice_end_index = min(slice_begin_index + points_slice_size, polygon_size)
+                slice_begin_index = slice_index * points_slice_size
+                slice_end_index = min(slice_begin_index + points_slice_size, simple_polygon_size)
                 slice: List[P2D] = list(points[slice_begin_index:slice_end_index])
 
                 # Figure out all of the text to output for the *slice*:
                 point: P2D
                 points_text: str = ", ".join([f"[{float_format(point.x)}, {float_format(point.y)}]"
                                               for point in slice])
-                end_text: str = "" if last_polygon and slice_index == slices_count - 1 else ","
+                end_text: str = ("" if last_simple_polygon and slice_index == slice_last_index
+                                 else ",")
 
                 # Perform the append to *scad_lines*:
                 scad_lines.append(f"{indent}  {points_text}{end_text}  "
                                   f"// {slice_begin_index}-{slice_end_index}")
 
-            # Update *begin_index* for the next batch of *points*:
-            begin_index += polygon_size
+            # Update *begin_index* for the next batch of *points* from the next *simple_polygon*:
+            begin_index += simple_polygon_size
 
         # Step 2: Output all of the indices second:
         scad_lines.append(f"{indent} ], paths = [")
         begin_index = 0
-        for polygon_index, polygon in enumerate(simple_polygons):
+        for simple_polygon_index, simple_polygon in enumerate(simple_polygons):
             # Output the *simple* polygon name and its index range:
-            polygon_size = len(simple_polygon)
-            end_index = begin_index + polygon_size - 1
-            polygon_name = polygon.name
-            polygon_class_name = polygon.__class__.__name__
-            scad_lines.append(f"{indent}  // {polygon_class_name} '{polygon_name}' "
+            simple_polygon_size = len(simple_polygon)
+            end_index = begin_index + simple_polygon_size - 1
+            simple_polygon_name = simple_polygon.name
+            simple_polygon_class_name = simple_polygon.__class__.__name__
+            scad_lines.append(f"{indent}  // {simple_polygon_class_name} '{simple_polygon_name}' "
                               f"{begin_index}-{end_index}")
-            last_polygon = polygon_index == polygons_size - 1
+            last_polygon = simple_polygon_index == simple_polygon_last_index
 
-            slices_count = int((ceil(float(polygon_size) / float(indices_slice_size))))
+            slices_count = int((ceil(float(simple_polygon_size) / float(indices_slice_size))))
+            slice_last_index = slices_count - 1
             for slice_index in range(slices_count):
-                slice_begin_index = begin_index + slice_index * indices_slice_size
-                slice_end_index = min(slice_begin_index + indices_slice_size, polygon_size)
-                index: int
-                indices: List[str] = [str(index)
-                                      for index in range(slice_begin_index, slice_end_index)]
+                slice_begin_index = slice_index * indices_slice_size
+                slice_end_index = min(slice_begin_index + indices_slice_size, simple_polygon_size)
+                indices: List[str] = [str(begin_index + slice_index)
+                                      for slice_index in range(slice_begin_index, slice_end_index)]
                 indices_text: str = ", ".join(indices)
                 begin_text: str = "[" if slice_index == 0 else " "
                 end_text = ("," if slice_index < slices_count - 1
                             else (f"]" if last_polygon else "],"))
                 scad_lines.append(f"{indent}  {begin_text}{indices_text}{end_text}")
 
-            # Update *begin_index* for the next batch of *points*:
-            begin_index += polygon_size
+            # Update *begin_index* for the next batch of *points* for the next *simple_polygon*:
+            begin_index += simple_polygon_size
 
         # Close out the paths and output the *maximum_convexity*:
         scad_lines.append(f"{indent} ], convexity={maximum_convexity});  "
@@ -548,85 +555,6 @@ class SimplePolygon(Scad2D):
             y: float = center_y + radius * sin(angle)
             # print(f"[{index}]angle={degrees(angle} x={x} y={y}")
             points.append(P2D(x, y))
-
-    # SimplePolygon.circle():
-    def circle_append(self, center: P2D, diameter: float, points_count: int) -> None:
-        """Append a circle to SimplePolygon.
-
-        Args:
-            *center*)
-
-        """
-        # Grab some values from *simple_polygon* (i.e. *self*):
-        simple_polygon: SimplePolygon = self
-        points: List[P2D] = simple_polygon.points
-
-        # Compute some values that do not change over the loop iterations:
-        delta_angle: float = (2 * pi) / points_count
-        radius: float = diameter / 2.0
-        center_x: float = center.x
-        center_y: float = center.y
-
-        # Append each circle *point* to the *simple_polygon* *points*:
-        index: int
-        for index in range(points_count):
-            # Compute the *x* and *y* coordinate from *center*, *radius*, and *angle*:
-            angle: float = index * delta_angle
-            x: float = center_x + radius * cos(angle)
-            y: float = center_y + radius * sin(angle)
-            point: P2D = P2D(x, y)
-            points.append(point)
-
-    # SimplePolygon.indices_scad_lines_append():
-    def indices_scad_lines_append(self, scad_lines: List[str],
-                                  indent: str, start_index: int) -> int:
-        """Append the list of SimplePolygon point indices a lines list.
-
-        Args:
-            *scad_lines* (*List*[*str*]): The list of OpenSCAD lines to
-                append to.
-            *indent (*str): The indentation text to prefix to each line.
-            *start_index* (*int*): The starting index for points.
-
-        Returns:
-            (*int*) Returns the *end_index* after the indices have been
-                output.
-
-        """
-        # Grab some values from *simple_polygon* (i.e. *self*):
-        simple_polygon: SimplePolygon = self
-        name: str = simple_polygon.name
-        points: List[P2D] = simple_polygon.points
-
-        # Compute *end_index* from *start_index* and *points_size*:
-        points_size: int = len(points)
-        end_index: int = start_index + points_size
-
-        # Figure out how many slices to output (i.e. *slice_count*):
-        slice_size: int = 25
-        slices_count: int = int(ceil(float(points_size) / float(slice_size)))
-
-        # Output some debugging information:
-        scad_lines.append(f"{indent} // Polygon '{name}' {start_index}:{end_index-1}")
-
-        # Now output each slice:
-        slice_index: int
-        for slice_index in range(slices_count):
-            # Compute the *start_slice_index* and *end_slice_index* for this *slice_index*.
-            # The last *slice_index* may be less the *slice_size* in size:
-            start_slice_index: int = slice_index * slice_size
-            end_slice_index: int = min((slice_index + 1) * slice_size, points_size)
-
-            # Compute *indices* for the slice and convert the into a comma separated *line_text*:
-            indices: List[int] = list(range(start_slice_index, end_slice_index))
-            index: int
-            line_text: str = ", ".join([str(start_index + index) for index in indices])
-
-            # Compute the *front_text* and *end_text*, glue it together and append the line:
-            front_text: str = "  [" if slice_index == 0 else "  "
-            end_text: str = "]," if end_slice_index == points_size else ","
-            scad_lines.append(f"{indent}{front_text}{line_text}{end_text}")
-        return end_index
 
     # SimplePolygon.is_locked():
     def is_locked(self) -> bool:
@@ -1397,34 +1325,9 @@ class Polygon(Scad2D):
             *indent* (*str*): The indentatation prefix for each line.
 
         """
-        # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
-        convexity: int = polygon.convexity
-        name: str = polygon.name
         simple_polygons: List[SimplePolygon] = polygon.simple_polygons
-        simple_polygons_size: int = len(simple_polygons)
-
-        # Start the polygon command:
-        scad_lines.append(f"{indent}// Polygon '{name} [0-{simple_polygons_size-1}]'")
-        scad_lines.append(f"{indent}polygon(points = [")
-
-        # Output the polygon point values:
-        next_indent: str = indent + " "
-        index: int = 0
-        simple_polygon: SimplePolygon
-        for simple_polygon in simple_polygons:
-            index = simple_polygon.points_scad_lines_append(scad_lines, next_indent, index)
-
-        # Next output the path indices:
-        scad_lines.append(f"{indent} ], paths = [")
-        index = 0
-        for simple_polygon in simple_polygons:
-            index = simple_polygon.indices_scad_lines_append(scad_lines, next_indent, index)
-
-        # Close off the command with the optional *convexity* value*:
-        convexity_text: str = "" if convexity < 0 else f", convexity={convexity}"
-        scad_lines.append(f"{indent} ]{convexity_text}); "
-                          f"// End Polygon '{name}' [0-{simple_polygons_size-1}]")
+        polygon.polygon_scad_lines_append(simple_polygons, scad_lines, indent)
 
 
 # Union:
