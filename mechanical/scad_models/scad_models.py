@@ -209,10 +209,10 @@ class Romi:
         # All of the battery holes are done relative to the *battery_reference_hole*
         # indicated on the drawing of the dimensions and mounting holes seciont of the
         # "Pololu Romi Chassis User's Guide".
-        reference_hole_diameter: float
-        reference_hole_center: P2D
-        reference_hole_diameter, reference_hole_center = romi.hole_locate(-3.913146, -3.822591,
-                                                                          3.376610, 3.286051)
+        reference_hole: Circle = romi.hole_locate("Battery Reference Hole",
+                                                  -3.913146, 3.376610, -3.822591, 3.286051)
+        reference_hole_diameter: float = reference_hole.diameter
+        reference_hole_center: P2D = reference_hole.center
 
         # The battery holes have an upper and lower group.  The lower group resides between
         # the motors and the upper group is above the motors.  The lower group is organized
@@ -262,32 +262,24 @@ class Romi:
         # *upper_left_battery_slot*, *upper_right_battery_slot*, *lower_left_battery_slot*, and
         # *lower_righ_battery_slot*.  Underneath these 4 batteries are 2 more centered battery
         # slots that are called *upper_center_battery_slot* and *lower_center_battery_slot*:
-        upper_left_battery_slot: SimplePolygon = romi.rectangle_locate("Upper Left Battery Slot",
-                                                                       -5.550937, 4.252594,
-                                                                       -4.074563, 4.473067)
-        upper_left_battery_slot.lock()
-        upper_right_battery_slot: SimplePolygon = romi.rectangle_locate("Upper Right Battery Slot",
-                                                                        -3.621799, 4.252594,
-                                                                        -2.145425, 4.473067)
-        upper_right_battery_slot.lock()
-        lower_left_battery_slot: SimplePolygon = romi.rectangle_locate("Lower Left Battery Slot",
-                                                                       -5.590311, 3.705346,
-                                                                       -4.113925, 3.925815)
-        lower_left_battery_slot.lock()
-        lower_right_battery_slot: SimplePolygon = romi.rectangle_locate("Lower Right Battery Slot",
-                                                                        -3.661173, 3.705346,
-                                                                        -2.184799, 3.925815)
-        lower_right_battery_slot.lock()
-        upper_center_battery_slot: SimplePolygon = romi.rectangle_locate("Upper Center "
-                                                                         "Battery Slot",
-                                                                         -4.58637, 3.012429,
-                                                                         -3.109992, 3.232913)
-        upper_center_battery_slot.lock()
-        lower_center_battery_slot: SimplePolygon = romi.rectangle_locate("Lower Center "
-                                                                         "Battery Slot",
-                                                                         -4.625744, 2.465193,
-                                                                         -3.149354, 2.685665)
-        lower_center_battery_slot.lock()
+        upper_left_battery_slot: Square = romi.rectangle_locate("Upper Left Battery Slot",
+                                                                -5.550937, 4.252594,
+                                                                -4.074563, 4.473067)
+        upper_right_battery_slot: Square = romi.rectangle_locate("Upper Right Battery Slot",
+                                                                 -3.621799, 4.252594,
+                                                                 -2.145425, 4.473067)
+        lower_left_battery_slot: Square = romi.rectangle_locate("Lower Left Battery Slot",
+                                                                -5.590311, 3.705346,
+                                                                -4.113925, 3.925815)
+        lower_right_battery_slot: Square = romi.rectangle_locate("Lower Right Battery Slot",
+                                                                 -3.661173, 3.705346,
+                                                                 -2.184799, 3.925815)
+        upper_center_battery_slot: Square = romi.rectangle_locate("Upper Center Battery Slot",
+                                                                  -4.58637, 3.012429,
+                                                                  -3.109992, 3.232913)
+        lower_center_battery_slot: Square = romi.rectangle_locate("Lower Center Battery Slot",
+                                                                  -4.625744, 2.465193,
+                                                                  -3.149354, 2.685665)
 
         # *battery_slot_polygons* list and append them to *polygons*:
         battery_slot_polygons: List[SimplePolygon] = [
@@ -300,37 +292,30 @@ class Romi:
         # There 4 cutouts across the top of the battery case and 3 cutouts along the bottom.
         # The 4 upper cutouts are called *upper_outer_left_cutout*, *upper_inner_left_cutout*,
         # *upper_inner_right_cutout*, and *upper_outer_right_cutout*.
-        upper_outer_left_cutout: SimplePolygon = romi.rectangle_locate("Upper Outer Left Cutout",
-                                                                       -5.984008, 4.74865,
-                                                                       -5.302909, 4.965193)
-        upper_outer_left_cutout.lock()
-        upper_inner_left_cutout: SimplePolygon = romi.rectangle_locate("Upper Inner Left Cutout",
-                                                                       -5.23598, 4.669913,
-                                                                       -4.861965, 4.858886)
-        upper_inner_left_cutout.lock()
-        upper_inner_right_cutout: SimplePolygon = romi.rectangle_locate("Upper Inner Right Cutout",
-                                                                        -2.873772, 4.669913,
-                                                                        -2.499756, 4.858886)
-        upper_inner_right_cutout.lock()
-        upper_outer_right_cutout: SimplePolygon = romi.rectangle_locate("Upper Outer Right Cutout",
-                                                                        -2.432827, 4.74865,
-                                                                        -1.751728, 4.965193)
-        upper_outer_right_cutout.lock()
+        upper_outer_left_cutout: Square = romi.rectangle_locate("Upper Outer Left Cutout",
+                                                                -5.984008, 4.74865,
+                                                                -5.302909, 4.965193)
+        upper_inner_left_cutout: Square = romi.rectangle_locate("Upper Inner Left Cutout",
+                                                                -5.23598, 4.669913,
+                                                                -4.861965, 4.858886)
+        upper_inner_right_cutout: Square = romi.rectangle_locate("Upper Inner Right Cutout",
+                                                                 -2.873772, 4.669913,
+                                                                 -2.499756, 4.858886)
+        upper_outer_right_cutout: Square = romi.rectangle_locate("Upper Outer Right Cutout",
+                                                                 -2.432827, 4.74865,
+                                                                 -1.751728, 4.965193)
 
         # Thre are three cutouts across the bottom of the battery case and they are called
         # *lower_left_cutout*, *lower_center_cutout*, and *lower_right_cutout*:
-        lower_left_cutout: SimplePolygon = romi.rectangle_locate("Lower Left Cutout",
-                                                                 -5.572591, 1.939594,
-                                                                 -4.655272, 2.189594)
-        lower_left_cutout.lock()
-        lower_center_cutout: SimplePolygon = romi.rectangle_locate("Lower Center Cutout",
-                                                                   -4.340311, 2.032122,
-                                                                   -3.395425, 2.189594)
-        lower_center_cutout.lock()
-        lower_right_cutout: SimplePolygon = romi.rectangle_locate("Lower Right Cutout",
-                                                                  -3.080465, 1.939594,
-                                                                  -2.163146, 2.189594)
-        lower_right_cutout.lock()
+        lower_left_cutout: Square = romi.rectangle_locate("Lower Left Cutout",
+                                                          -5.572591, 1.939594,
+                                                          -4.655272, 2.189594)
+        lower_center_cutout: Square = romi.rectangle_locate("Lower Center Cutout",
+                                                            -4.340311, 2.032122,
+                                                            -3.395425, 2.189594)
+        lower_right_cutout: Square = romi.rectangle_locate("Lower Right Cutout",
+                                                           -3.080465, 1.939594,
+                                                           -2.163146, 2.189594)
 
         # Collect all of the cutouts into *cutout_polygons* and append to *polygons*:
         cutout_polygons: List[SimplePolygon] = [
@@ -504,24 +489,24 @@ class Romi:
         return simple_polygons, locations
 
     # Romi.hole_locate():
-    def hole_locate(self, left_x: float, right_x: float,
-                    above_y: float, below_y: float) -> Tuple[float, P2D]:
+    def hole_locate(self, name: str, x1: float, y1: float, x2: float, y2: float) -> Circle:
         """TODO."""
         romi: Romi = self
         origin_offset: P2D = romi.origin_offset
         inches2mm: float = romi.inches2mm
-        left_x *= inches2mm
-        right_x *= inches2mm
-        above_y *= inches2mm
-        below_y *= inches2mm
+        x1 *= inches2mm
+        y1 *= inches2mm
+        x2 *= inches2mm
+        y2 *= inches2mm
 
-        dx: float = right_x - left_x
-        dy: float = above_y - below_y
-        x: float = (left_x + right_x) / 2.0
-        y: float = (above_y + below_y) / 2.0
-        diameter: float = ((dx + dy) / 2.0)
-        center: P2D = P2D(x, y) - origin_offset
-        return diameter, center
+        dx: float = abs(x2 - x1)
+        dy: float = abs(y2 - y1)
+        center_x: float = (x1 + x2) / 2.0
+        center_y: float = (y1 + y2) / 2.0
+        diameter: float = (dx + dy) / 2.0
+        center: P2D = P2D(center_x, center_y) - origin_offset
+        hole: Circle = Circle(name, diameter, 8, center)
+        return hole
 
     # Romi.line_hole_polygons_get():
     def line_hole_polygons_get(self, lower_hex_table: Dict[str, P2D]) -> List[SimplePolygon]:
@@ -532,10 +517,11 @@ class Romi:
 
         # There is a line of holes along the bottom that have a smaller hole diameter.
         # We locate the smallest hole at the end of the line:
-        small_hole_diameter: float
-        small_hole_center: P2D
-        small_hole_diameter, small_hole_center = romi.hole_locate(-3.289535, -3.198980,
-                                                                  0.256524, 0.165984)
+        small_hole: Circle = romi.hole_locate("Small Hole",
+                                              -3.289535, 0.256524, -3.198980, 0.165984)
+        small_hole_diameter: float = small_hole.diameter
+        small_hole_center: P2D = small_hole.center
+
         if debugging:  # pragma: no cover
             print(f"small_hole_diameter={small_hole_diameter}")
             print(f"small_hole_center={small_hole_center}")
@@ -573,10 +559,10 @@ class Romi:
         # Since they are mirrored across the Y axis, we only worry about the right side.
         # The hole closest to the wheel is the "start" hole and the one farthest from the
         # wheel is the "end" hole.  We have to locate each of these holes:
-        lower_start_diameter: float
-        lower_start_center: P2D
-        lower_start_diameter, lower_start_center = romi.hole_locate(-1.483063, -1.357508,
-                                                                    1.348929, 1.223803)
+        lower_start: Circle = romi.hole_locate("Lower Start Hole",
+                                               -1.483063, 1.348929, -1.357508, 1.223803)
+        lower_start_diameter: float = lower_start.diameter
+        lower_start_center: P2D = lower_start.center
         lower_arc_start_angle: float = atan2(lower_start_center.y, lower_start_center.x)
         if debugging:  # pragma: no cover
             print(f"lower_start_diameter={lower_start_diameter}")
@@ -585,10 +571,10 @@ class Romi:
 
         # We pick the smallest hole that is next to the hole at the end to get the
         # *small_hole_diameter*:
-        lower_end_diameter: float
-        lower_end_center: P2D
-        lower_end_diameter, lower_end_center = romi.hole_locate(-3.14402, -3.053465,
-                                                                0.125287, 0.034732)
+        lower_end: Circle = romi.hole_locate("Lower End Hole",
+                                             -3.144020, 0.125287, -3.053465, 0.034732)
+        lower_end_diameter: float = lower_end.diameter
+        lower_end_center: P2D = lower_end.center
         small_hole_diameter: float = lower_end_diameter
 
         lower_arc_end_angle: float = atan2(lower_end_center.y, lower_end_center.x)
@@ -673,10 +659,10 @@ class Romi:
         debugging: bool = romi.debugging
 
         # Extract the origin hole information for the lower hexagon pattern:
-        lower_hex_hole_center: P2D
-        lower_hex_hole_diameter: float
-        lower_hex_hole_diameter, lower_hex_hole_center = romi.hole_locate(-2.454646, -2.329091,
-                                                                          1.553776, 1.428650)
+        lower_hex_hole: Circle = romi.hole_locate("Lower Hex Hole",
+                                                  -2.454646, 1.553776, -2.329091, 1.428650)
+        lower_hex_hole_center: P2D = lower_hex_hole.center
+        lower_hex_hole_diameter: float = lower_hex_hole.diameter
         if debugging:  # pragma: no cover
             print(f"lower_hex_hole_center={lower_hex_hole_center}")
             print(f"lower_hex_hole_diameter={lower_hex_hole_diameter}")
@@ -775,20 +761,20 @@ class Romi:
         # Since they are mirrored across the Y axis, we only worry about the right side.
         # The hole closest to the wheel is the "start" hole and the one farthest from the
         # wheel is the "end" hole.  We have to locate each of these holes:
-        upper_start_diameter: float
-        upper_start_center: P2D
-        upper_start_diameter, upper_start_center = romi.hole_locate(-1.483063, -1.357508,
-                                                                    4.651469, 4.526346)
+        upper_start: Circle = romi.hole_locate("Upper Start Hole",
+                                               -1.483063, 4.651469, -1.357508, 4.526346)
+        upper_start_diameter: float = upper_start.diameter
+        upper_start_center: P2D = upper_start.center
         upper_arc_start_angle: float = atan2(upper_start_center.y, upper_start_center.x)
         if debugging:  # pragma: no cover
             print(f"upper_start_diameter={upper_start_diameter}")
             print(f"upper_start_center={upper_start_center}")
             print(f"upper_start_angle={degrees(upper_arc_start_angle)}deg")
 
-        upper_end_diameter: float
-        upper_end_center: P2D
-        upper_end_diameter, upper_end_center = romi.hole_locate(-3.14402, -3.053465,
-                                                                5.840524, 5.749969)
+        upper_end: Circle = romi.hole_locate("Upper End Hole",
+                                             -3.14402, 5.840524, -3.053465, 5.749969)
+        upper_end_diameter: float = upper_end.diameter
+        upper_end_center: P2D = upper_end.center
         upper_arc_end_angle: float = atan2(upper_end_center.y, upper_end_center.x)
         if debugging:  # pragma: no cover
             print(f"upper_end_diameter={upper_end_diameter}")
@@ -873,10 +859,10 @@ class Romi:
 
         # For the upper hex pattern, the hole that is at the end of the 4 slots is selected
         # as the upper hex hole:
-        upper_hex_hole_center: P2D
-        upper_hex_hole_diameter: float
-        upper_hex_hole_diameter, upper_hex_hole_center = romi.hole_locate(-2.749535, -2.629075,
-                                                                          5.441567, 5.316441)
+        upper_hex_hole: Circle = romi.hole_locate("Upper Hex Hole",
+                                                  -2.749535, 5.441567, -2.629075, 5.316441)
+        upper_hex_hole_center: P2D = upper_hex_hole.center
+        upper_hex_hole_diameter: float = upper_hex_hole.diameter
         if debugging:  # pragma: no cover
             print(f"upper_hex_hole_center={upper_hex_hole_center}")
             print(f"upper_hex_hole_diameter={upper_hex_hole_diameter}")
