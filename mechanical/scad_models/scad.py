@@ -708,6 +708,8 @@ class SimplePolygon(Scad2D):
         points: List[P2D] = simple_polygon.points
         if locked:
             raise ValueError(f"'{simple_polygon.name}' is locked")
+        # For some reason, test coverage complains about the two variable declarations
+        # even thought the following code is covered.  Weird!!
         index: int  # pragma: no cover
         point: P2D  # pragma: no cover
         for index, point in enumerate(points):
@@ -1452,13 +1454,17 @@ class LinearExtrude(Scad3D):
         twist: float = linear_extrude.twist
 
         # Compute *scale_text* and *slices_text*:
-        scale_text: str = ""
         float_format: Callable[[float], str] = Scad.float_format
-        if initial_scale != 1.0:
-            scale_text = f", scale=[{float_format(initial_scale)}, {float_format(final_scale)}]"
-        elif final_scale != 1.0:
-            scale_text = f", scale={float_format(final_scale)}"
-        slices_text: str = f", slices={slices}" if slices > 0 else ""
+        initial_scale_text: str = float_format(initial_scale)
+        final_scale_text: str = float_format(final_scale)
+        scale_text: str = (f", scale=[{initial_scale_text}, {final_scale_text}]"
+                           if initial_scale != 1.0
+                           else (f", scale={final_scale_text}"
+                                 if final_scale != 1.0
+                                 else ""))
+        slices_text: str = (f", slices={slices}"
+                            if slices > 0
+                            else "")
 
         # Perform the the `linear_extrude` command append to *scad_lines*:
         scad_lines.append(f"{indent}// Begin LinearExtrude '{name}'")

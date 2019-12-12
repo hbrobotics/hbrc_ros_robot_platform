@@ -212,7 +212,7 @@ def test_simple_polygon() -> None:
     xy3: P2D = mirrored_x_polygon[3]
     assert xy3.x == 1.0 and xy3.y == -2.0
 
-    # Test SimpplePolygon.y_mirror():
+    # Test *SimplePolygon*.*y_mirror*() method:
     mirrored_y_polygon: SimplePolygon = simple_polygon.y_mirror("X Mirrored SimplePolygon1")
     xy0 = mirrored_y_polygon[0]
     assert xy0.x == -2.0 and xy0.y == 2.0
@@ -222,6 +222,24 @@ def test_simple_polygon() -> None:
     assert xy2.x == -1.0 and xy2.y == 1.0
     xy3 = mirrored_y_polygon[3]
     assert xy3.x == -1.0 and xy3.y == 2.0
+
+    # Test *SimplePolygon*.*rotate_points*() method.
+    origin: P2D = P2D(0.0, 0.0)
+    simple_polygon4: SimplePolygon = SimplePolygon("SimplePolygon4", [p1, p2, p3, p4], lock=False)
+    simple_polygon4.points_rotate(pi, origin)
+    xy0 = simple_polygon4[0]
+    assert round(xy0.x, 3) == -2.000 and round(xy0.y, 3) == -2.000
+    xy1 = simple_polygon4[1]
+    assert round(xy1.x, 3) == -2.000 and round(xy1.y, 3) == -1.000
+    xy2 = simple_polygon4[2]
+    assert round(xy2.x, 3) == -1.000 and round(xy2.y, 3) == -1.000
+    xy3 = simple_polygon4[3]
+    assert round(xy3.x, 3) == -1.000 and round(xy3.y, 3) == -2.000
+    simple_polygon4.lock()
+    try:
+        simple_polygon4.points_rotate(pi, origin)
+    except ValueError as value_error:
+        assert f"{value_error}" == "'SimplePolygon4' is locked"
 
 
 def test_polygon() -> None:
