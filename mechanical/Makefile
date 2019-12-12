@@ -40,6 +40,32 @@ clean:
 	rm -f ${ALL_PYL_FILES} ${ALL_COVER_FILES} .coverage
 	rm -rf ${CLEAN_DIRECTORIES}
 
+ETC_IMAGEMAGIC6_DIRECTORY := 
+IM6_DIR := /etc/ImageMagick-6
+PDF_FILE_BASES := 				\
+    romi-chasis-expansion-plate-dimensions	\
+    romi-chasis-expansion-plate-hole-alignment
+
+images:
+	if [ ! -f $(IM6_DIR)/policy-old.xml ] ;						\
+	   then	if [ ! -f $(IM6_DIR)/policy-old.xml ] ;					\
+		   then	echo "We need to install ImageMagik 6." ;			\
+		   	echo "Running sudo apt install imagemagick6" ;			\
+		   	echo "Please provide root password:" ;				\
+			sudo apt install imagemagick6 ;					\
+		fi ;									\
+		echo "We need to rename the $(IM6_DIR)/policy.xml file." ;		\
+		echo "Please provide root password (if requested):" ;			\
+                echo "Runnng sudo mv $(IM6_DIR)/polcy.xml $(IM6_DIR)/policy-old.xml" ;	\
+		sudo mv $(IM6_DIR)/polcy.xml $(IM6_DIR)/policy-old.xml ;		\
+           fi
+	for base in ${PDF_FILE_BASES} ; do 						\
+		echo "Producing png/$$base.png" ;					\
+		convert -density 100 -trim pdf/$$base.pdf -quality 100 png/$$base.png ;	\
+	done
+
+
+
 # The documentation for `pytest` and `pytest-cov` is a bit weak.  None of this makes
 # much sense and was arrived at by tedious trial and error.  There may be some strange
 # interaction between `pytest` and Python Virtual Environments that is causing all of

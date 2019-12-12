@@ -12,15 +12,17 @@ The basic class tree is:
 * Scad: Basic Scad Command
   * Scad2D: 2-dimensional Objects
     * Circle: A circle
-    * Square: Rectangle
+    * Square: A rectangle possibly rotated with possible rounded corners
     * SimplePolygon: Contructed of line segments and arc.
-    * Polygon: A SimplePolygon with multiple SimplePolygon holes.
+    * Polygon: A outer most SimplePolygon with optional SimplePolygon holes.
     * LinearExtrude: Linear extrusion of SCAD2D object
-    * RotateExtrude: Rotational extrusion of SCAD2D object
+    * RotateExtrude: Rotational extrusion of SCAD2D object (not implemented)
   * Scad3D:
     *
   * Transformations:
-
+  * Boolean Operations:
+    * Union
+    * Differerce
 """
 
 # MIT License
@@ -48,7 +50,7 @@ The basic class tree is:
 # <----------------------------------------100 Characters----------------------------------------> #
 
 # Import stuff from other libraries:
-from math import atan2, ceil, cos, degrees, pi, sin, sqrt
+from math import ceil, cos, degrees, pi, sin, sqrt
 from typing import Any, Callable, IO, List, Optional, Tuple
 
 
@@ -196,14 +198,8 @@ class P2D:
         #   x' = x * cos(angle) - y * sin(angle)
         #   y' = y * cos(angle) + x * sin(angle)
         p2d: P2D = self
-        center_x: float
-        center_y: float
-        if center is None:
-            center_x = 0.0
-            center_y = 0.0
-        else:
-            center_x = center.x
-            center_y = center.y
+        center_x: float = 0.0 if center is None else center.x
+        center_y: float = 0.0 if center is None else center.y
         x: float = p2d.x - center_x
         y: float = p2d.y - center_y
         sin_angle: float = sin(angle)
@@ -239,8 +235,102 @@ class Scad:
         # Stuff *name* into the *scad* object (i.e. *self*):
         self.name: str = name
 
-    # Scad.file_write():
-    def file_write(self, scad_file: IO[Any]) -> None:
+    # Scad.float_format():
+    @staticmethod
+    def float_format(value: float) -> str:
+        """Convert a float into a string."""
+        value_text: str = "{0:.3f}".format(value)
+        value_text = "0.000" if value_text == "-0.000" else value_text
+        return value_text
+
+    # Scad.keys_csv_file_write():
+    @staticmethod
+    def keys_csv_file_write(keys: List[Tuple[Any, ...]], csv_file: IO[Any]) -> None:
+        """Write out keys to an open file.
+
+        Args:
+            *keys* (*List*[*Tuple*[*Any*, ...]]: A list of keys to
+                output.
+            *csv_file* (*IO*[*Any*]): An open file to write to:
+
+        """
+        # Outut a header first:
+        float_format: Callable[[float], str] = Scad.float_format
+        csv_file.write("Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count\n")
+        key: Tuple[Any, ...]
+        for key in keys:
+            key_value: Any
+            key_texts: List[str] = []
+            for key_value in key:
+                key_text: str = (f'"{key_value}"' if isinstance(key_value, str)
+                                 else (float_format(key_value) if isinstance(key_value, float)
+                                       else str(key_value)))
+                key_texts.append(key_text)
+            csv_file.write(','.join(key_texts) + '\n')
+
+    # Scad.html_table_file_write():
+    @staticmethod
+    def keys_html_file_write(keys: List[Tuple[Any, ...]], html_file: IO[Any], title: str) -> None:
+        """Write out keys as an HTML table.
+
+        Args:
+            *keys* (*List*[*Tuple*[*Any*, ...]]: A list of keys to
+                output.
+            *html_file* (*IO*[*Any*]): An open file to write HTML to:
+            *title* (*str*): The title to use in the generated HTML.
+
+        """
+        # Output the HTML Head and start the HTML Body with *title* and Table:
+        html_file.write("<HTML>\n")
+        html_file.write(" <Head>\n")
+        html_file.write(f"  <Title>{title}</Title>\n")
+        html_file.write(" </Head>\n")
+        html_file.write(" <Body>\n")
+        html_file.write(f"  <H1>{title}</H1>\n")
+        html_file.write("  <Table>\n")
+
+        # Output the *headings*:
+        headings_text: str = "Index,Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count"
+        headings: List[str] = headings_text.split(',')
+        heading: str
+        heading_row_text: str = (
+            "   <TR>\n" +
+            '\n'.join([f'    <TH align="left">{heading}</TH>' for heading in headings]) +
+            "\n   </TR>\n"
+        )
+        # Now output all of the keys:
+        float_format: Callable[[float], str] = Scad.float_format
+        key: Tuple[Any, ...]
+        for key_index, key in enumerate(keys):
+            # Start a row for *key*:
+            if key_index % 20 == 0:
+                html_file.write(heading_row_text)
+            html_file.write("   <TR>\n")
+            html_file.write(f'    <TD align="left">{key_index}</TD>\n')
+            key_value: Any
+            for key_value in key:
+                # Output *key_value*:
+                key_text: str = (float_format(key_value) if isinstance(key_value, float)
+                                 else str(key_value))
+                html_file.write(f'    <TD align="left">{key_text}</TD>\n')
+            html_file.write("   </TR>\n")
+
+        # Wrap up the the Table, Body and HTML:
+        html_file.write("  </Table>\n")
+        html_file.write(" </Body>\n")
+        html_file.write("</HTML>\n")
+
+    # Scad.polygon_scad_lines_append():
+    def polygon_scad_lines_append(self, simple_polygons: "List[SimplePolygon]",
+                                  scad_lines: List[str], indent: str) -> None:  # pragma: no cover
+        """`Polygon` template command to a list of lines."""
+        # Grab *class_name* from *scad* (i.e *self*) and fail with a reasonable error message:
+        scad: Scad = self
+        class_name: str = scad.__class__.__name__
+        assert False, f"{class_name}.polygon_scad_lines_append() is not implemented yet."
+
+    # Scad.scad_file_write():
+    def scad_file_write(self, scad_file: IO[Any]) -> None:
         """Write out a `.scad` file.
 
         Args:
@@ -265,23 +355,6 @@ class Scad:
         # Output *scad_text* to *scad_file*:
         assert scad_file.writable(), f"Unable to write out .scad for '{name}'"
         scad_file.write(scad_text)
-
-    # Scad.float_format():
-    @staticmethod
-    def float_format(value: float) -> str:
-        """Convert a float into a string."""
-        value_text: str = "{0:.3f}".format(value)
-        value_text = "0.000" if value_text == "-0.000" else value_text
-        return value_text
-
-    # Scad.polygon_scad_lines_append():
-    def polygon_scad_lines_append(self, simple_polygons: "List[SimplePolygon]",
-                                  scad_lines: List[str], indent: str) -> None:  # pragma: no cover
-        """`Polygon` template command to a list of lines."""
-        # Grab *class_name* from *scad* (i.e *self*) and fail with a reasonable error message:
-        scad: Scad = self
-        class_name: str = scad.__class__.__name__
-        assert False, f"{class_name}.polygon_scad_lines_append() is not implemented yet."
 
     # Scad.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:  # pragma: no cover
@@ -564,6 +637,35 @@ class SimplePolygon(Scad2D):
         locked: bool = simple_polygon.locked
         return locked
 
+    # SimplePolygon.key():
+    def key(self) -> Tuple[Any, ...]:
+        """Return a key for *simple_polygon*."""
+        simple_polygon: SimplePolygon = self
+        name: str = simple_polygon.name
+        points: List[P2D] = simple_polygon.points
+        assert len(points) >= 1
+        point0: P2D = points[0]
+        x: float = point0.x
+        y: float = point0.y
+        x_maximum: float = x
+        x_minimum: float = x
+        y_maximum: float = y
+        y_minimum: float = y
+        point: P2D
+        for point in points:
+            x = point.x
+            y = point.y
+            x_maximum = max(x_maximum, x)
+            x_minimum = min(x_minimum, x)
+            y_maximum = max(y_maximum, y)
+            y_minimum = min(y_minimum, y)
+        dx: float = x_maximum - x_minimum
+        dy: float = y_maximum - y_minimum
+        x_center: float = (x_maximum + x_minimum) / 2.0
+        y_center: float = (y_maximum + y_minimum) / 2.0
+        key: Tuple[Any, ...] = ("SimplePolygon", name, x_center, y_center, dx, dy, 0.0)
+        return key
+
     # SimplePolygon.lock():
     def lock(self) -> None:
         """Force SimplePolygon to be locked."""
@@ -597,7 +699,7 @@ class SimplePolygon(Scad2D):
         points = list(points[:])
         return points
 
-    # SimplePolygon.points_rotoate():
+    # SimplePolygon.points_rotate():
     def points_rotate(self, angle: float, center: P2D):
         """Rotate all SimplePolygon points by an angle."""
         # Grab some values from *simple_polygon* (i.e. *self*):
@@ -606,8 +708,8 @@ class SimplePolygon(Scad2D):
         points: List[P2D] = simple_polygon.points
         if locked:
             raise ValueError(f"'{simple_polygon.name}' is locked")
-        index: int
-        point: P2D
+        index: int  # pragma: no cover
+        point: P2D  # pragma: no cover
         for index, point in enumerate(points):
             points[index] = point.rotate(angle, center)
 
@@ -677,63 +779,66 @@ class SimplePolygon(Scad2D):
         # `polygon` command:
         super().polygon_scad_lines_append([simple_polygon], scad_lines, indent)
 
-    # SimplePolygon.slot_append():
-    def slot_append(self, end_point1: P2D, end_point2: P2D,
-                    slot_length: float, slot_width: float, points_count: int) -> None:
-        """Append a slot to a SimplePolygon.
-
-        *end_point1* and *end_point2* define a line that the slot will
-        be alinged with.  The center point between *end_point1* and
-        *end_point2* is the center of the slot.  *slot_length* and
-        *slot_width* specify the dimensions of the slot.
+    # SimplePolygon.x_mirror():
+    def x_mirror(self, name: str, replace: Optional[str] = None) -> "SimplePolygon":
+        """Return an X-axis mirrored polygon.
 
         Args:
-            *end_point1* (*P*): One end point on the center-line of the
-                slot.
-            *end_point2* (*P*): The other end point on the center-line
-                of the slot.
-            *slot_length* (*float*): Specifies the overall length of
-                the slot.
-            *slot_width* (*float*): Specifies the width of the slot.
-            *points_count* (*int*): Specifies the number of points
-                to use to draw the rounded slot ends.
+            *name* (*str*): The name of the new x mirrored polygon.
+                The name is computed differently if *replace* is
+                specified.
+            *replace* (*str*): (Optional) If *replace* specified,
+                the a new name is constructed by taking the name of
+                the original *simple_polygon* (i.e. *self*) and
+                replacing all occurrances of *name* with *replace*.
 
         """
-        # Compute the *center* and *slot_angle* in radians:
-        center: P2D = (end_point1 + end_point2) / 2.0
-        slot_angle: float = atan2(end_point1.y - end_point2.y, end_point1.x - end_point2.x)
-
-        # Compute the two arc centers:
-        slot_radius: float = slot_width / 2.0
-        half_slot_length: float = slot_length / 2.0
-        degrees180: float = pi
-        center1: P2D = P2D(center.x + half_slot_length * cos(slot_angle),
-                           center.y + half_slot_length * sin(slot_angle))
-        center2: P2D = P2D(center.x + half_slot_length * cos(slot_angle + degrees180),
-                           center.y + half_slot_length * sin(slot_angle + degrees180))
-
-        # Append the two slot arcs to *simple_polygon* (i.e. *self*):
-        simple_polygon: SimplePolygon = self
-        degrees90: float = pi / 2.0
-        simple_polygon.arc_append(center1, slot_radius,
-                                  slot_angle - degrees90,
-                                  slot_angle + degrees90, points_count)
-        simple_polygon.arc_append(center2, slot_radius,
-                                  slot_angle + degrees180 - degrees90,
-                                  slot_angle + degrees180 + degrees90, points_count)
-
-    # SimplePolygon.y_mirror():
-    def y_mirror(self) -> "SimplePolygon":
-        """Return a copy Y axis mirrored polygon."""
         # Grab some values from *simple_polygon* (i.e. *self*):
         simple_polygon: SimplePolygon = self
-        name: str = simple_polygon.name
+        simple_polygon_name: str = simple_polygon.name
+
         points: List[P2D] = simple_polygon.points
+
+        # Compute *new_name* and *x_mirrored_points*:
+        new_name: str = (name if replace is None
+                         else simple_polygon_name.replace(name, replace))
         point: P2D
-        mirrored_points: List[P2D] = [P2D(-point.x, point.y) for point in points]
-        mirrored_polygon: SimplePolygon = SimplePolygon(f"Y-Mirror {name}",
-                                                        mirrored_points, lock=True)
-        return mirrored_polygon
+        x_mirrored_points: List[P2D] = [P2D(point.x, -point.y) for point in points]
+
+        # Construct the final *x_mirrored_simple_polygon* and return it.
+        x_mirrored_simple_polygon: SimplePolygon = SimplePolygon(new_name,
+                                                                 x_mirrored_points, lock=True)
+        return x_mirrored_simple_polygon
+
+    # SimplePolygon.y_mirror():
+    def y_mirror(self, name: str, replace: Optional[str] = None) -> "SimplePolygon":
+        """Return a Y-axis mirrored polygon.
+
+        Args:
+            *name* (*str*): The name of the new x mirrored polygon.
+                The name is computed differently if *replace* is
+                specified.
+            *replace* (*str*): (Optional) If *replace* specified,
+                the a new name is constructed by taking the name of
+                the original *simple_polygon* (i.e. *self*) and
+                replacing all occurrances of *name* with *replace*.
+
+        """
+        # Grab some values from *simple_polygon* (i.e. *self*):
+        simple_polygon: SimplePolygon = self
+        simple_polygon_name: str = simple_polygon.name
+        points: List[P2D] = simple_polygon.points
+
+        # Compute *new_name* and *y_mirrored_points*:
+        new_name: str = (name if replace is None
+                         else simple_polygon_name.replace(name, replace))
+        point: P2D
+        y_mirrored_points: List[P2D] = [P2D(-point.x, point.y) for point in points]
+
+        # Construct the final *y_mirrored_simple_polygon* and return it.
+        y_mirrored_simple_polygon: SimplePolygon = SimplePolygon(new_name,
+                                                                 y_mirrored_points, lock=True)
+        return y_mirrored_simple_polygon
 
 
 # Circle:
@@ -795,8 +900,9 @@ class Circle(SimplePolygon):
         return f"Circle('{name}',{diameter},{points_count},{center},{convexity})"
 
     # Circle.copy():
-    def copy(self, name: str, diameter: Optional[float], points_count: Optional[int],
-             center: Optional[P2D], replace: str = "") -> "Circle":
+    def copy(self, new_name: str, diameter: Optional[float] = None,
+             points_count: Optional[int] = None, center: Optional[P2D] = None,
+             replace: Optional[str] = None) -> "Circle":
         """Copy a circle replacing various values during copy.
 
         Returns a copy of *circle* (i.e. *self*) replacing any
@@ -806,16 +912,16 @@ class Circle(SimplePolygon):
         (i.e. *self*) name with *replace*.
 
         Args:
-            *name* (*str*): The name of the new *Circle* object.  This
-                is modified if the *replace* argument is present (see
-                below.)
+            *new_name* (*str*): The name of the new *Circle* object.
+                This is modified if the *replace* argument is present
+                (see below.)
             *diameter* (*float*): (Optional) The replacement value for
                 the  circle diameter.
             *center* (*P2D*): (Optional) The replacement value for the
                 rectangle center.
             *replace* (*str*): (Optional) If present, all occurances
-                of *name* in the original *circle* (i.e. *self*) name
-                are replaced with *replace*.
+                of *new_name* in the original *circle* (i.e. *self*)
+                name are replaced with *replace*.
 
         Returns:
             (*Circle*): Returns a new *Circle* with the appropriate
@@ -825,13 +931,14 @@ class Circle(SimplePolygon):
         # Grab some values from *circle* (i.e. *self*) or use the one new ones present from
         # the arguments:
         circle: Circle = self
+        name: str = circle.name
         diameter = circle.diameter if diameter is None else diameter
         center = circle.center if center is None else center
         points_count = circle.points_count if points_count is None else points_count
-        name = circle.name if replace is None else circle.name.replace(name, replace)
+        new_name = new_name if replace is None else name.replace(new_name, replace)
 
         # Create and return the *new_circle*:
-        new_circle: Circle = Circle(name, diameter, points_count, center)
+        new_circle: Circle = Circle(new_name, diameter, points_count, center)
         return new_circle
 
     # Circle.key():
@@ -876,6 +983,66 @@ class Circle(SimplePolygon):
             circle_indent += " "
         scad_lines.append(f"{circle_indent}circle(d={float_format(diameter)}, "
                           f"$fn={points_count});  // Circle '{name}'")
+
+    # Circle.x_mirror():
+    def x_mirror(self, new_name: str, replace: Optional[str] = None) -> "Circle":
+        """Return an X-axis mirrored Circle.
+
+        Args:
+            *new_name* (*str*): The new name of the new x mirrored
+                Circle.  The new name is computed differently if
+                *replace* is specified (see immediately below.)
+            *replace* (*str*): (Optional) If *replace* specified,
+                the a new name is constructed by taking the name of
+                the original *simple_polygon* (i.e. *self*) and
+                replacing all occurrances of *new_name* with *replace*.
+
+        """
+        # Grab some values from *circle* (i.e. *self*):
+        circle: Circle = self
+        center: P2D = circle.center
+        diameter: float = circle.diameter
+        name: str = circle.name
+        points_count: int = circle.points_count
+
+        # Compute *final_name*:
+        final_name: str = (new_name if replace is None
+                           else name.replace(new_name, replace))
+
+        # Construct the final *x_mirrored_simple_polygon* and return it.
+        new_center: P2D = P2D(center.x, -center.y)
+        x_mirrored_circle: Circle = Circle(final_name, diameter, points_count, new_center)
+        return x_mirrored_circle
+
+    # Circle.y_mirror():
+    def y_mirror(self, new_name: str, replace: Optional[str] = None) -> "Circle":
+        """Return an y-axis mirrored Circle.
+
+        Args:
+            *new_name* (*str*): The new name of the new y mirrored
+                Circle.  The new name is computed differently if
+                *replace* is specified (see immediately below.)
+            *replace* (*str*): (Optional) If *replace* specified,
+                the a new name is constructed by taking the name of
+                the original *simple_polygon* (i.e. *self*) and
+                replacing all occurrances of *new_name* with *replace*.
+
+        """
+        # Grab some values from *circle* (i.e. *self*):
+        circle: Circle = self
+        center: P2D = circle.center
+        diameter: float = circle.diameter
+        name: str = circle.name
+        points_count: int = circle.points_count
+
+        # Compute *final_name*:
+        final_name: str = (new_name if replace is None
+                           else name.replace(new_name, replace))
+
+        # Construct the final *x_mirrored_simple_polygon* and return it.
+        new_center: P2D = P2D(-center.x, center.y)
+        y_mirrored_circle: Circle = Circle(final_name, diameter, points_count, new_center)
+        return y_mirrored_circle
 
 
 # Square:
@@ -1015,10 +1182,10 @@ class Square(SimplePolygon):
                 f"{center_text}{rotate_text}{corner_radius_text}{corner_count_text})")
 
     # Square.copy():
-    def copy(self, name: str, dx: Optional[float], dy: Optional[float],
-             center: Optional[P2D], rotate: Optional[float],
-             corner_radius: Optional[float], corner_count: Optional[int],
-             replace: str = "") -> "Square":
+    def copy(self, name: str, dx: Optional[float] = None, dy: Optional[float] = None,
+             center: Optional[P2D] = None, rotate: Optional[float] = None,
+             corner_radius: Optional[float] = None, corner_count: Optional[int] = None,
+             replace: Optional[str] = None) -> "Square":
         """Copy a square replacing various values during copy.
 
         Returns a copy of *square* (i.e. *self*) replacing any
@@ -1133,6 +1300,76 @@ class Square(SimplePolygon):
         else:
             # Rounded corners need to be done with an OpenSCAD `polygon` command:
             square.polygon_scad_lines_append([square], scad_lines, indent)
+
+    # Square.x_mirror():
+    def x_mirror(self, new_name: str, replace: Optional[str] = None) -> "SimplePolygon":
+        """Return an X-axis mirrored Square.
+
+        Args:
+            *new_name* (*str*): The new name of the new x mirrored
+                Square.  The new name is computed differently if
+                *replace* is specified (see immediately below.)
+            *replace* (*str*): (Optional) If *replace* specified,
+                the a new name is constructed by taking the name of
+                the original *simple_polygon* (i.e. *self*) and
+                replacing all occurrances of *new_name* with *replace*.
+
+        """
+        # Grab some values from *square* (i.e. *self*):
+        square: Square = self
+        center: P2D = square.center
+        corner_count: int = square.corner_count
+        corner_radius: float = square.corner_radius
+        dx: float = square.dx
+        dy: float = square.dy
+        name: str = square.name
+        rotate: float = square.rotate
+
+        # Compute *final_name*:
+        final_name: str = (new_name if replace is None
+                           else name.replace(new_name, replace))
+
+        # Construct the final *x_mirrored_simple_polygon* and return it.
+        new_center: P2D = P2D(center.x, -center.y)
+        new_rotate: float = -rotate
+        x_mirrored_square: Square = Square(final_name, dx, dy, new_center,
+                                           new_rotate, corner_radius, corner_count)
+        return x_mirrored_square
+
+    # Square.y_mirror():
+    def y_mirror(self, new_name: str, replace: Optional[str] = None) -> "SimplePolygon":
+        """Return an y-axis mirrored Square.
+
+        Args:
+            *new_name* (*str*): The new name of the new y mirrored
+                Square.  The new name is computed differently if
+                *replace* is specified (see immediately below.)
+            *replace* (*str*): (Optional) If *replace* specified,
+                the a new name is constructed by taking the name of
+                the original *simple_polygon* (i.e. *self*) and
+                replacing all occurrances of *new_name* with *replace*.
+
+        """
+        # Grab some values from *square* (i.e. *self*):
+        square: Square = self
+        center: P2D = square.center
+        corner_count: int = square.corner_count
+        corner_radius: float = square.corner_radius
+        dx: float = square.dx
+        dy: float = square.dy
+        name: str = square.name
+        rotate: float = square.rotate
+
+        # Compute *final_name*:
+        final_name: str = (new_name if replace is None
+                           else name.replace(new_name, replace))
+
+        # Construct the final *x_mirrored_simple_polygon* and return it.
+        new_center: P2D = P2D(-center.x, center.y)
+        new_rotate: float = -rotate
+        y_mirrored_square: Square = Square(final_name, dx, dy, new_center,
+                                           new_rotate, corner_radius, corner_count)
+        return y_mirrored_square
 
 
 # Scad3D:
@@ -1383,6 +1620,15 @@ class Polygon(Scad2D):
         polygon: Polygon = self
         simple_polygons: List[SimplePolygon] = polygon.simple_polygons
         polygon.polygon_scad_lines_append(simple_polygons, scad_lines, indent)
+
+    # Polygon.simple_polygons_get():
+    def simple_polygons_get(self) -> List[SimplePolygon]:
+        """Return current list of Simple Polygons."""
+        polygon: Polygon = self
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        # Make a copy and return the result:
+        simple_polygons = simple_polygons[:]
+        return simple_polygons
 
 
 # Union:
