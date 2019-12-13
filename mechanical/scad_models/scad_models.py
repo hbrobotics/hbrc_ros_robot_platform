@@ -105,6 +105,19 @@ class Romi:
         wheel_well_y: float = radius * sin(wheel_well_angle)  # mm (upper right)
         wheel_well_corner: P2D = P2D(wheel_well_x, wheel_well_y)
 
+        # Compute the dimensions of the "neck" area of the *romi* platform:
+        inches2mm: float = romi.inches2mm
+        left_neck_x: float = -5.704091 * inches2mm
+        right_neck_x: float = -2.031646 * inches2mm
+        neck_dx: float = right_neck_x - left_neck_x
+        half_neck_dx: float = neck_dx / 2.0
+        top_neck_y: float = 3.410067 * inches2mm
+        bottom_neck_y: float = 2.465193 * inches2mm
+        neck_dy: float = top_neck_y - bottom_neck_y
+        assert neck_dy > 0.0
+        half_neck_dy = neck_dy / 2.0
+        # print(f"neck_dx={neck_dx}mm")
+
         # Perform any requested *debugging*:
         if debugging:  # pragma: no cover
             print(f"wheel_well_angle={wheel_well_angle}={degrees(wheel_well_angle)}deg")
@@ -128,6 +141,10 @@ class Romi:
 
         # Create the left wheel well:
         outline_polygon.point_append(P2D(-half_wheel_well_dx, half_wheel_well_dy))
+        outline_polygon.point_append(P2D(-half_wheel_well_dx, half_neck_dy))
+        outline_polygon.point_append(P2D(-half_neck_dx, half_neck_dy))
+        outline_polygon.point_append(P2D(-half_neck_dx, -half_neck_dy))
+        outline_polygon.point_append(P2D(-half_wheel_well_dx, -half_neck_dy))
         outline_polygon.point_append(P2D(-half_wheel_well_dx, -half_wheel_well_dy))
 
         # Create the lower arc:
@@ -137,8 +154,12 @@ class Romi:
 
         # Create the right wheel well:
         outline_polygon.point_append(P2D(half_wheel_well_dx, -half_wheel_well_dy))
+        outline_polygon.point_append(P2D(half_wheel_well_dx, -half_neck_dy))
+        outline_polygon.point_append(P2D(half_neck_dx, -half_neck_dy))
+        outline_polygon.point_append(P2D(half_neck_dx, half_neck_dy))
+        outline_polygon.point_append(P2D(half_wheel_well_dx, half_neck_dy))
         outline_polygon.point_append(P2D(half_wheel_well_dx, half_wheel_well_dy))
-        assert len(outline_polygon) == 2 * arc_count + 4
+        # assert len(outline_polygon) == 2 * arc_count + 4
 
         # Lock and return *outline_polygon*:
         outline_polygon.lock()
@@ -187,11 +208,25 @@ class Romi:
         mirrorable_polygons.extend(miscellaneous_holes)
         mirrorable_polygons.extend(vertical_rectangles)
 
+        # Do the random *center_rectangles_holes*:
+        bottom_rectangle: Square = romi.rectangle_locate("CENTER: Bottom Rectangle",
+                                                         -3.942201, -0.169016,
+                                                         -3.79352, -0.224126)
+        bottom_castor_rectangle: Square = romi.rectangle_locate("CENTER: Bottom Castor Rectangle",
+                                                                -3.930854, 1.164122,
+                                                                -3.804870, 1.226996)
+        top_castor_hole: Circle = romi.hole_locate("CENTER: Top Castor Hole",
+                                                   -3.930756, 5.394929,
+                                                   -3.805256, 5.520287)
+        center_rectangles_holes: List[SimplePolygon] = [
+            bottom_rectangle, bottom_castor_rectangle, top_castor_hole
+        ]
+
         mirrorable_polygon: SimplePolygon
         mirrored_polygons: List[SimplePolygon] = [mirrorable_polygon.y_mirror("RIGHT:", "LEFT:")
                                                   for mirrorable_polygon in mirrorable_polygons]
-        all_internal_polygons: List[SimplePolygon] = (battery_polygons +
-                                                      mirrorable_polygons + mirrored_polygons)
+        all_internal_polygons: List[SimplePolygon] = (battery_polygons + mirrorable_polygons +
+                                                      mirrored_polygons + center_rectangles_holes)
         all_polygons: List[SimplePolygon] = ([base_outline_polygon] + all_internal_polygons)
 
         internal_polygon: SimplePolygon
@@ -202,6 +237,110 @@ class Romi:
         # Create the final *base_scad_polygon*, write it out to disk and return it.
         base_scad_polygon: Polygon = Polygon("Romi Base ScadPolygon", all_polygons, lock=True)
         return base_scad_polygon
+
+    # Romi.battery_clips_get():
+    def battery_clips_get(self) -> List[SimplePolygon]:
+        """Return the 4 battery clip polygons."""
+        # A battery clip is identified by two rectangles -- the one on the left
+        # encloses the "dome* and the one the right that encloses the narrow slot.
+        # They come in large and small varieties.
+        def battery_clip_helper(name: str, is_large: bool, left_rectangle: Square,
+                                right_rectangle: Square) -> SimplePolygon:
+            """Help routine for generating battery clips."""
+            # Extract the X/Y coordinates from lowest (i.e. *x0*/*y0*) to highest (i.e. *x3*/*y3*):
+            x0: float = left_rectangle.center.x - left_rectangle.dx / 2.0
+            x1: float = left_rectangle.center.x + left_rectangle.dx / 2.0
+            x2: float = right_rectangle.center.x - right_rectangle.dx / 2.0
+            x3: float = right_rectangle.center.x + right_rectangle.dx / 2.0
+            y3: float = right_rectangle.center.y + right_rectangle.dy / 2.0
+            y2: float = left_rectangle.center.y + left_rectangle.dy / 2.0
+            y1: float = left_rectangle.center.y - left_rectangle.dy / 2.0
+            y0: float = right_rectangle.center.y - right_rectangle.dy / 2.0
+
+            # Do some value sanity checking:
+            assert x0 < x1 <= x2 < x3, f"{x0} {x1} {x2} {x3}"
+            assert y0 < y1 < y2 < y3, f"{y0} {y1} {y2} {y3}"
+
+            # Compute interesting points staring in upper leftt corner and going counter clock-wise:
+            p0: P2D = P2D(x3, y3)  # Slot Upper Right
+            p1: P2D = P2D(x2, y3)  # Slot Upper Left
+            p2: P2D = P2D(x2, y2)  # Slot Upper Corner (only for large clip)
+            p3: P2D = P2D(x1, y2)  # Slot Upper Arc Start
+            # p4: P2D = P2D(x0, (y1 + y2) / 2.0)  # Arc apex (not needed)
+            p5: P2D = P2D(x1, y1)  # Slot Lower Arc End
+            p6: P2D = P2D(x2, y1)  # Slot Lower Corner (only for large clip)
+            p7: P2D = P2D(x2, y0)  # Slot Lower Left
+            p8: P2D = P2D(x3, y0)  # Slot Lower Right
+
+            # Start to fill in the battery clip:
+            battery_clip: SimplePolygon = SimplePolygon(name, [], lock=False)
+            battery_clip.points_extend([p0, p1])
+            if is_large:
+                battery_clip.point_append(p2)
+            battery_clip.point_append(p3)
+
+            # Draw the arc:
+            left_dy: float = y2 - y1
+            radius: float = left_dy / 2.0
+            arc_center_x: float = x0 + radius
+            arc_center_y: float = (y1 + y2) / 2.0
+            arc_center: P2D = P2D(arc_center_x, arc_center_y)
+            start_angle: float = atan2(p3.y - arc_center_y, p3.x - arc_center_x)
+            end_angle: float = atan2(p5.y - arc_center_y, p5.x - arc_center_x) + 2.0 * pi
+            battery_clip.arc_append(arc_center, radius, start_angle, end_angle, 7)
+
+            # Wrap up the wrest of the *battery_clip*, lock it and return it:
+            if is_large:
+                battery_clip.point_append(p5)
+            battery_clip.points_extend([p6, p7, p8])
+            battery_clip.lock()
+            return battery_clip
+
+        romi: Romi = self
+        # The lowest battery is identified by two rectangles -- the one on the left
+        # encloses the "dome* and the one the right is a narrow slot.  The batteries
+        # are numbered from 0 (lower most) to 3 (upper most):
+        battery0_left_rectangle: Square = romi.rectangle_locate("Battery0 Left Rectangle",
+                                                                -3.060783, 2.425815,
+                                                                -2.922980, 2.701413)
+        battery0_right_rectangle: Square = romi.rectangle_locate("Battery0 Right Rectangle",
+                                                                 -2.844244, 2.311650,
+                                                                 -2.745811, 2.815583)
+        battery_clip0: SimplePolygon = battery_clip_helper("Battery Clip 0", True,
+                                                           battery0_left_rectangle,
+                                                           battery0_right_rectangle)
+
+        battery1_left_rectangle: Square = romi.rectangle_locate("Battery1 Left Rectangle",
+                                                                -2.941728, 3.002429,
+                                                                -2.844244, 3.266539)
+        battery1_right_rectangle: Square = romi.rectangle_locate("Battery1 Right Rectangle",
+                                                                 -2.844244, 2.882512,
+                                                                 -2.745811, 3.386457)
+        battery_clip1: SimplePolygon = battery_clip_helper("Battery Clip 1", False,
+                                                           battery1_left_rectangle,
+                                                           battery1_right_rectangle)
+
+        battery2_left_rectangle: Square = romi.rectangle_locate("Battery2 Left Rectangle",
+                                                                -2.051925, 3.665984,
+                                                                -1.9141182, 3.941567)
+        battery2_right_rectangle: Square = romi.rectangle_locate("Battery2 Right Rectangle",
+                                                                 -1.835382, 3.551803,
+                                                                 -1.736965, 4.055748)
+        battery_clip2: SimplePolygon = battery_clip_helper("Battery Clip 2", True,
+                                                           battery2_left_rectangle,
+                                                           battery2_right_rectangle)
+
+        battery3_left_rectangle: Square = romi.rectangle_locate("Battery3 Left Rectangle",
+                                                                -1.932882, 4.242594,
+                                                                -1.835382, 4.506693)
+        battery3_right_rectangle: Square = romi.rectangle_locate("Battery3 Right Rectangle",
+                                                                 -1.835382, 4.122677,
+                                                                 -1.736965, 4.626610)
+        battery_clip3: SimplePolygon = battery_clip_helper("Battery Clip 3", False,
+                                                           battery3_left_rectangle,
+                                                           battery3_right_rectangle)
+
+        return [battery_clip0, battery_clip1, battery_clip2, battery_clip3]
 
     # Romi.battery_polygons_get():
     def battery_polygons_get(self) -> List[SimplePolygon]:
@@ -359,12 +498,15 @@ class Romi:
         ]
         simple_polygons.extend(encoder_slots)
 
+        battery_clips: List[SimplePolygon] = romi.battery_clips_get()
+        simple_polygons.extend(battery_clips)
+
         return simple_polygons
 
     # Romi.hex_pattern_get():
     def hex_pattern_get(self, pattern_rows: Tuple[str, ...], slot_pairs: List[str],
-                        hex_origin: P2D, hole_diameter: float,
-                        label: str) -> Tuple[List[SimplePolygon], Dict[str, P2D]]:
+                        hex_origin: P2D, hole_diameter: float, label: str,
+                        include_short_slot: bool) -> Tuple[List[SimplePolygon], Dict[str, P2D]]:
         """Generate a hexagonal pattern of holes and slots.
 
         The Romi base and shelf have pattern of holes and slot that are
@@ -390,6 +532,9 @@ class Romi:
             *hole_diameter: (*float*): The diameter of the holes in
                 millimeters.
             *label* (*str*): The sub-label for the holes.
+            *include_short_slot* (*bool*): If *True* include the one
+                lower short slot that is only in the lower hex pattern;
+                otherwise, do not include the slot.
 
         Returns:
             (*List*[*SimplePolygon*], *Dict*[*str*, *P"]): Returns a
@@ -400,7 +545,6 @@ class Romi:
         """
         # Grab some values from *romi* (i.e. *self*):
         romi: Romi = self
-        inches2mm: float = romi.inches2mm
         debugging: bool = romi.debugging
 
         # The hexagonal slots and hole pattern is present on both the top and the
@@ -415,31 +559,26 @@ class Romi:
         hex_dy_pitch: float = 7.50
         half_hex_dx_pitch: float = hex_dy_pitch / sqrt(3.0)
 
-        # We need to get the dimensions for one vertical slot and compute the vertical *slot_width*
-        # and the *slot_length* which is distance between to centers of the arc end points:
-        slot_left_x: float = -2.437146 * inches2mm
-        slot_right_x: float = -2.346591 * inches2mm
-        slot_top_y: float = 1.339205 * inches2mm
-        slot_bottom_y: float = 1.051803 * inches2mm
-        slot_dx: float = slot_right_x - slot_left_x
-        slot_dy: float = slot_top_y - slot_bottom_y
-        # Remember: *slot_length* is from center to center, *NOT* edge to edge:
-        slot_length: float = slot_dy - slot_dx
-        slot_width: float = slot_dx
+        # We need to get the dimensions for one vertical slot and compute the *slot_dx*,
+        # *slot_dy* and *slot_corner_radius*.  Note that we want *slot_dx* and to measure
+        # the horizontal slot dimensions.  So, the dx/dy from the vertical slot is swapped:
+        lower_right_vertical_slot: Square = romi.rectangle_locate("Lower Right Hex Slot",
+                                                                  -1.925717, 1.347083,
+                                                                  -1.835161, 1.634484)
+        slot_dx: float = lower_right_vertical_slot.dy
+        slot_dy: float = lower_right_vertical_slot.dx
+        slot_corner_radius: float = slot_dy / 2.0
 
         # Perform any requested debugging:
         if debugging:  # pragma: no cover
             print("-------------------")
             print(f"hex_origin={hex_origin}")
             print(f"hole_diameter={hole_diameter}")
-            print(f"slot_width={slot_width}")
-            print(f"slot_length={slot_length}")
             print(f"half_hex_dx_pitch={half_hex_dx_pitch}")
             print(f"hex_dy_pitch={hex_dy_pitch}")
             print(f"slot_dx={slot_dx}")
             print(f"slot_dy={slot_dy}")
-            print(f"slot_length={slot_length}")
-            print(f"slot_width={slot_width}")
+            print(f"slot_corner_raidus={slot_corner_radius}")
 
         # Compute *upper_left_origin_x* and *upper_right_y* which is the X/Y location
         # the upper left location of the *pattern_rows*.  It is computed relative to
@@ -488,7 +627,6 @@ class Romi:
                         simple_polygons.append(hole)
 
         # Now sweep through *slot_pairs* and install all of the slots:
-        corner_radius: float = slot_width / 2.0
         slot_pair: str
         for slot_pair in slot_pairs:
             # Do one slot for each *slot_pair*:
@@ -497,10 +635,25 @@ class Romi:
             center: P2D = (hole1 + hole2) / 2.0
             slot_angle: float = atan2(hole1.y - hole2.y, hole1.x - hole2.x)
             slot: Square = Square(f"RIGHT: {label} Slot '{slot_pair}'",
-                                  slot_length, slot_width, center,
-                                  rotate=slot_angle, corner_radius=corner_radius,
+                                  slot_dx, slot_dy, center,
+                                  rotate=slot_angle, corner_radius=slot_corner_radius,
                                   corner_count=points_count)
             simple_polygons.append(slot)
+
+        # Deal with *short_slot*:
+        if include_short_slot:
+            short_slot_rectangle: Square = romi.rectangle_locate("Short Slot Rectangle",
+                                                                 -2.437146, 1.642358,
+                                                                 -2.346591, 1.831331)
+            short_slot_center: P2D = short_slot_rectangle.center
+            short_slot_dx: float = short_slot_rectangle.dx
+            short_slot_dy: float = short_slot_rectangle.dy
+            short_slot_corner_radius = short_slot_dx / 2.0
+            short_slot: Square = Square(f"Right: {label} Short Slot",
+                                        short_slot_dx, short_slot_dy, short_slot_center,
+                                        corner_radius=short_slot_corner_radius,
+                                        corner_count=points_count)
+            simple_polygons.append(short_slot)
 
         # Return the *simple_polygons* and *locations*:
         return simple_polygons, locations
@@ -709,7 +862,7 @@ class Romi:
                                                                      lower_slot_pairs,
                                                                      lower_hex_hole_center,
                                                                      lower_hex_hole_diameter,
-                                                                     "LOWER")
+                                                                     "LOWER", True)
         return lower_hex_polygons, lower_holes_table
 
     # Romi.miscellaneous_holes_get():
@@ -929,7 +1082,7 @@ class Romi:
                                                                      upper_slot_pairs,
                                                                      upper_hex_hole_center,
                                                                      upper_hex_hole_diameter,
-                                                                     "UPPER")
+                                                                     "UPPER", False)
 
         # The *upper_holes_table* is not needed, we just return *upper_hex_polygons*:
         return upper_hex_polygons

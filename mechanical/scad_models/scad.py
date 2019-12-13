@@ -690,6 +690,25 @@ class SimplePolygon(Scad2D):
         points: List[P2D] = simple_polygon.points
         points.append(point)
 
+    # SimplePolygon.points_extend():
+    def points_extend(self, new_points: List[P2D]) -> None:
+        """Append a list of points to a SimplePolygon.
+
+        Args:
+            *new_points* (*List*[*P2D*]): A list of points to append.
+
+        Raises:
+            *ValueError*(*str*): if *simple_polygon* (i.e. *self*.)
+            is locked.
+
+        """
+        # Grab *points* from *simple_polygon* (i.e. *self*) and tack *new_points* onto the end:
+        simple_polygon: SimplePolygon = self
+        points: List[P2D] = simple_polygon.points
+        new_point: P2D
+        for new_point in new_points:
+            points.append(new_point)
+
     # Scad.points_get():
     def points_get(self) -> List[P2D]:
         """Return the points associated with SimplePolygon."""
