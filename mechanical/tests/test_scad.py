@@ -26,8 +26,8 @@
 
 import io
 from math import pi
-from scad_models.scad import (Circle, LinearExtrude, P2D, P3D, Polygon, Scad, SimplePolygon,
-                              Square, Union)
+from scad_models.scad import (Circle, LinearExtrude, Module2D, P2D, P3D, Polygon, Scad,
+                              SimplePolygon, Square, Union)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -296,7 +296,7 @@ def test_polygon() -> None:
         assert input_scad_lines[8] == "", "[8]!"
 
     # Test the *Polygon*.*__getitem__*() and *Polygon*.*__size__*() methods:
-    new_square_polygon: Polygon = Polygon("New Square Polygon", [])
+    new_square_polygon: Polygon = Polygon("New Square Polygon", [], lock=False)
     assert len(new_square_polygon) == 0
     new_square_polygon.append(square_simple_polygon)
     assert len(new_square_polygon) == 1
@@ -396,6 +396,71 @@ def test_linear_extrude() -> None:
                              "corner_radius=0.000 corner_count=3"), "[2]!"
     assert scad_lines[3] == (" square([1.000, 1.000], center = true);"), "[3]!"
     assert scad_lines[4] == ("// End LinearExtrude 'Linear Extrude'"), "[4]!"
+
+
+def test_module2d() -> None:
+    """Test Module2D class."""
+    # Create some *Scad2D* objects to play with:
+    circle1: Circle = Circle("Circle 1", 10.0, 16)
+    square1: Square = Square("Sqaare 1", 10.0, 10.0)
+    square2: Square = Square("Square 2", 20.0, 20.0)
+
+    # Work on len(), str()
+    module2d1: Module2D = Module2D("Module2D 1", [], lock=False)
+    assert str(module2d1) == "Module2D('Module2D 1',[...],is_operator=False,lock=False)"
+    assert len(module2d1) == 0
+    module2d1.append(circle1)
+    assert len(module2d1) == 1
+    module2d1.extend([square1, square2])
+    assert len(module2d1) == 3
+
+    # Attempt to perform *scad_lines_append*() in unlocked state:
+    scad_lines: List[str] = []
+    try:
+        module2d1.scad_lines_append(scad_lines, "")
+        assert False, "scad_lines_append() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Module2D 'Module2D 1' is not locked yet."
+
+    # Now lock *module2d1* and verify that *append* and *extend*() do not work:
+    module2d1.lock()
+    try:
+        module2d1.append(circle1)
+        assert False, "append() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Can not append to Module2D 'Module2D 1' because is locked"
+    try:
+        module2d1.extend([circle1])
+        assert False, "extend() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Can not extend Module2D 'Module2D 1' because is locked"
+
+    # Now test *__getitem__* method:
+    assert module2d1[0] == circle1
+    assert module2d1[1] == square1
+    assert module2d1[2] == square2
+    try:
+        module2d1[3]
+        assert False, "__getiteme__ should have failed."  # pragma: no cover
+    except IndexError as index_error:
+        assert f"{index_error}" == "Index 3 exceeds 3 objects in Module2D 'Module2D 1'"
+
+    # Now verify that *scad_lines_append*() works:
+    module2d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 7
+    assert scad_lines[0] == "module Module2D 1() {", "[0]!"
+    assert scad_lines[1] == " circle(d=10.000, $fn=16);  // Circle 'Circle 1'", "[1]!"
+    assert scad_lines[2] == (" // Square 'Sqaare 1' dx=10.000 dy=10.000 center=P2D(0.000,0.000) "
+                             "corner_radius=0.000 corner_count=3"), "[2]!"
+    assert scad_lines[3] == " square([10.000, 10.000], center = true);", "[3]!"
+    assert scad_lines[4] == (" // Square 'Square 2' dx=20.000 dy=20.000 center=P2D(0.000,0.000) "
+                             "corner_radius=0.000 corner_count=3"), "[4]!"
+    assert scad_lines[5] == " square([20.000, 20.000], center = true);", "[5]!"
+    assert scad_lines[6] == "}", "[6]!"
+
+    # Verify that *is_operator* attribute can be set:
+    module2d2: Module2D = Module2D("Module2D 2", [], is_operator=True)
+    assert f"{module2d2}" == "Module2D('Module2D 2',[...],is_operator=True,lock=True)"
 
 
 def test_square() -> None:

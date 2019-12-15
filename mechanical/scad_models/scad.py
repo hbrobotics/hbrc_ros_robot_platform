@@ -520,6 +520,137 @@ class Scad2D(Scad):
         # Output the ending debugging comment:
         scad_lines.append(f"{indent}")
 
+    # Scad2D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:  # pragma: no cover
+        """Place holder for sub-class scad_lines_append methods."""
+        # Grab *class_name* from *scad2d* (i.e. *self*) and fail:
+        scad2d: Scad2D = self
+        class_name: str = scad2d.__class__.__name__
+        assert False, f"{class_name}.scad_lines_append() has not been implemented yet."
+
+
+# Module2D:
+class Module2D(Scad2D):
+    """Represents an OpenSCAD 2D Module."""
+
+    # Module2D.__init__():
+    def __init__(self, name: str, scad2ds: List[Scad2D], is_operator=False, lock=True) -> None:
+        """Initialize a Module2D."""
+        # Initialize the *Scad2D* parent class:
+        super().__init__(name)
+
+        # Load values into *module2d* (i.e. *self*):
+        # module2d: Module2D = self
+        self.is_operator: bool = is_operator
+        self.locked: bool = lock
+        self.scad2ds: List[Scad2D] = scad2ds[:]  # Make a copy
+
+    # Module2D.__str__():
+    def __str__(self) -> str:  # pragma: no cover
+        """Return Module2D as a string."""
+        # Grab some values from *module2d* (i.e. *self*):
+        module2d: Module2D = self
+        is_operator: bool = module2d.is_operator
+        locked: bool = module2d.locked
+        name: str = module2d.name
+        return f"Module2D('{name}',[...],is_operator={is_operator},lock={locked})"
+
+    # Module2D.__getitem__():
+    def __getitem__(self, index: int) -> Scad2D:
+        """Return a SCAD2 item from a Module2D."""
+        # Grab some values from *module2d* (i.e. *self*):
+        module2d: Module2D = self
+        scad2ds: List[Scad2D] = module2d.scad2ds
+
+        # Ensure that *index* is in bounds:
+        scad2ds_size: int = len(scad2ds)
+        if not (0 <= index < scad2ds_size):
+            name: str = module2d.name
+            raise IndexError(f"Index {index} exceeds {scad2ds_size} objects in Module2D '{name}'")
+
+        # Fetch *scad2d* and return it:
+        scad2d: Scad2D = scad2ds[index]
+        return scad2d
+
+    # Module2D.__len__():
+    def __len__(self) -> int:
+        """Return number of SCAD2D's in Module2D."""
+        # Grab some values from *module2d* (i.e. *self*):
+        module2d: Module2D = self
+        scad2ds: List[Scad2D] = module2d.scad2ds
+        scad2ds_size: int = len(scad2ds)
+        return scad2ds_size
+
+    # Module2D.append():
+    def append(self, scad2d: Scad2D) -> None:
+        """Append a Scad2D to a Module2D."""
+        # Grab some values from *scad2d* (i.e. *self*):
+        module2d: Module2D = self
+        locked: bool = module2d.locked
+        scad2ds: List[Scad2D] = module2d.scad2ds
+
+        # Make sure that we are not *locked*:
+        if locked:
+            name: str = module2d.name
+            raise ValueError(f"Can not append to Module2D '{name}' because is locked")
+
+        # Perform the *append*:
+        scad2ds.append(scad2d)
+
+    # Module2D.extend():
+    def extend(self, new_scad2ds: List[Scad2D]) -> None:
+        """Append a Scad2D to a Module2D."""
+        # Grab some values from *scad2d* (i.e. *self*):
+        module2d: Module2D = self
+        locked: bool = module2d.locked
+        scad2ds: List[Scad2D] = module2d.scad2ds
+
+        # Make sure that we are not *locked*:
+        if locked:
+            name: str = module2d.name
+            raise ValueError(f"Can not extend Module2D '{name}' because is locked")
+
+        # Perform the *append*:
+        scad2ds.extend(new_scad2ds)
+
+    # Module2d.lock():
+    def lock(self):
+        """Ensure that Module2D is locked."""
+        module2d: Module2D = self
+        module2d.locked = True
+
+    # Module2D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Circle to lines list.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *circle* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *module2d* (i.e. *self*):
+        module2d: Module2D = self
+        locked: bool = module2d.locked
+        name: str = module2d.name
+        scad2ds: List[Scad2D] = module2d.scad2ds
+
+        # Make sure that we are *locked*:
+        if not locked:
+            raise ValueError(f"Module2D '{name}' is not locked yet.")
+
+        # Output the module name defintition:
+        scad_lines.append(f"{indent}module {name}() {{")
+
+        # Output the *scad2d*s:
+        next_indent: str = indent + " "
+        scad2d: Scad2D
+        for scad2d in scad2ds:
+            scad2d.scad_lines_append(scad_lines, next_indent)
+
+        # Output the closing '}':
+        scad_lines.append(f"{indent}}}")
+
 
 # SimplePolygon:
 class SimplePolygon(Scad2D):
@@ -1614,6 +1745,9 @@ class Polygon(Scad2D):
         """
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
+        locked: bool = polygon.locked
+        if locked:
+            raise ValueError(f"Polygon '{polygon.name}' is locked and can not be appended to.")
         simple_polygons: List[SimplePolygon] = polygon.simple_polygons
         simple_polygons.append(simple_polygon)
 
@@ -1629,8 +1763,17 @@ class Polygon(Scad2D):
         """
         # Grab some values from *polygon* (i.e. *self*):
         polygon: Polygon = self
+        locked: bool = polygon.locked
+        if locked:
+            raise ValueError(f"Polygon '{polygon.name}' is locked and can not be extended.")
         simple_polygons: List[SimplePolygon] = polygon.simple_polygons
         simple_polygons.extend(additional_simple_polygons)
+
+    # Polygon.lock():
+    def lock(self):
+        """Lock Polygon from further expansion."""
+        polygon: Polygon = self
+        polygon.locked = True
 
     # Polygon.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
