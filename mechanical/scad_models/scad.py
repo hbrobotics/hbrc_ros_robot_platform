@@ -364,6 +364,60 @@ class Scad:
         assert False, f"{class_name}.scad_lines_append() not implemented yet"
 
 
+# ScadProgram:
+class ScadProgram:
+    """Represents top level OpenScad program."""
+
+    # ScadProgram.__init__():
+    def __init__(self, name: str) -> None:
+        """Initialize a ScadProgram."""
+        # Load values into *scad_program* (i.e. *self*):
+        # scad_program: ScadProgram = self
+        self.name: str = name
+        self.scads: List[Scad] = []
+
+    # ScadProgram.__str__():
+    def __str__(self) -> str:
+        """Return a string representation of a ScadProgram."""
+        # Grab some values out of *scad_program* (i.e. *self*):
+        scad_program: ScadProgram = self
+        name: str = scad_program.name
+        return f"ScadProgram('{name}')"
+
+    # ScadProgram.append():
+    def append(self, scad: Scad):
+        """Append a Scad to a ScadProgram."""
+        scad_program: ScadProgram = self
+        scads: List[Scad] = scad_program.scads
+        scads.append(scad)
+
+    # ScadProgram.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append ScadProgram to lines list.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *circle* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values out of *scad_program* (i.e. *self*):
+        scad_program: ScadProgram = self
+        name: str = scad_program.name
+        scads: List[Scad] = scad_program.scads
+
+        # Append the initial comment:
+        scad_lines.append(f"{indent}// Begin ScadProgram('{name}')")
+
+        # Append each *scad* to *scad_lines*:
+        scad: Scad
+        for scad in scads:
+            scad.scad_lines_append(scad_lines, indent)
+
+        # Append the final comment:
+        scad_lines.append(f"{indent}// End ScadProgram('{name}')")
+
+
 # Scad2D:
 class Scad2D(Scad):
     """Represents 2-dimensional Scad objects."""

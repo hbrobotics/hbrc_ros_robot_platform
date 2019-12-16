@@ -27,7 +27,7 @@
 import io
 from math import pi
 from scad_models.scad import (Circle, If2D, LinearExtrude, Module2D, P2D, P3D, Polygon, Scad,
-                              SimplePolygon, Square, Union, UseModule2D)
+                              ScadProgram, SimplePolygon, Square, Union, UseModule2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -102,6 +102,20 @@ def test_p3d() -> None:
 
     # Division scaling:
     assert f"{p123 / 2.0}" == "P3D(0.500,1.000,1.500)"
+
+
+def test_scad_program() -> None:
+    """Test ScadProgram class."""
+    scad_program: ScadProgram = ScadProgram("ScadProgram 1")
+    assert str(scad_program) == "ScadProgram('ScadProgram 1')"
+    circle1: Circle = Circle('Circle 1', 1.0, 8)
+    scad_program.append(circle1)
+    scad_lines: List[str] = []
+    scad_program.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == "// Begin ScadProgram('ScadProgram 1')", "[0]!"
+    assert scad_lines[1] == "circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[10]!"
+    assert scad_lines[2] == "// End ScadProgram('ScadProgram 1')", "[2]!"
 
 
 def test_simple_polygon() -> None:
