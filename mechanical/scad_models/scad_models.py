@@ -8,7 +8,8 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from scad_models.scad import Circle, LinearExtrude, P2D, Polygon, Scad, SimplePolygon, Square, Union
+from scad_models.scad import (Circle, If2D, Module2D, P2D, Polygon,
+                              SimplePolygon, ScadProgram, Square, UseModule2D)
 from typing import Any, Dict, IO, List, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -624,16 +625,16 @@ class Romi:
             x: float = x_start + float(x_index) * x_pitch
             y_index: int
             for y_index in range(4):
-                print(f"({x_index}, {y_index})")
+                # print(f"({x_index}, {y_index})")
                 y: float = y_start + y_pitches[y_index]
                 if y_index in (0, 1) and x_index == 4:  # Skip column 4
-                    print(f"  Skip [{x_index}, {y_index}]")
+                    # print(f"  Skip [{x_index}, {y_index}]")
                     pass
                 elif y_index in (2, 3) and x_index in (1, 2, 3, 4, 5, 6, 7):  # Skip middle columns
-                    print(f"  SKIP [{x_index}, {y_index}]")
+                    # print(f"  SKIP [{x_index}, {y_index}]")
                     pass
                 else:
-                    print(f"  [{x_index},{y_index}]")
+                    # print(f"  [{x_index},{y_index}]")
                     center: P2D = P2D(x, y)
                     large_hole: Circle = Circle(f"Large Hole[{x_index}, {y_index}]",
                                                 large_hole_diameter, 8, center)
@@ -1386,34 +1387,64 @@ class Romi:
 def main() -> int:  # pragma: no cover
     """Generate the openscand file."""
     # print("romi_model.main() called")
-    romi: Romi = Romi()
-    romi_base_polygon: Polygon = romi.base_scad_polygon_generate()
-    scad_file: IO[Any]
-    with open("romi_base_dxf.scad", "w") as scad_file:
-        romi_base_polygon.scad_file_write(scad_file)
+    # scad_file: IO[Any]
+    # with open("romi_base_dxf.scad", "w") as scad_file:
+    #     romi_base_polygon.scad_file_write(scad_file)
 
-    romi_base_extruded_polygon: LinearExtrude = LinearExtrude("Romi Base Extrude",
-                                                              romi_base_polygon, 9.6)
-    union: Union = Union("Base Union", [romi_base_extruded_polygon])
-    with open("romi_base.scad", "w") as scad_file:
-        union.scad_file_write(scad_file)
+    # romi_base_extruded_polygon: LinearExtrude = LinearExtrude("Romi Base Extrude",
+    #                                                           romi_base_polygon, 9.6)
+    # union: Union = Union("Base Union", [romi_base_extruded_polygon])
+    # with open("romi_base.scad", "w") as scad_file:
+    #     union.scad_file_write(scad_file)
 
-    romi_base_simple_polygons: List[SimplePolygon] = romi_base_polygon.simple_polygons_get()
-    romi_base_simple_polygon: SimplePolygon
+    # romi_base_simple_polygons: List[SimplePolygon] = romi_base_polygon.simple_polygons_get()
+    # romi_base_simple_polygon: SimplePolygon
     # Generate *romi_base_keys* skipping the first *SimplePolygon* which is the outer one:
-    romi_base_keys: List[Tuple[Any, ...]] = [romi_base_simple_polygon.key()
-                                             for romi_base_simple_polygon
-                                             in romi_base_simple_polygons[1:]]
-    romi_base_keys.sort()
-    csv_file: IO[Any]
-    with open("romi_base.csv", "w") as csv_file:
-        Scad.keys_csv_file_write(romi_base_keys, csv_file)
-    html_file: IO[Any]
-    with open("romi_base.html", "w") as html_file:
-        Scad.keys_html_file_write(romi_base_keys, html_file, "Romi Base Holes and Rectangles")
+    # romi_base_keys: List[Tuple[Any, ...]] = [romi_base_simple_polygon.key()
+    #                                          for romi_base_simple_polygon
+    #                                          in romi_base_simple_polygons[1:]]
+    # romi_base_keys.sort()
 
+    # Create the top level *scad_models* program:
+    scad_models: ScadProgram = ScadProgram("Scad models")
+
+    # Create the *romi* object for constructing various portions of a Romi platform:
+    romi: Romi = Romi()
+
+    # Start with the just *rome_base_polygon* and append it to *scad_models*:
+    romi_base_polygon: Polygon = romi.base_scad_polygon_generate()
+    romi_base_polygon_module: Module2D = Module2D("Romi_Base_Polygon_Module", [romi_base_polygon])
+    scad_models.append(romi_base_polygon_module)
+
+    # Next appedn the *expansion_polygon*:
     expansion_polygon: Polygon = romi.expansion_polygon_get()
-    with open("expansion.scad", "w") as scad_file:
-        expansion_polygon.scad_file_write(scad_file)
+    expansion_module: Module2D = Module2D("Romi_Expansion_Polygon_Module", [expansion_polygon])
+    scad_models.append(expansion_module)
+
+    # Now construct an if-then-else sequence to showing the desired module:
+    if2d: If2D = If2D("Polygon Modules", 'name == "romi_base"',
+                      UseModule2D("Rom Base Polygon", romi_base_polygon_module))
+    if2d.then_append('name == "expansion"', UseModule2D("Expansion Polygon", expansion_module))
+    if2d.else_set(UseModule2D("Romi Base Polygon", romi_base_polygon_module))
+    if2d.lock()
+    scad_models.append(if2d)
+
+    scad_lines: List[str] = []
+    scad_models.scad_lines_append(scad_lines, "")
+    scad_lines.append("")
+    scad_text: str = '\n'.join(scad_lines)
+    scad_file: IO[Any]
+    with open("scad_models.scad", "w") as scad_file:
+        scad_file.write(scad_text)
+
+    # csv_file: IO[Any]
+    # with open("romi_base.csv", "w") as csv_file:
+    #      Scad.keys_csv_file_write(romi_base_keys, csv_file)
+    # html_file: IO[Any]
+    # with open("romi_base.html", "w") as html_file:
+    #     Scad.keys_html_file_write(romi_base_keys, html_file, "Romi Base Holes and Rectangles")
+
+    # with open("expansion.scad", "w") as scad_file:
+    #     expansion_polygon.scad_file_write(scad_file)
 
     return 0

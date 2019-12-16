@@ -8,21 +8,21 @@ The basic class tree is:
 
 * P: Generic point
   * P2D: 2-dimensional Point
-  * P2D: 3-dimensional Point
+  * P3D: 3-dimensional Point
 * Scad: Basic Scad Command
-  * Scad2D: 2-dimensional Objects
-    * Circle: A circle
-    * Square: A rectangle possibly rotated with possible rounded corners
-    * SimplePolygon: Contructed of line segments and arc.
-    * Polygon: A outer most SimplePolygon with optional SimplePolygon holes.
-    * LinearExtrude: Linear extrusion of SCAD2D object
-    * RotateExtrude: Rotational extrusion of SCAD2D object (not implemented)
-  * Scad3D:
-    *
-  * Transformations:
-  * Boolean Operations:
-    * Union
-    * Differerce
+  * Scad: A generic OpenScad command
+    * ScadProgram: A top level OpenSCAD program.
+    * Scad2D: 2-dimensional Objects
+      * Circle: A circle
+      * Module2D: A 2D module definition.
+      * Polygon: A outer most SimplePolygon with optional SimplePolygon holes.
+      * If2D: An if-then-else tree for SCAD2D's.
+      * SimplePolygon: A polygon contructed of line segments and arc.
+      * Square: A rotatable rectangle possibly rounded corners
+      * UseModule3D: A use of a Module2D.
+    * Scad3D:
+      * LinearExtrude: Linear extrusion of SCAD2D into a SCAD23.
+      * Union3D: A Union of Scad3D object.
 """
 
 # MIT License

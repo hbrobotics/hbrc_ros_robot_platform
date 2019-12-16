@@ -1,11 +1,21 @@
+# Virtual Environment stuff.  Note that `VIRTUAL_ENV` must be defined as an envrionment
+# variable by your virtual environments wrapper:
+PYTHON_VERSION := python3.6
+VIRTUAL_ENV_SCAD_MODELS_DIRECTORY := $(VIRTUAL_ENV)/lib/$(PYTHON_VERSION)/site-packages/scad_models
+
+# Define the source SCAD Modles `.py` files and their installed location:
+SCAD_MODELS_BASE_PY_FILES :=			\
+    __init__.py					\
+    scad.py					\
+    scad_models.py
 SCAD_MODELS_DIRECTORY := scad_models
-SCAD_MODELS_PY_FILES :=				\
-    $(SCAD_MODELS_DIRECTORY)/__init__.py	\
-    $(SCAD_MODELS_DIRECTORY)/scad.py		\
-    $(SCAD_MODELS_DIRECTORY)/scad_models.py
+SCAD_MODELS_PY_FILES := ${SCAD_MODELS_BASE_PY_FILES:%=$(SCAD_MODELS_DIRECTORY)/%}
+INSTALLED_SCAD_MODELS_PY_FILES := 						\
+    ${SCAD_MODELS_BASE_PY_FILES:%=$(VIRTUAL_ENV_SCAD_MODELS_DIRECTORY)/%}
 SCAD_MODELS_PYL_FILES := ${SCAD_MODELS_PY_FILES:%.py=%.pyl}
 SCAD_MODELS_COVER_FILES := ${SCAD_MODELS_PY_FILES:%=%,cover}
 
+# The `tests` directory is where all of the Python unit tests live:
 TESTS_DIRECTORY := tests
 TESTS_PY_FILES :=				\
     $(TESTS_DIRECTORY)/test_scad_models.py	\
@@ -13,12 +23,7 @@ TESTS_PY_FILES :=				\
 TESTS_PYL_FILES := ${TESTS_PY_FILES:%.py=%.pyl}
 TESTS_COVER_FILES := ${TESTS_PY_FILES:%=%,cover}
 
-CLEAN_DIRECTORIES :=				\
-    .mypy_cache					\
-    .pytest_cache				\
-    scad_models/__pycache__			\
-    tests/__pycache__
-
+# All of the Python (`.py`), Python lint (`.pyl`) and test coverage (`,cover`) files:
 ALL_PY_FILES :=					\
     ${SCAD_MODELS_PY_FILES}			\
     ${TESTS_PY_FILES}
@@ -29,47 +34,77 @@ ALL_COVER_FILES :=				\
     ${SCAD_MODELS_COVER_FILES}			\
     ${TESTS_COVER_FILES}
 
-.PHONY: all clean test
+# These are the various `.dxf` directories and files:
+DXF_DIRECTORY := dxf
+DXF_FILES :=					\
+    $(DXF_DIRECTORY)/romi_base.dxf		\
+    $(DXF_DIRECTORY)/expansion.dxf
 
-all: ${ALL_PYL_FILES}
-	pip install .
-	rm -f ${SCAD_FILES}
+# These are the various `.png` file definitions and flags:
+PNG_FLAGS := --imgsize 1024,1024 --projection ortho --camera=0,0,425,0,0,0
+PNG_THUMB_FLAGS := --imgsize 128,128 --projection ortho --camera=0,0,425,0,0,0
+PNG_DIRECTORY := png
+PNG_FILES :=					\
+    $(PNG_DIRECTORY)/expansion.png		\
+    $(PNG_DIRECTORY)/romi_base.png		\
+    $(PNG_DIRECTORY)/thumb_expansion.png	\
+    $(PNG_DIRECTORY)/thumb_romi_base.png
+
+# These are the directories that are entirely removed for the `clean` target:
+CLEAN_DIRECTORIES :=				\
+    .mypy_cache					\
+    .pytest_cache				\
+    scad_models/__pycache__			\
+    tests/__pycache__
+
+.PHONY: all clean test dxf_files
+
+
+# This is the top level target that builds everything.  It uses sub-targets to
+# force things to be built in the "correct* order:
+all: ${DXF_FILES} ${PNG_FILES} README.html
+
+# This is the target the generates the `.dxf` files from the OpenSCAD files:
+${DXF_FILES}: ${INSTALLED_SCAD_MODELS_PY_FILES}
+
+# This is the target that forces all of the code to be pushed through the
+# Python linting programs `flake8`, `mypy`, and `pydocstyle`.  Each time
+# the code succeeds it leaves behing a `.pyl` file to indicate that it succeeded:
+${INSTALLED_SCAD_MODELS_PY_FILES}: ${ALL_PYL_FILES}
+
+# This forces all `.py` files in the `scad_models` package to be installed in
+# the Python virtual environment:
+${INSTALLED_SCAD_MODELS_PY_FILES}: ${SCAD_MODELS_PY_FILES}
 	pip install .
 
+# Individual targets for generating `.png` files:
+$(PNG_DIRECTORY)/expansion.png: scad_models.scad
+	openscad scad_models.scad -D 'name="expansion"' $(PNG_FLAGS) -o $@
+$(PNG_DIRECTORY)/romi_base.png: scad_models.scad
+	openscad scad_models.scad -D 'name="romi_base"' $(PNG_FLAGS) -o $@
+$(PNG_DIRECTORY)/thumb_expansion.png: scad_models.scad
+	openscad scad_models.scad -D 'name="expansion"' $(PNG_THUMB_FLAGS) -o $@
+$(PNG_DIRECTORY)/thumb_romi_base.png: scad_models.scad
+	openscad scad_models.scad -D 'name="romi_base"' $(PNG_THUMB_FLAGS) -o $@
+
+# This runs the `scad_models` programe to generate `scad_models.scad`:
+scad_models.scad: ${INSTALLED_SCAD_MODELS_PY_FILES}
+	scad_models
+
+# Construct the `README.html` for local reading:
+README.html: README.md
+	markdown README.md > README.html
+
+# Cleans everything up:
 clean:
-	rm -f ${ALL_PYL_FILES} ${ALL_COVER_FILES} .coverage
+	rm -f ${ALL_PYL_FILES} ${ALL_COVER_FILES} ${DXF_FILES} ${PNG_FILES} .coverage
+	rm -f README.html~ README.html setup.py,cover
 	rm -rf ${CLEAN_DIRECTORIES}
-
-ETC_IMAGEMAGIC6_DIRECTORY := 
-IM6_DIR := /etc/ImageMagick-6
-PDF_FILE_BASES := 				\
-    romi-chasis-expansion-plate-dimensions	\
-    romi-chasis-expansion-plate-hole-alignment
-
-images:
-	if [ ! -f $(IM6_DIR)/policy-old.xml ] ;						\
-	   then	if [ ! -f $(IM6_DIR)/policy-old.xml ] ;					\
-		   then	echo "We need to install ImageMagik 6." ;			\
-		   	echo "Running sudo apt install imagemagick6" ;			\
-		   	echo "Please provide root password:" ;				\
-			sudo apt install imagemagick6 ;					\
-		fi ;									\
-		echo "We need to rename the $(IM6_DIR)/policy.xml file." ;		\
-		echo "Please provide root password (if requested):" ;			\
-                echo "Runnng sudo mv $(IM6_DIR)/polcy.xml $(IM6_DIR)/policy-old.xml" ;	\
-		sudo mv $(IM6_DIR)/polcy.xml $(IM6_DIR)/policy-old.xml ;		\
-           fi
-	for base in ${PDF_FILE_BASES} ; do 						\
-		echo "Producing png/$$base.png" ;					\
-		convert -density 100 -trim pdf/$$base.pdf -quality 100 png/$$base.png ;	\
-	done
-
-
 
 # The documentation for `pytest` and `pytest-cov` is a bit weak.  None of this makes
 # much sense and was arrived at by tedious trial and error.  There may be some strange
 # interaction between `pytest` and Python Virtual Environments that is causing all of
-# this strangeness.  Altenatively, this might just be poor integration between the
+# this strangeness.  Alternatively, this might just be poor integration between the
 # overall `pytest` package and the `pytest-cov` plugin for `pytest`.  Extensive web
 # searching did not uncover any real hints.
 #
@@ -85,7 +120,7 @@ images:
 #   why `-cov=DIR` does not do this; but it does not.
 # * `tests`: The directory containing the `test_*.py` test files.  These files are
 #   have individual `test_*()` functions that are exectutedy by `pytest`.
-# What a total pain in the tush!
+# What a total pain in the rear end!
 test: all
 	rm -f ${ALL_COVER_FILES} .coverage
 	pytest --cov=scad_models --cov=tests --cov-append --cov-report=annotate \

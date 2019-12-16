@@ -21,7 +21,7 @@ systems and Linux distributions you are on your own.
   * Setup a Python Virtual Environment:
 
             mkvirtualenv -a .../somewhere -p python3.6 hr2
-            workon python hr2
+            workon hr2
 
 * Install the required Python development tools:
 
@@ -40,72 +40,141 @@ systems and Linux distributions you are on your own.
 
 * Run `openscad` and run "[Design]=>[Preview]":
 
-            openscad romi_base.scad
+  There is one `scad_models.scad` file from which all of the variouls
+  models are derived.  To view each model:
 
-* That is as far as we have gotten so far.
+            openscad scad_models.scad -D 'name="NAME"'
+
+  where NAME is one of:
+
+  * `romi_base`: This is the basic polygon that represents the Romi
+    Chasis.  It is 2D only.
+
+  * `expansion`: This is the basic polygon that represent the Romi
+    Expansion Plate to which the arm is attached.
+
+  After you run `openscad` use your mouse to select `[Design]'=>'[Preveiw]',
+  to show the resulting model.
 
 ## Documentation:
 
-### Pololu Romi Documentation:
+### Remote Documentation
 
-* [Pololu Romi Chasis User's Guide](https://www.pololu.com/docs/0J68/all):
-  The Pololu Romi is mostly documented by there web site.  Alas, there is no
-  `.pdf` version of the file, so if Pololu ever decides to take the User's
-  Guide down, it will be *GONE*.
+  * [Pololu Romi Chasis User's Guide](https://www.pololu.com/docs/0J68/all):
+    The Pololu Romi is mostly documented by the Pololu web site.  Alas, there
+    is no `.pdf` version of the file, so if Pololu ever decides to take the
+    User's Guide down, it will be *GONE*.
 
-* Pololu Chasis `.dxf` files:
-  There two `.dxf` files that can be loaded by programs that can read
-  `.dxf` files (e.g. `qcad`, `inkscape`, etc.)  Using these files it is possible
-  to tediously extract locations of edges, rectangles, holes, etc.  The two
-  `.dxf` files proper are listed below, but they have been convert to `.png`
-  files a little further below:
-  * [mechanical/dxf/romi-chasis.dxf](dxf/romi-chasis.dxf):
-    This is the top, front, side, and side views of the Romi Chasis.
-  * [mechanical/dxf/romi-chasis-expansion-plate.dxf](dxf/romi-chasis-expansion-plate.dxf):
-    This is the top, bottom, front, and side view of the Romi Chasis
-    expansion plate.
-  These files are copyrighted by Pololu and if Pololu requests that they be
-  removed from this repository, the request will be honored immediately.
+### PNG Files
+  
+  The `mechanical/png` directory is where various `.png` image files are
+  stored.  Right now there are images for the `romi_base` and `expansion`
+  models:
 
-* PNG Files:
-  There are 4 images that have been captured from the Pololu web site.
-  Again, these are copyrighted and any removal request from Pololu
-  will be immediately honored.  There are two images for the Romi Chasis
-  and two images for the Romi expansion plate.
+  * [mechanical/png/expansion.png](png/expansion.png):
+    The OpenSCAD modle of the Romi Expansion Chasis:
+    <Br>
+    ![](png/thumb_expansion.png)
 
-  The two Romi Chasis images are different from the two associated
-  `.dxf` files above in that they contain some dimensions.  Both these
-  files are in-lined:
+  * [mechanical/png/romi_base.png](png/romi_base.png):
+    The OpenSCAD model of for the Romi Chassi Base:
+    <Br>
+    ![](png/thumb_romi_base.png)
 
-  * `mechanical/png/Romi_Chasis_Dimensions.png`:
+### DXF Files
 
-    ![Romi Chasis Dimensions](png/Romi_Chasis_Dimensions.png)
+  There are two generated `.dxf` files available:
 
-  * `mechanical/png/Romi_Chasis_Details.png`:
+  * [mechanical/dxf/expansion.dxf](dxf/expansion.dxf):
+    The generated `.dxf` file from the OpenSCAD model
+    for the Romi Expansion Chassis.
 
-    ![Romi Chasis Details](png/Romi_Chasis_Details.png)
+  * [mechanical/dxf/romi_base.dxf](dxf/romi_base.dxf):
+    The generated `.dxf` file from the OpenSCAD model
+    for the Rom Chassis Base.
 
-  There four Romi Expansion Chasis images that are derived from the two
-  Romi Expansion Chasis `.pdf` files above:
+  In addition, there is are two `.dxf` files supplied by Pololu
+  that are archived in the `mechanical/dxf` directory.  These
+  are copyrighted by Pololu and if Pololu objects to these being
+  cached in this repository, they will be removed immediately
+  upon a request from Pololu:
 
-  * `mechanical/png/romi-chasis-expansion-plate-dimensions-0.png`:
+  * [mechanical/dxf/romi_chassis.dxf](dxf/romi_chassis.dxf):
+    The `.dxf` that can be used to extract the various hole,
+    slot and rectangles on the Romi chassis.
 
-    ![Dimensions 0](png/romi-chasis-expansion-plate-dimensions-0.png)
+  * [mechanical/dxf/romi-chassis-expansion-plate.dxf](dxf/romi-chassis-expansion-plate.dxf):
+    The `.dxf` that can be used to extract the various hole,
+    slot and rectangles on the Romi expansition plate.
+    
+### PDF Files
 
-  * `mechanical/png/romi-chasis-expansion-plate-dimensions-1.png`:
+  There are two cached `.pdf` files from Pololu.  Again these
+  are copyrighted by Pololua nd if Pololu objects to these being
+  cached in this repository, they will be removed immediately
+  upon a request from Pololu:
 
-    ![Dimensions 1](png/romi-chasis-expansion-plate-dimensions-1.png)
+  * [mechanical/pdf/romi-chasis-expansion-plate-dimensions.pdf](pdf/romi-chasis-expansion-plate-dimensions.pdf):
+    The `.pdf` that contains many (but by no means all) of then
+    dimensions of the Romi Chasis Expansion Plate.
 
-  * `mechanical/png/romi-chasis-expansion-plate-dimensions-2.png`:
+  * [mechanical/pdf/romi-chasis-expansion-plate-hole_alignment.pdf](pdf/romi-chasis-expansion-plate-hole_alignment.pdf):
+    The `.pdf` that contains information about which holes line up
+    between the expansion plate the the main chasis plate.
 
-    ![Dimensions 2](png/romi-chasis-expansion-plate-dimensions-2.png)
+## Models:
 
-  * `mechanical/png/romi-chasis-expansion-plate-hole-alignment.png`:
+The models are store in some Python files, which upon execution generate
+the associated OpenSCAD files.  There are two directories:
 
-    ![Hole Alignment](png/romi-chasis-expansion-plate-hole-alignment.png)
+### `scad_models`
 
+The `scad_models` directory currently contains:
 
+* `scad.py`: This is a library of Python code that is used to generate
+  an OpenSCAD `.scad` file.
 
+* `scad_models.py`: This is the Python code that builds all of the
+  OpensCAD models using the `scad.py` liberary.
 
+* `__init__.py`: This is the file that is required by Pythong to indicated
+  that the `scad_models` directory contains a Python package.
 
+The program `pydoc NAME.py` will print out the Python doc strings for some
+documentation.
+
+### `tests`
+
+The `tests` directory contains the Python Unit tests:
+
+* `test_scad.py`: The unit tests for the `scad.py` library.
+
+* `test_scad_models.py`: A unit tests for the `scad_models.py` code.
+
+## Miscellaneious:
+
+There a a bunch of miscellaneous files in the `mechanical` directory:
+
+* `README.md`: This documetation file.
+
+* `setup.py`: This file is required by Python to construct the `scad_models`
+  package.
+
+* `develop.rec`: This is a list of Python packages that are used by this project.
+
+* `Makefile`: There is a `Makefile` that is used to build everthing.
+  It has the following three targets:
+
+* `clean`: Removes all derived files to force a clean build.
+
+* `all`: Build everything.  This involves:
+
+  * Running the Python files through `mypy`, `flake8`, and `pydocstyle`.
+  * Installing the `scad_modules` package in the Python virtual environment.
+  * Runs the `scad_models` program from the Python virtual environment to
+    generate `scad_models.scad`.
+  * Generates various `.dxf` and `.png` files.
+
+* `test`: Runs the Python unit test suites and outputs any code lines
+   that is not covered by the test suites.
 
