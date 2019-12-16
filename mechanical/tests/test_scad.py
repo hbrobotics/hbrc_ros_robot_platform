@@ -26,8 +26,8 @@
 
 import io
 from math import pi
-from scad_models.scad import (Circle, LinearExtrude, Module2D, P2D, P3D, Polygon, Scad,
-                              SimplePolygon, Square, Union)
+from scad_models.scad import (Circle, If2D, LinearExtrude, Module2D, P2D, P3D, Polygon, Scad,
+                              SimplePolygon, Square, Union, UseModule2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -398,6 +398,78 @@ def test_linear_extrude() -> None:
     assert scad_lines[4] == ("// End LinearExtrude 'Linear Extrude'"), "[4]!"
 
 
+def test_if2d() -> None:
+    """Test If2D class."""
+    # Create some circles:
+    circle1: Circle = Circle("Circle 1", 1.0, 8)
+    circle2: Circle = Circle("Circle 2", 2.0, 12)
+    circle3: Circle = Circle("Circle 3", 3.0, 16)
+
+    # Create first *if2d1* and fill it in:
+    if2d1: If2D = If2D("If2D 1", "n == 1", circle1)
+    assert str(if2d1) == "If2D('If2D 1',...,lock=False)"
+    if2d1.then_append("n == 2", circle2)
+    if2d1.else_set(circle3)
+
+    # Verify that attempting to set the else clause more than onces fails:
+    try:
+        if2d1.else_set(circle1)
+        assert False, "This should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D('If2D 1)' else clause is already set."
+
+    # Now verify that we can not do a *scad_lines_append* until after it is locked:
+    scad_lines: List[str] = []
+    try:
+        if2d1.scad_lines_append(scad_lines, "")
+        assert False, "This should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D 'If2D 1' is not locked."
+
+    # Now lock *if2d1* and verify that then and else clauses can not be appended:
+    if2d1.lock()
+    try:
+        if2d1.then_append("bogus", circle2)
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D 'If2D 1' is and locked can not accept another then clause"
+    try:
+        if2d1.else_set(circle3)
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D('If2D 1)' is locked and can not have an else clause set."
+
+    # Now generate the *scad_lines*:
+    if2d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 7
+    assert scad_lines[0] == "if (n == 1) {  // If2D 'If2D 1'", "[0]!"
+    assert scad_lines[1] == " circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
+    assert scad_lines[2] == "} else if (n == 2) {", "[2]!"
+    assert scad_lines[3] == " circle(d=2.000, $fn=12);  // Circle 'Circle 2'", "[3]!"
+    assert scad_lines[4] == "} else {", "[4]!"
+    assert scad_lines[5] == " circle(d=3.000, $fn=16);  // Circle 'Circle 3'", "[5]!"
+    assert scad_lines[6] == "}  // End If2D 'If2D 1'", "[6]!"
+
+    # Do another on with only one then clause and no else clause:
+    if2d2: If2D = If2D("If2D 2", "n == 0", circle1)
+    if2d2.lock()
+
+    # Ensure that we can not set the else clause when it is locked:
+    try:
+        if2d2.else_set(circle2)
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D('If2D 2)' is locked and can not have an else clause set."
+
+    # Now make sure that hte *scad_lines* are OK:
+    scad_lines = []
+    if2d2.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == "if (n == 0) {  // If2D 'If2D 2'", "[0]!"
+    assert scad_lines[1] == " circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
+    assert scad_lines[2] == "}  // End If2D 'If2D 2'", "[2]!"
+
+
 def test_module2d() -> None:
     """Test Module2D class."""
     # Create some *Scad2D* objects to play with:
@@ -661,6 +733,23 @@ def test_union() -> None:
     except ValueError as value_error:
         assert f"{value_error}" == ("Index 0 of Union is class 'LinearExtrude,' "
                                     "but index 1 is class 'Square'")
+
+
+def test_use_module2d() -> None:
+    """Test UseModule2D class."""
+    circle1: Circle = Circle("Circle 1", 2.0, 16)
+    module2d1: Module2D = Module2D("Module2D_1", [circle1])
+    use_module2d1: UseModule2D = UseModule2D("UseModule2D_1", module2d1)
+    assert str(use_module2d1) == ("UseModule2D('UseModule2D_1',"
+                                  "Module2D('Module2D_1',[...],is_operator=False,lock=True))")
+    scad_lines: List[str] = []
+    module2d1.scad_lines_append(scad_lines, "")
+    use_module2d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 4
+    assert scad_lines[0] == "module Module2D_1() {", "[0]!"
+    assert scad_lines[1] == " circle(d=2.000, $fn=16);  // Circle 'Circle 1'", "[1]!"
+    assert scad_lines[2] == "}", "[2]!"
+    assert scad_lines[3] == "Module2D_1(); // UseModule2D('UseModule2D_1')", "[3]!"
 
 
 def test_scad_keys_csv_file_write() -> None:

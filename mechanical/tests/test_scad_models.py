@@ -32,3 +32,7 @@ def test_romi():
     romi.debugging = False
     romi_base_polygon: Polygon = romi.base_scad_polygon_generate()
     romi_base_polygon = romi_base_polygon
+
+    expansion_polygon: Polygon = romi.expansion_polygon_get()
+    expansion_polygon.lock()
+    expansion_polygon = expansion_polygon

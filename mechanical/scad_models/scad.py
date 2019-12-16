@@ -1197,6 +1197,100 @@ class Circle(SimplePolygon):
         return y_mirrored_circle
 
 
+# If2D:
+class If2D(Scad2D):
+    """Represents a Scad2D if-then-else statement chain."""
+
+    # If2D.__init__():
+    def __init__(self, name: str, then_expression: str, then_scad2d: Scad2D, lock=False) -> None:
+        """Initialize an If2D object."""
+        # Initialize the *SCAD2D* parent class:
+        super().__init__(name)
+        # Load values into *If2D* (i.e. *self*):
+        # if2d: If2D = self
+        then_clause: Tuple[str, Scad2D] = (then_expression, then_scad2d)
+        self.then_clauses: List[Tuple[str, Scad2D]] = [then_clause]
+        self.else_scad2d: Optional[Scad2D] = None
+        self.locked: bool = lock
+
+    # If2D.__str__():
+    def __str__(self) -> str:
+        """Convert an If2D into a string."""
+        # Grab some values from *if2d* (i.e. *self*):
+        if2d: If2D = self
+        name: str = if2d.name
+        locked: bool = if2d.locked
+        return f"If2D('{name}',...,lock={locked})"
+
+    # If2D.else_set():
+    def else_set(self, new_else_scad2d: Scad2D) -> None:
+        """Set the final else caluse for an If2D."""
+        # Grab some values from *if2d* (i.e. *self*):
+        if2d: If2D = self
+        else_scad2d: Optional[Scad2D] = if2d.else_scad2d
+        locked: bool = if2d.locked
+        name: str = if2d.name
+        if locked:
+            raise ValueError(f"If2D('{name})' is locked and can not have an else clause set.")
+        elif else_scad2d is not None:
+            raise ValueError(f"If2D('{name})' else clause is already set.")
+        else:
+            if2d.else_scad2d = new_else_scad2d
+
+    # If2D.lock():
+    def lock(self):
+        """Ensure that an If2D is locked."""
+        if2d: If2D = self
+        if2d.locked = True
+
+    # If2D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append If2D to a list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *square* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *if2d* (i.e. *self*):
+        if2d: If2D = self
+        else_scad2d: Optional[Scad2D] = if2d.else_scad2d
+        name: str = if2d.name
+        then_clauses: List[Tuple[str, Scad2D]] = if2d.then_clauses
+        locked: bool = if2d.locked
+        if not locked:
+            raise ValueError(f"If2D '{name}' is not locked.")
+
+        next_indent: str = indent + " "
+        then_clause: Tuple[str, Scad2D]
+        then_index: int
+        for then_index, then_clause in enumerate(then_clauses):
+            then_expression: str = then_clause[0]
+            then_scad2d: Scad2D = then_clause[1]
+            comment_text = f"  // If2D '{name}'" if then_index == 0 else ""
+            if_text: str = "if" if then_index == 0 else "} else if"
+            scad_lines.append(f"{indent}{if_text} ({then_expression}) {{{comment_text}")
+            then_scad2d.scad_lines_append(scad_lines, next_indent)
+        if else_scad2d is not None:
+            scad_lines.append(f"{indent}}} else {{")
+            else_scad2d.scad_lines_append(scad_lines, next_indent)
+        scad_lines.append(f"{indent}}}  // End If2D '{name}'")
+
+    # If2D.then_append():
+    def then_append(self, else_if_expression: str, else_if_scad2d: Scad2D) -> None:
+        """Append a then clause to an If2D."""
+        # Grab some values from *if2d* (i.e. *self*):
+        if2d: If2D = self
+        name: str = if2d.name
+        then_clauses: List[Tuple[str, Scad2D]] = if2d.then_clauses
+        locked: bool = if2d.locked
+        if locked:
+            raise ValueError(f"If2D '{name}' is and locked can not accept another then clause")
+        then_clause: Tuple[str, Scad2D] = (else_if_expression, else_if_scad2d)
+        then_clauses.append(then_clause)
+
+
 # Square:
 class Square(SimplePolygon):
     """Represents a rectangular SimplePolygon."""
@@ -1522,6 +1616,47 @@ class Square(SimplePolygon):
         y_mirrored_square: Square = Square(final_name, dx, dy, new_center,
                                            new_rotate, corner_radius, corner_count)
         return y_mirrored_square
+
+
+# UseModule2D:
+class UseModule2D(Scad2D):
+    """Represents Module2D invocation."""
+
+    # UseModule2D.__init__():
+    def __init__(self, name: str, module2d: Module2D) -> None:
+        """Invoke a Module2D."""
+        super().__init__(name)
+        # Stuff *module2d* into *use_module2d* (i.e. *self*):
+        # use_module2d: UseModule2D = self
+        self.module2d: Module2D = module2d
+
+    # UseModule2D.__str__():
+    def __str__(self) -> str:
+        """Return UseModule2D as a string."""
+        # Grab some values from *use_module2d* (i.e. *self*):
+        use_module2d: UseModule2D = self
+        module2d: Module2D = use_module2d.module2d
+        name: str = use_module2d.name
+        return f"UseModule2D('{name}',{module2d})"
+
+    # UseModule2D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append UseModule2D to list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *scad_polygon* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *scad_linear_extrude* (i.e. *self*):
+        use_module2d: UseModule2D = self
+        module2d: Module2D = use_module2d.module2d
+        use_module_name: str = use_module2d.name
+        module_name: str = module2d.name
+        is_operator: bool = module2d.is_operator
+        end_text: str = "" if is_operator else ';'
+        scad_lines.append(f"{indent}{module_name}(){end_text} // UseModule2D('{use_module_name}')")
 
 
 # Scad3D:

@@ -9,7 +9,7 @@
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
 from scad_models.scad import Circle, LinearExtrude, P2D, Polygon, Scad, SimplePolygon, Square, Union
-from typing import Any, Dict, IO, List, Tuple
+from typing import Any, Dict, IO, List, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
 
@@ -503,6 +503,270 @@ class Romi:
 
         return simple_polygons
 
+    # Romi.expansion_hex_holes_slot_get():
+    def expansion_hex_holes_slots_get(self) -> List[SimplePolygon]:
+        """Return the expansion chasis holes and slots."""
+        # romi: Romi = self
+        # Compute some constants
+        large_hole_diameter: float = 3.2
+        small_hole_diameter: float = 2.4
+        hole_circle_diameter: float = 17.3
+        hole_circle_radius: float = hole_circle_diameter / 2.0
+        inner_slot_diameter: float = 10.0
+        inner_slot_radius: float = inner_slot_diameter / 2.0  # Center of inner slot arc
+        slot_center_to_center: float = 5.0
+        slot_center_radius = inner_slot_radius + slot_center_to_center / 2.0
+        slot_dy: float = small_hole_diameter
+        slot_dx: float = small_hole_diameter + slot_center_to_center
+        slot_corner_radius: float = small_hole_diameter / 2.0
+        slot_corner_count: int = 3
+        total_dy: float = 81.5
+        hex_origin: P2D = P2D(0.0, -total_dy + 26.4)
+        delta_angle: float = pi / 3.0
+        hole_angle_offset: float = pi / 6.0
+        horizontal_hole_pitch: float = 2 * inner_slot_radius + slot_center_to_center
+
+        # Collect everything in the *holes* and *slots* lists:
+        holes: List[Circle] = []
+        slots: List[Square] = []
+
+        # These tables are tediously defined:
+        allowed_slots: Set[Tuple[int, int]] = {
+            (0, 0), (0, 1), (0, 2),
+            (1, 0), (1, 1), (1, 2), (1, 4), (1, 5),
+            (2, 0), (2, 1), (2, 2), (2, 4), (2, 5),
+            (3, 0), (3, 1), (3, 2), (3, 4), (3, 5),
+            (4, 0), (4, 1), (4, 2), (4, 4), (4, 5),
+            (5, 0), (5, 1), (5, 2), (5, 4), (5, 5),
+            (6, 1), (6, 2),
+        }
+        allowed_holes: Set[Tuple[int, int]] = {
+            (0, 0), (0, 1),
+            (1, 0), (1, 1), (1, 4), (1, 5),
+            (2, 0), (2, 1), (2, 4), (2, 5),
+            (3, 0), (3, 1), (3, 4), (3, 5),
+            (4, 0), (4, 1), (4, 4), (4, 5),
+            (5, 0), (5, 1), (5, 4),
+        }
+
+        for hole_index in range(7):
+            # Create the primary slot hole:
+            center_hole: P2D = hex_origin + P2D(float(hole_index - 3) * horizontal_hole_pitch, 0.0)
+            primary_hole: Circle = Circle(f"Primary Hole[{hole_index}]",
+                                          large_hole_diameter, 8, center=center_hole)
+            holes.append(primary_hole)
+
+            # Sweep around *hole* in 60 degree increments putting ing slots and holes:
+            for angle_index in range(6):
+                slot_angle: float = float(angle_index) * delta_angle
+                key: Tuple[int, int] = (hole_index, angle_index)
+                if key in allowed_slots:
+                    slot_x: float = slot_center_radius * cos(slot_angle)
+                    slot_y: float = slot_center_radius * sin(slot_angle)
+                    slot_center: P2D = center_hole + P2D(slot_x, slot_y)
+                    slot: Square = Square(f"Slot[{hole_index},{angle_index}]", slot_dx, slot_dy,
+                                          center=slot_center, rotate=slot_angle,
+                                          corner_radius=slot_corner_radius,
+                                          corner_count=slot_corner_count)
+                    slots.append(slot)
+
+                # Create the *hole* and append to *holes*:
+                if key in allowed_holes:
+                    hole_angle: float = slot_angle + hole_angle_offset
+                    hole_x: float = hole_circle_radius * cos(hole_angle)
+                    hole_y: float = hole_circle_radius * sin(hole_angle)
+                    hole_center: P2D = center_hole + P2D(hole_x, hole_y)
+                    hole = Circle(f"Hole[{hole_index},{angle_index}]",
+                                  large_hole_diameter, 8, center=hole_center)
+                    holes.append(hole)
+
+        bottom_index: int
+        bottom_y: float = hex_origin.y - 1.5 * hole_circle_radius
+        for bottom_index in range(5):
+            bottom_x: float = float(2 - bottom_index) * hole_circle_radius
+            bottom_center: P2D = P2D(bottom_x, bottom_y)
+            if bottom_index % 2 == 0:
+                # Bottom Slot:
+                bottom_slot: Square = Square(f"Bottom Slot[{bottom_index}]", slot_dx, slot_dy,
+                                             center=bottom_center, rotate=0.0,
+                                             corner_radius=slot_corner_radius,
+                                             corner_count=slot_corner_count)
+                slots.append(bottom_slot)
+            else:
+                # Bottom Hole:
+                bottom_hole: Circle = Circle(f"Bottom Hole[{bottom_index}]",
+                                             large_hole_diameter, 8, center=bottom_center)
+                holes.append(bottom_hole)
+
+        # Fill *simple_polygons* with *holes* and *slots* and return it:
+        simple_polygons: List[SimplePolygon] = []
+        simple_polygons.extend(holes)
+        simple_polygons.extend(slots)
+        return simple_polygons
+
+    # Romi.expansion_large_holes_get():
+    def expansion_large_holes_get(self) -> List[Circle]:
+        """Return the expansion chasis small hole pattern."""
+        # romi: Romi = self
+        # Define some constants from dimentions `.pdf`:
+        total_dy: float = 81.5
+        large_hole_diameter: float = 3.2
+        x_pitch: float = 10.0
+        x_start: float = -4.0 * x_pitch
+        y_start: float = -total_dy + 46.2
+        y_pitch: float = 12.25
+        y_pitches: List[float] = [0.0, y_pitch, 2.0 * y_pitch, 2.0 * y_pitch - 51.0]
+
+        # Assemble all of the holes into *large_holes*:
+        large_holes: List[Circle] = []
+        x_index: int
+        for x_index in range(9):
+            x: float = x_start + float(x_index) * x_pitch
+            y_index: int
+            for y_index in range(4):
+                print(f"({x_index}, {y_index})")
+                y: float = y_start + y_pitches[y_index]
+                if y_index in (0, 1) and x_index == 4:  # Skip column 4
+                    print(f"  Skip [{x_index}, {y_index}]")
+                    pass
+                elif y_index in (2, 3) and x_index in (1, 2, 3, 4, 5, 6, 7):  # Skip middle columns
+                    print(f"  SKIP [{x_index}, {y_index}]")
+                    pass
+                else:
+                    print(f"  [{x_index},{y_index}]")
+                    center: P2D = P2D(x, y)
+                    large_hole: Circle = Circle(f"Large Hole[{x_index}, {y_index}]",
+                                                large_hole_diameter, 8, center)
+                    large_holes.append(large_hole)
+        return large_holes
+
+    # Romi.expansion_polygon_get():
+    def expansion_polygon_get(self) -> Polygon:
+        """Return outline of Romi Expansion Chasis."""
+        romi: Romi = self
+        # The various dimensions are from `mechanical/pdf/romi-chasis-expansion_plate.pdf`
+        # We use the same orientation as in the `.pdf` file, where the rounded portion is
+        # towards the bottom and the flat portion is on top.  The orgin is set to be at the
+        # center of the top edge.  All measurements are in millimeters:
+        total_dx: float = 145.5
+        half_total_dx: float = total_dx / 2.0
+        wheel_well_dx: float = 124.0
+        half_wheel_well_dx: float = wheel_well_dx / 2.0
+        total_dy: float = 81.5   # The `.pdf` says 81.6, but 81.5 matches the Romi Chasis radius.
+        wheel_well_dy: float = 19.6
+
+        # We need to figure out the (*arc_x*, *arc_y) value for the arc-end point.  To make the math
+        # a little simpler, we will do the math in the quandrant 1 so both *arc_x* and *arc_y*
+        # are positive.  Minus signs are added as needed when using *arg_x* and *arc_y*.
+        # We start with Pathagorean's Theorum:
+        #
+        #     (1)   r^2 = dx^2 + dy^2
+        #
+        # Both r and dx are known, so we can solve for dy:
+        #
+        #     (2)   dy^2 = r^2 - dx^2
+        #     (3)   dy = sqrt(r^2 - dx^2)
+        #
+        # That was easy!
+        arc_radius: float = total_dy  # From the Romi Chasis dimensions.
+        arc_dx: float = half_total_dx
+        arc_dy: float = sqrt(arc_radius * arc_radius - arc_dx * arc_dx)
+        arc_angle: float = atan2(arc_dy, arc_dx)
+
+        # Create *expanson_outer* and start filling in points:
+        expansion_outer: SimplePolygon = SimplePolygon("Expansion_Outer", [])
+
+        # Draw the top edge and left wheel well:
+        expansion_outer.point_append(P2D(half_wheel_well_dx, 0.0))              # Upper right
+        expansion_outer.point_append(P2D(-half_wheel_well_dx, 0.0))             # Upper left
+        expansion_outer.point_append(P2D(-half_wheel_well_dx, -wheel_well_dy))  # Inner corner
+        expansion_outer.point_append(P2D(-half_total_dx, -wheel_well_dy))       # Outer corner
+
+        # # Now draw the arc along the bottom:
+        origin: P2D = P2D(0.0, 0.0)
+        start_angle: float = arc_angle + pi
+        end_angle: float = 2.0 * pi - arc_angle
+        # print(f"start_angle={degrees(start_angle)}")
+        # print(f"end_angle={degrees(end_angle)}")
+        expansion_outer.point_append(P2D(-half_total_dx, -arc_dy))                  # Arc start
+        expansion_outer.arc_append(origin, arc_radius, start_angle, end_angle, 21)  # Arc
+
+        # Draw the right wheel well and lock up *expansion_outer*:
+        expansion_outer.point_append(P2D(half_total_dx, -wheel_well_dy))       # Outer corner
+        expansion_outer.point_append(P2D(half_wheel_well_dx, -wheel_well_dy))  # Inner corner
+        expansion_outer.lock()
+
+        # Fill in *simple_polygons* starting with *expansion_outer* and the all of the
+        # other holes, rectangles and slots:
+        simple_polygons: List[SimplePolygon] = [expansion_outer]
+        expansion_large_holes: List[Circle] = romi.expansion_large_holes_get()
+        simple_polygons.extend(expansion_large_holes)
+        expansion_small_holes: List[Circle] = romi.expansion_small_holes_get()
+        simple_polygons.extend(expansion_small_holes)
+        expansion_hex_holes_slots: List[SimplePolygon] = romi.expansion_hex_holes_slots_get()
+        simple_polygons.extend(expansion_hex_holes_slots)
+        expansion_standoff_holes: List[Circle] = romi.expansion_standoff_holes_get()
+        simple_polygons.extend(expansion_standoff_holes)
+
+        # Create and return *expansion_polygon* in an unlocked state:
+        expansion_polygon: Polygon = Polygon("Expansion", simple_polygons, lock=True)
+        return expansion_polygon
+
+    # Romi.expansion_small_holes_get():
+    def expansion_small_holes_get(self) -> List[Circle]:
+        """Return the expansion chasis small hole pattern."""
+        # romi: Romi = self
+        # Define some constants from dimentions `.pdf`:
+        total_dy: float = 81.5
+        small_hole_diameter: float = 2.4
+        x_pitch: float = 10.0
+        x_start: float = -4.5 * x_pitch
+        y_start: float = -total_dy + 40.1
+        y_pitch: float = 12.25
+        y_pitches: List[float] = [0.0, y_pitch, 2.0 * y_pitch, 2.0 * y_pitch + x_pitch]
+
+        # Assemble all of the holes into *small_holes*:
+        small_holes: List[Circle] = []
+        y_index: int
+        for y_index in range(4):
+            y: float = y_start + y_pitches[y_index]
+            x_index: int
+            for x_index in range(10):
+                x: float = x_start + float(x_index) * x_pitch
+                center: P2D = P2D(x, y)
+                small_hole: Circle = Circle(f"Small Hole[{x_index}, {y_index}]",
+                                            small_hole_diameter, 8, center)
+                small_holes.append(small_hole)
+        return small_holes
+
+    # Romi.expansion_standoff_holes_get():
+    def expansion_standoff_holes_get(self) -> List[Circle]:
+        """Produce the 6 standoff holes."""
+        # Define some constants:
+        small_hole_diameter: float = 2.4
+        # inner_upper_dx: float = 90.0
+        outer_upper_dx: float = 106.0
+        lower_dx: float = 48.2
+        x0: float = -outer_upper_dx / 2.0
+        # x1: float = -inner_upper_dx / 2.0
+        x2: float = -lower_dx / 2.0
+        x3: float = lower_dx / 2.0
+        # x4: float = inner_upper_dx / 2.0
+        x5: float = outer_upper_dx / 2.0
+        # y2: float = -17.0
+        y1: float = -19.0
+        y0: float = -81.5 + 10.4
+
+        standoff_centers: List[P2D] = [P2D(x0, y1), P2D(x2, y0), P2D(x3, y0), P2D(x5, y1)]
+        standoff_holes: List[Circle] = []
+        standoff_center: P2D
+        standoff_index: int
+        for standoff_index, standoff_center in enumerate(standoff_centers):
+            standoff_hole: Circle = Circle(f"Standoff[{standoff_index}",
+                                           small_hole_diameter, 8, center=standoff_center)
+            standoff_holes.append(standoff_hole)
+        return standoff_holes
+
     # Romi.hex_pattern_get():
     def hex_pattern_get(self, pattern_rows: Tuple[str, ...], slot_pairs: List[str],
                         hex_origin: P2D, hole_diameter: float, label: str,
@@ -649,7 +913,7 @@ class Romi:
             short_slot_dx: float = short_slot_rectangle.dx
             short_slot_dy: float = short_slot_rectangle.dy
             short_slot_corner_radius = short_slot_dx / 2.0
-            short_slot: Square = Square(f"Right: {label} Short Slot",
+            short_slot: Square = Square(f"RIGHT: {label} Short Slot",
                                         short_slot_dx, short_slot_dy, short_slot_center,
                                         corner_radius=short_slot_corner_radius,
                                         corner_count=points_count)
@@ -1147,5 +1411,9 @@ def main() -> int:  # pragma: no cover
     html_file: IO[Any]
     with open("romi_base.html", "w") as html_file:
         Scad.keys_html_file_write(romi_base_keys, html_file, "Romi Base Holes and Rectangles")
+
+    expansion_polygon: Polygon = romi.expansion_polygon_get()
+    with open("expansion.scad", "w") as scad_file:
+        expansion_polygon.scad_file_write(scad_file)
 
     return 0
