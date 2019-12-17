@@ -308,3 +308,10 @@ There a a bunch of miscellaneous files in the `mechanical` directory:
 * `test`: Runs the Python unit test suites and outputs any code lines
    that is not covered by the test suites.
 
+* [romi_base.csv](romi_base.csv): This is a `.csv` (Comma Separated Value) file that
+  can be read in as a spreadsheet.  It identifies pretty much all of
+  the holes, slot, and rectangles on the Romi Chasis with the origin
+  set to the exact middle of the chassis.
+
+* [romi_base.html](romi_base.html): This contains the same content as the `romi_base.csv`
+  file, but in HTML table format.  It is easier to read in a web browser.

@@ -8,7 +8,7 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from scad_models.scad import (Circle, If2D, Module2D, P2D, Polygon,
+from scad_models.scad import (Circle, If2D, Module2D, P2D, Polygon, Scad,
                               SimplePolygon, ScadProgram, Square, UseModule2D)
 from typing import Any, Dict, IO, List, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
@@ -1397,14 +1397,6 @@ def main() -> int:  # pragma: no cover
     # with open("romi_base.scad", "w") as scad_file:
     #     union.scad_file_write(scad_file)
 
-    # romi_base_simple_polygons: List[SimplePolygon] = romi_base_polygon.simple_polygons_get()
-    # romi_base_simple_polygon: SimplePolygon
-    # Generate *romi_base_keys* skipping the first *SimplePolygon* which is the outer one:
-    # romi_base_keys: List[Tuple[Any, ...]] = [romi_base_simple_polygon.key()
-    #                                          for romi_base_simple_polygon
-    #                                          in romi_base_simple_polygons[1:]]
-    # romi_base_keys.sort()
-
     # Create the top level *scad_models* program:
     scad_models: ScadProgram = ScadProgram("Scad models")
 
@@ -1437,14 +1429,23 @@ def main() -> int:  # pragma: no cover
     with open("scad_models.scad", "w") as scad_file:
         scad_file.write(scad_text)
 
-    # csv_file: IO[Any]
-    # with open("romi_base.csv", "w") as csv_file:
-    #      Scad.keys_csv_file_write(romi_base_keys, csv_file)
-    # html_file: IO[Any]
-    # with open("romi_base.html", "w") as html_file:
-    #     Scad.keys_html_file_write(romi_base_keys, html_file, "Romi Base Holes and Rectangles")
+    # Obtain the hole, slot and rectangle locations:
+    romi_base_simple_polygons: List[SimplePolygon] = romi_base_polygon.simple_polygons_get()
+    romi_base_simple_polygon: SimplePolygon
+    # Generate *romi_base_keys* skipping the first *SimplePolygon* which is the outer one:
+    romi_base_keys: List[Tuple[Any, ...]] = [romi_base_simple_polygon.key()
+                                             for romi_base_simple_polygon
+                                             in romi_base_simple_polygons[1:]]
+    romi_base_keys.sort()
 
-    # with open("expansion.scad", "w") as scad_file:
-    #     expansion_polygon.scad_file_write(scad_file)
+    # Now output the hole/slot/rectangle `.csv` file:
+    csv_file: IO[Any]
+    with open("romi_base.csv", "w") as csv_file:
+        Scad.keys_csv_file_write(romi_base_keys, csv_file)
+
+    # Output the hole/slot/recantangle `.html` file:
+    html_file: IO[Any]
+    with open("romi_base.html", "w") as html_file:
+        Scad.keys_html_file_write(romi_base_keys, html_file, "Romi Base Holes and Rectangles")
 
     return 0
