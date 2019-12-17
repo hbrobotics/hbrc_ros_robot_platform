@@ -1,5 +1,135 @@
 # HBRC ROS Robot Mechanical Issues
 
+The "nominal" base for the HR<Sup>2</Sup> is the
+[Pololu Romi Chasis](https://www.pololu.com/category/202/romi-chassis-and-accessories).
+However, other bases can be considered.
+
+## Mechanical Requirements:
+
+The section below is a wish list of "requirements" for this HR2.
+Not all of these requirements are expected to be met.
+
+### Base Requirements
+
+The base requirements are:
+
+* Use a COTS (Commercial Off The Shelf) platform.
+* Differential Drive with relatively large wheel diameter.
+  * A maximum forward speed of 30cm/sec.  10 cm/sec. is acceptable.
+* Over 1000 ticks per revolution odometry.
+* Front and rear ball castors with low rolling friction.
+  * One of the ball castors must be "floating" to deal with uneven floors.
+* Runs off of rechargeable batteries.  A USB battery pack would be ideal.
+  * The mass of the batteries must be along the robot center-line to
+    prevent the robot from veering to one side.
+  * The mass of the batteries must be towards the rear non-floating ball
+    castor.
+  * It would be nice if the battery pack could be easily swapped out.
+
+### Sensor Requirements
+
+The sensor requirements are:
+
+* Bottom reflectance sensors for edge detection and/or line detection.
+  Pololu QTR/QTRX/QTRLX sensors are acceptable.
+* Time of flight edge sensors.  SparcFun SEN-12787 will work.
+* Sonars: SR04's sensors from China are inexpensive (and not of the
+  highest quality).  5 Sonars in front and back with 22.5 degree angular spacing.
+  The sonars can be alternated to mounted on top and on bottom of the
+  same PCB to save space.  There is an mechanical interference issue with
+  the forward
+* Bump Sensor: An inexpensive front and rear bump sensor is desired.
+  It can be extremely simple.
+* 3D Camera: The Microsoft Azure Kinect is the nominal one.  It needs
+  to be replaceable as better cameras come along.  USB3 interface is
+  acceptable.  This is heavy sensor, so managing center of mass is
+  very important.
+* E-Stop Button: It is nice to have an E-stop button that is readily
+  available, when the robot code goes bad.  The E-stop would disable
+  the motor drivers.
+* Lidar: An optional inexpensive 360 degree Lidar is very desirable.
+  ComputerShop sells a bunch -- YLIDAR X4 ($99), YLIDAR G2 ($159),
+  YLIDAR X2 ($69), RPLidar A1Mi ($99).
+* Cameras:
+  * It would be nice to have an optional forward facing camera
+    for object detection, etc.  The 3D camera might do this as well.
+  * It would be nice to have an optional upward facing camera
+    for fiducial navigation.
+* Microphone: It would be nice to be able to talk to the robot.
+  * A directional microphone would be cool so that the robot can
+    turn towards a speaker.
+
+### Actuator Requirements:
+	
+The actuator requirements are:
+
+* Gripper Arm: An optional arm with gripper is desirable:
+  * The Pololu Romi Arm is acceptable.  It is not required to mount it
+    on the Pololu expansion plate; it can be mounted forward.  Managing
+    center of mass is important.
+  * Non-Gripper Arms: It would be fun if there is a "arm" on each side so
+    that the robot can wave its "arms".  There are no grippers on these
+    side arms.
+
+### Indicator Requirements:
+
+The indicator requirements are:
+
+* LED's:
+  * Front LEDS:
+    * For debugging and fun there needs to be a line of LED's
+      in the front.  Being able to do a Knight Rider LED sweep would be fun.
+  * Rear LEDS:
+    * It would be nice to have both Rear LED's that can glow read for
+      braking and white for reverse (i.e. back up lights.)
+* LCD: An optional LCD would be nice.
+  * Ideally, this can be connected to the SBC as an output device.
+  * If placed immediately below the 3D camera it can be programmed
+    to be a mouth that can smile,  frown, smirk, etc.
+  * If a standard size is selected, it can play video clips. (Woo Hoo!)
+* Speaker: It would be nice if the robot could play sounds.  Stereo
+    is not required.
+    
+### Miscellaneous Requirements:	
+
+The miscellaneous requirements are:
+
+* Miscellaneous:
+  * Docking Station:
+    * An optional docking station would be nice.  It can be *VERY* simple.
+  * USB devices:
+    * Keyboard/Mouse: For debugging, a keyboard and mouse is desirable.
+      * Wireless keyboard and mouse is OK.
+    * Game Controller:
+      * Wireless remote controller is used to drive the robot around.
+  * Carrying Handle: It would be very nice to be able to pick up the
+    robot with a handle.
+  * Carrying Case: Strictly optional, but being able to cart the robot
+    around in some sort of clear case would be nice.
+  * Mount points:
+    * It would be nice to provide some mount points for other expansions
+      modules like Seeedstudio Grove.  This is basically a 10mm x 10mm
+      grid of holes.  These can be both internal and/or external.  There
+      needs to be cable access holes for externally mounted modules.
+
+### Robot Skin requirements:
+
+The robot skin requirements are:
+
+* A skin is optional, but very desirable.
+* Humans like anthropomorphic robots because they are more "fun".
+* Having a clear skin so people can see inside is very desirable.
+  * Being able to print a paper inside to put inside the clear skin
+    to "cloth" the robot would be cool.  This is strictly optional.
+
+### Non-requirements:
+
+The explicit non-requirements are:
+
+* This platform is not expected to be operated over uneven floors.
+  Going over door strips is *NOT* required.
+
+
 ## Installation and Use
 
 The instructions below for Ubuntu based distributions.  For all other operating
