@@ -26,8 +26,9 @@
 
 import io
 from math import pi
-from scad_models.scad import (Circle, If2D, LinearExtrude, Module2D, P2D, P3D, Polygon, Scad,
-                              ScadProgram, SimplePolygon, Square, Union, UseModule2D)
+from scad_models.scad import (Circle, If2D, If3D, LinearExtrude, Module2D, P2D, P3D, Polygon, Scad,
+                              Scad3D, ScadProgram, SimplePolygon, Square, Union3D, UseModule2D,
+                              Variable2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -39,6 +40,297 @@ def scad_writer(scad: Scad, scad_lines: List[str]) -> None:
     with open(name.replace(' ', '_') + ".scad", "w") as scad_file:
         scad_text: str = '\n'.join(scad_lines)
         scad_file.write(scad_text + "\n")
+
+
+# All `test_*` functions are alphabetized, since oder of execution does not really matter:
+
+
+def test_circle() -> None:
+    """Test Circle class."""
+    center: P2D = P2D(2.0, 3.0)
+    circle: Circle = Circle("Circle", 2.0, 8, center)
+    assert f"{circle}" == "Circle('Circle',2.0,8,P2D(2.000,3.000),4)"
+
+    scad_lines: List[str] = []
+    circle.scad_lines_append(scad_lines, "")
+    scad_text: str = '\n'.join(scad_lines)
+    scad_file: IO[Any]
+    with open("circle.scad", "w") as scad_file:
+        scad_file.write(scad_text)
+    assert len(circle) == 8
+    assert len(scad_lines) == 2
+    assert scad_lines[0] == "translate([2.000, 3.000])"
+    assert scad_lines[1] == " circle(d=2.000, $fn=8);  // Circle 'Circle'"
+
+    # Try out the *Circle*.*copy*() method:
+    small_circle: Circle = Circle("Small Circle", 2.0, 8, center)
+    assert f"{small_circle}" == "Circle('Small Circle',2.0,8,P2D(2.000,3.000),4)"
+    new_center: P2D = P2D(4.0, 5.0)
+    big_circle: Circle = small_circle.copy("Small", diameter=8.0,
+                                           points_count=16, center=new_center, replace="Big")
+    assert f"{big_circle}" == "Circle('Big Circle',8.0,16,P2D(4.000,5.000),4)"
+
+    # Validate *Circle*.*key*() method:
+    key: Tuple[Any] = circle.key()
+    assert key == ("Circle", "Circle", 2.0, 3.0, 2.0, 2.0, 0.0), f"Bad key: {key}"
+
+    # Validate *Circle*.*x_mirror*()
+    x_mirrored_circle: Circle = circle.x_mirror("X Mirrored Circle")
+    x_mirrored_center: P2D = x_mirrored_circle.center
+    assert x_mirrored_center.x == 2.0
+    assert x_mirrored_center.y == -3.0
+
+    # Validate *Circle*.*y_mirror*()
+    y_mirrored_circle: Circle = circle.y_mirror("Y Mirrored Circle")
+    y_mirrored_center: P2D = y_mirrored_circle.center
+    assert y_mirrored_center.x == -2.0
+    assert y_mirrored_center.y == 3.0
+
+
+def test_if2d() -> None:
+    """Test If2D class."""
+    # Create some circles:
+    circle1: Circle = Circle("Circle 1", 1.0, 8)
+    circle2: Circle = Circle("Circle 2", 2.0, 12)
+    circle3: Circle = Circle("Circle 3", 3.0, 16)
+
+    # Create first *if2d1* and fill it in:
+    if2d1: If2D = If2D("If2D 1", "n == 1", [circle1])
+    assert str(if2d1) == "If2D('If2D 1',...,lock=False)"
+    if2d1.then_append("n == 2", [circle2])
+    if2d1.else_set([circle3])
+
+    # Verify that attempting to set the else clause more than onces fails:
+    try:
+        if2d1.else_set([circle1])
+        assert False, "This should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D('If2D 1)' else clause is already set."
+
+    # Now verify that we can not do a *scad_lines_append* until after it is locked:
+    scad_lines: List[str] = []
+    try:
+        if2d1.scad_lines_append(scad_lines, "")
+        assert False, "This should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D 'If2D 1' is not locked."
+
+    # Now lock *if2d1* and verify that then and else clauses can not be appended:
+    if2d1.lock()
+    try:
+        if2d1.then_append("bogus", [circle2])
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D 'If2D 1' is and locked can not accept another then clause"
+    try:
+        if2d1.else_set([circle3])
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D('If2D 1)' is locked and can not have an else clause set."
+
+    # Now generate the *scad_lines*:
+    if2d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 7
+    assert scad_lines[0] == "if (n == 1) {  // If2D 'If2D 1'", "[0]!"
+    assert scad_lines[1] == " circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
+    assert scad_lines[2] == "} else if (n == 2) {", "[2]!"
+    assert scad_lines[3] == " circle(d=2.000, $fn=12);  // Circle 'Circle 2'", "[3]!"
+    assert scad_lines[4] == "} else {", "[4]!"
+    assert scad_lines[5] == " circle(d=3.000, $fn=16);  // Circle 'Circle 3'", "[5]!"
+    assert scad_lines[6] == "}  // End If2D 'If2D 1'", "[6]!"
+
+    # Do another on with only one then clause and no else clause:
+    if2d2: If2D = If2D("If2D 2", "n == 0", [circle1])
+    if2d2.lock()
+
+    # Ensure that we can not set the else clause when it is locked:
+    try:
+        if2d2.else_set([circle2])
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If2D('If2D 2)' is locked and can not have an else clause set."
+
+    # Now make sure that hte *scad_lines* are OK:
+    scad_lines = []
+    if2d2.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == "if (n == 0) {  // If2D 'If2D 2'", "[0]!"
+    assert scad_lines[1] == " circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
+    assert scad_lines[2] == "}  // End If2D 'If2D 2'", "[2]!"
+
+
+def test_if3d() -> None:
+    """Test If3D class."""
+    # Create some circles:
+    circle1: Circle = Circle("Circle 1", 1.0, 8)
+    extruded_circle1: Scad3D = LinearExtrude("Extuded Circle 1", circle1, 3.0)
+    circle2: Circle = Circle("Circle 2", 2.0, 12)
+    extruded_circle2: Scad3D = LinearExtrude("Extuded Circle 2", circle2, 2.0)
+    circle3: Circle = Circle("Circle 3", 3.0, 16)
+    extruded_circle3: Scad3D = LinearExtrude("Extuded Circle 3", circle3, 1.0)
+
+    # Create first *if3d1* and fill it in:
+    if3d1: If3D = If3D("If3D 1", "n == 1", [extruded_circle1])
+    assert str(if3d1) == "If3D('If3D 1',...,lock=False)"
+    if3d1.then_append("n == 2", [extruded_circle2])
+    if3d1.else_set([extruded_circle3])
+
+    # Verify that attempting to set the else clause more than onces fails:
+    try:
+        if3d1.else_set([extruded_circle1])
+        assert False, "This should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If3D('If3D 1)' else clause is already set."
+
+    # Now verify that we can not do a *scad_lines_append* until after it is locked:
+    scad_lines: List[str] = []
+    try:
+        if3d1.scad_lines_append(scad_lines, "")
+        assert False, "This should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If3D 'If3D 1' is not locked."
+
+    # Now lock *if3d1* and verify that then and else clauses can not be appended:
+    if3d1.lock()
+    try:
+        if3d1.then_append("bogus", [extruded_circle2])
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If3D 'If3D 1' is and locked can not accept another then clause"
+    try:
+        if3d1.else_set([extruded_circle3])
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If3D('If3D 1)' is locked and can not have an else clause set."
+
+    # Now generate the *scad_lines*:
+    if3d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 16
+    assert scad_lines[0] == "if (n == 1) {  // If3D 'If3D 1'", "[0]!"
+    assert scad_lines[1] == " // Begin LinearExtrude 'Extuded Circle 1'", "[1]!"
+    assert scad_lines[2] == (" linear_extrude(height=3.0, center=false, "
+                             "convexity=10, twist=0.0)"), "[2]!"
+    assert scad_lines[3] == "  circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[3]!"
+    assert scad_lines[4] == " // End LinearExtrude 'Extuded Circle 1'", "[4]!"
+    assert scad_lines[5] == "} else if (n == 2) {", "[5]!"
+    assert scad_lines[6] == " // Begin LinearExtrude 'Extuded Circle 2'", "[6]!"
+    assert scad_lines[7] == (" linear_extrude(height=2.0, center=false, "
+                             "convexity=10, twist=0.0)"), "[7]!"
+    assert scad_lines[8] == "  circle(d=2.000, $fn=12);  // Circle 'Circle 2'", "[8]!"
+    assert scad_lines[9] == " // End LinearExtrude 'Extuded Circle 2'", "[9]!"
+    assert scad_lines[10] == "} else {", "[10]!"
+    assert scad_lines[11] == " // Begin LinearExtrude 'Extuded Circle 3'", "[11]!"
+    assert scad_lines[12] == (" linear_extrude(height=1.0, center=false, "
+                              "convexity=10, twist=0.0)"), "[12]!"
+    assert scad_lines[13] == "  circle(d=3.000, $fn=16);  // Circle 'Circle 3'", "[13]!"
+    assert scad_lines[14] == " // End LinearExtrude 'Extuded Circle 3'", "[14]!"
+    assert scad_lines[15] == "}  // End If3D 'If3D 1'", "[15]!"
+
+    # Do another on with only one then clause and no else clause:
+    if3d2: If3D = If3D("If3D 2", "n == 0", [extruded_circle1])
+    if3d2.lock()
+
+    # Ensure that we can not set the else clause when it is locked:
+    try:
+        if3d2.else_set([extruded_circle2])
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "If3D('If3D 2)' is locked and can not have an else clause set."
+
+    # Now make sure that the *scad_lines* are OK:
+    scad_lines = []
+    if3d2.scad_lines_append(scad_lines, "")
+    scad_writer(if3d2, scad_lines)
+    assert len(scad_lines) == 6
+    assert scad_lines[0] == "if (n == 0) {  // If3D 'If3D 2'", "[0]!"
+    assert scad_lines[1] == " // Begin LinearExtrude 'Extuded Circle 1'", "[1]!"
+    assert scad_lines[2] == (" linear_extrude(height=3.0, center=false, "
+                             "convexity=10, twist=0.0)"), "[2]!"
+    assert scad_lines[3] == "  circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[3]!"
+    assert scad_lines[4] == " // End LinearExtrude 'Extuded Circle 1'", "[4]!"
+    assert scad_lines[5] == "}  // End If3D 'If3D 2'", "[5]!"
+
+
+def test_linear_extrude() -> None:
+    """Test LinearExtrude class."""
+    unit_square: Square = Square("Unit Square", 1.0, 1.0)
+    linear_extrude: LinearExtrude = LinearExtrude("Linear Extrude", unit_square, 1.0)
+    scad_lines: List[str] = []
+    linear_extrude.scad_lines_append(scad_lines, "")
+    scad_writer(linear_extrude, scad_lines)
+    assert len(scad_lines) == 5
+    assert scad_lines[0] == ("// Begin LinearExtrude 'Linear Extrude'"), "[0]!"
+    assert scad_lines[1] == ("linear_extrude(height=1.0, center=false, "
+                             "convexity=10, twist=0.0)"), "[1]!"
+    assert scad_lines[2] == (" // Square 'Unit Square' dx=1.000 dy=1.000 center=P2D(0.000,0.000) "
+                             "corner_radius=0.000 corner_count=3"), "[2]!"
+    assert scad_lines[3] == (" square([1.000, 1.000], center = true);"), "[3]!"
+    assert scad_lines[4] == ("// End LinearExtrude 'Linear Extrude'"), "[4]!"
+
+
+def test_module2d() -> None:
+    """Test Module2D class."""
+    # Create some *Scad2D* objects to play with:
+    circle1: Circle = Circle("Circle 1", 10.0, 16)
+    square1: Square = Square("Sqaare 1", 10.0, 10.0)
+    square2: Square = Square("Square 2", 20.0, 20.0)
+
+    # Work on len(), str()
+    module2d1: Module2D = Module2D("Module2D 1", [], lock=False)
+    assert str(module2d1) == "Module2D('Module2D 1',[...],is_operator=False,lock=False)"
+    assert len(module2d1) == 0
+    module2d1.append(circle1)
+    assert len(module2d1) == 1
+    module2d1.extend([square1, square2])
+    assert len(module2d1) == 3
+
+    # Attempt to perform *scad_lines_append*() in unlocked state:
+    scad_lines: List[str] = []
+    try:
+        module2d1.scad_lines_append(scad_lines, "")
+        assert False, "scad_lines_append() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Module2D 'Module2D 1' is not locked yet."
+
+    # Now lock *module2d1* and verify that *append* and *extend*() do not work:
+    module2d1.lock()
+    try:
+        module2d1.append(circle1)
+        assert False, "append() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Can not append to Module2D 'Module2D 1' because is locked"
+    try:
+        module2d1.extend([circle1])
+        assert False, "extend() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Can not extend Module2D 'Module2D 1' because is locked"
+
+    # Now test *__getitem__* method:
+    assert module2d1[0] == circle1
+    assert module2d1[1] == square1
+    assert module2d1[2] == square2
+    try:
+        module2d1[3]
+        assert False, "__getiteme__ should have failed."  # pragma: no cover
+    except IndexError as index_error:
+        assert f"{index_error}" == "Index 3 exceeds 3 objects in Module2D 'Module2D 1'"
+
+    # Now verify that *scad_lines_append*() works:
+    module2d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 7
+    assert scad_lines[0] == "module Module2D 1() {", "[0]!"
+    assert scad_lines[1] == " circle(d=10.000, $fn=16);  // Circle 'Circle 1'", "[1]!"
+    assert scad_lines[2] == (" // Square 'Sqaare 1' dx=10.000 dy=10.000 center=P2D(0.000,0.000) "
+                             "corner_radius=0.000 corner_count=3"), "[2]!"
+    assert scad_lines[3] == " square([10.000, 10.000], center = true);", "[3]!"
+    assert scad_lines[4] == (" // Square 'Square 2' dx=20.000 dy=20.000 center=P2D(0.000,0.000) "
+                             "corner_radius=0.000 corner_count=3"), "[4]!"
+    assert scad_lines[5] == " square([20.000, 20.000], center = true);", "[5]!"
+    assert scad_lines[6] == "}", "[6]!"
+
+    # Verify that *is_operator* attribute can be set:
+    module2d2: Module2D = Module2D("Module2D 2", [], is_operator=True)
+    assert f"{module2d2}" == "Module2D('Module2D 2',[...],is_operator=True,lock=True)"
 
 
 def test_p2d() -> None:
@@ -102,6 +394,180 @@ def test_p3d() -> None:
 
     # Division scaling:
     assert f"{p123 / 2.0}" == "P3D(0.500,1.000,1.500)"
+
+
+def test_polygon() -> None:
+    """Test SimplePolygon class and associated methods."""
+    # Define the four corners of a square:
+    upper_right: P2D = P2D(2.0, 2.0)
+    lower_right: P2D = P2D(2.0, -2.0)
+    lower_left: P2D = P2D(-2.0, -2.0)
+    upper_left: P2D = P2D(-2.0, 2.0)
+
+    # Convert the four corners into a *square_simple_polygon*:
+    square_simple_polygon: SimplePolygon = SimplePolygon("Square SimplePolygon",
+                                                         [upper_right, lower_right,
+                                                          lower_left, upper_left], lock=True)
+    # Now stuff *square_simple_polygon* into *x_square_polygon*:
+    x_square_polygon: Polygon = Polygon("X Square Polygon", [square_simple_polygon])
+
+    # Unpack *x_square_polygon* into *scad_lines*:
+    scad_lines: List[str] = []
+    x_square_polygon.scad_lines_append(scad_lines, "")
+    scad_writer(x_square_polygon, scad_lines)
+
+    # Now validate that we got the right values written into *scad*_lines*:
+    assert len(scad_lines) == 8
+    assert scad_lines[0] == "polygon(points = [  // Begin Polygon 'X Square Polygon' 0:3", "[0]!"
+    assert scad_lines[1] == " // SimplePolygon 'Square SimplePolygon' 0-3", "[1]!"
+    assert scad_lines[2] == ("  [2.000, 2.000], [2.000, -2.000], [-2.000, -2.000], "
+                             "[-2.000, 2.000]  // 0-4"), "[2]!"
+    assert scad_lines[3] == " ], paths = [", "[3]!"
+    assert scad_lines[4] == "  // SimplePolygon 'Square SimplePolygon' 0-3", "[4]!"
+    assert scad_lines[5] == "  [0, 1, 2, 3]", "[5]!"
+    assert scad_lines[6] == " ], convexity=4);  // End Polygon 'X Square Polygon' 0:3", "[6]!"
+
+    # Test Scad.file_write():
+    scad_file: IO[Any]
+    with open("/tmp/test_scad.scad", "w") as scad_file:
+        x_square_polygon.scad_file_write(scad_file)
+    with io.StringIO("") as scad_file:
+        x_square_polygon.scad_file_write(scad_file)
+        input_scad_text: str = scad_file.getvalue()
+        input_scad_lines: List[str] = input_scad_text.split('\n')
+        assert len(input_scad_lines) == 10
+        assert input_scad_lines[0] == "// 'X Square Polygon' File", "[0]!"
+        assert input_scad_lines[1] == ("polygon(points = [  "
+                                       "// Begin Polygon 'X Square Polygon' 0:3"), "[1]!"
+        assert input_scad_lines[2] == (" // SimplePolygon 'Square SimplePolygon' 0-3"), "[2]!"
+        assert input_scad_lines[3] == ("  [2.000, 2.000], [2.000, -2.000], [-2.000, -2.000], "
+                                       "[-2.000, 2.000]  // 0-4"), "[3]!"
+        assert input_scad_lines[4] == " ], paths = [", "[4]!"
+        assert input_scad_lines[5] == "  // SimplePolygon 'Square SimplePolygon' 0-3", "[5]!"
+        assert input_scad_lines[6] == "  [0, 1, 2, 3]", "[6]!"
+        assert input_scad_lines[7] == (" ], convexity=4);  "
+                                       "// End Polygon 'X Square Polygon' 0:3"), "[7]!"
+        assert input_scad_lines[8] == "", "[8]!"
+
+    # Test the *Polygon*.*__getitem__*() and *Polygon*.*__size__*() methods:
+    new_square_polygon: Polygon = Polygon("New Square Polygon", [], lock=False)
+    assert len(new_square_polygon) == 0
+    new_square_polygon.append(square_simple_polygon)
+    assert len(new_square_polygon) == 1
+    assert new_square_polygon[0] is square_simple_polygon
+    assert f"{new_square_polygon}" == ("Polygon('New Square Polygon',"
+                                       "len(simple_polygons)=1,convexity=-1)")
+
+    # Now Test the *Polygon*.*append*() and *Polygon*.*extend*() methods:
+    hole_polygons: List[SimplePolygon] = list()
+    hole_polygon: SimplePolygon
+    diameter: float = 0.25
+    x: float
+    for x in (-1.0, 0.0, 1.0):
+        y: float
+        for y in (-1.0, 0.0, 1.0):
+            center: P2D = P2D(x, y)
+            hole: Circle = Circle(f"Hole[{x, y}]", diameter, 8, center)
+            hole_polygons.append(hole)
+    new_square_polygon.extend(hole_polygons)
+    assert len(new_square_polygon) == 10
+
+    # Test *Polygon*.*simple_polygons_get*()
+    assert new_square_polygon.simple_polygons_get() == [square_simple_polygon] + hole_polygons
+
+    # Test *Polygon*.*__get__item__*() method:
+    hole_index: int
+    for hole_index, hole_polygon in enumerate(hole_polygons):
+        assert new_square_polygon[hole_index + 1] is hole_polygons[hole_index]
+    try:
+        new_square_polygon[10]
+    except IndexError as index_error:
+        assert f"{index_error}" == "index=10 and it is not in range 0:9"
+
+    # Verify lock detection:
+    simple_polygon: SimplePolygon = SimplePolygon("Unlocked SimplePolygon")
+    try:
+        Polygon("Unlocked Polygon", [simple_polygon])
+    except ValueError as value_error:
+        assert f"{value_error}" == ("SimplePolygon ('Unlocked SimplePolygon') "
+                                    "at index 0 is not locked.")
+
+
+def test_scad_keys_csv_file_write() -> None:
+    """Test Scad.keys_csv_file_write()."""
+    circle_key: Tuple[Any, ...] = ("Circle", "Circle1", 1.0, 2.0, 1.0, 1.0, 0.0)
+    square_key: Tuple[Any, ...] = ("Square", "Square1", 3.0, 4.0, 2.0, 4.0, 45.0, 0.5, 3)
+    keys: List[Tuple[Any, ...]] = [circle_key, square_key]
+    csv_file: IO[Any]
+    with io.StringIO("") as csv_file:
+        scad.Scad.keys_csv_file_write(keys, csv_file)
+        csv_file_text: str = csv_file.getvalue()
+        csv_lines: List[str] = csv_file_text.split('\n')
+        assert len(csv_lines) == 4
+        assert csv_lines[0] == 'Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count', "[0]!"
+        assert csv_lines[1] == '"Circle","Circle1",1.000,2.000,1.000,1.000,0.000', "[1]!"
+        assert csv_lines[2] == '"Square","Square1",3.000,4.000,2.000,4.000,45.000,0.500,3', "[2]!"
+        assert csv_lines[3] == '', "[3]!"
+
+
+def test_scad_keys_html_file_write() -> None:
+    """Test Scad.keys_csv_file_write()."""
+    circle_key: Tuple[Any, ...] = ("Circle", "Circle1", 1.0, 2.0, 1.0, 1.0, 0.0)
+    square_key: Tuple[Any, ...] = ("Square", "Square1", 3.0, 4.0, 2.0, 4.0, 45.0, 0.5, 3)
+    keys: List[Tuple[Any, ...]] = [circle_key, square_key]
+    tmp_html_file: IO[Any]
+    with open("/tmp/scad_keys.html", "w") as tmp_html_file:
+        scad.Scad.keys_html_file_write(keys, tmp_html_file, "HTML File Write Test")
+    csv_file: IO[Any]
+    with io.StringIO("") as html_file:
+        scad.Scad.keys_html_file_write(keys, html_file, "HTML File Write Test")
+        html_file_text: str = html_file.getvalue()
+        html_lines: List[str] = html_file_text.split('\n')
+        assert len(html_lines) == 45
+        assert html_lines[0] == '<HTML>'
+        assert html_lines[1] == ' <Head>'
+        assert html_lines[2] == '  <Title>HTML File Write Test</Title>'
+        assert html_lines[3] == ' </Head>'
+        assert html_lines[4] == ' <Body>'
+        assert html_lines[5] == '  <H1>HTML File Write Test</H1>'
+        assert html_lines[6] == '  <Table>'
+        assert html_lines[7] == '   <TR>'
+        assert html_lines[8] == '    <TH align="left">Index</TH>'
+        assert html_lines[9] == '    <TH align="left">Type</TH>'
+        assert html_lines[10] == '    <TH align="left">Name</TH>'
+        assert html_lines[11] == '    <TH align="left">X</TH>'
+        assert html_lines[12] == '    <TH align="left">Y</TH>'
+        assert html_lines[13] == '    <TH align="left">DX</TH>'
+        assert html_lines[14] == '    <TH align="left">DY</TH>'
+        assert html_lines[15] == '    <TH align="left">Angle</TH>'
+        assert html_lines[16] == '    <TH align="left">Corner Radius</TH>'
+        assert html_lines[17] == '    <TH align="left">Corner Count</TH>'
+        assert html_lines[18] == '   </TR>'
+        assert html_lines[19] == '   <TR>'
+        assert html_lines[20] == '    <TD align="left">0</TD>'
+        assert html_lines[21] == '    <TD align="left">Circle</TD>'
+        assert html_lines[22] == '    <TD align="left">Circle1</TD>'
+        assert html_lines[23] == '    <TD align="left">1.000</TD>'
+        assert html_lines[24] == '    <TD align="left">2.000</TD>'
+        assert html_lines[25] == '    <TD align="left">1.000</TD>'
+        assert html_lines[26] == '    <TD align="left">1.000</TD>'
+        assert html_lines[27] == '    <TD align="left">0.000</TD>'
+        assert html_lines[28] == '   </TR>'
+        assert html_lines[29] == '   <TR>'
+        assert html_lines[30] == '    <TD align="left">1</TD>'
+        assert html_lines[31] == '    <TD align="left">Square</TD>'
+        assert html_lines[32] == '    <TD align="left">Square1</TD>'
+        assert html_lines[33] == '    <TD align="left">3.000</TD>'
+        assert html_lines[34] == '    <TD align="left">4.000</TD>'
+        assert html_lines[35] == '    <TD align="left">2.000</TD>'
+        assert html_lines[36] == '    <TD align="left">4.000</TD>'
+        assert html_lines[37] == '    <TD align="left">45.000</TD>'
+        assert html_lines[38] == '    <TD align="left">0.500</TD>'
+        assert html_lines[39] == '    <TD align="left">3</TD>'
+        assert html_lines[40] == '   </TR>'
+        assert html_lines[41] == '  </Table>'
+        assert html_lines[42] == ' </Body>'
+        assert html_lines[43] == '</HTML>'
 
 
 def test_scad_program() -> None:
@@ -254,299 +720,6 @@ def test_simple_polygon() -> None:
         simple_polygon4.points_rotate(pi, origin)
     except ValueError as value_error:
         assert f"{value_error}" == "'SimplePolygon4' is locked"
-
-
-def test_polygon() -> None:
-    """Test SimplePolygon class and associated methods."""
-    # Define the four corners of a square:
-    upper_right: P2D = P2D(2.0, 2.0)
-    lower_right: P2D = P2D(2.0, -2.0)
-    lower_left: P2D = P2D(-2.0, -2.0)
-    upper_left: P2D = P2D(-2.0, 2.0)
-
-    # Convert the four corners into a *square_simple_polygon*:
-    square_simple_polygon: SimplePolygon = SimplePolygon("Square SimplePolygon",
-                                                         [upper_right, lower_right,
-                                                          lower_left, upper_left], lock=True)
-    # Now stuff *square_simple_polygon* into *x_square_polygon*:
-    x_square_polygon: Polygon = Polygon("X Square Polygon", [square_simple_polygon])
-
-    # Unpack *x_square_polygon* into *scad_lines*:
-    scad_lines: List[str] = []
-    x_square_polygon.scad_lines_append(scad_lines, "")
-    scad_writer(x_square_polygon, scad_lines)
-
-    # Now validate that we got the right values written into *scad*_lines*:
-    assert len(scad_lines) == 8
-    assert scad_lines[0] == "polygon(points = [  // Begin Polygon 'X Square Polygon' 0:3", "[0]!"
-    assert scad_lines[1] == " // SimplePolygon 'Square SimplePolygon' 0-3", "[1]!"
-    assert scad_lines[2] == ("  [2.000, 2.000], [2.000, -2.000], [-2.000, -2.000], "
-                             "[-2.000, 2.000]  // 0-4"), "[2]!"
-    assert scad_lines[3] == " ], paths = [", "[3]!"
-    assert scad_lines[4] == "  // SimplePolygon 'Square SimplePolygon' 0-3", "[4]!"
-    assert scad_lines[5] == "  [0, 1, 2, 3]", "[5]!"
-    assert scad_lines[6] == " ], convexity=4);  // End Polygon 'X Square Polygon' 0:3", "[6]!"
-
-    # Test Scad.file_write():
-    scad_file: IO[Any]
-    with open("/tmp/test_scad.scad", "w") as scad_file:
-        x_square_polygon.scad_file_write(scad_file)
-    with io.StringIO("") as scad_file:
-        x_square_polygon.scad_file_write(scad_file)
-        input_scad_text: str = scad_file.getvalue()
-        input_scad_lines: List[str] = input_scad_text.split('\n')
-        assert len(input_scad_lines) == 10
-        assert input_scad_lines[0] == "// 'X Square Polygon' File", "[0]!"
-        assert input_scad_lines[1] == ("polygon(points = [  "
-                                       "// Begin Polygon 'X Square Polygon' 0:3"), "[1]!"
-        assert input_scad_lines[2] == (" // SimplePolygon 'Square SimplePolygon' 0-3"), "[2]!"
-        assert input_scad_lines[3] == ("  [2.000, 2.000], [2.000, -2.000], [-2.000, -2.000], "
-                                       "[-2.000, 2.000]  // 0-4"), "[3]!"
-        assert input_scad_lines[4] == " ], paths = [", "[4]!"
-        assert input_scad_lines[5] == "  // SimplePolygon 'Square SimplePolygon' 0-3", "[5]!"
-        assert input_scad_lines[6] == "  [0, 1, 2, 3]", "[6]!"
-        assert input_scad_lines[7] == (" ], convexity=4);  "
-                                       "// End Polygon 'X Square Polygon' 0:3"), "[7]!"
-        assert input_scad_lines[8] == "", "[8]!"
-
-    # Test the *Polygon*.*__getitem__*() and *Polygon*.*__size__*() methods:
-    new_square_polygon: Polygon = Polygon("New Square Polygon", [], lock=False)
-    assert len(new_square_polygon) == 0
-    new_square_polygon.append(square_simple_polygon)
-    assert len(new_square_polygon) == 1
-    assert new_square_polygon[0] is square_simple_polygon
-    assert f"{new_square_polygon}" == ("Polygon('New Square Polygon',"
-                                       "len(simple_polygons)=1,convexity=-1)")
-
-    # Now Test the *Polygon*.*append*() and *Polygon*.*extend*() methods:
-    hole_polygons: List[SimplePolygon] = list()
-    hole_polygon: SimplePolygon
-    diameter: float = 0.25
-    x: float
-    for x in (-1.0, 0.0, 1.0):
-        y: float
-        for y in (-1.0, 0.0, 1.0):
-            center: P2D = P2D(x, y)
-            hole: Circle = Circle(f"Hole[{x, y}]", diameter, 8, center)
-            hole_polygons.append(hole)
-    new_square_polygon.extend(hole_polygons)
-    assert len(new_square_polygon) == 10
-
-    # Test *Polygon*.*simple_polygons_get*()
-    assert new_square_polygon.simple_polygons_get() == [square_simple_polygon] + hole_polygons
-
-    # Test *Polygon*.*__get__item__*() method:
-    hole_index: int
-    for hole_index, hole_polygon in enumerate(hole_polygons):
-        assert new_square_polygon[hole_index + 1] is hole_polygons[hole_index]
-    try:
-        new_square_polygon[10]
-    except IndexError as index_error:
-        assert f"{index_error}" == "index=10 and it is not in range 0:9"
-
-    # Verify lock detection:
-    simple_polygon: SimplePolygon = SimplePolygon("Unlocked SimplePolygon")
-    try:
-        Polygon("Unlocked Polygon", [simple_polygon])
-    except ValueError as value_error:
-        assert f"{value_error}" == ("SimplePolygon ('Unlocked SimplePolygon') "
-                                    "at index 0 is not locked.")
-
-
-def test_circle() -> None:
-    """Test Circle class."""
-    center: P2D = P2D(2.0, 3.0)
-    circle: Circle = Circle("Circle", 2.0, 8, center)
-    assert f"{circle}" == "Circle('Circle',2.0,8,P2D(2.000,3.000),4)"
-
-    scad_lines: List[str] = []
-    circle.scad_lines_append(scad_lines, "")
-    scad_text: str = '\n'.join(scad_lines)
-    scad_file: IO[Any]
-    with open("circle.scad", "w") as scad_file:
-        scad_file.write(scad_text)
-    assert len(circle) == 8
-    assert len(scad_lines) == 2
-    assert scad_lines[0] == "translate([2.000, 3.000])"
-    assert scad_lines[1] == " circle(d=2.000, $fn=8);  // Circle 'Circle'"
-
-    # Try out the *Circle*.*copy*() method:
-    small_circle: Circle = Circle("Small Circle", 2.0, 8, center)
-    assert f"{small_circle}" == "Circle('Small Circle',2.0,8,P2D(2.000,3.000),4)"
-    new_center: P2D = P2D(4.0, 5.0)
-    big_circle: Circle = small_circle.copy("Small", diameter=8.0,
-                                           points_count=16, center=new_center, replace="Big")
-    assert f"{big_circle}" == "Circle('Big Circle',8.0,16,P2D(4.000,5.000),4)"
-
-    # Validate *Circle*.*key*() method:
-    key: Tuple[Any] = circle.key()
-    assert key == ("Circle", "Circle", 2.0, 3.0, 2.0, 2.0, 0.0), f"Bad key: {key}"
-
-    # Validate *Circle*.*x_mirror*()
-    x_mirrored_circle: Circle = circle.x_mirror("X Mirrored Circle")
-    x_mirrored_center: P2D = x_mirrored_circle.center
-    assert x_mirrored_center.x == 2.0
-    assert x_mirrored_center.y == -3.0
-
-    # Validate *Circle*.*y_mirror*()
-    y_mirrored_circle: Circle = circle.y_mirror("Y Mirrored Circle")
-    y_mirrored_center: P2D = y_mirrored_circle.center
-    assert y_mirrored_center.x == -2.0
-    assert y_mirrored_center.y == 3.0
-
-
-def test_linear_extrude() -> None:
-    """Test LinearExtrude class."""
-    unit_square: Square = Square("Unit Square", 1.0, 1.0)
-    linear_extrude: LinearExtrude = LinearExtrude("Linear Extrude", unit_square, 1.0)
-    scad_lines: List[str] = []
-    linear_extrude.scad_lines_append(scad_lines, "")
-    scad_writer(linear_extrude, scad_lines)
-    assert len(scad_lines) == 5
-    assert scad_lines[0] == ("// Begin LinearExtrude 'Linear Extrude'"), "[0]!"
-    assert scad_lines[1] == ("linear_extrude(height=1.0, center=false, "
-                             "convexity=10, twist=0.0)"), "[1]!"
-    assert scad_lines[2] == (" // Square 'Unit Square' dx=1.000 dy=1.000 center=P2D(0.000,0.000) "
-                             "corner_radius=0.000 corner_count=3"), "[2]!"
-    assert scad_lines[3] == (" square([1.000, 1.000], center = true);"), "[3]!"
-    assert scad_lines[4] == ("// End LinearExtrude 'Linear Extrude'"), "[4]!"
-
-
-def test_if2d() -> None:
-    """Test If2D class."""
-    # Create some circles:
-    circle1: Circle = Circle("Circle 1", 1.0, 8)
-    circle2: Circle = Circle("Circle 2", 2.0, 12)
-    circle3: Circle = Circle("Circle 3", 3.0, 16)
-
-    # Create first *if2d1* and fill it in:
-    if2d1: If2D = If2D("If2D 1", "n == 1", circle1)
-    assert str(if2d1) == "If2D('If2D 1',...,lock=False)"
-    if2d1.then_append("n == 2", circle2)
-    if2d1.else_set(circle3)
-
-    # Verify that attempting to set the else clause more than onces fails:
-    try:
-        if2d1.else_set(circle1)
-        assert False, "This should never be reached"  # pragma: no cover
-    except ValueError as value_error:
-        assert f"{value_error}" == "If2D('If2D 1)' else clause is already set."
-
-    # Now verify that we can not do a *scad_lines_append* until after it is locked:
-    scad_lines: List[str] = []
-    try:
-        if2d1.scad_lines_append(scad_lines, "")
-        assert False, "This should never be reached"  # pragma: no cover
-    except ValueError as value_error:
-        assert f"{value_error}" == "If2D 'If2D 1' is not locked."
-
-    # Now lock *if2d1* and verify that then and else clauses can not be appended:
-    if2d1.lock()
-    try:
-        if2d1.then_append("bogus", circle2)
-        assert False, "This line should never be reached"  # pragma: no cover
-    except ValueError as value_error:
-        assert f"{value_error}" == "If2D 'If2D 1' is and locked can not accept another then clause"
-    try:
-        if2d1.else_set(circle3)
-        assert False, "This line should never be reached"  # pragma: no cover
-    except ValueError as value_error:
-        assert f"{value_error}" == "If2D('If2D 1)' is locked and can not have an else clause set."
-
-    # Now generate the *scad_lines*:
-    if2d1.scad_lines_append(scad_lines, "")
-    assert len(scad_lines) == 7
-    assert scad_lines[0] == "if (n == 1) {  // If2D 'If2D 1'", "[0]!"
-    assert scad_lines[1] == " circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
-    assert scad_lines[2] == "} else if (n == 2) {", "[2]!"
-    assert scad_lines[3] == " circle(d=2.000, $fn=12);  // Circle 'Circle 2'", "[3]!"
-    assert scad_lines[4] == "} else {", "[4]!"
-    assert scad_lines[5] == " circle(d=3.000, $fn=16);  // Circle 'Circle 3'", "[5]!"
-    assert scad_lines[6] == "}  // End If2D 'If2D 1'", "[6]!"
-
-    # Do another on with only one then clause and no else clause:
-    if2d2: If2D = If2D("If2D 2", "n == 0", circle1)
-    if2d2.lock()
-
-    # Ensure that we can not set the else clause when it is locked:
-    try:
-        if2d2.else_set(circle2)
-        assert False, "This line should never be reached"  # pragma: no cover
-    except ValueError as value_error:
-        assert f"{value_error}" == "If2D('If2D 2)' is locked and can not have an else clause set."
-
-    # Now make sure that hte *scad_lines* are OK:
-    scad_lines = []
-    if2d2.scad_lines_append(scad_lines, "")
-    assert len(scad_lines) == 3
-    assert scad_lines[0] == "if (n == 0) {  // If2D 'If2D 2'", "[0]!"
-    assert scad_lines[1] == " circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
-    assert scad_lines[2] == "}  // End If2D 'If2D 2'", "[2]!"
-
-
-def test_module2d() -> None:
-    """Test Module2D class."""
-    # Create some *Scad2D* objects to play with:
-    circle1: Circle = Circle("Circle 1", 10.0, 16)
-    square1: Square = Square("Sqaare 1", 10.0, 10.0)
-    square2: Square = Square("Square 2", 20.0, 20.0)
-
-    # Work on len(), str()
-    module2d1: Module2D = Module2D("Module2D 1", [], lock=False)
-    assert str(module2d1) == "Module2D('Module2D 1',[...],is_operator=False,lock=False)"
-    assert len(module2d1) == 0
-    module2d1.append(circle1)
-    assert len(module2d1) == 1
-    module2d1.extend([square1, square2])
-    assert len(module2d1) == 3
-
-    # Attempt to perform *scad_lines_append*() in unlocked state:
-    scad_lines: List[str] = []
-    try:
-        module2d1.scad_lines_append(scad_lines, "")
-        assert False, "scad_lines_append() should have failed"  # pragma: no cover
-    except ValueError as value_error:
-        assert f"{value_error}" == "Module2D 'Module2D 1' is not locked yet."
-
-    # Now lock *module2d1* and verify that *append* and *extend*() do not work:
-    module2d1.lock()
-    try:
-        module2d1.append(circle1)
-        assert False, "append() should have failed"  # pragma: no cover
-    except ValueError as value_error:
-        assert f"{value_error}" == "Can not append to Module2D 'Module2D 1' because is locked"
-    try:
-        module2d1.extend([circle1])
-        assert False, "extend() should have failed"  # pragma: no cover
-    except ValueError as value_error:
-        assert f"{value_error}" == "Can not extend Module2D 'Module2D 1' because is locked"
-
-    # Now test *__getitem__* method:
-    assert module2d1[0] == circle1
-    assert module2d1[1] == square1
-    assert module2d1[2] == square2
-    try:
-        module2d1[3]
-        assert False, "__getiteme__ should have failed."  # pragma: no cover
-    except IndexError as index_error:
-        assert f"{index_error}" == "Index 3 exceeds 3 objects in Module2D 'Module2D 1'"
-
-    # Now verify that *scad_lines_append*() works:
-    module2d1.scad_lines_append(scad_lines, "")
-    assert len(scad_lines) == 7
-    assert scad_lines[0] == "module Module2D 1() {", "[0]!"
-    assert scad_lines[1] == " circle(d=10.000, $fn=16);  // Circle 'Circle 1'", "[1]!"
-    assert scad_lines[2] == (" // Square 'Sqaare 1' dx=10.000 dy=10.000 center=P2D(0.000,0.000) "
-                             "corner_radius=0.000 corner_count=3"), "[2]!"
-    assert scad_lines[3] == " square([10.000, 10.000], center = true);", "[3]!"
-    assert scad_lines[4] == (" // Square 'Square 2' dx=20.000 dy=20.000 center=P2D(0.000,0.000) "
-                             "corner_radius=0.000 corner_count=3"), "[4]!"
-    assert scad_lines[5] == " square([20.000, 20.000], center = true);", "[5]!"
-    assert scad_lines[6] == "}", "[6]!"
-
-    # Verify that *is_operator* attribute can be set:
-    module2d2: Module2D = Module2D("Module2D 2", [], is_operator=True)
-    assert f"{module2d2}" == "Module2D('Module2D 2',[...],is_operator=True,lock=True)"
 
 
 def test_square() -> None:
@@ -731,22 +904,39 @@ def test_square() -> None:
                                     4.0, 0.0, 0.5, 2), "key failed"
 
 
-def test_union() -> None:
+def test_union3d() -> None:
     """Test Union class."""
+    # Create the *union3d* object:
     square0: Square = Square("Square 0", 2.0, 2.0)
+    extruded_square0: Scad3D = LinearExtrude("Extruded Square0", square0, 10.0, center=True)
     square1: Square = Square("Square 1", 2.0, 2.0, center=P2D(1.0, 1.0))
-    square2: Square = Square("Square 2", 2.0, 2.0, center=P2D(-1.0, -1.0))
-    union: scad.Union = scad.Union("Squares Union", [square0, square1, square2])
-    scad_lines: List[str] = []
-    union.scad_lines_append(scad_lines, "")
-    scad_writer(union, scad_lines)
+    extruded_square1: Scad3D = LinearExtrude("Extruded Square1", square1, 20.0)
+    union3d: Union3D = Union3D("Squares Union", [extruded_square0, extruded_square1])
 
-    cube0: LinearExtrude = LinearExtrude("Cube", square0, 2.0)
-    try:
-        Union("Bogus Union", [cube0, square0])
-    except ValueError as value_error:
-        assert f"{value_error}" == ("Index 0 of Union is class 'LinearExtrude,' "
-                                    "but index 1 is class 'Square'")
+    # Verify that the correct OpenSCAD output is generated:
+    scad_lines: List[str] = []
+    union3d.scad_lines_append(scad_lines, "")
+    scad_writer(union3d, scad_lines)
+    assert len(scad_lines) == 15
+    assert scad_lines[0] == "// Union3D 'Squares Union'", "[0]!"
+    assert scad_lines[1] == "union() {", "[1]!"
+    assert scad_lines[2] == " // Begin LinearExtrude 'Extruded Square0'", "[2]!"
+    assert scad_lines[3] == (" linear_extrude(height=10.0, center=true, "
+                             "convexity=10, twist=0.0)"), "[3]!"
+    assert scad_lines[4] == ("  // Square 'Square 0' dx=2.000 dy=2.000 "
+                             "center=P2D(0.000,0.000) corner_radius=0.000 corner_count=3"), "[1]!"
+    assert scad_lines[5] == "  square([2.000, 2.000], center = true);", "[5]!"
+    assert scad_lines[6] == " // End LinearExtrude 'Extruded Square0'", "[6]!"
+    assert scad_lines[7] == " // Begin LinearExtrude 'Extruded Square1'", "[7]!"
+    assert scad_lines[8] == (" linear_extrude(height=20.0, center=false, "
+                             "convexity=10, twist=0.0)"), "[8]!"
+    assert scad_lines[9] == ("  // Square 'Square 1' dx=2.000 dy=2.000 center=P2D(1.000,1.000) "
+                             "corner_radius=0.000 corner_count=3"), "[9]!"
+    assert scad_lines[10] == "  translate([1.000, 1.000])", "[10]!"
+    assert scad_lines[11] == "   square([2.000, 2.000], center = true);", "[11]!"
+    assert scad_lines[12] == " // End LinearExtrude 'Extruded Square1'", "[12]!"
+    assert scad_lines[13] == "// End Union3D 'Squares Union'", "[13]!"
+    assert scad_lines[14] == "}", "[14]!"
 
 
 def test_use_module2d() -> None:
@@ -766,81 +956,14 @@ def test_use_module2d() -> None:
     assert scad_lines[3] == "Module2D_1(); // UseModule2D('UseModule2D_1')", "[3]!"
 
 
-def test_scad_keys_csv_file_write() -> None:
-    """Test Scad.keys_csv_file_write()."""
-    circle_key: Tuple[Any, ...] = ("Circle", "Circle1", 1.0, 2.0, 1.0, 1.0, 0.0)
-    square_key: Tuple[Any, ...] = ("Square", "Square1", 3.0, 4.0, 2.0, 4.0, 45.0, 0.5, 3)
-    keys: List[Tuple[Any, ...]] = [circle_key, square_key]
-    csv_file: IO[Any]
-    with io.StringIO("") as csv_file:
-        scad.Scad.keys_csv_file_write(keys, csv_file)
-        csv_file_text: str = csv_file.getvalue()
-        csv_lines: List[str] = csv_file_text.split('\n')
-        assert len(csv_lines) == 4
-        assert csv_lines[0] == 'Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count', "[0]!"
-        assert csv_lines[1] == '"Circle","Circle1",1.000,2.000,1.000,1.000,0.000', "[1]!"
-        assert csv_lines[2] == '"Square","Square1",3.000,4.000,2.000,4.000,45.000,0.500,3', "[2]!"
-        assert csv_lines[3] == '', "[3]!"
-
-
-def test_scad_keys_html_file_write() -> None:
-    """Test Scad.keys_csv_file_write()."""
-    circle_key: Tuple[Any, ...] = ("Circle", "Circle1", 1.0, 2.0, 1.0, 1.0, 0.0)
-    square_key: Tuple[Any, ...] = ("Square", "Square1", 3.0, 4.0, 2.0, 4.0, 45.0, 0.5, 3)
-    keys: List[Tuple[Any, ...]] = [circle_key, square_key]
-    tmp_html_file: IO[Any]
-    with open("/tmp/scad_keys.html", "w") as tmp_html_file:
-        scad.Scad.keys_html_file_write(keys, tmp_html_file, "HTML File Write Test")
-    csv_file: IO[Any]
-    with io.StringIO("") as html_file:
-        scad.Scad.keys_html_file_write(keys, html_file, "HTML File Write Test")
-        html_file_text: str = html_file.getvalue()
-        html_lines: List[str] = html_file_text.split('\n')
-        assert len(html_lines) == 45
-        assert html_lines[0] == '<HTML>'
-        assert html_lines[1] == ' <Head>'
-        assert html_lines[2] == '  <Title>HTML File Write Test</Title>'
-        assert html_lines[3] == ' </Head>'
-        assert html_lines[4] == ' <Body>'
-        assert html_lines[5] == '  <H1>HTML File Write Test</H1>'
-        assert html_lines[6] == '  <Table>'
-        assert html_lines[7] == '   <TR>'
-        assert html_lines[8] == '    <TH align="left">Index</TH>'
-        assert html_lines[9] == '    <TH align="left">Type</TH>'
-        assert html_lines[10] == '    <TH align="left">Name</TH>'
-        assert html_lines[11] == '    <TH align="left">X</TH>'
-        assert html_lines[12] == '    <TH align="left">Y</TH>'
-        assert html_lines[13] == '    <TH align="left">DX</TH>'
-        assert html_lines[14] == '    <TH align="left">DY</TH>'
-        assert html_lines[15] == '    <TH align="left">Angle</TH>'
-        assert html_lines[16] == '    <TH align="left">Corner Radius</TH>'
-        assert html_lines[17] == '    <TH align="left">Corner Count</TH>'
-        assert html_lines[18] == '   </TR>'
-        assert html_lines[19] == '   <TR>'
-        assert html_lines[20] == '    <TD align="left">0</TD>'
-        assert html_lines[21] == '    <TD align="left">Circle</TD>'
-        assert html_lines[22] == '    <TD align="left">Circle1</TD>'
-        assert html_lines[23] == '    <TD align="left">1.000</TD>'
-        assert html_lines[24] == '    <TD align="left">2.000</TD>'
-        assert html_lines[25] == '    <TD align="left">1.000</TD>'
-        assert html_lines[26] == '    <TD align="left">1.000</TD>'
-        assert html_lines[27] == '    <TD align="left">0.000</TD>'
-        assert html_lines[28] == '   </TR>'
-        assert html_lines[29] == '   <TR>'
-        assert html_lines[30] == '    <TD align="left">1</TD>'
-        assert html_lines[31] == '    <TD align="left">Square</TD>'
-        assert html_lines[32] == '    <TD align="left">Square1</TD>'
-        assert html_lines[33] == '    <TD align="left">3.000</TD>'
-        assert html_lines[34] == '    <TD align="left">4.000</TD>'
-        assert html_lines[35] == '    <TD align="left">2.000</TD>'
-        assert html_lines[36] == '    <TD align="left">4.000</TD>'
-        assert html_lines[37] == '    <TD align="left">45.000</TD>'
-        assert html_lines[38] == '    <TD align="left">0.500</TD>'
-        assert html_lines[39] == '    <TD align="left">3</TD>'
-        assert html_lines[40] == '   </TR>'
-        assert html_lines[41] == '  </Table>'
-        assert html_lines[42] == ' </Body>'
-        assert html_lines[43] == '</HTML>'
+def test_variable2d() -> None:
+    """Test Variable2d class."""
+    variable2d1: Variable2D = Variable2D("Variable2D 1", "sum", "2 + 3")
+    assert str(variable2d1) == "Variable2D('sum=2 + 3')"
+    scad_lines: List[str] = []
+    variable2d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 1
+    assert scad_lines[0] == "sum = 2 + 3;"
 
 
 if __name__ == "__main__":  # pragma: no cover

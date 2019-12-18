@@ -9,7 +9,7 @@
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
 from scad_models.scad import (Circle, If2D, Module2D, P2D, Polygon, Scad,
-                              SimplePolygon, ScadProgram, Square, UseModule2D)
+                              SimplePolygon, ScadProgram, Square, UseModule2D, Variable2D)
 from typing import Any, Dict, IO, List, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -1384,6 +1384,61 @@ class Romi:
         return vertical_rectangles
 
 
+# OtherPi:
+class OtherPi:
+    """Represents a different SBC compatible with Raspberry Pi."""
+
+    # OtherPi.__init__():
+    def __init__(self) -> None:
+        """Initialize OtherPi."""
+        pass
+
+    # OtherPi.board_polygon_get():
+    def pcb_polygon_get(self) -> Polygon:
+        """Return the PCB Polygon that represents the PCB."""
+        # Define the board dimensions:
+        pcb_dx: float = 103.00
+        pcb_dy: float = 70.49
+
+        # Define the mounting hole centers:
+        upper_left_hole_center: P2D = P2D(3.5, pcb_dy - 3.5)
+        upper_right_hole_center: P2D = P2D(3.5 + 58.0, pcb_dy - 3.5)
+        lower_left_hole_center: P2D = P2D(3.5, pcb_dy - 3.5 - 49.0)
+        lower_right_hole_center: P2D = P2D(3.5 + 58.0, pcb_dy - 3.5 - 49.0)
+
+        # Create the *pcb_outline* with the origin in the lower left corner:
+        pcb_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
+        pcb_outline: Square = Square("PCB Outline", pcb_dx, pcb_dy, pcb_center)
+
+        # Define the holes:
+        hole_diameter: float = 2.75
+        upper_left_hole: Circle = Circle("Upper Left Hole",
+                                         hole_diameter, 16, upper_left_hole_center)
+        upper_right_hole: Circle = Circle("Upper Right Hole",
+                                          hole_diameter, 16, upper_right_hole_center)
+        lower_left_hole: Circle = Circle("Lower Left Hole",
+                                         hole_diameter, 16, lower_left_hole_center)
+        lower_right_hole: Circle = Circle("Lower Right Hole",
+                                          hole_diameter, 16, lower_right_hole_center)
+
+        # Create *pcb_polygon* and append the *pcb_outline* and associated mounting holes:
+        pcb_polygon: Polygon = Polygon("OtherPi PCB Poylgon", [pcb_outline], lock=False)
+        pcb_polygon.extend([upper_left_hole, upper_right_hole, lower_left_hole, lower_right_hole])
+
+        # Lock *pcb_polygon* and return it:
+        pcb_polygon.lock()
+        return pcb_polygon
+
+
+# OtherPi
+#  Board:       X:  0.000,  Y:   0.000, Z: -0.990, DX: 70.49, DY: 103.00,  DZ:  0.99
+#  CN1 (2x40):  X:  0.000,  Y:   0.000, Z:  0.000, DX: 50.80, DY:    5.08  DZ:  2.54
+#  CN2 (USB3A): X:  0.000,  Y:  -1.480, Z:  0.004, DX:  9.20  DY:   20.50, DZ:  5.38
+#  CN3 (2USB):  X:  46.012, Y: -32.365, Z:  7.598, DX: 17.68, DY:   15.73, DZ: 20.00
+#  CN4 (?):     X: -39.339, Y:   7.809, Z:  0.000, DX:    ??, DY: 8.00, DZ: 4.25
+#  CN5 (RJ45):  X:  64.123, Y: -14.674, Z:  6.401, DX: 21.78, DY:   17.75, DZ: 17.70
+
+
 def main() -> int:  # pragma: no cover
     """Generate the openscand file."""
     # print("romi_model.main() called")
@@ -1397,8 +1452,10 @@ def main() -> int:  # pragma: no cover
     # with open("romi_base.scad", "w") as scad_file:
     #     union.scad_file_write(scad_file)
 
-    # Create the top level *scad_models* program:
-    scad_models: ScadProgram = ScadProgram("Scad models")
+    # Create the top level *scad_program* program:
+    scad_program: ScadProgram = ScadProgram("Scad models")
+    scad_program.append(Variable2D("Selected Cleared", "selected", "false"))
+    selected_set: Variable2D = Variable2D("Selected Set", "selected", "true")
 
     # Create the *romi* object for constructing various portions of a Romi platform:
     romi: Romi = Romi()
@@ -1406,23 +1463,41 @@ def main() -> int:  # pragma: no cover
     # Start with the just *rome_base_polygon* and append it to *scad_models*:
     romi_base_polygon: Polygon = romi.base_scad_polygon_generate()
     romi_base_polygon_module: Module2D = Module2D("Romi_Base_Polygon_Module", [romi_base_polygon])
-    scad_models.append(romi_base_polygon_module)
+    scad_program.append(romi_base_polygon_module)
 
-    # Next appedn the *expansion_polygon*:
+    # Next append the *expansion_polygon*:
     expansion_polygon: Polygon = romi.expansion_polygon_get()
     expansion_module: Module2D = Module2D("Romi_Expansion_Polygon_Module", [expansion_polygon])
-    scad_models.append(expansion_module)
+    scad_program.append(expansion_module)
+
+    # Now create *other_pi* and append it as well:
+    other_pi: OtherPi = OtherPi()
+    other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
+    other_pi_module: Module2D = Module2D("Other_Pi_PCB_Polygon", [other_pi_pcb_polygon])
+    scad_program.append(other_pi_module)
 
     # Now construct an if-then-else sequence to showing the desired module:
-    if2d: If2D = If2D("Polygon Modules", 'name == "romi_base"',
-                      UseModule2D("Rom Base Polygon", romi_base_polygon_module))
-    if2d.then_append('name == "expansion"', UseModule2D("Expansion Polygon", expansion_module))
-    if2d.else_set(UseModule2D("Romi Base Polygon", romi_base_polygon_module))
-    if2d.lock()
-    scad_models.append(if2d)
+    if2d1: If2D = If2D("Polygon Modules", '!selected && name == "romi_base"',
+                       [selected_set,
+                        UseModule2D("Rom Base Polygon", romi_base_polygon_module)])
+    if2d1.then_append('!selected && name == "expansion"',
+                      [selected_set,
+                       UseModule2D("Expansion Polygon", expansion_module)])
+    if2d1.then_append('!selected && name == "other_pi_pcb"',
+                      [selected_set,
+                       UseModule2D("Other_Pi_PCB_Polygon", other_pi_module)])
+    # if2d.else_set(UseModule2D("Romi Base Polygon", [romi_base_polygon_module]))
+    if2d1.lock()
+    scad_program.append(if2d1)
 
+    if2d2: If2D = If2D("IF2D 2", "!selected",
+                       [UseModule2D("Rom Base Polygon", romi_base_polygon_module)])
+    if2d2.lock()
+    scad_program.append(if2d2)
+
+    # Generate `scad_models.scad`:
     scad_lines: List[str] = []
-    scad_models.scad_lines_append(scad_lines, "")
+    scad_program.scad_lines_append(scad_lines, "")
     scad_lines.append("")
     scad_text: str = '\n'.join(scad_lines)
     scad_file: IO[Any]

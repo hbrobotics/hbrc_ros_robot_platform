@@ -22,10 +22,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from scad_models.scad_models import Romi
+from scad_models.scad_models import OtherPi, Romi
 from scad_models.scad import Polygon
 
 
+# test_romi():
 def test_romi():
     """Run the various Romi methods."""
     romi: Romi = Romi()
@@ -36,3 +37,11 @@ def test_romi():
     expansion_polygon: Polygon = romi.expansion_polygon_get()
     expansion_polygon.lock()
     expansion_polygon = expansion_polygon
+
+
+# test_other_pi():
+def test_other_pi() -> None:
+    """Test OtherPi class."""
+    other_pi: OtherPi = OtherPi()
+    other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
+    other_pi_pcb_polygon = other_pi_pcb_polygon

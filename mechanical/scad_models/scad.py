@@ -1256,15 +1256,16 @@ class If2D(Scad2D):
     """Represents a Scad2D if-then-else statement chain."""
 
     # If2D.__init__():
-    def __init__(self, name: str, then_expression: str, then_scad2d: Scad2D, lock=False) -> None:
+    def __init__(self, name: str, then_expression: str,
+                 then_scad2ds: List[Scad2D], lock=False) -> None:
         """Initialize an If2D object."""
         # Initialize the *SCAD2D* parent class:
         super().__init__(name)
         # Load values into *If2D* (i.e. *self*):
         # if2d: If2D = self
-        then_clause: Tuple[str, Scad2D] = (then_expression, then_scad2d)
-        self.then_clauses: List[Tuple[str, Scad2D]] = [then_clause]
-        self.else_scad2d: Optional[Scad2D] = None
+        then_clause: Tuple[str, List[Scad2D]] = (then_expression, then_scad2ds[:])
+        self.then_clauses: List[Tuple[str, List[Scad2D]]] = [then_clause]
+        self.else_scad2ds: Optional[List[Scad2D]] = None
         self.locked: bool = lock
 
     # If2D.__str__():
@@ -1277,19 +1278,19 @@ class If2D(Scad2D):
         return f"If2D('{name}',...,lock={locked})"
 
     # If2D.else_set():
-    def else_set(self, new_else_scad2d: Scad2D) -> None:
+    def else_set(self, new_else_scad2ds: List[Scad2D]) -> None:
         """Set the final else caluse for an If2D."""
         # Grab some values from *if2d* (i.e. *self*):
         if2d: If2D = self
-        else_scad2d: Optional[Scad2D] = if2d.else_scad2d
+        else_scad2ds: Optional[List[Scad2D]] = if2d.else_scad2ds
         locked: bool = if2d.locked
         name: str = if2d.name
         if locked:
             raise ValueError(f"If2D('{name})' is locked and can not have an else clause set.")
-        elif else_scad2d is not None:
+        elif else_scad2ds is not None:
             raise ValueError(f"If2D('{name})' else clause is already set.")
         else:
-            if2d.else_scad2d = new_else_scad2d
+            if2d.else_scad2ds = new_else_scad2ds[:]
 
     # If2D.lock():
     def lock(self):
@@ -1309,39 +1310,43 @@ class If2D(Scad2D):
         """
         # Grab some values from *if2d* (i.e. *self*):
         if2d: If2D = self
-        else_scad2d: Optional[Scad2D] = if2d.else_scad2d
+        else_scad2ds: Optional[List[Scad2D]] = if2d.else_scad2ds
         name: str = if2d.name
-        then_clauses: List[Tuple[str, Scad2D]] = if2d.then_clauses
+        then_clauses: List[Tuple[str, List[Scad2D]]] = if2d.then_clauses
         locked: bool = if2d.locked
         if not locked:
             raise ValueError(f"If2D '{name}' is not locked.")
 
         next_indent: str = indent + " "
-        then_clause: Tuple[str, Scad2D]
+        then_clause: Tuple[str, List[Scad2D]]
         then_index: int
         for then_index, then_clause in enumerate(then_clauses):
             then_expression: str = then_clause[0]
-            then_scad2d: Scad2D = then_clause[1]
+            then_scad2ds: List[Scad2D] = then_clause[1]
             comment_text = f"  // If2D '{name}'" if then_index == 0 else ""
             if_text: str = "if" if then_index == 0 else "} else if"
             scad_lines.append(f"{indent}{if_text} ({then_expression}) {{{comment_text}")
-            then_scad2d.scad_lines_append(scad_lines, next_indent)
-        if else_scad2d is not None:
+            then_scad2d: Scad2D
+            for then_scad2d in then_scad2ds:
+                then_scad2d.scad_lines_append(scad_lines, next_indent)
+        if else_scad2ds is not None:
             scad_lines.append(f"{indent}}} else {{")
-            else_scad2d.scad_lines_append(scad_lines, next_indent)
+            else_scad2d: Scad2D
+            for else_scad2d in else_scad2ds:
+                else_scad2d.scad_lines_append(scad_lines, next_indent)
         scad_lines.append(f"{indent}}}  // End If2D '{name}'")
 
     # If2D.then_append():
-    def then_append(self, else_if_expression: str, else_if_scad2d: Scad2D) -> None:
+    def then_append(self, else_if_expression: str, else_if_scad2ds: List[Scad2D]) -> None:
         """Append a then clause to an If2D."""
         # Grab some values from *if2d* (i.e. *self*):
         if2d: If2D = self
         name: str = if2d.name
-        then_clauses: List[Tuple[str, Scad2D]] = if2d.then_clauses
+        then_clauses: List[Tuple[str, List[Scad2D]]] = if2d.then_clauses
         locked: bool = if2d.locked
         if locked:
             raise ValueError(f"If2D '{name}' is and locked can not accept another then clause")
-        then_clause: Tuple[str, Scad2D] = (else_if_expression, else_if_scad2d)
+        then_clause: Tuple[str, List[Scad2D]] = (else_if_expression, else_if_scad2ds)
         then_clauses.append(then_clause)
 
 
@@ -1713,6 +1718,47 @@ class UseModule2D(Scad2D):
         scad_lines.append(f"{indent}{module_name}(){end_text} // UseModule2D('{use_module_name}')")
 
 
+# Variable2D:
+class Variable2D(Scad2D):
+    """Represents setting a variable in some 2D code."""
+
+    # Variable2D.__init__():
+    def __init__(self, name: str, variable_name: str, expression: str) -> None:
+        """Set a variable value for a ScadD code."""
+        # Initialize the *Scad2D* parent class:
+        super().__init__(name)
+
+        # Stuff the values into *varaible2d* (i.e. *self*):
+        # variable2d: Variable2D = self
+        self.variable_name: str = variable_name
+        self.expression: str = expression
+
+    # Variable2D.__str__():
+    def __str__(self):
+        """Return Variable2D as a text string."""
+        # Grab some values from *Variable2D* (i.e. *self*):
+        variable2d: Variable2D = self
+        variable_name: str = variable2d.variable_name
+        expression: str = variable2d.expression
+        return f"Variable2D('{variable_name}={expression}')"
+
+    # If2D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append If2D to a list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *square* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *Variable2D* (i.e. *self*):
+        variable2d: Variable2D = self
+        variable_name: str = variable2d.variable_name
+        expression: str = variable2d.expression
+        scad_lines.append(f"{indent}{variable_name} = {expression};")
+
+
 # Scad3D:
 class Scad3D(Scad):
     """Represents 3-dimensional Scad objects."""
@@ -1720,6 +1766,105 @@ class Scad3D(Scad):
     def __init__(self, name: str) -> None:
         """Set the name of the 3-dimensional SCAD object."""
         super().__init__(name)
+
+
+# If3D:
+class If3D(Scad3D):
+    """Represents a Scad3D if-then-else statement chain."""
+
+    # If3D.__init__():
+    def __init__(self, name: str, then_expression: str,
+                 then_scad3ds: List[Scad3D], lock=False) -> None:
+        """Initialize an If3D object."""
+        # Initialize the *SCAD3D* parent class:
+        super().__init__(name)
+        # Load values into *If3D* (i.e. *self*):
+        # if3d: If3D = self
+        then_clause: Tuple[str, List[Scad3D]] = (then_expression, then_scad3ds[:])
+        self.then_clauses: List[Tuple[str, List[Scad3D]]] = [then_clause]
+        self.else_scad3ds: Optional[List[Scad3D]] = None
+        self.locked: bool = lock
+
+    # If3D.__str__():
+    def __str__(self) -> str:
+        """Convert an If3D into a string."""
+        # Grab some values from *if3d* (i.e. *self*):
+        if3d: If3D = self
+        name: str = if3d.name
+        locked: bool = if3d.locked
+        return f"If3D('{name}',...,lock={locked})"
+
+    # If3D.else_set():
+    def else_set(self, new_else_scad3ds: List[Scad3D]) -> None:
+        """Set the final else caluse for an If3D."""
+        # Grab some values from *if3d* (i.e. *self*):
+        if3d: If3D = self
+        else_scad3ds: Optional[List[Scad3D]] = if3d.else_scad3ds
+        locked: bool = if3d.locked
+        name: str = if3d.name
+        if locked:
+            raise ValueError(f"If3D('{name})' is locked and can not have an else clause set.")
+        elif else_scad3ds is not None:
+            raise ValueError(f"If3D('{name})' else clause is already set.")
+        else:
+            if3d.else_scad3ds = new_else_scad3ds[:]
+
+    # If3D.lock():
+    def lock(self):
+        """Ensure that an If3D is locked."""
+        if3d: If3D = self
+        if3d.locked = True
+
+    # If3D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append If3D to a list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *square* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *if3d* (i.e. *self*):
+        if3d: If3D = self
+        else_scad3ds: Optional[List[Scad3D]] = if3d.else_scad3ds
+        name: str = if3d.name
+        then_clauses: List[Tuple[str, List[Scad3D]]] = if3d.then_clauses
+        locked: bool = if3d.locked
+        if not locked:
+            raise ValueError(f"If3D '{name}' is not locked.")
+
+        next_indent: str = indent + " "
+        then_clause: Tuple[str, List[Scad3D]]
+        then_index: int
+        for then_index, then_clause in enumerate(then_clauses):
+            then_expression: str = then_clause[0]
+            then_scad3ds: List[Scad3D] = then_clause[1]
+            comment_text = f"  // If3D '{name}'" if then_index == 0 else ""
+            if_text: str = "if" if then_index == 0 else "} else if"
+            scad_lines.append(f"{indent}{if_text} ({then_expression}) {{{comment_text}")
+            then_scad3d: Scad3D
+            for then_scad3d in then_scad3ds:
+                then_scad3d.scad_lines_append(scad_lines, next_indent)
+        if else_scad3ds is not None:
+            scad_lines.append(f"{indent}}} else {{")
+            else_scad3d: Scad3D
+            for else_scad3d in else_scad3ds:
+                else_scad3d.scad_lines_append(scad_lines, next_indent)
+        scad_lines.append(f"{indent}}}  // End If3D '{name}'")
+
+    # If3D.then_append():
+    def then_append(self, else_if_expression: str, else_if_scad3ds: List[Scad3D]) -> None:
+        """Append a then clause to an If3D."""
+        # Grab some values from *if3d* (i.e. *self*):
+        if3d: If3D = self
+        name: str = if3d.name
+        then_clauses: List[Tuple[str, List[Scad3D]]] = if3d.then_clauses
+        locked: bool = if3d.locked
+        if locked:
+            raise ValueError(f"If3D '{name}' is and locked can not accept another then clause")
+        then_clause: Tuple[str, List[Scad3D]] = (else_if_expression, else_if_scad3ds)
+        then_clauses.append(then_clause)
 
 
 # LinearExtrude():
@@ -1988,21 +2133,19 @@ class Polygon(Scad2D):
         return simple_polygons
 
 
-# Union:
-class Union(Scad):
-    """Represents a boolean union of SCAD objects."""
+# Union3D:
+class Union3D(Scad):
+    """Represents a boolean union of SCAD3D objects."""
 
     # Union.__init__():
-    def __init__(self, name: str, scads: List[Scad]) -> None:
+    def __init__(self, name: str, scad3ds: List[Scad3D]) -> None:
         """Initialize a Union object.
 
         Args:
             *name* (*str*): The name that is output to the `.scad`
                 file.
-            *scads* (*List*[*Scad*]): A list of *Scad* objects
-                to be unioned together.  All of the *Scad* objects
-                must be either *Scad2D* or *Scad3D*; there  is no
-                mixing allowed between the two.
+            *scad3ds* (*List*[*Scad3D*]): A list of *Scad3D* objects
+                to be unioned together.
 
         Raises:
             *ValueError*(*str*): Exception that is raised when there are
@@ -2012,21 +2155,9 @@ class Union(Scad):
         # Initialize the base class:
         super().__init__(name)
 
-        # Validate that there are no mixed *Scad2D* and *Scad3D objects in *scads*:
-        if scads:
-            scads0: Scad = scads[0]
-            scads0_class_name = scads0.__class__.__name__
-            scad: Scad
-            scad_index: int
-            for scad_index, scad in enumerate(scads):
-                scad_class_name: str = scad.__class__.__name__
-                if scads0_class_name != scad_class_name:
-                    raise ValueError(f"Index 0 of Union is class '{scads0_class_name},' "
-                                     f"but index {scad_index} is class '{scad_class_name}'")
-
         # If we get there far, we can stuf *scads* into *union* (i.e. *self*):
         # union: Union = self
-        self.scads: List[Scad] = scads[:]
+        self.scad3ds: List[Scad3D] = scad3ds[:]
 
     # Union.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
@@ -2039,16 +2170,16 @@ class Union(Scad):
 
         """
         # Grab some values from *scad_3d_union* (i.e: *self*):
-        union: Union = self
-        name: str = union.name
-        scads: List[Scad] = union.scads
+        union3d: Union3D = self
+        name: str = union3d.name
+        scad3ds: List[Scad3D] = union3d.scad3ds
 
         # Append the lines to *scad_lines*:
-        scad_lines.append(f"{indent}// Union '{name}'")
+        scad_lines.append(f"{indent}// Union3D '{name}'")
         scad_lines.append(f"{indent}union() {{")
         next_indent: str = indent + " "
-        scad: Scad
-        for scad in scads:
-            scad.scad_lines_append(scad_lines, next_indent)
-        scad_lines.append(f"{indent}// End Union '{name}'")
+        scad3d: Scad3D
+        for scad3d in scad3ds:
+            scad3d.scad_lines_append(scad_lines, next_indent)
+        scad_lines.append(f"{indent}// End Union3D '{name}'")
         scad_lines.append(f"{indent}}}")
