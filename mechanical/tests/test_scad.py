@@ -26,9 +26,9 @@
 
 import io
 from math import pi
-from scad_models.scad import (Circle, If2D, If3D, LinearExtrude, Module2D, P2D, P3D, Polygon, Scad,
-                              Scad3D, ScadProgram, SimplePolygon, Square, Union3D, UseModule2D,
-                              Variable2D)
+from scad_models.scad import (Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
+                              P2D, P3D, Polygon, Scad, Scad3D, ScadProgram, SimplePolygon,
+                              Square, Union3D, UseModule2D, Variable2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -85,6 +85,82 @@ def test_circle() -> None:
     y_mirrored_center: P2D = y_mirrored_circle.center
     assert y_mirrored_center.x == -2.0
     assert y_mirrored_center.y == 3.0
+
+
+def test_cube() -> None:
+    """Test Cube class."""
+    # Create a *centered_cube*:
+    centered_cube: Cube = Cube("Centered Cube", 1.0, 2.0, 3.0)
+    assert str(centered_cube) == ("Cube('Centered Cube',"
+                                  "1.000,2.000,3.000,center=P3D(0.000,0.000,0.000))")
+
+    # Output to *scad_lines*:
+    scad_lines: List[str] = []
+    centered_cube.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 1
+    assert scad_lines[0] == ("cube(size = [1.000, 2.000, 3.000], center = true);  "
+                             "// Cube: 'Centered Cube'")
+
+    # Create a *non_centered_cube*:
+    non_centered_cube: Cube = Cube("Non-Centered Cube", 1.0, 2.0, 3.0, center=P3D(1.5, 2.5, 3.5))
+    scad_lines = []
+    non_centered_cube.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == "translate(v = [1.500, 2.500, 3.500]) {", "[0]!"
+    assert scad_lines[1] == (" cube(size = [1.000, 2.000, 3.000], center = true);  "
+                             "// Cube: 'Non-Centered Cube'"), "[1]!"
+    assert scad_lines[2] == "}", "[2]!"
+
+    # Verify that we fail for non-positive values of dx, dy, and dz:
+    try:
+        Cube("Cube DX=0", 0.0, 1.0, 2.0)
+        assert False, "We should not reach this line"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Cube 'Cube DX=0' dx=0.0 is not positive"
+    try:
+        Cube("Cube DY=0", 1.0, 0.0, 2.0)
+        assert False, "We should not reach this line"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Cube 'Cube DY=0' dy=0.0 is not positive"
+    try:
+        Cube("Cube DZ=0", 1.0, 2.0, 0.0)
+        assert False, "We should not reach this line"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Cube 'Cube DZ=0' dz=0.0 is not positive"
+
+
+def test_corner_cube() -> None:
+    """Test CornerCube class."""
+    # Create a *corner_cube*:
+    corner_cube1: CornerCube = CornerCube("CornerCube 1", P3D(1.0, 2.0, 3.0), P3D(4.0, 5.0, 6.0))
+    assert str(corner_cube1) == ("Cube('CornerCube 1',"
+                                 "3.000,3.000,3.000,center=P3D(2.500,3.500,4.500))")
+
+    # Output to *scad_lines*:
+    scad_lines: List[str] = []
+    corner_cube1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == "translate(v = [2.500, 3.500, 4.500]) {", "[0]!"
+    assert scad_lines[1] == (" cube(size = [3.000, 3.000, 3.000], "
+                             "center = true);  // Cube: 'CornerCube 1'"), "[1]!"
+    assert scad_lines[2] == "}", "[2]!"
+
+    # Verify that we detect zero volume errors:
+    try:
+        CornerCube("CornerCube DX=0", P3D(0.0, 0.0, 0.0), P3D(0.0, 1.0, 1.0))
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "CornerCube 'CornerCube DX=0' has dx of 0.0"
+    try:
+        CornerCube("CornerCube DY=0", P3D(0.0, 0.0, 0.0), P3D(1.0, 0.0, 1.0))
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "CornerCube 'CornerCube DY=0' has dy of 0.0"
+    try:
+        CornerCube("CornerCube DZ=0", P3D(0.0, 0.0, 0.0), P3D(1.0, 1.0, 0.0))
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "CornerCube 'CornerCube DZ=0' has dz of 0.0"
 
 
 def test_if2d() -> None:

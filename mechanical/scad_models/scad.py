@@ -21,7 +21,9 @@ The basic class tree is:
       * Square: A rotatable rectangle possibly rounded corners
       * UseModule3D: A use of a Module2D.
     * Scad3D:
+      * Cube: A cube
       * LinearExtrude: Linear extrusion of SCAD2D into a SCAD23.
+      * Translate3D: Moving a SCAD3 object to a different location.
       * Union3D: A Union of Scad3D object.
 """
 
@@ -1766,6 +1768,125 @@ class Scad3D(Scad):
     def __init__(self, name: str) -> None:
         """Set the name of the 3-dimensional SCAD object."""
         super().__init__(name)
+
+
+# Cube:
+class Cube(Scad3D):
+    """Represents a cube in 3D space."""
+
+    # Cube.__init__():
+    def __init__(self, name: str, dx: float, dy: float, dz: float,
+                 center: P3D = P3D(0.0, 0.0, 0.0)) -> None:
+        """Initialize a cube in space."""
+        # Initialize the *Scad3D* parent class:
+        super().__init__(name)
+
+        # Validate arguments:
+        if dx <= 0.0:
+            raise ValueError(f"Cube '{name}' dx={dx} is not positive")
+        if dy <= 0.0:
+            raise ValueError(f"Cube '{name}' dy={dy} is not positive")
+        if dz <= 0.0:
+            raise ValueError(f"Cube '{name}' dz={dz} is not positive")
+
+        # Load the values into *cube* (i.e. *self*):
+        # cube: Cube = self
+        self.center: P3D = center
+        self.dx: float = dx
+        self.dy: float = dy
+        self.dz: float = dz
+
+    # Cube.__str__():
+    def __str__(self) -> str:
+        """Convert Cube into a string."""
+        # Grab some values from *cube* (i.e. *self*):
+        cube: Cube = self
+        center: P3D = cube.center
+        dx: float = cube.dx
+        dy: float = cube.dy
+        dz: float = cube.dz
+        name: str = cube.name
+
+        # Return the result:
+        float_format: Callable[[float], str] = Scad.float_format
+        return (f"Cube('{name}',{float_format(dx)},{float_format(dy)},"
+                f"{float_format(dz)},center={center})")
+
+    # Cube.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Cube to lines list.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *circle* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *cube* (i.e. *self*):
+        cube: Cube = self
+        center: P3D = cube.center
+        dx: float = cube.dx
+        dy: float = cube.dy
+        dz: float = cube.dz
+        name: str = cube.name
+
+        # Grab the values out of *center*:
+        center_x: float = center.x
+        center_y: float = center.y
+        center_z: float = center.z
+
+        # Figure out if we need to output a preceeding `translate` command:
+        float_format: Callable[[float], str] = Scad.float_format
+        if center_x == 0.0 and center_y == 0.0 and center_z == 0.0:
+            # Simple origin centered cube:
+            scad_lines.append(f"{indent}cube(size = [{float_format(dx)}, "
+                              f"{float_format(dy)}, {float_format(dz)}], center = true);  "
+                              f"// Cube: '{name}'")
+        else:
+            # Cube centered somewhere other than the origin:
+            scad_lines.append(f"{indent}translate(v = [{float_format(center_x)}, "
+                              f"{float_format(center_y)}, {float_format(center_z)}]) {{")
+            scad_lines.append(f"{indent} cube(size = [{float_format(dx)}, "
+                              f"{float_format(dy)}, {float_format(dz)}], center = true);  "
+                              f"// Cube: '{name}'")
+            scad_lines.append(f"{indent}}}")
+
+
+# CornerCube():
+class CornerCube(Cube):
+    """Represents a cube specified by two corners."""
+
+    def __init__(self, name: str, corner1: P3D, corner2: P3D) -> None:
+        """Initialize a CornerCube."""
+        # Grab values from *arguments*:
+        corner1_x: float = corner1.x
+        corner1_y: float = corner1.y
+        corner1_z: float = corner1.z
+        corner2_x: float = corner2.x
+        corner2_y: float = corner2.y
+        corner2_z: float = corner2.z
+
+        # Compute *dx*, *dy*, and *dz*:
+        dx: float = abs(corner2_x - corner1_x)
+        dy: float = abs(corner2_y - corner1_y)
+        dz: float = abs(corner2_z - corner1_z)
+
+        # Valid that the volume is non-zero:
+        if dx <= 0.0:
+            raise ValueError(f"CornerCube '{name}' has dx of 0.0")
+        if dy <= 0.0:
+            raise ValueError(f"CornerCube '{name}' has dy of 0.0")
+        if dz <= 0.0:
+            raise ValueError(f"CornerCube '{name}' has dz of 0.0")
+
+        # Compute *center*:
+        center_x: float = (corner1_x + corner2_x) / 2.0
+        center_y: float = (corner1_y + corner2_y) / 2.0
+        center_z: float = (corner1_z + corner2_z) / 2.0
+        center: P3D = P3D(center_x, center_y, center_z)
+
+        # Now initialize the *Cube* parent class:
+        super().__init__(name, dx, dy, dz, center=center)
 
 
 # If3D:
