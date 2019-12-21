@@ -27,8 +27,8 @@
 import io
 from math import pi
 from scad_models.scad import (Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
-                              P2D, P3D, Polygon, Scad, Scad3D, ScadProgram, SimplePolygon,
-                              Square, Union3D, UseModule2D, Variable2D)
+                              Module3D, P2D, P3D, Polygon, Scad, Scad3D, ScadProgram, SimplePolygon,
+                              Square, Translate3D, Union3D, UseModule2D, UseModule3D, Variable2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -394,7 +394,7 @@ def test_module2d() -> None:
     # Now verify that *scad_lines_append*() works:
     module2d1.scad_lines_append(scad_lines, "")
     assert len(scad_lines) == 7
-    assert scad_lines[0] == "module Module2D 1() {", "[0]!"
+    assert scad_lines[0] == "module Module2D_1() {", "[0]!"
     assert scad_lines[1] == " circle(d=10.000, $fn=16);  // Circle 'Circle 1'", "[1]!"
     assert scad_lines[2] == (" // Square 'Sqaare 1' dx=10.000 dy=10.000 center=P2D(0.000,0.000) "
                              "corner_radius=0.000 corner_count=3"), "[2]!"
@@ -407,6 +407,70 @@ def test_module2d() -> None:
     # Verify that *is_operator* attribute can be set:
     module2d2: Module2D = Module2D("Module2D 2", [], is_operator=True)
     assert f"{module2d2}" == "Module2D('Module2D 2',[...],is_operator=True,lock=True)"
+
+
+def test_module3d() -> None:
+    """Test Module3D class."""
+    # Create some *Scad3D* objects to play with:
+    cube1: Cube = Cube("Cube 1", 1.0, 1.0, 1.0)
+    cube2: Cube = Cube("Cube 2", 2.0, 2.0, 2.0)
+    cube3: Cube = Cube("Cube 3", 3.0, 3.0, 3.0)
+
+    # Work on len(), str()
+    module3d1: Module3D = Module3D("Module3D 1", [], lock=False)
+    assert str(module3d1) == "Module3D('Module3D 1',[...],is_operator=False,lock=False)"
+    assert len(module3d1) == 0
+    module3d1.append(cube1)
+    assert len(module3d1) == 1
+    module3d1.extend([cube2, cube3])
+    assert len(module3d1) == 3
+
+    # Attempt to perform *scad_lines_append*() in unlocked state:
+    scad_lines: List[str] = []
+    try:
+        module3d1.scad_lines_append(scad_lines, "")
+        assert False, "scad_lines_append() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Module3D 'Module3D 1' is not locked yet."
+
+    # Now lock *module3d1* and verify that *append* and *extend*() do not work:
+    module3d1.lock()
+    try:
+        module3d1.append(cube1)
+        assert False, "append() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Can not append to Module3D 'Module3D 1' because is locked"
+    try:
+        module3d1.extend([cube1])
+        assert False, "extend() should have failed"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Can not extend Module3D 'Module3D 1' because is locked"
+
+    # Now test *__getitem__* method:
+    assert module3d1[0] == cube1
+    assert module3d1[1] == cube2
+    assert module3d1[2] == cube3
+    try:
+        module3d1[3]
+        assert False, "__getiteme__ should have failed."  # pragma: no cover
+    except IndexError as index_error:
+        assert f"{index_error}" == "Index 3 exceeds 3 objects in Module3D 'Module3D 1'"
+
+    # Now verify that *scad_lines_append*() works:
+    module3d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 5
+    assert scad_lines[0] == "module Module3D_1() {", "[0]!"
+    assert scad_lines[1] == (" cube(size = [1.000, 1.000, 1.000], center = true);  "
+                             "// Cube: 'Cube 1'"), "[1]!"
+    assert scad_lines[2] == (" cube(size = [2.000, 2.000, 2.000], center = true);  "
+                             "// Cube: 'Cube 2'"), "[2]!"
+    assert scad_lines[3] == (" cube(size = [3.000, 3.000, 3.000], center = true);  "
+                             "// Cube: 'Cube 3'"), "[3]!"
+    assert scad_lines[4] == "}", "[4]!"
+
+    # Verify that *is_operator* attribute can be set:
+    module3d2: Module3D = Module3D("Module3D 2", [], is_operator=True)
+    assert f"{module3d2}" == "Module3D('Module3D 2',[...],is_operator=True,lock=True)"
 
 
 def test_p2d() -> None:
@@ -493,7 +557,7 @@ def test_polygon() -> None:
     scad_writer(x_square_polygon, scad_lines)
 
     # Now validate that we got the right values written into *scad*_lines*:
-    assert len(scad_lines) == 8
+    assert len(scad_lines) == 7
     assert scad_lines[0] == "polygon(points = [  // Begin Polygon 'X Square Polygon' 0:3", "[0]!"
     assert scad_lines[1] == " // SimplePolygon 'Square SimplePolygon' 0-3", "[1]!"
     assert scad_lines[2] == ("  [2.000, 2.000], [2.000, -2.000], [-2.000, -2.000], "
@@ -511,7 +575,7 @@ def test_polygon() -> None:
         x_square_polygon.scad_file_write(scad_file)
         input_scad_text: str = scad_file.getvalue()
         input_scad_lines: List[str] = input_scad_text.split('\n')
-        assert len(input_scad_lines) == 10
+        assert len(input_scad_lines) == 9
         assert input_scad_lines[0] == "// 'X Square Polygon' File", "[0]!"
         assert input_scad_lines[1] == ("polygon(points = [  "
                                        "// Begin Polygon 'X Square Polygon' 0:3"), "[1]!"
@@ -561,12 +625,24 @@ def test_polygon() -> None:
         assert f"{index_error}" == "index=10 and it is not in range 0:9"
 
     # Verify lock detection:
-    simple_polygon: SimplePolygon = SimplePolygon("Unlocked SimplePolygon")
     try:
-        Polygon("Unlocked Polygon", [simple_polygon])
+        unlocked_simple_polygon: SimplePolygon = SimplePolygon("Unlocked SimplePolygon", lock=False)
+        Polygon("Unlocked Simple Polygon", [unlocked_simple_polygon])
+        assert False, "This line should not be reached"  # pragma: no cover
     except ValueError as value_error:
         assert f"{value_error}" == ("SimplePolygon ('Unlocked SimplePolygon') "
                                     "at index 0 is not locked.")
+    locked_polygon: Polygon = Polygon("Locked Polygon", [], lock=True)
+    try:
+        locked_polygon.append(hole_polygon)
+        assert False, "This line should not be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Polygon 'Locked Polygon' is locked and can not be appended to."
+    try:
+        locked_polygon.extend([hole_polygon])
+        assert False, "This line should not be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Polygon 'Locked Polygon' is locked and can not be extended."
 
 
 def test_scad_keys_csv_file_write() -> None:
@@ -745,7 +821,7 @@ def test_simple_polygon() -> None:
     # Test SimplePolygon.scad_lines_append():
     scad_lines = []
     simple_polygon.scad_lines_append(scad_lines, "")
-    assert len(scad_lines) == 8
+    assert len(scad_lines) == 7
     assert scad_lines[0] == ("polygon(points = [  "
                              "// Begin SimplePolygon 'SimplePolygon1' 0:3"), "[0]!"
     assert scad_lines[1] == " // SimplePolygon 'SimplePolygon1' 0-3", "[1]!"
@@ -755,7 +831,6 @@ def test_simple_polygon() -> None:
     assert scad_lines[4] == "  // SimplePolygon 'SimplePolygon1' 0-3", "[4]!"
     assert scad_lines[5] == "  [0, 1, 2, 3]", "[5]!"
     assert scad_lines[6] == " ], convexity=4);  // End SimplePolygon 'SimplePolygon1' 0:3", "[6]!"
-    assert scad_lines[7] == "", "[7]!"
 
     # Test SimpplePolygon.x_mirror():
     mirrored_x_polygon: SimplePolygon = simple_polygon.x_mirror("X Mirrored SimplePolygon1")
@@ -882,7 +957,7 @@ def test_square() -> None:
     scad_lines = []
     slot_square.scad_lines_append(scad_lines, "")
     scad_writer(slot_square, scad_lines)
-    assert len(scad_lines) == 14
+    assert len(scad_lines) == 13
     assert scad_lines[0] == ("// Square 'Slot Square' dx=2.000 dy=4.000 center=P2D(0.000,0.000) "
                              "corner_radius=1.000 corner_count=3"), "[0!] failed"
     assert scad_lines[1] == ("polygon(points = [  "
@@ -908,7 +983,7 @@ def test_square() -> None:
     scad_lines = []
     slot_square2.scad_lines_append(scad_lines, "")
     scad_writer(slot_square2, scad_lines)
-    assert len(scad_lines) == 14
+    assert len(scad_lines) == 13
     assert scad_lines[0] == ("// Square 'Slot Square2' dx=4.000 dy=2.000 center=P2D(0.000,0.000) "
                              "corner_radius=1.000 corner_count=3"), "[0]!"
     assert scad_lines[1] == ("polygon(points = [  "
@@ -934,7 +1009,7 @@ def test_square() -> None:
     scad_lines = []
     rounded_square.scad_lines_append(scad_lines, "")
     scad_writer(rounded_square, scad_lines)
-    assert len(scad_lines) == 13
+    assert len(scad_lines) == 12
     assert scad_lines[0] == ("// Square 'Rounded Square' dx=2.000 dy=4.000 "
                              "center=P2D(0.000,0.000) corner_radius=0.500 corner_count=2"), "[0]!"
     assert scad_lines[1] == ("polygon(points = [  // Begin Square 'Rounded Square' 0:15"), "[1]!"
@@ -980,48 +1055,83 @@ def test_square() -> None:
                                     4.0, 0.0, 0.5, 2), "key failed"
 
 
+def test_translate3d() -> None:
+    """Test Translate3D class."""
+    cube1: Cube = Cube("Cube 1", 1.0, 2.0, 3.0)
+    translated_cube1 = Translate3D("Translated Cube 1", cube1, P3D(4.0, 5.0, 6.0))
+    assert str(translated_cube1) == ("Translate3D('Translated Cube 1',"
+                                     "Cube('Cube 1',1.000,2.000,3.000,"
+                                     "center=P3D(0.000,0.000,0.000)),P3D(4.000,5.000,6.000))")
+
+    scad_lines: List[str] = []
+    translated_cube1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == ("translate(v = [4.000, 5.000, 6.000]) {  "
+                             "// Translate 'Translated Cube 1'"), "[0]!"
+    assert scad_lines[1] == (" cube(size = [1.000, 2.000, 3.000], center = true);  "
+                             "// Cube: 'Cube 1'"), "[1]!"
+    assert scad_lines[2] == "}", "[2]!"
+
+
 def test_union3d() -> None:
     """Test Union class."""
     # Create the *union3d* object:
-    square0: Square = Square("Square 0", 2.0, 2.0)
-    extruded_square0: Scad3D = LinearExtrude("Extruded Square0", square0, 10.0, center=True)
-    square1: Square = Square("Square 1", 2.0, 2.0, center=P2D(1.0, 1.0))
-    extruded_square1: Scad3D = LinearExtrude("Extruded Square1", square1, 20.0)
-    union3d: Union3D = Union3D("Squares Union", [extruded_square0, extruded_square1])
+    cube1: Cube = Cube("Cube 1", 1.0, 2.0, 3.0)
+    cube2: Cube = Cube("Cube 2", 4.0, 5.0, 6.0)
+    cube3: Cube = Cube("Cube 3", 7.0, 8.0, 9.0)
+    cube4: Cube = Cube("Cube 4", 10.0, 11.0, 12.0)
+    cubes_union: Union3D = Union3D("Cubes Union", [cube1], lock=False)
+    assert len(cubes_union) == 1
+    cubes_union.append(cube2)
+    assert len(cubes_union) == 2
+    cubes_union.extend([cube3, cube4])
 
-    # Verify that the correct OpenSCAD output is generated:
+    # Verify that we get an exception trying to write out a unlocked union:
     scad_lines: List[str] = []
-    union3d.scad_lines_append(scad_lines, "")
-    scad_writer(union3d, scad_lines)
-    assert len(scad_lines) == 15
-    assert scad_lines[0] == "// Union3D 'Squares Union'", "[0]!"
-    assert scad_lines[1] == "union() {", "[1]!"
-    assert scad_lines[2] == " // Begin LinearExtrude 'Extruded Square0'", "[2]!"
-    assert scad_lines[3] == (" linear_extrude(height=10.0, center=true, "
-                             "convexity=10, twist=0.0)"), "[3]!"
-    assert scad_lines[4] == ("  // Square 'Square 0' dx=2.000 dy=2.000 "
-                             "center=P2D(0.000,0.000) corner_radius=0.000 corner_count=3"), "[1]!"
-    assert scad_lines[5] == "  square([2.000, 2.000], center = true);", "[5]!"
-    assert scad_lines[6] == " // End LinearExtrude 'Extruded Square0'", "[6]!"
-    assert scad_lines[7] == " // Begin LinearExtrude 'Extruded Square1'", "[7]!"
-    assert scad_lines[8] == (" linear_extrude(height=20.0, center=false, "
-                             "convexity=10, twist=0.0)"), "[8]!"
-    assert scad_lines[9] == ("  // Square 'Square 1' dx=2.000 dy=2.000 center=P2D(1.000,1.000) "
-                             "corner_radius=0.000 corner_count=3"), "[9]!"
-    assert scad_lines[10] == "  translate([1.000, 1.000])", "[10]!"
-    assert scad_lines[11] == "   square([2.000, 2.000], center = true);", "[11]!"
-    assert scad_lines[12] == " // End LinearExtrude 'Extruded Square1'", "[12]!"
-    assert scad_lines[13] == "// End Union3D 'Squares Union'", "[13]!"
-    assert scad_lines[14] == "}", "[14]!"
+    try:
+        cubes_union.scad_lines_append(scad_lines, "")
+        assert False, "This line should not be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Union3D 'Cubes Union' is not locked yet."
+
+    # Now lock *cubes_union* and verify that the correct OpenSCAD output is generated:
+    cubes_union.lock()
+    cubes_union.scad_lines_append(scad_lines, "")
+    scad_writer(cubes_union, scad_lines)
+    assert len(scad_lines) == 6
+    assert scad_lines[0] == "union() {  // Union3D 'Cubes Union'", "[1]!"
+    assert scad_lines[1] == (" cube(size = [1.000, 2.000, 3.000], center = true);  "
+                             "// Cube: 'Cube 1'"), "[1]!"
+    assert scad_lines[2] == (" cube(size = [4.000, 5.000, 6.000], center = true);  "
+                             "// Cube: 'Cube 2'"), "[2]!"
+    assert scad_lines[3] == (" cube(size = [7.000, 8.000, 9.000], center = true);  "
+                             "// Cube: 'Cube 3'"), "[3]!"
+    assert scad_lines[4] == (" cube(size = [10.000, 11.000, 12.000], center = true);  "
+                             "// Cube: 'Cube 4'"), "[4]!"
+    assert scad_lines[5] == "}  // End Union3D 'Cubes Union'", "[5]!"
+
+    # Now verify that *Union3D* *lock*'s work:
+    try:
+        cubes_union.append(cube1)
+        assert "This line should not be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Can not append to Union3D 'Cubes Union' because is locked"
+    try:
+        cubes_union.extend([cube2, cube3])
+        assert "This line should not be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Can not extend Union3D 'Cubes Union' because is locked"
 
 
 def test_use_module2d() -> None:
     """Test UseModule2D class."""
     circle1: Circle = Circle("Circle 1", 2.0, 16)
-    module2d1: Module2D = Module2D("Module2D_1", [circle1])
-    use_module2d1: UseModule2D = UseModule2D("UseModule2D_1", module2d1)
-    assert str(use_module2d1) == ("UseModule2D('UseModule2D_1',"
-                                  "Module2D('Module2D_1',[...],is_operator=False,lock=True))")
+    module2d1: Module2D = Module2D("Module2D 1", [circle1])
+    use_module2d1: UseModule2D = UseModule2D("UseModule2D 1", module2d1)
+    assert str(use_module2d1) == ("UseModule2D('UseModule2D 1',"
+                                  "Module2D('Module2D 1',[...],is_operator=False,lock=True))")
+
+    # Verify that *scad_lines_append* method works:
     scad_lines: List[str] = []
     module2d1.scad_lines_append(scad_lines, "")
     use_module2d1.scad_lines_append(scad_lines, "")
@@ -1029,7 +1139,27 @@ def test_use_module2d() -> None:
     assert scad_lines[0] == "module Module2D_1() {", "[0]!"
     assert scad_lines[1] == " circle(d=2.000, $fn=16);  // Circle 'Circle 1'", "[1]!"
     assert scad_lines[2] == "}", "[2]!"
-    assert scad_lines[3] == "Module2D_1(); // UseModule2D('UseModule2D_1')", "[3]!"
+    assert scad_lines[3] == "Module2D_1(); // UseModule2D('UseModule2D 1')", "[3]!"
+
+
+def test_use_module3d() -> None:
+    """Test UseModule3D class."""
+    cube1: Cube = Cube("Cube 1", 1.0, 2.0, 3.0)
+    module3d1: Module3D = Module3D("Module3D 1", [cube1])
+    use_module3d1: UseModule3D = UseModule3D("UseModule3D 1", module3d1)
+    assert str(use_module3d1) == ("UseModule3D('UseModule3D 1',"
+                                  "Module3D('Module3D 1',[...],is_operator=False,lock=True))")
+
+    # Verify that *scad_lines_append* method works:
+    scad_lines: List[str] = []
+    module3d1.scad_lines_append(scad_lines, "")
+    use_module3d1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 4
+    assert scad_lines[0] == "module Module3D_1() {", "[0]!"
+    assert scad_lines[1] == (" cube(size = [1.000, 2.000, 3.000], center = true);  "
+                             "// Cube: 'Cube 1'"), "[1]!"
+    assert scad_lines[2] == "}", "[2]!"
+    assert scad_lines[3] == "Module3D_1(); // UseModule3D('UseModule3D 1')", "[3]!"
 
 
 def test_variable2d() -> None:

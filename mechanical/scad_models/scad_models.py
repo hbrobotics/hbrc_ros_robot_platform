@@ -8,10 +8,93 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from scad_models.scad import (Circle, If2D, Module2D, P2D, Polygon, Scad,
-                              SimplePolygon, ScadProgram, Square, UseModule2D, Variable2D)
+from scad_models.scad import (Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
+                              Module3D, P2D, P3D, Polygon, Scad, Scad3D, SimplePolygon,
+                              ScadProgram, Square, Translate3D, UseModule2D, UseModule3D,
+                              Union3D, Variable2D)
 from typing import Any, Dict, IO, List, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
+
+
+# RaspberryPi3:
+class RaspberryPi3:
+    """Represents a Raspberry Pi 3B+."""
+
+    # RaspberryPi3.__init__():
+    def __init__(self) -> None:
+        """Initialize RaspberryPi3 object."""
+        pass
+
+    # RaspberryPi3.pcb_polygon_get():
+    def pcb_polygon_get(self) -> Polygon:
+        """Return the RasPi 3B+ PCB Polygon."""
+        # Origin is set to lower left so all dimensions are postive except for
+        # one or two connectors along the bottom edge:
+        pcb_dx: float = 85.0
+        holes_dx: float = 58
+        pcb_dy: float = 56.0
+        pcb_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
+        pcb_board_outline: Square = Square("RasPi3B+ PCB Outiline",
+                                           pcb_dx, pcb_dy, center=pcb_center)
+
+        # Define the 4 holes:
+        hole_diameter = 3.2
+        lower_left_hole: Circle = Circle("Lower Left Hole", hole_diameter, 8,
+                                         center=P2D(3.5, 3.5))
+        lower_right_hole: Circle = Circle("Lower Right Hole", hole_diameter, 8,
+                                          center=P2D(3.5 + holes_dx, 3.5))
+        upper_left_hole: Circle = Circle("Upper Left Hole", hole_diameter, 8,
+                                         center=P2D(3.5, pcb_dy - 3.5))
+        upper_right_hole: Circle = Circle("Lower Left Hole", hole_diameter, 8,
+                                          center=P2D(3.5 + holes_dx, pcb_dy - 3.5))
+
+        # Create and return the *pcb_polygon*:
+        pcb_polygon: Polygon = Polygon("Rasp3b+ PCB", [pcb_board_outline,
+                                                       lower_left_hole,
+                                                       lower_right_hole,
+                                                       upper_left_hole,
+                                                       upper_right_hole])
+        return pcb_polygon
+
+    # RaspberryPi3.connectors_get():
+    def connectors_get(self) -> List[Cube]:
+        """Return the RasPi3B connectors as Cube's."""
+        rj45_connector: Cube = CornerCube("RJ45", P3D(65.650, 2.495, 0.000),
+                                          P3D(87.000, 18.005, 13.500))
+        lower_usb2_connector: Cube = CornerCube("Lower USB2", P3D(69.30, 22.43, 0.00),
+                                                P3D(87.00, 34.57, 16.00))
+        upper_usb2_connector: Cube = CornerCube("Upper USB2", P3D(69.30, 40.43, 0.00),
+                                                P3D(87.00, 53.57, 16.00))
+        pin2x20_connector: Cube = CornerCube("2x20 Connector", P3D(7.10, 50.00, 0.00),
+                                             P3D(57.90, 55.00, 8.50))
+        pin2x2_connector: Cube = CornerCube("2x2 Connector", P3D(58.918, 44.005, 0.00),
+                                            P3D(64.087, 48.727, 8.50))
+        pin1x2_connector: Cube = CornerCube("2x2 Connector", P3D(58.90, 38.91, 0.00),
+                                            P3D(64.10, 41.11, 8.50))
+        audio_connector: Cube = CornerCube("2x2 Connector", P3D(50.00, 12.50, 0.00),
+                                           P3D(57.00, -2.50, 6.00))
+        camera_connector: Cube = CornerCube("Camera Connector", P3D(43.55, 0.30, 0.00),
+                                            P3D(47.50, 22.70, 5.50))
+        hdmi_connector: Cube = CornerCube("HDMI Connector", P3D(24.75, -1.50, 0.00),
+                                          P3D(39.25, 10.65, 6.50))
+        power_connector: Cube = CornerCube("Power Connector", P3D(6.58, -1.22, 0.00),
+                                           P3D(14.62, 14.35, 2.00))
+        lcd_connector: Cube = CornerCube("LCD Connector",  P3D(2.65, 16.80, 0.00),
+                                         P3D(5.45, 39.20, 5.50))
+        connectors: List[Cube] = [
+            rj45_connector,
+            lower_usb2_connector,
+            upper_usb2_connector,
+            pin2x20_connector,
+            pin2x2_connector,
+            pin1x2_connector,
+            audio_connector,
+            camera_connector,
+            hdmi_connector,
+            power_connector,
+            lcd_connector,
+        ]
+        return connectors
 
 
 # Romi:
@@ -1429,14 +1512,47 @@ class OtherPi:
         pcb_polygon.lock()
         return pcb_polygon
 
+    # OtherPi.connectors_get():
+    def connectors_get(self) -> List[Cube]:
+        """Return the connector Cube's for the OtherPi."""
+        ethernet_connector: Cube = CornerCube("Ethernet Connector", P3D(80.00, 29.26, 0.00),
+                                              P3D(105.00, 44.51, 13.08))  # 80.00? 105?
+        usb2_connector: Cube = CornerCube("USB2 Connector", P3D(85.00, 12.82, 0.00),
+                                          P3D(104.00, 25.57, 15.33))  # 85.00? 104.00?
+        west_connector: Cube = CornerCube("West Connector", P3D(98.00, 50.69, 0.00),
+                                          P3D(105.00, 58.09, 3.00))  # 98.00? 3.00? 105??
+        north_connector: Cube = CornerCube("North Connector", P3D(70.03, 60.92, 0.00),
+                                           P3D(76.38, 66.00, 5.00))  # 5.00? 66.00??
+        connector_2x20: Cube = CornerCube("2x20 Connector", P3D(7.37, 64.00, 0.00),
+                                          P3D(57.67, 69.08, 7.00))  # 7.00? 69.08? 64.00?
+        audio_connector: Cube = CornerCube("Audio Connector", P3D(66.31, -1.00, 0.00),
+                                           P3D(72.31, 14.00, 5.12))  # -1.00? 14.00?
+        usb3a_connector: Cube = CornerCube("USB3A Connector", P3D(9.54, 0.00, 0.00),
+                                           P3D(18.52, 10.00, 2.95))  # 10.00?
+        usb3b_connector: Cube = CornerCube("USB3B Connector", P3D(22.73, 0.00, 0.00),
+                                           P3D(31.71, 10.00, 2.95))  # 10.00?
+        power_connector: Cube = CornerCube("Power Connector", P3D(-1.00, 22.50, 0.00),
+                                           P3D(8.00, 29.00, 2.95))  # -1.00? 8.00?
+        jst_connector: Cube = CornerCube("JST Connector", P3D(0.00, 55.01, 0.00),
+                                         P3D(3.00, 63.37, 2.95))  # 0.00? 3.00?
+        buttons_area: Cube = CornerCube("Buttons Area", P3D(85.51, 62.12, 0.00),
+                                        P3D(98.23, 68.74, 2.95))  # 10.00?
 
-# OtherPi
-#  Board:       X:  0.000,  Y:   0.000, Z: -0.990, DX: 70.49, DY: 103.00,  DZ:  0.99
-#  CN1 (2x40):  X:  0.000,  Y:   0.000, Z:  0.000, DX: 50.80, DY:    5.08  DZ:  2.54
-#  CN2 (USB3A): X:  0.000,  Y:  -1.480, Z:  0.004, DX:  9.20  DY:   20.50, DZ:  5.38
-#  CN3 (2USB):  X:  46.012, Y: -32.365, Z:  7.598, DX: 17.68, DY:   15.73, DZ: 20.00
-#  CN4 (?):     X: -39.339, Y:   7.809, Z:  0.000, DX:    ??, DY: 8.00, DZ: 4.25
-#  CN5 (RJ45):  X:  64.123, Y: -14.674, Z:  6.401, DX: 21.78, DY:   17.75, DZ: 17.70
+        # Create *connectors* and return them:
+        connectors: List[Cube] = [
+            ethernet_connector,
+            usb2_connector,
+            west_connector,
+            north_connector,
+            connector_2x20,
+            audio_connector,
+            usb3a_connector,
+            usb3b_connector,
+            power_connector,
+            jst_connector,
+            buttons_area
+        ]
+        return connectors
 
 
 def main() -> int:  # pragma: no cover
@@ -1454,8 +1570,6 @@ def main() -> int:  # pragma: no cover
 
     # Create the top level *scad_program* program:
     scad_program: ScadProgram = ScadProgram("Scad models")
-    scad_program.append(Variable2D("Selected Cleared", "selected", "false"))
-    selected_set: Variable2D = Variable2D("Selected Set", "selected", "true")
 
     # Create the *romi* object for constructing various portions of a Romi platform:
     romi: Romi = Romi()
@@ -1473,27 +1587,59 @@ def main() -> int:  # pragma: no cover
     # Now create *other_pi* and append it as well:
     other_pi: OtherPi = OtherPi()
     other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
-    other_pi_module: Module2D = Module2D("Other_Pi_PCB_Polygon", [other_pi_pcb_polygon])
-    scad_program.append(other_pi_module)
+    other_pi_pcb_module: Module2D = Module2D("Other_Pi_PCB_Polygon_Module", [other_pi_pcb_polygon])
+    scad_program.append(other_pi_pcb_module)
+
+    # Now create the *other_pi_module*:
+    other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
+    other_pi_pcb: Scad3D = LinearExtrude("OtherPiPCB", other_pi_pcb_polygon, 1.000)
+    other_pi_model.append(Translate3D("Move Down 1mm", other_pi_pcb, P3D(-0.990, 0.0, 0.0)))
+    other_pi_connectors: List[Cube] = other_pi.connectors_get()
+    other_pi_connector: Cube
+    for other_pi_connector in other_pi_connectors:
+        other_pi_model.append(other_pi_connector)
+    other_pi_model.lock()
+    other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module", [other_pi_model])
+    scad_program.append(other_pi_model_module)
+
+    # Create *raspi3b*
+    raspi3b: RaspberryPi3 = RaspberryPi3()
+    raspi3b_pcb_polygon: Polygon = raspi3b.pcb_polygon_get()
+    raspi3b_pcb_polygon_module: Module2D = Module2D("RasPi3B_PCB_Polygon_Module",
+                                                    [raspi3b_pcb_polygon])
+    scad_program.append(raspi3b_pcb_polygon_module)
+
+    raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
+    raspi3b_model: Union3D = Union3D("Rasp3B Model", [], lock=False)
+    raspi3b_model.append(raspi3b_pcb)
+    raspi3b_connectors: List[Cube] = raspi3b.connectors_get()
+    raspi3b_connector: Cube
+    for raspi3b_connector in raspi3b_connectors:
+        raspi3b_model.append(raspi3b_connector)
+    raspi3b_model.lock()
+    raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module", [raspi3b_model])
+    scad_program.append(raspi3b_model_module)
 
     # Now construct an if-then-else sequence to showing the desired module:
-    if2d1: If2D = If2D("Polygon Modules", '!selected && name == "romi_base"',
-                       [selected_set,
-                        UseModule2D("Rom Base Polygon", romi_base_polygon_module)])
-    if2d1.then_append('!selected && name == "expansion"',
-                      [selected_set,
-                       UseModule2D("Expansion Polygon", expansion_module)])
-    if2d1.then_append('!selected && name == "other_pi_pcb"',
-                      [selected_set,
-                       UseModule2D("Other_Pi_PCB_Polygon", other_pi_module)])
-    # if2d.else_set(UseModule2D("Romi Base Polygon", [romi_base_polygon_module]))
+    scad_program.append(Variable2D("Name", "name", '"romi_base"'))
+    if2d1: If2D = If2D("Polygon Modules", 'name == "romi_base"',
+                       [UseModule2D("Romi_Base_Polygon", romi_base_polygon_module)])
+    if2d1.then_append('name == "expansion"',
+                      [UseModule2D("Expansion Polygon", expansion_module)])
+    if2d1.then_append('name == "other_pi_pcb"',
+                      [UseModule2D("OtherPi PCB Polygon", other_pi_pcb_module)])
+    if2d1.then_append('name == "raspi3b_pcb"',
+                      [UseModule2D("RasPi3B PCB Polygon", raspi3b_pcb_polygon_module)])
     if2d1.lock()
     scad_program.append(if2d1)
 
-    if2d2: If2D = If2D("IF2D 2", "!selected",
-                       [UseModule2D("Rom Base Polygon", romi_base_polygon_module)])
-    if2d2.lock()
-    scad_program.append(if2d2)
+    # Now do the if-then-eles sequence for showing models:
+    if3d1: If3D = If3D("3D Models", 'name == "raspi3b_model"',
+                       [UseModule3D("RasPi3B_Model", raspi3b_model_module)])
+    if3d1.then_append('name == "otherpi_model"',
+                      [UseModule3D("OtherPi_Model", other_pi_model_module)])
+    if3d1.lock()
+    scad_program.append(if3d1)
 
     # Generate `scad_models.scad`:
     scad_lines: List[str] = []

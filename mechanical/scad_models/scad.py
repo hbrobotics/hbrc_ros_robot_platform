@@ -14,17 +14,17 @@ The basic class tree is:
     * ScadProgram: A top level OpenSCAD program.
     * Scad2D: 2-dimensional Objects
       * Circle: A circle
+      * If2D: An if-then-else tree for SCAD2D's.
       * Module2D: A 2D module definition.
       * Polygon: A outer most SimplePolygon with optional SimplePolygon holes.
-      * If2D: An if-then-else tree for SCAD2D's.
-      * SimplePolygon: A polygon contructed of line segments and arc.
-      * Square: A rotatable rectangle possibly rounded corners
+      * SimplePolygon: A polygon contructed of line segments and arcs.
+      * Square: A rotatable rectangle with optional rounded corners
       * UseModule3D: A use of a Module2D.
     * Scad3D:
-      * Cube: A cube
-      * LinearExtrude: Linear extrusion of SCAD2D into a SCAD23.
-      * Translate3D: Moving a SCAD3 object to a different location.
-      * Union3D: A Union of Scad3D object.
+      * Cube: A cube (technically a rectangular prism.)
+      * LinearExtrude: Linear extrusion of SCAD2D into a SCAD3D.
+      * Translate3D: Relocates a SCAD3 object to a different location.
+      * Union3D: A Union of Scad3D objects.
 """
 
 # MIT License
@@ -573,9 +573,6 @@ class Scad2D(Scad):
         scad_lines.append(f"{indent} ], convexity={maximum_convexity});  "
                           f"// End {scad_class_name} '{scad_name}' {0}:{all_points_size-1}")
 
-        # Output the ending debugging comment:
-        scad_lines.append(f"{indent}")
-
     # Scad2D.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:  # pragma: no cover
         """Place holder for sub-class scad_lines_append methods."""
@@ -583,6 +580,50 @@ class Scad2D(Scad):
         scad2d: Scad2D = self
         class_name: str = scad2d.__class__.__name__
         assert False, f"{class_name}.scad_lines_append() has not been implemented yet."
+
+
+# Echo2D:
+# class Echo2D(Scad2D):
+#     """Represents an OpenCAD 2D echo command."""
+
+#     # Echo2D.__init__():
+#     def __init__(self, name: str, variable_names: List[str]) -> None:
+#         """Initialize Echo2D."""
+#         # Initiailize parent *Scad2D* object:
+#         super().__init__(name)
+#         # Stuff variable names into *echo2d* (i.e. *self*):
+#         # echo2d: Echo2D = self
+#         self.variable_names: List[str] = variable_names
+
+#     # Echo2D.__str__():
+#     def __str__(self) -> str:
+#         """Return a string representaion."""
+#         # Grab some values from *echo2d* (i.e. *self*):
+#         echo2d: Echo2D = self
+#         name: str = echo2d.name
+#         variable_names: List[str] = echo2d.variable_names
+#         variable_name: str
+#         variable_names_text: str = ','.join([f"'{variable_name}'"
+#                                              for variable_name in variable_names])
+#         return f"Echo2D('{name}',[{variable_names_text}])"
+
+#     # Echo2D.scad_lines_append():
+#     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+#         """Append Echo2D to lines list.
+
+#         Args:
+#             *scad_lines* (*List*[*str*]): The lines list to append the
+#                 *circle* (i.e. *self*) to.
+#             *indent* (*str*): The indentatation prefix for each line.
+
+#         """
+#         # Grab some values from *module2d* (i.e. *self*):
+#         echo2d: Echo2D = self
+#         name: str = echo2d.name
+#         variable_names: List[str] = echo2d.variable_names
+#         variable_names_text: str = ','.join([f"{variable_name}={variable_name}"
+#                                              for variable_name in variable_names])
+#         scad_lines.append(f'{indent}echo("{name}:", {variable_names_text});')
 
 
 # Module2D:
@@ -696,7 +737,7 @@ class Module2D(Scad2D):
             raise ValueError(f"Module2D '{name}' is not locked yet.")
 
         # Output the module name defintition:
-        scad_lines.append(f"{indent}module {name}() {{")
+        scad_lines.append(f"{indent}module {name.replace(' ', '_')}() {{")
 
         # Output the *scad2d*s:
         next_indent: str = indent + " "
@@ -706,6 +747,172 @@ class Module2D(Scad2D):
 
         # Output the closing '}':
         scad_lines.append(f"{indent}}}")
+
+
+# Polygon:
+class Polygon(Scad2D):
+    """Represents an OpenScad `polygon` command."""
+
+    # Polygon.__init__():
+    def __init__(self, name: str, simple_polygons: "List[SimplePolygon]",
+                 convexity: int = -1, lock=True) -> None:
+        """Initialize an OpenSCAD polygon command.
+
+        Initialze a *Polygon* object to initially contain a list of
+        *simple_polygons.*  If *locked* is *True*, no additional
+        *SimplePolygon*'s can be append to *polygon* (i.e. *self*);
+        otherwise both the *Polygon*.*append*() and the
+        *Polygon*.*extend*() methods can be used to append additional
+        *SimplePolygon*'s.  The *Polygon*.*lock() forces *polygon*
+        to be locked and it can not be unlocked afterwards.
+
+
+        Args:
+            *name*: (*str*): The name of OpenSCAD polygon command.
+            *simple_polygons* (*List*[*SimplePolygon*]): A list of
+                *SimplePolygon*'s to install into *polygon*
+                (i.e. *self*).  Each of these *SimplePolygon*"s must
+                be locked.
+            *convexity* (*int*): A number to estimate the complexit
+                of the polygon.  Higher numbers are needed for
+                accurate complex polygon rendering.  If no value is
+                provided, a resonable default is provided.
+            *lock* (*bool*): If *True* the initialized *polygon*
+                object (i.e. *self*) is locked from having additional
+                *SimplePolygon*'s appended to it; other no additional
+                *SimplePolygon*'s can be appended.
+
+        Raises:
+            *ValueError*(*str*): if any of the *SimplePolygon*'s in
+                *simple_polygons* are not locked .
+
+        """
+        # Valid that all of the *simple_polygons* are locked:
+        simple_polygon_index: int
+        simple_polygon: SimplePolygon
+        for simple_polygon_index, simple_polygon in enumerate(simple_polygons):
+            if not simple_polygon.is_locked():
+                raise ValueError(f"SimplePolygon ('{simple_polygon.name}') "
+                                 f"at index {simple_polygon_index} is not locked.")
+
+        # Intilize the base class and stuff values into *scad_polygon* (i.e. *self*):
+        super().__init__(name)
+        self.locked: bool = lock
+        self.convexity: int = convexity
+        self.simple_polygons: List[SimplePolygon] = simple_polygons[:]
+
+    # Polygon.__getitem__():
+    def __getitem__(self, index: int) -> "SimplePolygon":
+        """Return the selected Polygon.
+
+        Args:
+            *index* (*int*): The index into the *polygon*
+                (i.e. *self*) *Polygon*'s list to fetch.
+
+        Returns:
+            (*SimplePolygon*) Returns the selected *SimplePolygon*:
+
+        """
+        # Grab some values from *polygon* (i.e. *self*):
+        polygon: Polygon = self
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        simple_polygons_size: int = len(simple_polygons)
+        if index < 0 or index >= simple_polygons_size:
+            raise IndexError(f"index={index} and it is not in range 0:{simple_polygons_size-1}")
+        simple_polygon: SimplePolygon = simple_polygons[index]
+        return simple_polygon
+
+    # Polygon.__len__()
+    def __len__(self):
+        """Return the number of SimplePolygon's in the Polygon.
+
+        Returns:
+            (*int*) Returns the number of *SimplePolygon*'s in *polygon*
+                (i.e. *self*.)
+
+        """
+        # Grab the *polygons* from *scad_polygon* (i.e. *self*):
+        polygon: polygon = self
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        simple_polygons_size: int = len(simple_polygons)
+        return simple_polygons_size
+
+    # Polygon.__str__():
+    def __str__(self) -> str:
+        """Return string for *Polygon."""
+        # Grab *name* from *polygon* (i.e. *self*) and return formatted string:
+        polygon: Polygon = self
+        name: str = polygon.name
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        simple_polygons_size: int = len(simple_polygons)
+        convexity: int = polygon.convexity
+        return (f"Polygon('{name}',"
+                f"len(simple_polygons)={simple_polygons_size},"
+                f"convexity={convexity})")
+
+    # Polygon.append():
+    def append(self, simple_polygon: "SimplePolygon") -> None:
+        """Append a SimplePolygon to the Polygon.
+
+        Args:
+            *simple_polygon*: (*SimplePolygon*): The *SimplePolygon*
+                to append to *polygon* (i.e. *self*.)
+
+        """
+        # Grab some values from *polygon* (i.e. *self*):
+        polygon: Polygon = self
+        locked: bool = polygon.locked
+        if locked:
+            raise ValueError(f"Polygon '{polygon.name}' is locked and can not be appended to.")
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        simple_polygons.append(simple_polygon)
+
+    # Polygon.extend():
+    def extend(self, additional_simple_polygons: "List[SimplePolygon]") -> None:
+        """Append a list of SimplePolygon's to the Polygon.
+
+        Args:
+            *additional_simple_polygons*: (*List*[*SimplePolygon*]):
+                The list of *SimplePolygon*'s  to append to
+                *scad_polygon* (i.e. *self*.)
+
+        """
+        # Grab some values from *polygon* (i.e. *self*):
+        polygon: Polygon = self
+        locked: bool = polygon.locked
+        if locked:
+            raise ValueError(f"Polygon '{polygon.name}' is locked and can not be extended.")
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        simple_polygons.extend(additional_simple_polygons)
+
+    # Polygon.lock():
+    def lock(self):
+        """Lock Polygon from further expansion."""
+        polygon: Polygon = self
+        polygon.locked = True
+
+    # Polygon.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Polygon commands to a lines list.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *scad_polygon* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        polygon: Polygon = self
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        polygon.polygon_scad_lines_append(simple_polygons, scad_lines, indent)
+
+    # Polygon.simple_polygons_get():
+    def simple_polygons_get(self) -> "List[SimplePolygon]":
+        """Return current list of Simple Polygons."""
+        polygon: Polygon = self
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        # Make a copy and return the result:
+        simple_polygons = simple_polygons[:]
+        return simple_polygons
 
 
 # SimplePolygon:
@@ -1714,7 +1921,7 @@ class UseModule2D(Scad2D):
         use_module2d: UseModule2D = self
         module2d: Module2D = use_module2d.module2d
         use_module_name: str = use_module2d.name
-        module_name: str = module2d.name
+        module_name: str = module2d.name.replace(' ', '_')
         is_operator: bool = module2d.is_operator
         end_text: str = "" if is_operator else ';'
         scad_lines.append(f"{indent}{module_name}(){end_text} // UseModule2D('{use_module_name}')")
@@ -2087,186 +2294,194 @@ class LinearExtrude(Scad3D):
         scad_lines.append(f"{indent}// End LinearExtrude '{name}'")
 
 
-# Polygon:
-class Polygon(Scad2D):
-    """Represents an OpenScad `polygon` command."""
+# Module3D:
+class Module3D(Scad3D):
+    """Represents an OpenSCAD 3D Module."""
 
-    # Polygon.__init__():
-    def __init__(self, name: str, simple_polygons: List[SimplePolygon],
-                 convexity: int = -1, lock=True) -> None:
-        """Initialize an OpenSCAD polygon command.
-
-        Initialze a *Polygon* object to initially contain a list of
-        *simple_polygons.*  If *locked* is *True*, no additional
-        *SimplePolygon*'s can be append to *polygon* (i.e. *self*);
-        otherwise both the *Polygon*.*append*() and the
-        *Polygon*.*extend*() methods can be used to append additional
-        *SimplePolygon*'s.  The *Polygon*.*lock() forces *polygon*
-        to be locked and it can not be unlocked afterwards.
-
-
-        Args:
-            *name*: (*str*): The name of OpenSCAD polygon command.
-            *simple_polygons* (*List*[*SimplePolygon*]): A list of
-                *SimplePolygon*'s to install into *polygon*
-                (i.e. *self*).  Each of these *SimplePolygon*"s must
-                be locked.
-            *convexity* (*int*): A number to estimate the complexit
-                of the polygon.  Higher numbers are needed for
-                accurate complex polygon rendering.  If no value is
-                provided, a resonable default is provided.
-            *lock* (*bool*): If *True* the initialized *polygon*
-                object (i.e. *self*) is locked from having additional
-                *SimplePolygon*'s appended to it; other no additional
-                *SimplePolygon*'s can be appended.
-
-        Raises:
-            *ValueError*(*str*): if any of the *SimplePolygon*'s in
-                *simple_polygons* are not locked .
-
-        """
-        # Valid that all of the *simple_polygons* are locked:
-        simple_polygon_index: int
-        simple_polygon: SimplePolygon
-        for simple_polygon_index, simple_polygon in enumerate(simple_polygons):
-            if not simple_polygon.is_locked():
-                simple_polygon_name: str = simple_polygon.name
-                raise ValueError(f"SimplePolygon ('{simple_polygon_name}') "
-                                 f"at index {simple_polygon_index} is not locked.")
-
-        # Intilize the base class and stuff values into *scad_polygon* (i.e. *self*):
+    # Module3D.__init__():
+    def __init__(self, name: str, scad3ds: List[Scad3D], is_operator=False, lock=True) -> None:
+        """Initialize a Module3D."""
+        # Initialize the *Scad3D* parent class:
         super().__init__(name)
+
+        # Load values into *module3d* (i.e. *self*):
+        # module3d: Module3D = self
+        self.is_operator: bool = is_operator
         self.locked: bool = lock
-        self.convexity: int = convexity
-        self.simple_polygons: List[SimplePolygon] = simple_polygons[:]
+        self.scad3ds: List[Scad3D] = scad3ds[:]  # Make a copy
 
-    # Polygon.__getitem__():
-    def __getitem__(self, index: int) -> SimplePolygon:
-        """Return the selected Polygon.
+    # Module3D.__str__():
+    def __str__(self) -> str:  # pragma: no cover
+        """Return Module3D as a string."""
+        # Grab some values from *module3d* (i.e. *self*):
+        module3d: Module3D = self
+        is_operator: bool = module3d.is_operator
+        locked: bool = module3d.locked
+        name: str = module3d.name
+        return f"Module3D('{name}',[...],is_operator={is_operator},lock={locked})"
 
-        Args:
-            *index* (*int*): The index into the *polygon*
-                (i.e. *self*) *Polygon*'s list to fetch.
+    # Module3D.__getitem__():
+    def __getitem__(self, index: int) -> Scad3D:
+        """Return a SCAD2 item from a Module3D."""
+        # Grab some values from *module3d* (i.e. *self*):
+        module3d: Module3D = self
+        scad3ds: List[Scad3D] = module3d.scad3ds
 
-        Returns:
-            (*SimplePolygon*) Returns the selected *SimplePolygon*:
+        # Ensure that *index* is in bounds:
+        scad3ds_size: int = len(scad3ds)
+        if not (0 <= index < scad3ds_size):
+            name: str = module3d.name
+            raise IndexError(f"Index {index} exceeds {scad3ds_size} objects in Module3D '{name}'")
 
-        """
-        # Grab some values from *polygon* (i.e. *self*):
-        polygon: Polygon = self
-        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
-        simple_polygons_size: int = len(simple_polygons)
-        if index < 0 or index >= simple_polygons_size:
-            raise IndexError(f"index={index} and it is not in range 0:{simple_polygons_size-1}")
-        simple_polygon: SimplePolygon = simple_polygons[index]
-        return simple_polygon
+        # Fetch *scad3d* and return it:
+        scad3d: Scad3D = scad3ds[index]
+        return scad3d
 
-    # Polygon.__len__()
-    def __len__(self):
-        """Return the number of SimplePolygon's in the Polygon.
+    # Module3D.__len__():
+    def __len__(self) -> int:
+        """Return number of SCAD3D's in Module3D."""
+        # Grab some values from *module3d* (i.e. *self*):
+        module3d: Module3D = self
+        scad3ds: List[Scad3D] = module3d.scad3ds
+        scad3ds_size: int = len(scad3ds)
+        return scad3ds_size
 
-        Returns:
-            (*int*) Returns the number of *SimplePolygon*'s in *polygon*
-                (i.e. *self*.)
+    # Module3D.append():
+    def append(self, scad3d: Scad3D) -> None:
+        """Append a Scad3D to a Module3D."""
+        # Grab some values from *scad3d* (i.e. *self*):
+        module3d: Module3D = self
+        locked: bool = module3d.locked
+        scad3ds: List[Scad3D] = module3d.scad3ds
 
-        """
-        # Grab the *polygons* from *scad_polygon* (i.e. *self*):
-        polygon: polygon = self
-        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
-        simple_polygons_size: int = len(simple_polygons)
-        return simple_polygons_size
-
-    # Polygon.__str__():
-    def __str__(self) -> str:
-        """Return string for *Polygon."""
-        # Grab *name* from *polygon* (i.e. *self*) and return formatted string:
-        polygon: Polygon = self
-        name: str = polygon.name
-        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
-        simple_polygons_size: int = len(simple_polygons)
-        convexity: int = polygon.convexity
-        return (f"Polygon('{name}',"
-                f"len(simple_polygons)={simple_polygons_size},"
-                f"convexity={convexity})")
-
-    # Polygon.append():
-    def append(self, simple_polygon: SimplePolygon) -> None:
-        """Append a SimplePolygon to the Polygon.
-
-        Args:
-            *simple_polygon*: (*SimplePolygon*): The *SimplePolygon*
-                to append to *polygon* (i.e. *self*.)
-
-        """
-        # Grab some values from *polygon* (i.e. *self*):
-        polygon: Polygon = self
-        locked: bool = polygon.locked
+        # Make sure that we are not *locked*:
         if locked:
-            raise ValueError(f"Polygon '{polygon.name}' is locked and can not be appended to.")
-        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
-        simple_polygons.append(simple_polygon)
+            name: str = module3d.name
+            raise ValueError(f"Can not append to Module3D '{name}' because is locked")
 
-    # Polygon.extend():
-    def extend(self, additional_simple_polygons: List[SimplePolygon]) -> None:
-        """Append a list of SimplePolygon's to the Polygon.
+        # Perform the *append*:
+        scad3ds.append(scad3d)
 
-        Args:
-            *additional_simple_polygons*: (*List*[*SimplePolygon*]):
-                The list of *SimplePolygon*'s  to append to
-                *scad_polygon* (i.e. *self*.)
+    # Module3D.extend():
+    def extend(self, new_scad3ds: List[Scad3D]) -> None:
+        """Append a Scad3D to a Module3D."""
+        # Grab some values from *scad3d* (i.e. *self*):
+        module3d: Module3D = self
+        locked: bool = module3d.locked
+        scad3ds: List[Scad3D] = module3d.scad3ds
 
-        """
-        # Grab some values from *polygon* (i.e. *self*):
-        polygon: Polygon = self
-        locked: bool = polygon.locked
+        # Make sure that we are not *locked*:
         if locked:
-            raise ValueError(f"Polygon '{polygon.name}' is locked and can not be extended.")
-        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
-        simple_polygons.extend(additional_simple_polygons)
+            name: str = module3d.name
+            raise ValueError(f"Can not extend Module3D '{name}' because is locked")
 
-    # Polygon.lock():
+        # Perform the *append*:
+        scad3ds.extend(new_scad3ds)
+
+    # Module3D.lock():
     def lock(self):
-        """Lock Polygon from further expansion."""
-        polygon: Polygon = self
-        polygon.locked = True
+        """Ensure that Module3D is locked."""
+        module3d: Module3D = self
+        module3d.locked = True
 
-    # Polygon.scad_lines_append():
+    # Module3D.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
-        """Append Polygon commands to a lines list.
+        """Append Circle to lines list.
 
         Args:
             *scad_lines* (*List*[*str*]): The lines list to append the
-                *scad_polygon* (i.e. *self*) to.
+                *circle* (i.e. *self*) to.
             *indent* (*str*): The indentatation prefix for each line.
 
         """
-        polygon: Polygon = self
-        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
-        polygon.polygon_scad_lines_append(simple_polygons, scad_lines, indent)
+        # Grab some values from *module3d* (i.e. *self*):
+        module3d: Module3D = self
+        locked: bool = module3d.locked
+        name: str = module3d.name
+        scad3ds: List[Scad3D] = module3d.scad3ds
 
-    # Polygon.simple_polygons_get():
-    def simple_polygons_get(self) -> List[SimplePolygon]:
-        """Return current list of Simple Polygons."""
-        polygon: Polygon = self
-        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
-        # Make a copy and return the result:
-        simple_polygons = simple_polygons[:]
-        return simple_polygons
+        # Make sure that we are *locked*:
+        if not locked:
+            raise ValueError(f"Module3D '{name}' is not locked yet.")
+
+        # Output the module name defintition:
+        scad_lines.append(f"{indent}module {name.replace(' ', '_')}() {{")
+
+        # Output the *scad3d*s:
+        next_indent: str = indent + " "
+        scad3d: Scad3D
+        for scad3d in scad3ds:
+            scad3d.scad_lines_append(scad_lines, next_indent)
+
+        # Output the closing '}':
+        scad_lines.append(f"{indent}}}")
+
+
+# Translate3D(Scad3D):
+class Translate3D(Scad3D):
+    """Move Scad3D to a another location."""
+
+    # Translate3D.__init__():
+    def __init__(self, name: str, scad3d: Scad3D, offset: P3D) -> None:
+        """Initialize a Translate3D object."""
+        # Initialize the parent super *SCAD3D* class:
+        super().__init__(name)
+        # Stuff values into *translate3d* (i.e. *self*):
+        # translate3d: Translate3D = self
+        self.scad3d: Scad3D = scad3d
+        self.offset: P3D = offset
+
+    # Translate3D.__str__():
+    def __str__(self) -> str:
+        """Return the Translate3D as a text string."""
+        # Grab some values from *translate3d* (i.e. *self*):
+        translate3d: Translate3D = self
+        name: str = translate3d.name
+        offset: P3D = translate3d.offset
+        scad3d: Scad3D = translate3d.scad3d
+        return f"Translate3D('{name}',{scad3d},{offset})"
+
+    # Translate3D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append ScadProgram to lines list.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *circle* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *translate3d* (i.e. *self*):
+        translate3d: Translate3D = self
+        name: str = translate3d.name
+        offset: P3D = translate3d.offset
+        scad3d: Scad3D = translate3d.scad3d
+
+        # Append the lines to *scad_lines*:
+        float_format: Callable[[float], str] = Scad.float_format
+        scad_lines.append(f"{indent}translate(v = [{float_format(offset.x)}, "
+                          f"{float_format(offset.y)}, {float_format(offset.z)}]) {{  "
+                          f"// Translate '{name}'")
+        scad3d.scad_lines_append(scad_lines, indent + " ")
+        scad_lines.append(f"{indent}}}")
 
 
 # Union3D:
-class Union3D(Scad):
+class Union3D(Scad3D):
     """Represents a boolean union of SCAD3D objects."""
 
-    # Union.__init__():
-    def __init__(self, name: str, scad3ds: List[Scad3D]) -> None:
-        """Initialize a Union object.
+    # Union3D.__init__():
+    def __init__(self, name: str, scad3ds: List[Scad3D], lock=True) -> None:
+        """Initialize a Union3D object.
 
         Args:
             *name* (*str*): The name that is output to the `.scad`
                 file.
             *scad3ds* (*List*[*Scad3D*]): A list of *Scad3D* objects
                 to be unioned together.
+            *lock* (*bool*): If *True*, no additional *Scad3D*'s can
+                be appended to the *union3d* (i.e. *self*); otherwise
+                the *append* and *extend* methods can be used.
 
         Raises:
             *ValueError*(*str*): Exception that is raised when there are
@@ -2277,12 +2492,60 @@ class Union3D(Scad):
         super().__init__(name)
 
         # If we get there far, we can stuf *scads* into *union* (i.e. *self*):
-        # union: Union = self
+        # union: Union3D = self
+        self.locked: bool = lock
         self.scad3ds: List[Scad3D] = scad3ds[:]
 
-    # Union.scad_lines_append():
+    # Union3D.__len__():
+    def __len__(self) -> int:
+        """Return number of SCAD3D's in Union3D."""
+        # Grab some values from *union3d* (i.e. *self*):
+        union3d: Union3D = self
+        scad3ds: List[Scad3D] = union3d.scad3ds
+        scad3ds_size: int = len(scad3ds)
+        return scad3ds_size
+
+    # Union3D.append():
+    def append(self, scad3d: Scad3D) -> None:
+        """Append a Scad2D to a Union3d."""
+        # Grab some values from *scad2d* (i.e. *self*):
+        union3d: Union3D = self
+        locked: bool = union3d.locked
+        scad3ds: List[Scad3D] = union3d.scad3ds
+
+        # Make sure that we are not *locked*:
+        if locked:
+            name: str = union3d.name
+            raise ValueError(f"Can not append to Union3D '{name}' because is locked")
+
+        # Perform the *append*:
+        scad3ds.append(scad3d)
+
+    # Union3D.extend():
+    def extend(self, new_scad3ds: List[Scad3D]) -> None:
+        """Append a list of Scad3D's to a Union3D."""
+        # Grab some values from *scad2d* (i.e. *self*):
+        union3d: Union3D = self
+        locked: bool = union3d.locked
+        scad3ds: List[Scad3D] = union3d.scad3ds
+
+        # Make sure that we are not *locked*:
+        if locked:
+            name: str = union3d.name
+            raise ValueError(f"Can not extend Union3D '{name}' because is locked")
+
+        # Perform the *append*:
+        scad3ds.extend(new_scad3ds)
+
+    # Union3D.lock():
+    def lock(self):
+        """Ensure that Union3D is locked."""
+        union3d: Union3D = self
+        union3d.locked = True
+
+    # Union3D.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
-        """Append Union to list of lines.
+        """Append Union3D to list of lines.
 
         Args:
             *scad_lines* (*List*[*str*]): The lines list to append the
@@ -2294,13 +2557,67 @@ class Union3D(Scad):
         union3d: Union3D = self
         name: str = union3d.name
         scad3ds: List[Scad3D] = union3d.scad3ds
+        locked: bool = union3d.locked
+
+        # Ensure that we are *locked*:
+        if not locked:
+            raise ValueError(f"Union3D '{name}' is not locked yet.")
 
         # Append the lines to *scad_lines*:
-        scad_lines.append(f"{indent}// Union3D '{name}'")
-        scad_lines.append(f"{indent}union() {{")
+        scad_lines.append(f"{indent}union() {{  // Union3D '{name}'")
         next_indent: str = indent + " "
         scad3d: Scad3D
         for scad3d in scad3ds:
             scad3d.scad_lines_append(scad_lines, next_indent)
-        scad_lines.append(f"{indent}// End Union3D '{name}'")
-        scad_lines.append(f"{indent}}}")
+        scad_lines.append(f"{indent}}}  // End Union3D '{name}'")
+
+
+# UseModule3D:
+class UseModule3D(Scad3D):
+    """Represents Module3D invocation."""
+
+    # UseModule3D.__init__():
+    def __init__(self, name: str, module3d: Module3D) -> None:
+        """Invoke a Module3D."""
+        super().__init__(name)
+        # Stuff *module3d* into *use_module3d* (i.e. *self*):
+        # use_module3d: UseModule3D = self
+        self.module3d: Module3D = module3d
+
+    # UseModule3D.__str__():
+    def __str__(self) -> str:
+        """Return UseModule3D as a string."""
+        # Grab some values from *use_module3d* (i.e. *self*):
+        use_module3d: UseModule3D = self
+        module3d: Module3D = use_module3d.module3d
+        name: str = use_module3d.name
+        return f"UseModule3D('{name}',{module3d})"
+
+    # UseModule3D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append UseModule3D to list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *scad_polygon* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *scad_linear_extrude* (i.e. *self*):
+        use_module3d: UseModule3D = self
+        module3d: Module3D = use_module3d.module3d
+        use_module_name: str = use_module3d.name
+        module_name: str = module3d.name.replace(' ', '_')
+        is_operator: bool = module3d.is_operator
+        end_text: str = "" if is_operator else ';'
+        scad_lines.append(f"{indent}{module_name}(){end_text} // UseModule3D('{use_module_name}')")
+
+# Nucleo-32:
+#                   Flash    RAM    Speed
+# * Nucleo-L031K6:
+# * Nucleo-F303K8:  65KB     16KB   72MHz
+# * Nucleo-L011K4:
+# * Nucleo-F031K6:  32KB     4KB    48MHz
+# * Nucleo-F042K6:  32KB     6KB    48MHz
+# * Nucleo-8S207K8  8-bit core
+# * Nucleo-G431KB:  128KB    32K    170MHz   <==

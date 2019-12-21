@@ -22,8 +22,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from scad_models.scad_models import OtherPi, Romi
+from scad_models.scad_models import OtherPi, RaspberryPi3, Romi
 from scad_models.scad import Polygon
+
+
+# test_raspberry_pi3():
+def test_respberry_pi3():
+    """Test RaspberryPi3 class."""
+    raspberry_pi3: RaspberryPi3 = RaspberryPi3()
+    raspberry_pi3.pcb_polygon_get()
 
 
 # test_romi():
