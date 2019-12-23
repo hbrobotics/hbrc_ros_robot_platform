@@ -27,19 +27,19 @@
 import io
 from math import pi
 from scad_models.scad import (Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
-                              Module3D, P2D, P3D, Polygon, Scad, Scad3D, ScadProgram, SimplePolygon,
+                              Module3D, P2D, P3D, Polygon, Scad3D, ScadProgram, SimplePolygon,
                               Square, Translate3D, Union3D, UseModule2D, UseModule3D, Variable2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
 
-def scad_writer(scad: Scad, scad_lines: List[str]) -> None:
-    """Write out a Square to a `.scad` file."""
-    scad_file: IO[Any]
-    name: str = scad.name
-    with open(name.replace(' ', '_') + ".scad", "w") as scad_file:
-        scad_text: str = '\n'.join(scad_lines)
-        scad_file.write(scad_text + "\n")
+# def scad_writer(scad: Scad, scad_lines: List[str]) -> None:
+#     """Write out a Square to a `.scad` file."""
+#     scad_file: IO[Any]
+#     name: str = scad.name
+#     with open(name.replace(' ', '_') + ".scad", "w") as scad_file:
+#         scad_text: str = '\n'.join(scad_lines)
+#         scad_file.write(scad_text + "\n")
 
 
 # All `test_*` functions are alphabetized, since oder of execution does not really matter:
@@ -316,7 +316,7 @@ def test_if3d() -> None:
     # Now make sure that the *scad_lines* are OK:
     scad_lines = []
     if3d2.scad_lines_append(scad_lines, "")
-    scad_writer(if3d2, scad_lines)
+    # scad_writer(if3d2, scad_lines)
     assert len(scad_lines) == 6
     assert scad_lines[0] == "if (n == 0) {  // If3D 'If3D 2'", "[0]!"
     assert scad_lines[1] == " // Begin LinearExtrude 'Extuded Circle 1'", "[1]!"
@@ -333,7 +333,7 @@ def test_linear_extrude() -> None:
     linear_extrude: LinearExtrude = LinearExtrude("Linear Extrude", unit_square, 1.0)
     scad_lines: List[str] = []
     linear_extrude.scad_lines_append(scad_lines, "")
-    scad_writer(linear_extrude, scad_lines)
+    # scad_writer(linear_extrude, scad_lines)
     assert len(scad_lines) == 5
     assert scad_lines[0] == ("// Begin LinearExtrude 'Linear Extrude'"), "[0]!"
     assert scad_lines[1] == ("linear_extrude(height=1.0, center=false, "
@@ -554,7 +554,7 @@ def test_polygon() -> None:
     # Unpack *x_square_polygon* into *scad_lines*:
     scad_lines: List[str] = []
     x_square_polygon.scad_lines_append(scad_lines, "")
-    scad_writer(x_square_polygon, scad_lines)
+    # scad_writer(x_square_polygon, scad_lines)
 
     # Now validate that we got the right values written into *scad*_lines*:
     assert len(scad_lines) == 7
@@ -927,7 +927,7 @@ def test_square() -> None:
     # Make sure that *origin_square* looks right:
     scad_lines: List[str] = []
     origin_square.scad_lines_append(scad_lines, "")
-    scad_writer(origin_square, scad_lines)
+    # scad_writer(origin_square, scad_lines)
     assert len(scad_lines) == 2
     assert scad_lines[0] == ("// Square 'Origin Square' dx=2.000 dy=3.000 center=P2D(0.000,0.000) "
                              "corner_radius=0.000 corner_count=3"), "Index 0 failed"
@@ -936,7 +936,7 @@ def test_square() -> None:
     # Make sure that *offset_square* looks right:
     scad_lines = []
     offset_square.scad_lines_append(scad_lines, "")
-    scad_writer(offset_square, scad_lines)
+    # scad_writer(offset_square, scad_lines)
     assert len(scad_lines) == 3
     assert scad_lines[0] == ("// Square 'Offset Square' dx=2.500 dy=3.500 center=P2D(3.000,2.000) "
                              "corner_radius=0.000 corner_count=3"), "Index 0 failed"
@@ -946,7 +946,7 @@ def test_square() -> None:
     # Make sure that *rotated_square* looks right:
     scad_lines = []
     rotated_square.scad_lines_append(scad_lines, "")
-    scad_writer(rotated_square, scad_lines)
+    # scad_writer(rotated_square, scad_lines)
     assert len(scad_lines) == 3
     assert scad_lines[0] == ("// Square 'Rotated Square' dx=2.000 dy=3.000 center=P2D(0.000,0.000) "
                              "corner_radius=0.000 corner_count=3"), "Index 0 failed"
@@ -956,7 +956,7 @@ def test_square() -> None:
     # Make sure that *slotted_square* looks right:
     scad_lines = []
     slot_square.scad_lines_append(scad_lines, "")
-    scad_writer(slot_square, scad_lines)
+    # scad_writer(slot_square, scad_lines)
     assert len(scad_lines) == 13
     assert scad_lines[0] == ("// Square 'Slot Square' dx=2.000 dy=4.000 center=P2D(0.000,0.000) "
                              "corner_radius=1.000 corner_count=3"), "[0!] failed"
@@ -982,7 +982,7 @@ def test_square() -> None:
     # Make sure that *slotted_square2* looks right:
     scad_lines = []
     slot_square2.scad_lines_append(scad_lines, "")
-    scad_writer(slot_square2, scad_lines)
+    # scad_writer(slot_square2, scad_lines)
     assert len(scad_lines) == 13
     assert scad_lines[0] == ("// Square 'Slot Square2' dx=4.000 dy=2.000 center=P2D(0.000,0.000) "
                              "corner_radius=1.000 corner_count=3"), "[0]!"
@@ -1008,7 +1008,7 @@ def test_square() -> None:
     # Make sure that *rounded_square* looks right:
     scad_lines = []
     rounded_square.scad_lines_append(scad_lines, "")
-    scad_writer(rounded_square, scad_lines)
+    # scad_writer(rounded_square, scad_lines)
     assert len(scad_lines) == 12
     assert scad_lines[0] == ("// Square 'Rounded Square' dx=2.000 dy=4.000 "
                              "center=P2D(0.000,0.000) corner_radius=0.500 corner_count=2"), "[0]!"
@@ -1097,7 +1097,7 @@ def test_union3d() -> None:
     # Now lock *cubes_union* and verify that the correct OpenSCAD output is generated:
     cubes_union.lock()
     cubes_union.scad_lines_append(scad_lines, "")
-    scad_writer(cubes_union, scad_lines)
+    # scad_writer(cubes_union, scad_lines)
     assert len(scad_lines) == 6
     assert scad_lines[0] == "union() {  // Union3D 'Cubes Union'", "[1]!"
     assert scad_lines[1] == (" cube(size = [1.000, 2.000, 3.000], center = true);  "

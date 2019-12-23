@@ -23,32 +23,36 @@
 # SOFTWARE.
 
 from scad_models.scad_models import OtherPi, RaspberryPi3, Romi
-from scad_models.scad import Polygon
+from scad_models.scad import If2D, If3D, ScadProgram
 
 
-# test_raspberry_pi3():
-def test_respberry_pi3():
+# test_raspi3b():
+def test_raspi3b():
     """Test RaspberryPi3 class."""
-    raspberry_pi3: RaspberryPi3 = RaspberryPi3()
-    raspberry_pi3.pcb_polygon_get()
+    raspi3b: RaspberryPi3 = RaspberryPi3()
+    scad_program: ScadProgram = ScadProgram("Top Level program")
+    if2d: If2D = If2D("If2D If/Then/Else", "false", [])
+    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
+    raspi3b.scad_program_append(scad_program, if2d, if3d)
 
 
 # test_romi():
 def test_romi():
-    """Run the various Romi methods."""
+    """Test the Romi class."""
     romi: Romi = Romi()
     romi.debugging = False
-    romi_base_polygon: Polygon = romi.base_scad_polygon_generate()
-    romi_base_polygon = romi_base_polygon
-
-    expansion_polygon: Polygon = romi.expansion_polygon_get()
-    expansion_polygon.lock()
-    expansion_polygon = expansion_polygon
+    scad_program: ScadProgram = ScadProgram("Top Level program")
+    if2d: If2D = If2D("If2D If/Then/Else", "false", [])
+    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
+    romi.scad_program_append(scad_program, if2d, if3d)
+    romi.holes_slots_rectangles_write()
 
 
 # test_other_pi():
 def test_other_pi() -> None:
     """Test OtherPi class."""
     other_pi: OtherPi = OtherPi()
-    other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
-    other_pi_pcb_polygon = other_pi_pcb_polygon
+    scad_program: ScadProgram = ScadProgram("Top Level program")
+    if2d: If2D = If2D("If2D If/Then/Else", "false", [])
+    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
+    other_pi.scad_program_append(scad_program, if2d, if3d)

@@ -96,6 +96,31 @@ class RaspberryPi3:
         ]
         return connectors
 
+    # RaspberryPi3.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram, if2d: If2D, if3d: If3D) -> None:
+        """Append RaspberryPi3 models to ScadProgram."""
+        raspi3b: RaspberryPi3 = self
+        raspi3b_pcb_polygon: Polygon = raspi3b.pcb_polygon_get()
+        raspi3b_pcb_polygon_module: Module2D = Module2D("RasPi3B_PCB_Polygon_Module",
+                                                        [raspi3b_pcb_polygon])
+        scad_program.append(raspi3b_pcb_polygon_module)
+        if2d.then_append('name == "raspi3b_pcb"',
+                         [UseModule2D("RasPi3B PCB Polygon", raspi3b_pcb_polygon_module)])
+
+        raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
+        raspi3b_model: Union3D = Union3D("Rasp3B Model", [], lock=False)
+        raspi3b_model.append(raspi3b_pcb)
+        raspi3b_connectors: List[Cube] = raspi3b.connectors_get()
+        raspi3b_connector: Cube
+        for raspi3b_connector in raspi3b_connectors:
+            raspi3b_model.append(raspi3b_connector)
+        raspi3b_model.lock()
+        raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module", [raspi3b_model])
+        scad_program.append(raspi3b_model_module)
+
+        if3d.then_append('name == "raspi3b_model"',
+                         [UseModule3D("RasPi3B_Model", raspi3b_model_module)])
+
 
 # Romi:
 class Romi:
@@ -249,8 +274,8 @@ class Romi:
         outline_polygon.lock()
         return outline_polygon
 
-    # Romi.base_scad_polygon_generate()
-    def base_scad_polygon_generate(self) -> Polygon:
+    # Romi.base_polygon_get()
+    def base_polygon_get(self) -> Polygon:
         """TODO."""
         # Grabe some values from *romi* (i.e. *self*):
         romi: Romi = self
@@ -1291,6 +1316,27 @@ class Romi:
         rectangle: Square = Square(name, dx, dy, center)
         return rectangle
 
+    # Romi.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram, if2d: If2D, if3d: If3D) -> None:
+        """Append all of the Romi models to a ScadProgram."""
+        # Use *romi* instead of *self*:a
+        romi: Romi = self
+
+        # Start with the just *rome_base_polygon* and append it to *scad_program* and *if2d*:
+        romi_base_polygon: Polygon = romi.base_polygon_get()
+        romi_base_polygon_module: Module2D = Module2D("Romi_Base_Polygon_Module",
+                                                      [romi_base_polygon])
+        scad_program.append(romi_base_polygon_module)
+        if2d.then_append('name == "romi_base"',
+                         [UseModule2D("Romi_Base_Polygon", romi_base_polygon_module)])
+
+        # Next append the *expansion_polygon*:
+        expansion_polygon: Polygon = romi.expansion_polygon_get()
+        expansion_module: Module2D = Module2D("Romi_Expansion_Polygon_Module", [expansion_polygon])
+        scad_program.append(expansion_module)
+        if2d.then_append('name == "expansion"',
+                         [UseModule2D("Romi_Expansion_Polygon_Module", expansion_module)])
+
     # Romi.upper_arc_holes_rectangles_get():
     def upper_arc_holes_rectangles_get(self) -> List[SimplePolygon]:
         """TODO."""
@@ -1466,6 +1512,30 @@ class Romi:
         vertical_rectangles: List[Square] = upper_rectangles + lower_rectangles
         return vertical_rectangles
 
+    # Romi.holes_slots_rectangles_write():
+    def holes_slots_rectangles_write(self):
+        """Write out the holes, slots, and rectangle lcoations."""
+        # Obtain the hole, slot and rectangle locations:
+        romi: Romi = self
+        romi_base_polygon: Polygon = romi.base_polygon_get()
+        romi_base_simple_polygons: List[SimplePolygon] = romi_base_polygon.simple_polygons_get()
+        romi_base_simple_polygon: SimplePolygon
+        # Generate *romi_base_keys* skipping the first *SimplePolygon* which is the outer one:
+        romi_base_keys: List[Tuple[Any, ...]] = [romi_base_simple_polygon.key()
+                                                 for romi_base_simple_polygon
+                                                 in romi_base_simple_polygons[1:]]
+        romi_base_keys.sort()
+
+        # Now output the hole/slot/rectangle `.csv` file:
+        csv_file: IO[Any]
+        with open("romi_base.csv", "w") as csv_file:
+            Scad.keys_csv_file_write(romi_base_keys, csv_file)
+
+        # Output the hole/slot/recantangle `.html` file:
+        html_file: IO[Any]
+        with open("romi_base.html", "w") as html_file:
+            Scad.keys_html_file_write(romi_base_keys, html_file, "Romi Base Holes and Rectangles")
+
 
 # OtherPi:
 class OtherPi:
@@ -1554,6 +1624,32 @@ class OtherPi:
         ]
         return connectors
 
+    # OtherPi.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram, if2d: If2D, if3d: If3D) -> None:
+        """Append OtherPi OpenScad code to a ScadProgram."""
+        # Create the PCB *Polygon* and *Module2D*:
+        other_pi: OtherPi = self
+        other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
+        other_pi_pcb_module: Module2D = Module2D("Other_Pi_PCB_Polygon_Module",
+                                                 [other_pi_pcb_polygon])
+        scad_program.append(other_pi_pcb_module)
+        if2d.then_append('name == "other_pi_pcb"',
+                         [UseModule2D("OtherPi PCB Polygon", other_pi_pcb_module)])
+
+        # Now create the *other_pi_module*:
+        other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
+        other_pi_pcb: Scad3D = LinearExtrude("OtherPiPCB", other_pi_pcb_polygon, 1.000)
+        other_pi_model.append(Translate3D("Move Down 1mm", other_pi_pcb, P3D(-0.990, 0.0, 0.0)))
+        other_pi_connectors: List[Cube] = other_pi.connectors_get()
+        other_pi_connector: Cube
+        for other_pi_connector in other_pi_connectors:
+            other_pi_model.append(other_pi_connector)
+        other_pi_model.lock()
+        other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module", [other_pi_model])
+        scad_program.append(other_pi_model_module)
+        if3d.then_append('name == "otherpi_model"',
+                         [UseModule3D("OtherPi_Model", other_pi_model_module)])
+
 
 def main() -> int:  # pragma: no cover
     """Generate the openscand file."""
@@ -1568,78 +1664,34 @@ def main() -> int:  # pragma: no cover
     # with open("romi_base.scad", "w") as scad_file:
     #     union.scad_file_write(scad_file)
 
-    # Create the top level *scad_program* program:
+    # Create the top level *scad_program* program and the two if-then-else trees for
+    # decided which model to visualize::
     scad_program: ScadProgram = ScadProgram("Scad models")
+    if2d: If2D = If2D("Polygon Modules", 'false', [])
+    if3d: If3D = If3D("3D Models", 'false', [])
 
     # Create the *romi* object for constructing various portions of a Romi platform:
     romi: Romi = Romi()
-
-    # Start with the just *rome_base_polygon* and append it to *scad_models*:
-    romi_base_polygon: Polygon = romi.base_scad_polygon_generate()
-    romi_base_polygon_module: Module2D = Module2D("Romi_Base_Polygon_Module", [romi_base_polygon])
-    scad_program.append(romi_base_polygon_module)
-
-    # Next append the *expansion_polygon*:
-    expansion_polygon: Polygon = romi.expansion_polygon_get()
-    expansion_module: Module2D = Module2D("Romi_Expansion_Polygon_Module", [expansion_polygon])
-    scad_program.append(expansion_module)
+    romi.scad_program_append(scad_program, if2d, if3d)
+    romi.holes_slots_rectangles_write()
 
     # Now create *other_pi* and append it as well:
     other_pi: OtherPi = OtherPi()
-    other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
-    other_pi_pcb_module: Module2D = Module2D("Other_Pi_PCB_Polygon_Module", [other_pi_pcb_polygon])
-    scad_program.append(other_pi_pcb_module)
-
-    # Now create the *other_pi_module*:
-    other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
-    other_pi_pcb: Scad3D = LinearExtrude("OtherPiPCB", other_pi_pcb_polygon, 1.000)
-    other_pi_model.append(Translate3D("Move Down 1mm", other_pi_pcb, P3D(-0.990, 0.0, 0.0)))
-    other_pi_connectors: List[Cube] = other_pi.connectors_get()
-    other_pi_connector: Cube
-    for other_pi_connector in other_pi_connectors:
-        other_pi_model.append(other_pi_connector)
-    other_pi_model.lock()
-    other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module", [other_pi_model])
-    scad_program.append(other_pi_model_module)
+    other_pi.scad_program_append(scad_program, if2d, if3d)
 
     # Create *raspi3b*
     raspi3b: RaspberryPi3 = RaspberryPi3()
-    raspi3b_pcb_polygon: Polygon = raspi3b.pcb_polygon_get()
-    raspi3b_pcb_polygon_module: Module2D = Module2D("RasPi3B_PCB_Polygon_Module",
-                                                    [raspi3b_pcb_polygon])
-    scad_program.append(raspi3b_pcb_polygon_module)
-
-    raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
-    raspi3b_model: Union3D = Union3D("Rasp3B Model", [], lock=False)
-    raspi3b_model.append(raspi3b_pcb)
-    raspi3b_connectors: List[Cube] = raspi3b.connectors_get()
-    raspi3b_connector: Cube
-    for raspi3b_connector in raspi3b_connectors:
-        raspi3b_model.append(raspi3b_connector)
-    raspi3b_model.lock()
-    raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module", [raspi3b_model])
-    scad_program.append(raspi3b_model_module)
+    raspi3b.scad_program_append(scad_program, if2d, if3d)
 
     # Now construct an if-then-else sequence to showing the desired module:
     scad_program.append(Variable2D("Name", "name", '"romi_base"'))
-    if2d1: If2D = If2D("Polygon Modules", 'name == "romi_base"',
-                       [UseModule2D("Romi_Base_Polygon", romi_base_polygon_module)])
-    if2d1.then_append('name == "expansion"',
-                      [UseModule2D("Expansion Polygon", expansion_module)])
-    if2d1.then_append('name == "other_pi_pcb"',
-                      [UseModule2D("OtherPi PCB Polygon", other_pi_pcb_module)])
-    if2d1.then_append('name == "raspi3b_pcb"',
-                      [UseModule2D("RasPi3B PCB Polygon", raspi3b_pcb_polygon_module)])
-    if2d1.lock()
-    scad_program.append(if2d1)
 
-    # Now do the if-then-eles sequence for showing models:
-    if3d1: If3D = If3D("3D Models", 'name == "raspi3b_model"',
-                       [UseModule3D("RasPi3B_Model", raspi3b_model_module)])
-    if3d1.then_append('name == "otherpi_model"',
-                      [UseModule3D("OtherPi_Model", other_pi_model_module)])
-    if3d1.lock()
-    scad_program.append(if3d1)
+    # Now do the if-then-else sequences for showing models:
+    # Lock *if2d* and *if3d* and append them to *scad_program*:
+    if2d.lock()
+    scad_program.append(if2d)
+    if3d.lock()
+    scad_program.append(if3d)
 
     # Generate `scad_models.scad`:
     scad_lines: List[str] = []
@@ -1649,24 +1701,5 @@ def main() -> int:  # pragma: no cover
     scad_file: IO[Any]
     with open("scad_models.scad", "w") as scad_file:
         scad_file.write(scad_text)
-
-    # Obtain the hole, slot and rectangle locations:
-    romi_base_simple_polygons: List[SimplePolygon] = romi_base_polygon.simple_polygons_get()
-    romi_base_simple_polygon: SimplePolygon
-    # Generate *romi_base_keys* skipping the first *SimplePolygon* which is the outer one:
-    romi_base_keys: List[Tuple[Any, ...]] = [romi_base_simple_polygon.key()
-                                             for romi_base_simple_polygon
-                                             in romi_base_simple_polygons[1:]]
-    romi_base_keys.sort()
-
-    # Now output the hole/slot/rectangle `.csv` file:
-    csv_file: IO[Any]
-    with open("romi_base.csv", "w") as csv_file:
-        Scad.keys_csv_file_write(romi_base_keys, csv_file)
-
-    # Output the hole/slot/recantangle `.html` file:
-    html_file: IO[Any]
-    with open("romi_base.html", "w") as html_file:
-        Scad.keys_html_file_write(romi_base_keys, html_file, "Romi Base Holes and Rectangles")
 
     return 0
