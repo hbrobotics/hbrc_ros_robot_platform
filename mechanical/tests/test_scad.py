@@ -27,8 +27,9 @@
 import io
 from math import pi
 from scad_models.scad import (Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
-                              Module3D, P2D, P3D, Polygon, Scad3D, ScadProgram, SimplePolygon,
-                              Square, Translate3D, Union3D, UseModule2D, UseModule3D, Variable2D)
+                              Module3D, P2D, P3D, Polygon, Rotate3D, Scad3D, ScadProgram,
+                              SimplePolygon, Square, Translate3D, Union3D, UseModule2D,
+                              UseModule3D, Variable2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -643,6 +644,32 @@ def test_polygon() -> None:
         assert False, "This line should not be reached"  # pragma: no cover
     except ValueError as value_error:
         assert f"{value_error}" == "Polygon 'Locked Polygon' is locked and can not be extended."
+
+
+def test_rotate3d() -> None:
+    """Test Rotate3D class."""
+    cube1: Cube = Cube("Cube 1", 1.0, 2.0, 3.0)
+    rotate1: Rotate3D = Rotate3D("Rotate3D 1", cube1, pi / 4.0, axis=P3D(0.0, 0.0, 1.0))
+    assert str(rotate1) == ("Rotate('Rotate3D 1',"
+                            "Cube('Cube 1',1.000,2.000,3.000,center=P3D(0.000,0.000,0.000)),"
+                            "P3D(0.000,0.000,1.000),"
+                            "45.000deg)")
+    scad_lines: List[str] = []
+    rotate1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == ("translate(a = 45.000000, v=[0.000, 0.000, 1.000]) {  "
+                             "// Rotate3D: 'Rotate3D 1'"), "[0]!"
+    assert scad_lines[1] == (" cube(size = [1.000, 2.000, 3.000], center = true);  "
+                             "// Cube: 'Cube 1'"), "[1]!"
+    assert scad_lines[2] == "}", "[2]!"
+
+    # Verify that we detect an axis of zero length:
+    origin: P3D = P3D(0.0, 0.0, 0.0)
+    try:
+        Rotate3D("Origin Axis Translate", cube1, 0.0, origin)
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Rotate axis has no direction."
 
 
 def test_scad_keys_csv_file_write() -> None:

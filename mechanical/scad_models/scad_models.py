@@ -16,6 +16,64 @@ from typing import Any, Dict, IO, List, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
 
+# MalePinConnector:
+class MalePinConnector:
+    """Represents an NxM .1 inch male pin connector."""
+
+    # MalePinConnector.__init__():
+    def __init__(self, rows: int, columns: int, mating_length: float) -> None:
+        """Initialize .1 inch MakePinConnector."""
+        # Define a hole bunch of constants:
+        # Save the arguments into *male_pin_connector* (i.e. *self*):
+        # male_pin_connector: MalePinConnector = self
+        self.rows: int = rows
+        self.columns: int = columns
+        self.mating_length: float = mating_length
+
+    # MalePinConnector.connector_get():
+    def connector_get(self) -> Union3D:
+        """Return the MalePinConnector as a Union3D."""
+        # Grab some values out of *male_pin_connector* (i.e. *self*):
+        male_pin_connector: MalePinConnector = self
+        rows: int = male_pin_connector.rows
+        columns: int = male_pin_connector.columns
+        mating_length: float = male_pin_connector.mating_length
+
+        # Compute some constants:
+        name: str = f"M{rows}x{columns}"
+        pin_pitch = 2.54
+        half_pin_pitch: float = pin_pitch / 2.0
+        pin_dx_dy: float = half_pin_pitch / 2.0
+        half_pin_dx_dy: float = pin_dx_dy / 2.0
+        insulation_height = pin_pitch
+        total_height: float = insulation_height + mating_length
+        dx: float = columns * pin_pitch
+        dx_offset = -(dx - pin_pitch) / 2.0
+        dy: float = rows * pin_pitch
+        dy_offset: float = -(dy - pin_pitch) / 2.0
+
+        # Create the *Union3D* *pin_connector* and append *insulation_base* to it:
+        pin_connector: Union3D = Union3D(f"{name} Male Pin Connector", [], lock=False)
+        insulation_base: Cube = CornerCube(f"{name} Connector Base",
+                                           P3D(-dx/2.0, -dy/2.0, 0.0),
+                                           P3D(dx/2.0, dy/2.0, insulation_height))
+        pin_connector.append(insulation_base)
+
+        # Create each *pin* and append to *connector*:
+        row_index: int
+        for row_index in range(rows):
+            column_index: int
+            y: float = row_index * pin_pitch + dy_offset
+            for column_index in range(columns):
+                x: float = column_index * pin_pitch + dx_offset
+                pin: Cube = CornerCube(f"Pin {column_index}:{row_index}",
+                                       P3D(x - half_pin_dx_dy, y - half_pin_dx_dy, 0.0),
+                                       P3D(x + half_pin_dx_dy, y + half_pin_dx_dy, total_height))
+                pin_connector.append(pin)
+        pin_connector.lock()
+        return pin_connector
+
+
 # RaspberryPi3:
 class RaspberryPi3:
     """Represents a Raspberry Pi 3B+."""
@@ -57,43 +115,36 @@ class RaspberryPi3:
         return pcb_polygon
 
     # RaspberryPi3.connectors_get():
-    def connectors_get(self) -> List[Cube]:
+    def connectors_get(self) -> List[Scad3D]:
         """Return the RasPi3B connectors as Cube's."""
-        rj45_connector: Cube = CornerCube("RJ45", P3D(65.650, 2.495, 0.000),
-                                          P3D(87.000, 18.005, 13.500))
-        lower_usb2_connector: Cube = CornerCube("Lower USB2", P3D(69.30, 22.43, 0.00),
-                                                P3D(87.00, 34.57, 16.00))
-        upper_usb2_connector: Cube = CornerCube("Upper USB2", P3D(69.30, 40.43, 0.00),
-                                                P3D(87.00, 53.57, 16.00))
-        pin2x20_connector: Cube = CornerCube("2x20 Connector", P3D(7.10, 50.00, 0.00),
-                                             P3D(57.90, 55.00, 8.50))
-        pin2x2_connector: Cube = CornerCube("2x2 Connector", P3D(58.918, 44.005, 0.00),
-                                            P3D(64.087, 48.727, 8.50))
-        pin1x2_connector: Cube = CornerCube("2x2 Connector", P3D(58.90, 38.91, 0.00),
-                                            P3D(64.10, 41.11, 8.50))
-        audio_connector: Cube = CornerCube("2x2 Connector", P3D(50.00, 12.50, 0.00),
-                                           P3D(57.00, -2.50, 6.00))
-        camera_connector: Cube = CornerCube("Camera Connector", P3D(43.55, 0.30, 0.00),
-                                            P3D(47.50, 22.70, 5.50))
-        hdmi_connector: Cube = CornerCube("HDMI Connector", P3D(24.75, -1.50, 0.00),
-                                          P3D(39.25, 10.65, 6.50))
-        power_connector: Cube = CornerCube("Power Connector", P3D(6.58, -1.22, 0.00),
-                                           P3D(14.62, 14.35, 2.00))
-        lcd_connector: Cube = CornerCube("LCD Connector",  P3D(2.65, 16.80, 0.00),
-                                         P3D(5.45, 39.20, 5.50))
-        connectors: List[Cube] = [
-            rj45_connector,
-            lower_usb2_connector,
-            upper_usb2_connector,
-            pin2x20_connector,
-            pin2x2_connector,
-            pin1x2_connector,
-            audio_connector,
-            camera_connector,
-            hdmi_connector,
-            power_connector,
-            lcd_connector,
-        ]
+        # Create the connector2x20:
+        connectors: List[Scad3D] = []
+        # connectors.append(CornerCube("2x20 Connector", P3D(7.10, 50.00, 0.00),
+        #                              P3D(57.90, 55.00, 8.50)))
+        male_pin_connector2x20: MalePinConnector = MalePinConnector(2, 20, 5.840)
+        connectors.append(Translate3D("Translate 2x20 Connector",
+                                      male_pin_connector2x20.connector_get(),
+                                      P3D((57.90 + 7.10) / 2.0, 52.50, 0.0)))
+        connectors.append(CornerCube("RJ45 Connecttor", P3D(65.650, 2.495, 0.000),
+                                     P3D(87.000, 18.005, 13.500)))
+        connectors.append(CornerCube("Lower USB2", P3D(69.30, 22.43, 0.00),
+                                     P3D(87.00, 34.57, 16.00)))
+        connectors.append(CornerCube("Upper USB2", P3D(69.30, 40.43, 0.00),
+                                     P3D(87.00, 53.57, 16.00)))
+        connectors.append(CornerCube("2x2 Connector", P3D(58.918, 44.005, 0.00),
+                                     P3D(64.087, 48.727, 8.50)))
+        connectors.append(CornerCube("2x2 Connector", P3D(58.90, 38.91, 0.00),
+                                     P3D(64.10, 41.11, 8.50)))
+        connectors.append(CornerCube("2x2 Connector", P3D(50.00, 12.50, 0.00),
+                                     P3D(57.00, -2.50, 6.00)))
+        connectors.append(CornerCube("Camera Connector", P3D(43.55, 0.30, 0.00),
+                                     P3D(47.50, 22.70, 5.50)))
+        connectors.append(CornerCube("HDMI Connector", P3D(24.75, -1.50, 0.00),
+                                     P3D(39.25, 10.65, 6.50)))
+        connectors.append(CornerCube("Power Connector", P3D(6.58, -1.22, 0.00),
+                                     P3D(14.62, 14.35, 2.00)))
+        connectors.append(CornerCube("LCD Connector",  P3D(2.65, 16.80, 0.00),
+                                     P3D(5.45, 39.20, 5.50)))
         return connectors
 
     # RaspberryPi3.scad_program_append():
@@ -110,10 +161,7 @@ class RaspberryPi3:
         raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
         raspi3b_model: Union3D = Union3D("Rasp3B Model", [], lock=False)
         raspi3b_model.append(raspi3b_pcb)
-        raspi3b_connectors: List[Cube] = raspi3b.connectors_get()
-        raspi3b_connector: Cube
-        for raspi3b_connector in raspi3b_connectors:
-            raspi3b_model.append(raspi3b_connector)
+        raspi3b_model.extend(raspi3b.connectors_get())
         raspi3b_model.lock()
         raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module", [raspi3b_model])
         scad_program.append(raspi3b_model_module)
@@ -1583,45 +1631,34 @@ class OtherPi:
         return pcb_polygon
 
     # OtherPi.connectors_get():
-    def connectors_get(self) -> List[Cube]:
+    def connectors_get(self) -> List[Scad3D]:
         """Return the connector Cube's for the OtherPi."""
-        ethernet_connector: Cube = CornerCube("Ethernet Connector", P3D(80.00, 29.26, 0.00),
-                                              P3D(105.00, 44.51, 13.08))  # 80.00? 105?
-        usb2_connector: Cube = CornerCube("USB2 Connector", P3D(85.00, 12.82, 0.00),
-                                          P3D(104.00, 25.57, 15.33))  # 85.00? 104.00?
-        west_connector: Cube = CornerCube("West Connector", P3D(98.00, 50.69, 0.00),
-                                          P3D(105.00, 58.09, 3.00))  # 98.00? 3.00? 105??
-        north_connector: Cube = CornerCube("North Connector", P3D(70.03, 60.92, 0.00),
-                                           P3D(76.38, 66.00, 5.00))  # 5.00? 66.00??
-        connector_2x20: Cube = CornerCube("2x20 Connector", P3D(7.37, 64.00, 0.00),
-                                          P3D(57.67, 69.08, 7.00))  # 7.00? 69.08? 64.00?
-        audio_connector: Cube = CornerCube("Audio Connector", P3D(66.31, -1.00, 0.00),
-                                           P3D(72.31, 14.00, 5.12))  # -1.00? 14.00?
-        usb3a_connector: Cube = CornerCube("USB3A Connector", P3D(9.54, 0.00, 0.00),
-                                           P3D(18.52, 10.00, 2.95))  # 10.00?
-        usb3b_connector: Cube = CornerCube("USB3B Connector", P3D(22.73, 0.00, 0.00),
-                                           P3D(31.71, 10.00, 2.95))  # 10.00?
-        power_connector: Cube = CornerCube("Power Connector", P3D(-1.00, 22.50, 0.00),
-                                           P3D(8.00, 29.00, 2.95))  # -1.00? 8.00?
-        jst_connector: Cube = CornerCube("JST Connector", P3D(0.00, 55.01, 0.00),
-                                         P3D(3.00, 63.37, 2.95))  # 0.00? 3.00?
-        buttons_area: Cube = CornerCube("Buttons Area", P3D(85.51, 62.12, 0.00),
-                                        P3D(98.23, 68.74, 2.95))  # 10.00?
-
-        # Create *connectors* and return them:
-        connectors: List[Cube] = [
-            ethernet_connector,
-            usb2_connector,
-            west_connector,
-            north_connector,
-            connector_2x20,
-            audio_connector,
-            usb3a_connector,
-            usb3b_connector,
-            power_connector,
-            jst_connector,
-            buttons_area
-        ]
+        male_2x20_header: MalePinConnector = MalePinConnector(2, 20, 5.840)
+        connectors: List[Scad3D] = []
+        connectors.append(CornerCube("Ethernet Connector", P3D(80.00, 29.26, 0.00),
+                                     P3D(105.00, 44.51, 13.08)))  # 80.00? 105?
+        connectors.append(CornerCube("USB2 Connector", P3D(85.00, 12.82, 0.00),
+                                     P3D(104.00, 25.57, 15.33)))  # 85.00? 104.00?
+        connectors.append(CornerCube("West Connector", P3D(98.00, 50.69, 0.00),
+                                     P3D(105.00, 58.09, 3.00)))  # 98.00? 3.00? 105??
+        connectors.append(CornerCube("North Connector", P3D(70.03, 60.92, 0.00),
+                                     P3D(76.38, 66.00, 5.00)))  # 5.00? 66.00??
+        # connectors.append(CornerCube("2x20 Connector", P3D(7.37, 64.00, 0.00),
+        #                              P3D(57.67, 69.08, 7.00)))  # 7.00? 69.08? 64.00?
+        connectors.append(Translate3D("Moved 2x20 Header", male_2x20_header.connector_get(),
+                                      P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0)))
+        connectors.append(CornerCube("Audio Connector", P3D(66.31, -1.00, 0.00),
+                                     P3D(72.31, 14.00, 5.12)))  # -1.00? 14.00?
+        connectors.append(CornerCube("USB3A Connector", P3D(9.54, 0.00, 0.00),
+                                     P3D(18.52, 10.00, 2.95)))  # 10.00?
+        connectors.append(CornerCube("USB3B Connector", P3D(22.73, 0.00, 0.00),
+                                     P3D(31.71, 10.00, 2.95)))  # 10.00?
+        connectors.append(CornerCube("Power Connector", P3D(-1.00, 22.50, 0.00),
+                                     P3D(8.00, 29.00, 2.95)))  # -1.00? 8.00?
+        connectors.append(CornerCube("JST Connector", P3D(0.00, 55.01, 0.00),
+                                     P3D(3.00, 63.37, 2.95)))  # 0.00? 3.00?
+        connectors.append(CornerCube("Buttons Area", P3D(85.51, 62.12, 0.00),
+                                     P3D(98.23, 68.74, 2.95)))  # 10.00?
         return connectors
 
     # OtherPi.scad_program_append():
@@ -1640,10 +1677,7 @@ class OtherPi:
         other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
         other_pi_pcb: Scad3D = LinearExtrude("OtherPiPCB", other_pi_pcb_polygon, 1.000)
         other_pi_model.append(Translate3D("Move Down 1mm", other_pi_pcb, P3D(-0.990, 0.0, 0.0)))
-        other_pi_connectors: List[Cube] = other_pi.connectors_get()
-        other_pi_connector: Cube
-        for other_pi_connector in other_pi_connectors:
-            other_pi_model.append(other_pi_connector)
+        other_pi_model.extend(other_pi.connectors_get())
         other_pi_model.lock()
         other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module", [other_pi_model])
         scad_program.append(other_pi_model_module)

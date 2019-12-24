@@ -2417,6 +2417,75 @@ class Module3D(Scad3D):
         scad_lines.append(f"{indent}}}")
 
 
+# Rotate3D(Scad3D):
+class Rotate3D(Scad3D):
+    """Rotate about a partiuclar axis."""
+
+    # Rotate3D.__init__():
+    def __init__(self, name: str, scad3d: Scad3D,
+                 rotate: float, axis: P3D = P3D(0.0, 0.0, 1.0)) -> None:
+        """Rotate a Scad3D about an axis."""
+        # Initialize the parent *Scad3D* class:
+        super().__init__(name)
+
+        # Verify *axis* has a length:
+        origin: P3D = P3D(0.0, 0.0, 0.0)
+        length: float = origin.distance(axis)
+        if length <= 0.0:
+            raise ValueError("Rotate axis has no direction.")
+
+        # Stuff arguments into *rotate3d* (i.e. *self*):
+        # rotate3d: Rotate3D = self
+        self.axis: P3D = axis
+        self.rotate: float = rotate
+        self.scad3d: Scad3D = scad3d
+
+    # Rotate3D.__str__():
+    def __str__(self) -> str:
+        """Return string representation."""
+        # Grab some values from *rotate3d* (i.e. *self*):
+        rotate3d: Rotate3D = self
+        axis: P3D = rotate3d.axis
+        name: str = rotate3d.name
+        rotate: float = rotate3d.rotate
+        scad3d: Scad3D = rotate3d.scad3d
+
+        float_format: Callable[[float], str] = Scad.float_format
+        rotate_text: str = float_format(rotate * 180.0 / pi)
+        return f"Rotate('{name}',{scad3d},{axis},{rotate_text}deg)"
+
+    # Rotate3D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Rotate3D to lines list.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *circle* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *rotate3d* (i.e. *self*):
+        rotate3d: Rotate3D = self
+        axis: P3D = rotate3d.axis
+        name: str = rotate3d.name
+        scad3d: Scad3D = rotate3d.scad3d
+        rotate: float = rotate3d.rotate
+
+        # Unpack *axis* X/Y/Z into text strings:
+        float_format: Callable[[float], str] = Scad.float_format
+        axis_x_text: str = float_format(axis.x)
+        axis_y_text: str = float_format(axis.y)
+        axis_z_text: str = float_format(axis.z)
+        rotate_text: str = "{0:.6f}".format(rotate * 180.0 / pi)
+
+        # Append everything to *scad_lines*:
+        scad_lines.append(f"{indent}translate(a = {rotate_text}, "
+                          f"v=[{axis_x_text}, {axis_y_text}, {axis_z_text}]) {{  "
+                          f"// Rotate3D: '{name}'")
+        scad3d.scad_lines_append(scad_lines, indent + " ")
+        scad_lines.append(f"{indent}}}")
+
+
 # Translate3D(Scad3D):
 class Translate3D(Scad3D):
     """Move Scad3D to a another location."""
@@ -2443,7 +2512,7 @@ class Translate3D(Scad3D):
 
     # Translate3D.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
-        """Append ScadProgram to lines list.
+        """Append Translate3D to lines list.
 
         Args:
             *scad_lines* (*List*[*str*]): The lines list to append the
