@@ -53,13 +53,13 @@ class MalePinConnector:
         dy_offset: float = -(dy - pin_pitch) / 2.0
 
         # Create the *Union3D* *pin_connector* and append *insulation_base* to it:
-        pin_connector: Union3D = Union3D(f"{name} Male Pin Connector", [], lock=False)
         insulation_base: Cube = CornerCube(f"{name} Connector Base",
                                            P3D(-dx/2.0, -dy/2.0, 0.0),
                                            P3D(dx/2.0, dy/2.0, insulation_height))
-        pin_connector.append(insulation_base)
+        black_insulation_base: Color = Color("Black Insulation Base", insulation_base, "Black")
 
         # Create each *pin* and append to *connector*:
+        connector_pins: Union3D = Union3D(f"{name} Connector Pins", [], lock=False)
         row_index: int
         for row_index in range(rows):
             column_index: int
@@ -69,8 +69,13 @@ class MalePinConnector:
                 pin: Cube = CornerCube(f"Pin {column_index}:{row_index}",
                                        P3D(x - half_pin_dx_dy, y - half_pin_dx_dy, 0.0),
                                        P3D(x + half_pin_dx_dy, y + half_pin_dx_dy, total_height))
-                pin_connector.append(pin)
-        pin_connector.lock()
+                connector_pins.append(pin)
+        connector_pins.lock()
+        silver_connector_pins: Color = Color("Silver Connector Pins", connector_pins, "Silver")
+
+        # Construct the final *pin_connector* and return it:
+        pin_connector: Union3D = Union3D(f"{name} Male Pin Connector",
+                                         [black_insulation_base, silver_connector_pins])
         return pin_connector
 
 
@@ -121,30 +126,54 @@ class RaspberryPi3:
         connectors: List[Scad3D] = []
         # connectors.append(CornerCube("2x20 Connector", P3D(7.10, 50.00, 0.00),
         #                              P3D(57.90, 55.00, 8.50)))
-        male_pin_connector2x20: MalePinConnector = MalePinConnector(2, 20, 5.840)
+        mating_length: float = 5.840
+        male_pin_connector2x20: MalePinConnector = MalePinConnector(2, 20, mating_length)
+        male_pin_connector2x2: MalePinConnector = MalePinConnector(2, 2, mating_length)
+        male_pin_connector2x1: MalePinConnector = MalePinConnector(2, 1, mating_length)
         connectors.append(Translate3D("Translate 2x20 Connector",
                                       male_pin_connector2x20.connector_get(),
                                       P3D((57.90 + 7.10) / 2.0, 52.50, 0.0)))
-        connectors.append(CornerCube("RJ45 Connecttor", P3D(65.650, 2.495, 0.000),
-                                     P3D(87.000, 18.005, 13.500)))
-        connectors.append(CornerCube("Lower USB2", P3D(69.30, 22.43, 0.00),
-                                     P3D(87.00, 34.57, 16.00)))
-        connectors.append(CornerCube("Upper USB2", P3D(69.30, 40.43, 0.00),
-                                     P3D(87.00, 53.57, 16.00)))
-        connectors.append(CornerCube("2x2 Connector", P3D(58.918, 44.005, 0.00),
-                                     P3D(64.087, 48.727, 8.50)))
-        connectors.append(CornerCube("2x2 Connector", P3D(58.90, 38.91, 0.00),
-                                     P3D(64.10, 41.11, 8.50)))
-        connectors.append(CornerCube("2x2 Connector", P3D(50.00, 12.50, 0.00),
-                                     P3D(57.00, -2.50, 6.00)))
-        connectors.append(CornerCube("Camera Connector", P3D(43.55, 0.30, 0.00),
-                                     P3D(47.50, 22.70, 5.50)))
-        connectors.append(CornerCube("HDMI Connector", P3D(24.75, -1.50, 0.00),
-                                     P3D(39.25, 10.65, 6.50)))
-        connectors.append(CornerCube("Power Connector", P3D(6.58, -1.22, 0.00),
-                                     P3D(14.62, 14.35, 2.00)))
-        connectors.append(CornerCube("LCD Connector",  P3D(2.65, 16.80, 0.00),
-                                     P3D(5.45, 39.20, 5.50)))
+        connectors.append(Translate3D("Tanslate 2x2 Connector",
+                                      male_pin_connector2x2.connector_get(),
+                                      P3D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0, 0.0)))
+        connectors.append(Translate3D("Translate 2x1 Connector",
+                                      male_pin_connector2x1.connector_get(),
+                                      P3D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0, 0.0)))
+        connectors.append(Color("Silver RJ45 Connector",
+                                CornerCube("RJ45 Connecttor",
+                                           P3D(65.650, 2.495, 0.000),
+                                           P3D(87.000, 18.005, 13.500)),
+                                "Silver"))
+        connectors.append(Color("Silver Lower USB2",
+                                CornerCube("Lower USB2",
+                                           P3D(69.30, 22.43, 0.00),
+                                           P3D(87.00, 34.57, 16.00)),
+                                "Silver"))
+        connectors.append(Color("Silver Upper USB2",
+                                CornerCube("Upper USB2",
+                                           P3D(69.30, 40.43, 0.00),
+                                           P3D(87.00, 53.57, 16.00)),
+                                "Silver"))
+        connectors.append(Color("Black Camera Connector",
+                                CornerCube("Camera Connector",
+                                           P3D(43.55, 0.30, 0.00),
+                                           P3D(47.50, 22.70, 5.50)),
+                                "Black"))
+        connectors.append(Color("Silver HDMI Connector",
+                                CornerCube("HDMI Connector",
+                                           P3D(24.75, -1.50, 0.00),
+                                           P3D(39.25, 10.65, 6.50)),
+                                "Silver"))
+        connectors.append(Color("Silver Power Connector",
+                                CornerCube("Power Connector",
+                                           P3D(6.58, -1.22, 0.00),
+                                           P3D(14.62, 14.35, 2.00)),
+                                "Silver"))
+        connectors.append(Color("Black LCD Connector",
+                                CornerCube("LCD Connector",
+                                           P3D(2.65, 16.80, 0.00),
+                                           P3D(5.45, 39.20, 5.50)),
+                                "Black"))
         return connectors
 
     # RaspberryPi3.scad_program_append():
@@ -158,12 +187,17 @@ class RaspberryPi3:
         if2d.then_append('name == "raspi3b_pcb"',
                          [UseModule2D("RasPi3B PCB Polygon", raspi3b_pcb_polygon_module)])
 
+        # Construct the green PCB:
         raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
-        raspi3b_union: Union3D = Union3D("Rasp3B Model", [], lock=False)
-        raspi3b_union.append(raspi3b_pcb)
-        raspi3b_union.extend(raspi3b.connectors_get())
-        raspi3b_union.lock()
-        raspi3b_model: Color = Color("Green Rasp3B Model", raspi3b_union, "Green")
+        raspi3b_green_pcb: Color = Color("Green Rasp3B PCB", raspi3b_pcb, "Green")
+
+        # Construct the final *raspi3b_model* as a *Union3D*:
+        raspi3b_model: Union3D = Union3D("Rasp3B Model", [], lock=False)
+        raspi3b_model.append(raspi3b_green_pcb)
+        raspi3b_model.extend(raspi3b.connectors_get())
+        raspi3b_model.lock()
+
+        # Do the final OpenScad Module declaration and the *if3d* then-clause:
         raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module", [raspi3b_model])
         scad_program.append(raspi3b_model_module)
         if3d.then_append('name == "raspi3b_model"',
@@ -1635,30 +1669,58 @@ class OtherPi:
         """Return the connector Cube's for the OtherPi."""
         male_2x20_header: MalePinConnector = MalePinConnector(2, 20, 5.840)
         connectors: List[Scad3D] = []
-        connectors.append(CornerCube("Ethernet Connector", P3D(80.00, 29.26, 0.00),
-                                     P3D(105.00, 44.51, 13.08)))  # 80.00? 105?
-        connectors.append(CornerCube("USB2 Connector", P3D(85.00, 12.82, 0.00),
-                                     P3D(104.00, 25.57, 15.33)))  # 85.00? 104.00?
-        connectors.append(CornerCube("West Connector", P3D(98.00, 50.69, 0.00),
-                                     P3D(105.00, 58.09, 3.00)))  # 98.00? 3.00? 105??
-        connectors.append(CornerCube("North Connector", P3D(70.03, 60.92, 0.00),
-                                     P3D(76.38, 66.00, 5.00)))  # 5.00? 66.00??
-        # connectors.append(CornerCube("2x20 Connector", P3D(7.37, 64.00, 0.00),
-        #                              P3D(57.67, 69.08, 7.00)))  # 7.00? 69.08? 64.00?
-        connectors.append(Translate3D("Moved 2x20 Header", male_2x20_header.connector_get(),
-                                      P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0)))
-        connectors.append(CornerCube("Audio Connector", P3D(66.31, -1.00, 0.00),
-                                     P3D(72.31, 14.00, 5.12)))  # -1.00? 14.00?
-        connectors.append(CornerCube("USB3A Connector", P3D(9.54, 0.00, 0.00),
-                                     P3D(18.52, 10.00, 2.95)))  # 10.00?
-        connectors.append(CornerCube("USB3B Connector", P3D(22.73, 0.00, 0.00),
-                                     P3D(31.71, 10.00, 2.95)))  # 10.00?
-        connectors.append(CornerCube("Power Connector", P3D(-1.00, 22.50, 0.00),
-                                     P3D(8.00, 29.00, 2.95)))  # -1.00? 8.00?
-        connectors.append(CornerCube("JST Connector", P3D(0.00, 55.01, 0.00),
-                                     P3D(3.00, 63.37, 2.95)))  # 0.00? 3.00?
-        connectors.append(CornerCube("Buttons Area", P3D(85.51, 62.12, 0.00),
-                                     P3D(98.23, 68.74, 2.95)))  # 10.00?
+        connectors.append(Color("Silver Ethernet Connector",
+                                CornerCube("Ethernet Connector",
+                                           P3D(80.00, 29.26, 0.00),
+                                           P3D(105.00, 44.51, 13.08)),  # 80.00? 105?
+                                "Silver"))
+        connectors.append(Color("Silver USB2 Connector",
+                                CornerCube("USB2 Connector",
+                                           P3D(85.00, 12.82, 0.00),
+                                           P3D(104.00, 25.57, 15.33)),  # 85.00? 104.00?
+                                "Silver"))
+        connectors.append(Color("Silver West Connector",
+                                CornerCube("West Connector",
+                                           P3D(98.00, 50.69, 0.00),
+                                           P3D(105.00, 58.09, 3.00)),  # 98.00? 3.00? 105??
+                                "Silver"))
+        connectors.append(Color("Black North Connector",
+                                CornerCube("North Connector",
+                                           P3D(70.03, 60.92, 0.00),
+                                           P3D(76.38, 66.00, 5.00)),  # 5.00? 66.00??
+                                "Black"))
+        connectors.append(Translate3D("2x20 Male Header", male_2x20_header.connector_get(),
+                                      P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0, 0.0)))
+        connectors.append(Color("Black Audio Connector",
+                                CornerCube("Audio Connector",
+                                           P3D(66.31, -1.00, 0.00),
+                                           P3D(72.31, 14.00, 5.12)),  # -1.00? 14.00?
+                                "Black"))
+        connectors.append(Color("Silver USB3A Connector",
+                                CornerCube("USB3A Connector",
+                                           P3D(9.54, 0.00, 0.00),
+                                           P3D(18.52, 10.00, 2.95)),  # 10.00?
+                                "Silver"))
+        connectors.append(Color("Silver USB3B Connector",
+                                CornerCube("USB3B Connector",
+                                           P3D(22.73, 0.00, 0.00),
+                                           P3D(31.71, 10.00, 2.95)),  # 10.00?
+                                "Silver"))
+        connectors.append(Color("Silver Power Connector",
+                                CornerCube("Power Connector",
+                                           P3D(-1.00, 22.50, 0.00),
+                                           P3D(8.00, 29.00, 2.95)),  # -1.00? 8.00?
+                                "Silver"))
+        connectors.append(Color("White JST Connector",
+                                CornerCube("JST Connector",
+                                           P3D(0.00, 55.01, 0.00),
+                                           P3D(3.00, 63.37, 2.95)),  # 0.00? 3.00?
+                                "White"))
+        connectors.append(Color("Black Buttons Area",
+                                CornerCube("Buttons Area",
+                                           P3D(85.51, 62.12, 0.00),
+                                           P3D(98.23, 68.74, 2.95)),  # 10.00?
+                                "Black"))
         return connectors
 
     # OtherPi.scad_program_append():
@@ -1675,8 +1737,10 @@ class OtherPi:
 
         # Now create the *other_pi_module*:
         other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
-        other_pi_pcb: Scad3D = LinearExtrude("OtherPiPCB", other_pi_pcb_polygon, 1.000)
-        other_pi_model.append(Translate3D("Move Down 1mm", other_pi_pcb, P3D(-0.990, 0.0, 0.0)))
+        other_pi_pcb: Scad3D = LinearExtrude("OtherPi PCB", other_pi_pcb_polygon, 1.000)
+        other_pi_green_pcb: Color = Color("Green OtherPi PCB", other_pi_pcb, "Green")
+        other_pi_model.append(Translate3D("Move Down 1mm",
+                                          other_pi_green_pcb, P3D(-0.990, 0.0, 0.0)))
         other_pi_model.extend(other_pi.connectors_get())
         other_pi_model.lock()
         other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module", [other_pi_model])
