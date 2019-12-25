@@ -53,7 +53,7 @@ The basic class tree is:
 
 # Import stuff from other libraries:
 from math import ceil, cos, degrees, pi, sin, sqrt
-from typing import Any, Callable, IO, List, Optional, Tuple
+from typing import Any, Callable, IO, List, Optional, Set, Tuple
 
 
 # P3D:
@@ -236,6 +236,167 @@ class Scad:
         """
         # Stuff *name* into the *scad* object (i.e. *self*):
         self.name: str = name
+
+    # Scad.colors_set_get():
+    @staticmethod
+    def colors_set_get() -> Set[str]:
+        """Return a set of lower case allowed colors."""
+        colors: List[str] = [
+            # Purples:
+            "Lavender"
+            "Thistle",
+            "Plum",
+            "Violet",
+            "Orchid",
+            "Fuchsia",
+            "Magenta",
+            "MediumOrchid",
+            "MediumPurple",
+            "BlueViolet",
+            "DarkViolet",
+            "DarkOrchid",
+            "DarkMagenta",
+            "Purple",
+            "Indigo",
+            "DarkSlateBlue",
+            "SlateBlue",
+            "MediumSlateBlue",
+            # Pinks:
+            "Pink",
+            "LightPink",
+            "HotPink",
+            "DeepPink",
+            "MediumVioletRed",
+            "PaleVioletRed",
+            # Blues:
+            "Aqua",
+            "Cyan",
+            "LightCyan",
+            "PaleTurquoise",
+            "Aquamarine",
+            "Turquoise",
+            "MediumTurquoise",
+            "DarkTurquoise",
+            "CadetBlue",
+            "SteelBlue",
+            "LightSteelBlue",
+            "PowderBlue",
+            "LightBlue",
+            "SkyBlue",
+            "LightSkyBlue",
+            "DeepSkyBlue",
+            "DodgerBlue",
+            "CornflowerBlue",
+            "RoyalBlue",
+            "Blue",
+            "MediumBlue",
+            "DarkBlue",
+            "Navy",
+            "MidnightBlue",
+            # Reds:
+            "IndianRed",
+            "LightCoral",
+            "Salmon",
+            "DarkSalmon",
+            "LightSalmon",
+            "Red",
+            "Crimson",
+            "FireBrick",
+            "DarkRed",
+            # Greens:
+            "GreenYellow",
+            "Chartreuse",
+            "LawnGreen",
+            "Lime",
+            "LimeGreen",
+            "PaleGreen",
+            "LightGreen",
+            "MediumSpringGreen",
+            "SpringGreen",
+            "MediumSeaGreen",
+            "SeaGreen",
+            "ForestGreen",
+            "Green",
+            "DarkGreen",
+            "YellowGreen",
+            "OliveDrab",
+            "Olive",
+            "DarkOliveGreen",
+            "MediumAquamarine",
+            "DarkSeaGreen",
+            "LightSeaGreen",
+            "DarkCyan",
+            "Teal",
+            # Oranges
+            "LightSalmon",
+            "Coral",
+            "Tomato",
+            "OrangeRed",
+            "DarkOrange",
+            "Orange",
+            # Yellows:
+            " Gold",
+            "Yellow",
+            "LightYellow",
+            "LemonChiffon",
+            "LightGoldenrodYellow",
+            "PapayaWhip",
+            "Moccasin",
+            "PeachPuff",
+            "PaleGoldenrod",
+            "Khaki",
+            "DarkKhaki",
+            # Browns:
+            "Cornsilk",
+            "BlanchedAlmond",
+            "Bisque",
+            "NavajoWhite",
+            "Wheat",
+            "BurlyWood",
+            "Tan",
+            "RosyBrown",
+            "SandyBrown",
+            "Goldenrod",
+            "DarkGoldenrod",
+            "Peru",
+            "Chocolate",
+            "SaddleBrown",
+            "Sienna",
+            "Brown",
+            "Maroon",
+            # Whites:
+            "White",
+            "Snow",
+            "Honeydew",
+            "MintCream",
+            "Azure",
+            "AliceBlue",
+            "GhostWhite",
+            "WhiteSmoke",
+            "Seashell",
+            "Beige",
+            "OldLace",
+            "FloralWhite",
+            "Ivory",
+            "AntiqueWhite",
+            "Linen",
+            "LavenderBlush",
+            "MistyRose",
+            # Grays:
+            "Gainsboro",
+            "LightGrey",
+            "Silver",
+            "DarkGray",
+            "Gray",
+            "DimGray",
+            "LightSlateGray",
+            "SlateGray",
+            "DarkSlateGray",
+            "Black",
+        ]
+        color: str
+        colors_set: Set[str] = {color.lower() for color in colors}
+        return colors_set
 
     # Scad.float_format():
     @staticmethod
@@ -2059,7 +2220,62 @@ class Cube(Scad3D):
             scad_lines.append(f"{indent}}}")
 
 
-# CornerCube():
+# Color:
+class Color(Scad3D):
+    """Represents a color."""
+
+    # Color.__init__():
+    def __init__(self, name: str, scad3d: Scad3D, color_name: str, alpha: float = 1.0) -> None:
+        """Attach a color to Scad3D objet."""
+        # Initialize the parent *Scad3D* class:
+        super().__init__(name)
+        # Now figure out what to stuff into *color* (i.e. *self*):
+        # color: Color = self
+        colors_set: Set[str] = Scad.colors_set_get()
+        if color_name.lower() not in colors_set:
+            raise ValueError(f"Color '{color_name} is not a recognized color.")
+        if not (0.0 <= alpha <= 1.0):
+            raise ValueError(f"Alpha ({alpha}) must be between 0.0 and 1.0 inclusive.")
+        self.alpha: float = alpha
+        self.color_name: str = color_name
+        self.scad3d: Scad3D = scad3d
+
+    # Color.str():
+    def __str__(self) -> str:
+        """Convert a Color into a string."""
+        # Grab some values from *Color*:
+        color: Color = self
+        alpha: float = color.alpha
+        color_name: str = color.color_name
+        name: str = color.name
+        scad3d: Scad3D = color.scad3d
+        alpha_text: str = "" if alpha >= 1.0 else ",alpha={0:.2f}".format(alpha)
+        return f"Color('{name}',{scad3d},'{color_name}'{alpha_text})"
+
+    # If3D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append If3D to a list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]): The lines list to append the
+                *square* (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *Color*:
+        color: Color = self
+        alpha: float = color.alpha
+        color_name: str = color.color_name
+        name: str = color.name
+        scad3d: Scad3D = color.scad3d
+        alpha_text: str = "" if alpha >= 1.0 else ", a = {0:.2f}".format(alpha)
+        scad_lines.append(f'{indent}color("{color_name}"{alpha_text}) {{  '
+                          f"// Color: '{name}'")
+        scad3d.scad_lines_append(scad_lines, indent + " ")
+        scad_lines.append(f"{indent}}}")
+
+
+# CornerCube:
 class CornerCube(Cube):
     """Represents a cube specified by two corners."""
 

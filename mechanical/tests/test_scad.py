@@ -26,7 +26,7 @@
 
 import io
 from math import pi
-from scad_models.scad import (Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
+from scad_models.scad import (Circle, Color, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
                               Module3D, P2D, P3D, Polygon, Rotate3D, Scad3D, ScadProgram,
                               SimplePolygon, Square, Translate3D, Union3D, UseModule2D,
                               UseModule3D, Variable2D)
@@ -86,6 +86,34 @@ def test_circle() -> None:
     y_mirrored_center: P2D = y_mirrored_circle.center
     assert y_mirrored_center.x == -2.0
     assert y_mirrored_center.y == 3.0
+
+
+def test_color() -> None:
+    """Test Color class."""
+    cube1: Cube = Cube("Cube 1", 1.0, 2.0, 3.0)
+    colored_cube1: Color = Color("Blue Cube", cube1, "blue", alpha=0.5)
+    assert str(colored_cube1) == ("Color('Blue Cube',Cube('Cube 1',1.000,2.000,3.000,"
+                                  "center=P3D(0.000,0.000,0.000)),'blue',alpha=0.50)")
+    scad_lines: List[str] = []
+    colored_cube1.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 3
+    assert scad_lines[0] == ('color("blue", a = 0.50) {  '
+                             "// Color: 'Blue Cube'"), "[0]!"
+    assert scad_lines[1] == (" cube(size = [1.000, 2.000, 3.000], center = true);  "
+                             "// Cube: 'Cube 1'"), "[1]!"
+    assert scad_lines[2] == "}", "[2]!"
+
+    # Now verify that argument checking works:
+    try:
+        Color("Ugly Color", cube1, "ugly")
+        assert False, "This line should not be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Color 'ugly is not a recognized color."
+    try:
+        Color("Bad Aplha", cube1, "Blue", alpha=-1.0)
+        assert False, "This line should not be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Alpha (-1.0) must be between 0.0 and 1.0 inclusive."
 
 
 def test_cube() -> None:

@@ -8,7 +8,7 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from scad_models.scad import (Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
+from scad_models.scad import (Color, Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
                               Module3D, P2D, P3D, Polygon, Scad, Scad3D, SimplePolygon,
                               ScadProgram, Square, Translate3D, UseModule2D, UseModule3D,
                               Union3D, Variable2D)
@@ -159,13 +159,13 @@ class RaspberryPi3:
                          [UseModule2D("RasPi3B PCB Polygon", raspi3b_pcb_polygon_module)])
 
         raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
-        raspi3b_model: Union3D = Union3D("Rasp3B Model", [], lock=False)
-        raspi3b_model.append(raspi3b_pcb)
-        raspi3b_model.extend(raspi3b.connectors_get())
-        raspi3b_model.lock()
+        raspi3b_union: Union3D = Union3D("Rasp3B Model", [], lock=False)
+        raspi3b_union.append(raspi3b_pcb)
+        raspi3b_union.extend(raspi3b.connectors_get())
+        raspi3b_union.lock()
+        raspi3b_model: Color = Color("Green Rasp3B Model", raspi3b_union, "Green")
         raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module", [raspi3b_model])
         scad_program.append(raspi3b_model_module)
-
         if3d.then_append('name == "raspi3b_model"',
                          [UseModule3D("RasPi3B_Model", raspi3b_model_module)])
 
