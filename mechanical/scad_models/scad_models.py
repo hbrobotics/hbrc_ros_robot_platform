@@ -189,16 +189,24 @@ class RaspberryPi3:
 
         # Construct the green PCB:
         raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
-        raspi3b_green_pcb: Color = Color("Green Rasp3B PCB", raspi3b_pcb, "Green")
+        translated_raspi3b_pcb: Translate3D = Translate3D("Translated Rasp3B PCB",
+                                                          raspi3b_pcb,
+                                                          P3D(0.0, 0.0, -1.0))
+        raspi3b_green_pcb: Color = Color("Green Rasp3B PCB", translated_raspi3b_pcb, "Green")
 
         # Construct the final *raspi3b_model* as a *Union3D*:
         raspi3b_model: Union3D = Union3D("Rasp3B Model", [], lock=False)
         raspi3b_model.append(raspi3b_green_pcb)
         raspi3b_model.extend(raspi3b.connectors_get())
         raspi3b_model.lock()
+        translated_raspi3b_model: Translate3D = Translate3D("Translated RasPi3B Model",
+                                                            raspi3b_model,
+                                                            P3D(-(3.5 + 58.0/2.0),
+                                                                -(3.5 + 49.0/2.0), 1.000))
 
         # Do the final OpenScad Module declaration and the *if3d* then-clause:
-        raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module", [raspi3b_model])
+        raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module",
+                                                  [translated_raspi3b_model])
         scad_program.append(raspi3b_model_module)
         if3d.then_append('name == "raspi3b_model"',
                          [UseModule3D("RasPi3B_Model", raspi3b_model_module)])
@@ -1737,13 +1745,22 @@ class OtherPi:
 
         # Now create the *other_pi_module*:
         other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
-        other_pi_pcb: Scad3D = LinearExtrude("OtherPi PCB", other_pi_pcb_polygon, 1.000)
-        other_pi_green_pcb: Color = Color("Green OtherPi PCB", other_pi_pcb, "Green")
+        other_pi_translated_pcb: Scad3D = Translate3D("Translated Other PCB",
+                                                      LinearExtrude("OtherPi PCB",
+                                                                    other_pi_pcb_polygon, 1.000),
+                                                      P3D(0.0, 0.0, -0.99))
+        other_pi_green_pcb: Color = Color("Green OtherPi PCB", other_pi_translated_pcb, "Green")
         other_pi_model.append(Translate3D("Move Down 1mm",
                                           other_pi_green_pcb, P3D(-0.990, 0.0, 0.0)))
         other_pi_model.extend(other_pi.connectors_get())
         other_pi_model.lock()
-        other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module", [other_pi_model])
+        translated_other_pi_model: Translate3D = Translate3D("Translated Other Pi Model",
+                                                             other_pi_model,
+                                                             P3D(-(3.5 + 58/2.0),
+                                                                 -(70.0 - (3.5 + 49.0/2.0)),
+                                                                 1.000))
+        other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module",
+                                                   [translated_other_pi_model])
         scad_program.append(other_pi_model_module)
         if3d.then_append('name == "otherpi_model"',
                          [UseModule3D("OtherPi_Model", other_pi_model_module)])
