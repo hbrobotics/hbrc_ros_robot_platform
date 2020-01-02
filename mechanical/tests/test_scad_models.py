@@ -22,8 +22,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from scad_models.scad_models import OtherPi, RaspberryPi3, Romi
+from scad_models.scad_models import HR2, OtherPi, RaspberryPi3, Romi
 from scad_models.scad import If2D, If3D, ScadProgram
+
+
+# test_hr2():
+def test_hr2():
+    """Test the HR2 class."""
+    romi: Romi = Romi()
+    hr2: HR2 = HR2(romi)
+    scad_program: ScadProgram = ScadProgram("Top Level program")
+    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
+    hr2.scad_program_append(scad_program, if3d)
 
 
 # test_raspi3b():

@@ -12,8 +12,43 @@ from scad_models.scad import (Color, Circle, CornerCube, Cube, If2D, If3D, Linea
                               Module3D, P2D, P3D, Polygon, Scad, Scad3D, SimplePolygon,
                               ScadProgram, Square, Translate3D, UseModule2D, UseModule3D,
                               Union3D, Variable2D)
-from typing import Any, Dict, IO, List, Set, Tuple
+from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
+
+
+# HR2:
+class HR2:
+    """Represents the HR2 platform."""
+
+    # HR2.__init__():
+    def __init__(self, romi: "Romi") -> None:
+        """Initialize the HR2 platform."""
+        # Stuff *romi* into *hr2* (i.e. *self*):
+        # hr2: HR2 = self
+        self.romi: Romi = romi
+
+    # HR2.robot_get():
+    def robot_get(self) -> Scad3D:
+        """Return the robot module."""
+        # Grab some values from *hr2* (i.e. *self*):
+        hr2: HR2 = self
+        romi: Romi = hr2.romi
+        hr2_robot_model: Union3D = Union3D("HR2 Robot Model", [], lock=False)
+        romi_base_module: Module3D = romi.base_module_get()
+        hr2_robot_model.append(UseModule3D("Use Romi Base Module", romi_base_module))
+        hr2_robot_model.lock()
+        return hr2_robot_model
+
+    # HR2.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram, if3d: If3D) -> None:
+        """Append HR2 to a ScadProgram."""
+        # Grab some values out of *hr2* (i.e. *self*):
+        hr2: HR2 = self
+        hr2_robot: Scad3D = hr2.robot_get()
+        hr2_robot_module: Module3D = Module3D("HR2 Robot Module", [hr2_robot])
+        scad_program.append(hr2_robot_module)
+        if3d.then_append('name == "hr2_robot"',
+                         [UseModule3D("HR2 Robot Use Module", hr2_robot_module)])
 
 
 # MalePinConnector:
@@ -262,8 +297,29 @@ class Romi:
         self.debugging = debugging
         self.inches2mm: float = inches2mm
         self.origin_offset: P2D = origin_offset
+        self.base_module: Optional[Module3D] = None
         if debugging:  # pragma: no cover
             print(f"origin_offset={origin_offset}")
+
+    # Romi.base_module_get():
+    def base_module_get(self) -> Module3D:
+        """Return the Romi BaseModule3D."""
+        # Grab some values from *romi* (i.e. *self*):
+        romi: Romi = self
+        base_module: Optional[Module3D] = romi.base_module
+        if base_module is None:
+            # Now construct the base:
+            romi_battery_base_polygon: Polygon = romi.battery_base_polygon_get()
+            romi_battery_base: Scad3D = LinearExtrude("Romi Battery Base",
+                                                      romi_battery_base_polygon, 19.5)
+            romi_base_polygon: Polygon = romi.base_polygon_get()
+            romi_circular_base: Scad3D = LinearExtrude("Romi Circular Base",
+                                                       romi_base_polygon, 19.5 - 10.0)
+            romi_base: Union3D = Union3D("Romi Base", [romi_battery_base, romi_circular_base])
+            blue_romi_base: Color = Color("Blue Romi Base", romi_base, "Blue")
+            base_module = Module3D("Romi Base Module", [blue_romi_base])
+            romi.base_module = base_module
+        return base_module
 
     # Romi.base_outline_polygon_get():
     def base_outline_polygon_get(self) -> SimplePolygon:
@@ -436,6 +492,36 @@ class Romi:
         # Create the final *base_scad_polygon*, write it out to disk and return it.
         base_scad_polygon: Polygon = Polygon("Romi Base ScadPolygon", all_polygons, lock=True)
         return base_scad_polygon
+
+    # Romi.battery_base_polygon_get():
+    def battery_base_polygon_get(self) -> Polygon:
+        """Return the outline of the bas base polygon."""
+        romi: Romi = self
+        outline: SimplePolygon = SimplePolygon("Battery Base Polygon", [], lock=False)
+        # Start in the upper right corner an go counter clockwise:
+        outline.point_append(romi.point_locate(-1.658217, 4.748650))  # Upper Right Corner
+        outline.point_append(romi.point_locate(-2.499756, 4.748650))  # Upper Right Notch1UR
+        outline.point_append(romi.point_locate(-2.499756, 4.669913))  # Upper Right Notch1LR
+        outline.point_append(romi.point_locate(-2.873772, 4.669913))  # Upper Right Notch1LL
+        outline.point_append(romi.point_locate(-2.873772, 4.748650))  # Upper Right Notch1UL
+        outline.point_append(romi.point_locate(-4.861965, 4.748650))  # Upper Left Notch1UR
+        outline.point_append(romi.point_locate(-4.861965, 4.669913))  # Upper Left Notch1LR
+        outline.point_append(romi.point_locate(-5.235980, 4.669913))  # Upper Left Notch1LL
+        outline.point_append(romi.point_locate(-5.235980, 4.748650))  # Upper Left Notch1UL
+        outline.point_append(romi.point_locate(-6.077508, 4.748650))  # Upper Left Corner
+        outline.point_append(romi.point_locate(-6.077508, 3.410067))  # Left Motor Corner UL
+        outline.point_append(romi.point_locate(-5.704091, 3.410067))  # Left Motor Corner UR
+        outline.point_append(romi.point_locate(-5.704091, 2.189594))  # Lower Left Corner
+        outline.point_append(romi.point_locate(-2.031646, 2.189594))  # Lower Right Corner
+        outline.point_append(romi.point_locate(-2.031646, 3.410067))  # Right Motor Corner UL
+        outline.point_append(romi.point_locate(-1.658217, 3.410067))  # Right Motor Corner UR
+        outline.lock()
+
+        # Construct the final *battery_base_polygon* and return it:
+        simple_polygons: List[SimplePolygon] = [outline]  # Outline comes first
+        simple_polygons.extend(romi.battery_polygons_get())  # Then comes all of the holes
+        battery_base_polygon: Polygon = Polygon("Battery Base Polygon", simple_polygons)
+        return battery_base_polygon
 
     # Romi.battery_clips_get():
     def battery_clips_get(self) -> List[SimplePolygon]:
@@ -1368,6 +1454,22 @@ class Romi:
         ]
         return miscellaneous_holes
 
+    # Romi.point_locate():
+    def point_locate(self, x: float, y: float) -> P2D:
+        """Locate and return a point on Romi base."""
+        # Grab some values from *romi* (i.e. *self*):
+        romi: Romi = self
+        origin_offset: P2D = romi.origin_offset
+        inches2mm: float = romi.inches2mm
+
+        # Convert from inches to mm:
+        x *= inches2mm
+        y *= inches2mm
+
+        # Return the resulting *point*:
+        point: P2D = P2D(x, y) - origin_offset
+        return point
+
     # Romi.rectangle_locate():
     def rectangle_locate(self, name: str, x1: float, y1: float,
                          x2: float, y2: float) -> Square:
@@ -1414,18 +1516,32 @@ class Romi:
 
         # Start with the just *rome_base_polygon* and append it to *scad_program* and *if2d*:
         romi_base_polygon: Polygon = romi.base_polygon_get()
-        romi_base_polygon_module: Module2D = Module2D("Romi_Base_Polygon_Module",
+        romi_base_polygon_module: Module2D = Module2D("Romi Base Polygon Module",
                                                       [romi_base_polygon])
         scad_program.append(romi_base_polygon_module)
-        if2d.then_append('name == "romi_base"',
-                         [UseModule2D("Romi_Base_Polygon", romi_base_polygon_module)])
+        if2d.then_append('name == "romi_base_polygon"',
+                         [UseModule2D("Romi Base Polygon", romi_base_polygon_module)])
+
+        romi_battery_base_polygon: Polygon = romi.battery_base_polygon_get()
+        romi_battery_base_polygon_module: Module2D = Module2D("Romi Battery Base Polygon",
+                                                              [romi_battery_base_polygon])
+        scad_program.append(romi_battery_base_polygon_module)
+        if2d.then_append('name == "romi_battery_base_polygon"',
+                         [UseModule2D("Romi Battery Base Polygon",
+                                      romi_battery_base_polygon_module)])
 
         # Next append the *expansion_polygon*:
         expansion_polygon: Polygon = romi.expansion_polygon_get()
-        expansion_module: Module2D = Module2D("Romi_Expansion_Polygon_Module", [expansion_polygon])
+        expansion_module: Module2D = Module2D("Romi Expansion Polygon Module", [expansion_polygon])
         scad_program.append(expansion_module)
         if2d.then_append('name == "expansion"',
-                         [UseModule2D("Romi_Expansion_Polygon_Module", expansion_module)])
+                         [UseModule2D("Romi Expansion Polygon Module", expansion_module)])
+
+        # Now construct the base:
+        romi_base_module: Module3D = romi.base_module_get()
+        scad_program.append(romi_base_module)
+        if3d.then_append('name == "romi_base"',
+                         [UseModule3D("Romi Base Module", romi_base_module)])
 
     # Romi.upper_arc_holes_rectangles_get():
     def upper_arc_holes_rectangles_get(self) -> List[SimplePolygon]:
@@ -1800,6 +1916,10 @@ def main() -> int:  # pragma: no cover
 
     # Now construct an if-then-else sequence to showing the desired module:
     scad_program.append(Variable2D("Name", "name", '"romi_base"'))
+
+    # Append the roboto model to *scad_program*:
+    hr2: HR2 = HR2(romi)
+    hr2.scad_program_append(scad_program, if3d)
 
     # Now do the if-then-else sequences for showing models:
     # Lock *if2d* and *if3d* and append them to *scad_program*:
