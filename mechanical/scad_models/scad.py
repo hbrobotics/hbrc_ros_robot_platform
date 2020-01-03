@@ -1671,6 +1671,7 @@ class If2D(Scad2D):
         self.then_clauses: List[Tuple[str, List[Scad2D]]] = [then_clause]
         self.else_scad2ds: Optional[List[Scad2D]] = None
         self.locked: bool = lock
+        self.named_mark_downs: List[Tuple[str, ...]] = []
 
     # If2D.__str__():
     def __str__(self) -> str:
@@ -1701,6 +1702,15 @@ class If2D(Scad2D):
         """Ensure that an If2D is locked."""
         if2d: If2D = self
         if2d.locked = True
+
+    # If2D.name_match:
+    def name_match_append(self, name: str, module2d: Module2D, mark_down: List[str]) -> None:
+        """Append a then clause for mataching a name."""
+        # Append a then clause to *if2d* (i.e. *self*) and remember the *mark_down*:
+        if2d: If2D = self
+        if2d.then_append(f'name == "{name}"', [UseModule2D(f"{name} Use Module", module2d)])
+        named_mark_down: Tuple[str, ...] = (name,) + tuple(mark_down)
+        if2d.named_mark_downs.append(named_mark_down)
 
     # If2D.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
@@ -2370,7 +2380,7 @@ class Color(Scad3D):
         alpha_text: str = "" if alpha >= 1.0 else ",alpha={0:.2f}".format(alpha)
         return f"Color('{name}',{scad3d},'{color_name}'{alpha_text})"
 
-    # If3D.scad_lines_append():
+    # Color.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
         """Append If3D to a list of lines.
 
@@ -2446,6 +2456,7 @@ class If3D(Scad3D):
         self.then_clauses: List[Tuple[str, List[Scad3D]]] = [then_clause]
         self.else_scad3ds: Optional[List[Scad3D]] = None
         self.locked: bool = lock
+        self.named_mark_downs: List[Tuple[str, ...]] = []
 
     # If3D.__str__():
     def __str__(self) -> str:
@@ -2476,6 +2487,15 @@ class If3D(Scad3D):
         """Ensure that an If3D is locked."""
         if3d: If3D = self
         if3d.locked = True
+
+    # If3D.name_match():
+    def name_match_append(self, name: str, module3d: "Module3D", mark_down: List[str]) -> None:
+        """Append a then clause for mataching a name."""
+        # Append a then clause to *if3d* (i.e. *self*) and remember the *mark_down*:
+        if3d: If3D = self
+        if3d.then_append(f'name == "{name}"', [UseModule3D(f"{name} Use Module", module3d)])
+        named_mark_down: Tuple[str, ...] = (name,) + tuple(mark_down)
+        if3d.named_mark_downs.append(named_mark_down)
 
     # If3D.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:

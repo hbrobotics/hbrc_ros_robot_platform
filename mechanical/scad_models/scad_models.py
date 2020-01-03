@@ -10,7 +10,7 @@
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
 from scad_models.scad import (Color, Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
                               Module3D, P2D, P3D, Polygon, Scad, Scad3D, SimplePolygon,
-                              ScadProgram, Square, Translate3D, UseModule2D, UseModule3D,
+                              ScadProgram, Square, Translate3D, UseModule3D,
                               Union3D, Variable2D)
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
@@ -47,8 +47,7 @@ class HR2:
         hr2_robot: Scad3D = hr2.robot_get()
         hr2_robot_module: Module3D = Module3D("HR2 Robot Module", [hr2_robot])
         scad_program.append(hr2_robot_module)
-        if3d.then_append('name == "hr2_robot"',
-                         [UseModule3D("HR2 Robot Use Module", hr2_robot_module)])
+        if3d.name_match_append("hr2_robot", hr2_robot_module, ["Entire HR2 Robot Model"])
 
 
 # MalePinConnector:
@@ -219,8 +218,8 @@ class RaspberryPi3:
         raspi3b_pcb_polygon_module: Module2D = Module2D("RasPi3B_PCB_Polygon_Module",
                                                         [raspi3b_pcb_polygon])
         scad_program.append(raspi3b_pcb_polygon_module)
-        if2d.then_append('name == "raspi3b_pcb"',
-                         [UseModule2D("RasPi3B PCB Polygon", raspi3b_pcb_polygon_module)])
+        if2d.name_match_append("raspi3b_pcb", raspi3b_pcb_polygon_module,
+                               ["Raspberry Pi3B+ PCB Polygon"])
 
         # Construct the green PCB:
         raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
@@ -243,8 +242,7 @@ class RaspberryPi3:
         raspi3b_model_module: Module3D = Module3D("RasPi3B_Model_Module",
                                                   [translated_raspi3b_model])
         scad_program.append(raspi3b_model_module)
-        if3d.then_append('name == "raspi3b_model"',
-                         [UseModule3D("RasPi3B_Model", raspi3b_model_module)])
+        if3d.name_match_append("raspi3b_model", raspi3b_model_module, ["Raspberry Pi 3B+"])
 
 
 # Romi:
@@ -1519,29 +1517,27 @@ class Romi:
         romi_base_polygon_module: Module2D = Module2D("Romi Base Polygon Module",
                                                       [romi_base_polygon])
         scad_program.append(romi_base_polygon_module)
-        if2d.then_append('name == "romi_base_polygon"',
-                         [UseModule2D("Romi Base Polygon", romi_base_polygon_module)])
+        if2d.name_match_append("romi_base_polygon", romi_base_polygon_module,
+                               ["Romi Base Polygon"])
 
         romi_battery_base_polygon: Polygon = romi.battery_base_polygon_get()
         romi_battery_base_polygon_module: Module2D = Module2D("Romi Battery Base Polygon",
                                                               [romi_battery_base_polygon])
         scad_program.append(romi_battery_base_polygon_module)
-        if2d.then_append('name == "romi_battery_base_polygon"',
-                         [UseModule2D("Romi Battery Base Polygon",
-                                      romi_battery_base_polygon_module)])
+        if2d.name_match_append("battery_base_polygon", romi_battery_base_polygon_module,
+                               ["Romi Battery Base Polygon"])
 
         # Next append the *expansion_polygon*:
         expansion_polygon: Polygon = romi.expansion_polygon_get()
         expansion_module: Module2D = Module2D("Romi Expansion Polygon Module", [expansion_polygon])
         scad_program.append(expansion_module)
-        if2d.then_append('name == "expansion"',
-                         [UseModule2D("Romi Expansion Polygon Module", expansion_module)])
+        if2d.name_match_append("romi_expansion",
+                               expansion_module, ["Romi Expansion Chasis Polygon"])
 
         # Now construct the base:
         romi_base_module: Module3D = romi.base_module_get()
         scad_program.append(romi_base_module)
-        if3d.then_append('name == "romi_base"',
-                         [UseModule3D("Romi Base Module", romi_base_module)])
+        if3d.name_match_append("romi_base", romi_base_module, ["Romi Base Polygon"])
 
     # Romi.upper_arc_holes_rectangles_get():
     def upper_arc_holes_rectangles_get(self) -> List[SimplePolygon]:
@@ -1874,8 +1870,7 @@ class RomiMotor:
         romi_motor: RomiMotor = self
         romi_motor_module: Module3D = romi_motor.module_get()
         scad_program.append(romi_motor_module)
-        if3d.then_append('name == "romi_motor"',
-                         [UseModule3D("Romi Motor Use Module", romi_motor_module)])
+        if3d.name_match_append("romi_motor", romi_motor_module, ["Romi Motor"])
 
 
 # OtherPi:
@@ -1991,8 +1986,7 @@ class OtherPi:
         other_pi_pcb_module: Module2D = Module2D("Other_Pi_PCB_Polygon_Module",
                                                  [other_pi_pcb_polygon])
         scad_program.append(other_pi_pcb_module)
-        if2d.then_append('name == "other_pi_pcb"',
-                         [UseModule2D("OtherPi PCB Polygon", other_pi_pcb_module)])
+        if2d.name_match_append("other_pi_pcb", other_pi_pcb_module, ["Other Pi PCB"])
 
         # Now create the *other_pi_module*:
         other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
@@ -2013,8 +2007,7 @@ class OtherPi:
         other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module",
                                                    [translated_other_pi_model])
         scad_program.append(other_pi_model_module)
-        if3d.then_append('name == "otherpi_model"',
-                         [UseModule3D("OtherPi_Model", other_pi_model_module)])
+        if3d.name_match_append("otherpi_model", other_pi_model_module, ["Other Pi"])
 
 
 def main() -> int:  # pragma: no cover
@@ -2075,5 +2068,53 @@ def main() -> int:  # pragma: no cover
     scad_file: IO[Any]
     with open("scad_models.scad", "w") as scad_file:
         scad_file.write(scad_text)
+
+    # Collect all of the name information from *if2d* and *if3d* and sort it by name:
+    all_named_mark_downs: List[Tuple[str, ...]] = if2d.named_mark_downs + if3d.named_mark_downs
+    all_named_mark_downs.sort()
+
+    # Update the `README.md` to list all of the acceptable views for `OpenSCAD`:
+    # Read in `README.md` and split it into *read_me_lines*:
+    read_me_text: str
+    with open("README.md") as read_me_file:
+        read_me_text = read_me_file.read()
+    read_me_lines: List[str] = read_me_text.split('\n')
+
+    # Search *readme_lines* for the lines to be replaced:
+    end_index: int = -1
+    start_index: int = -1
+    read_me_line_index: int
+    read_me_line: str
+    for read_me_line_index, read_me_line in enumerate(read_me_lines):
+        if read_me_line.endswith('>') and read_me_line.endswith("<!-- NAME list starts here. -->"):
+            start_index = read_me_line_index + 1
+        if start_index >= 0 and read_me_line.startswith("  After"):
+            end_index = read_me_line_index
+            break
+    assert start_index >= 0 and end_index >= 0, "README.md is broken"
+
+    # Extract *before_lines*, *previous_middle_lines*, and *after_lines*:
+    before_lines: List[str] = read_me_lines[:start_index]
+    previous_middle_lines: List[str] = read_me_lines[start_index:end_index]
+    after_lines: List[str] = read_me_lines[end_index:]
+
+    # Construct *new_middle_lines*:
+    new_middle_lines: List[str] = []
+    named_mark_down: Tuple[str, ...]
+    for named_mark_down in all_named_mark_downs:
+        name: str = named_mark_down[0]
+        new_middle_lines.append("")
+        new_middle_lines.append(f"  * `{name}`:")
+        mark_down_line: str
+        for mark_down_line in named_mark_down[1:]:
+            new_middle_lines.append(f"    {mark_down_line}")
+    new_middle_lines.append("")
+
+    # Output updated `README.md` if anything has changed:
+    if previous_middle_lines != new_middle_lines:
+        new_lines: List[str] = before_lines + new_middle_lines + after_lines + [""]
+        new_read_me_text: str = '\n'.join(new_lines)
+        with open("README.md", "w") as read_me_file:
+            read_me_file.write(new_read_me_text)
 
     return 0

@@ -305,6 +305,19 @@ def test_if2d() -> None:
     assert scad_lines[1] == " circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
     assert scad_lines[2] == "}  // End If2D 'If2D 2'", "[2]!"
 
+    # Do a quick test of the *name_match_append* method:
+    empty_module2d: Module2D = Module2D("Empty Module", [])
+    if2d_name_match: If2D = If2D("Name Match IF2D", 'name == ""', [])
+    if2d_name_match.name_match_append("random_name", empty_module2d, ["Line 1", "Line2"])
+    if2d_name_match.lock()
+    scad_lines = []
+    if2d_name_match.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 4
+    assert scad_lines[0] == "if (name == \"\") {  // If2D 'Name Match IF2D'", "[0]!"
+    assert scad_lines[1] == '} else if (name == "random_name") {', "[1]!"
+    assert scad_lines[2] == " Empty_Module(); // UseModule2D('random_name Use Module')", "[2]!"
+    assert scad_lines[3] == "}  // End If2D 'Name Match IF2D'", "[3]!"
+
 
 def test_if3d() -> None:
     """Test If3D class."""
@@ -396,6 +409,19 @@ def test_if3d() -> None:
     assert scad_lines[3] == "  circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[3]!"
     assert scad_lines[4] == " // End LinearExtrude 'Extuded Circle 1'", "[4]!"
     assert scad_lines[5] == "}  // End If3D 'If3D 2'", "[5]!"
+
+    # Do a quick test of the *name_match_append* method:
+    empty_module3d: Module3D = Module3D("Empty Module", [])
+    if3d_name_match: If3D = If3D("Name Match IF3D", 'name == ""', [])
+    if3d_name_match.name_match_append("random_name", empty_module3d, ["Line 1", "Line2"])
+    if3d_name_match.lock()
+    scad_lines = []
+    if3d_name_match.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 4
+    assert scad_lines[0] == "if (name == \"\") {  // If3D 'Name Match IF3D'", "[0]!"
+    assert scad_lines[1] == '} else if (name == "random_name") {', "[1]!"
+    assert scad_lines[2] == " Empty_Module(); // UseModule3D('random_name Use Module')", "[2]!"
+    assert scad_lines[3] == "}  // End If3D 'Name Match IF3D'", "[3]!"
 
 
 def test_linear_extrude() -> None:
