@@ -25,9 +25,9 @@
 # <----------------------------------------100 Characters----------------------------------------> #
 
 import io
-from math import pi
-from scad_models.scad import (Circle, Color, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
-                              Module3D, P2D, P3D, Polygon, Rotate3D, Scad3D, ScadProgram,
+from math import pi, sqrt
+from scad_models.scad import (Circle, Color, CornerCube, Cube, Cylinder, If2D, If3D, LinearExtrude,
+                              Module2D, Module3D, P2D, P3D, Polygon, Rotate3D, Scad3D, ScadProgram,
                               SimplePolygon, Square, Translate3D, Union3D, UseModule2D,
                               UseModule3D, Variable2D)
 import scad_models.scad as scad
@@ -190,6 +190,48 @@ def test_corner_cube() -> None:
         assert False, "This line should never be reached"  # pragma: no cover
     except ValueError as value_error:
         assert f"{value_error}" == "CornerCube 'CornerCube DZ=0' has dz of 0.0"
+
+
+def test_cylinder() -> None:
+    """Test Cylinder class."""
+    # Do the simplest cylinder command possible:
+    one_above: P3D = P3D(0.0, 0.0, 1.0)
+    one_below: P3D = P3D(0.0, 0.0, -1.0)
+    centered_cylinder: Cylinder = Cylinder("Centered Cylinder", 1.0, one_below, one_above, 16)
+    assert f"{centered_cylinder}" == ("Cylinder('Centered Cylinder',1.0,"
+                                      "P3D(0.000,0.000,-1.000),P3D(0.000,0.000,1.000),16)")
+    scad_lines: List[str] = []
+    centered_cylinder.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 1
+    assert scad_lines[0] == ("  cylinder(h = 2.000, d = 1.000, $fn = 16, center = true});  "
+                             "// Cylinder: 'Centered Cylinder'"), "[0]!"
+
+    # Now do a translated cylinder:
+    origin: P3D = P3D(0.0, 0.0, 0.0)
+    origin_start_cylinder: Cylinder = Cylinder("Origin Start Cylinder", 1.0, origin, one_above, 16)
+    scad_lines = []
+    origin_start_cylinder.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 2
+    assert scad_lines[0] == "translate(v = [0.000, 0.000, 0.500])", "[0]!"
+    assert scad_lines[1] == ("  cylinder(h = 1.000, d = 1.000, $fn = 16, center = true});  "
+                             "// Cylinder: 'Origin Start Cylinder'"), "[1]!"
+
+    # Now do x_axis cylinder:
+    x_axis: P3D = P3D(1.0, 0.0, 0.0)
+    x_axis_cylinder: Cylinder = Cylinder("X Axis Cylinder", 1.0, -x_axis, x_axis, 16)
+    scad_lines = []
+    x_axis_cylinder.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 2
+    assert scad_lines[0] == " rotate(a = 90.0, v = [0.000, 2.000, 0.000])", "[0]!"
+    assert scad_lines[1] == ("  cylinder(h = 2.000, d = 1.000, $fn = 16, center = true});  "
+                             "// Cylinder: 'X Axis Cylinder'"), "[1]!"
+
+    # Make sure we detect zero height cylinder:
+    try:
+        Cylinder("Zero Height Cylinder", 1.0, origin, origin, 16)
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Cylinder 'Zero Height Cylinder' does not have positive height."
 
 
 def test_if2d() -> None:
@@ -563,6 +605,20 @@ def test_p3d() -> None:
 
     # Division scaling:
     assert f"{p123 / 2.0}" == "P3D(0.500,1.000,1.500)"
+
+    # Verify that dot product works:
+    assert p123.dot(p123) == 1.0 + 4.0 + 9.0
+
+    # Verify that unitary X cross unitary Y yields unitary Z:
+    unitary_x: P3D = P3D(1.0, 0.0, 0.0)
+    unitary_y: P3D = P3D(0.0, 1.0, 0.0)
+    unitary_z: P3D = unitary_x.cross(unitary_y)
+    assert unitary_z.x == 0.0
+    assert unitary_z.y == 0.0
+    assert unitary_z.z == 1.0
+
+    # Verify that length works:
+    assert p123.length() == sqrt(14.0)
 
 
 def test_polygon() -> None:

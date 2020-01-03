@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from scad_models.scad_models import HR2, OtherPi, RaspberryPi3, Romi
+from scad_models.scad_models import HR2, OtherPi, RaspberryPi3, Romi, RomiMotor
 from scad_models.scad import If2D, If3D, ScadProgram
 
 
@@ -56,6 +56,15 @@ def test_romi():
     if3d: If3D = If3D("If3D If/Then/Else", "false", [])
     romi.scad_program_append(scad_program, if2d, if3d)
     romi.holes_slots_rectangles_write()
+
+
+# test_romi_motor():
+def test_romi_motor():
+    """Test RomiMotor class."""
+    romi_motor: RomiMotor = RomiMotor()
+    scad_program: ScadProgram = ScadProgram("Top Level program")
+    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
+    romi_motor.scad_program_append(scad_program, if3d)
 
 
 # test_other_pi():

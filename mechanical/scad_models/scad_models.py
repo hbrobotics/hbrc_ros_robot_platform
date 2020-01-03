@@ -1743,6 +1743,141 @@ class Romi:
             Scad.keys_html_file_write(romi_base_keys, html_file, "Romi Base Holes and Rectangles")
 
 
+# RomiMotor:
+class RomiMotor:
+    """Represents the RomiMotor."""
+
+    # RomiMotor.__init__():
+    def __init__(self):
+        """Initialize RomiMotor."""
+        inches2mm: float = 25.4
+
+        # Various values off of the Top view of the `.dxf` file.
+        # Start grabbing some X values:
+        west_motor_casing_x: float = -6.326134 * inches2mm
+        gearbox_motor_casing_x: float = -5.782827 * inches2mm
+        east_motor_shaft_x: float = -5.083217 * inches2mm
+        self.gearbox_casing_dx: float = abs(gearbox_motor_casing_x - west_motor_casing_x)
+        self.motor_casing_dx: float = abs(west_motor_casing_x - gearbox_motor_casing_x)
+        self.motor_shaft_dx: float = abs(east_motor_shaft_x - west_motor_casing_x)
+
+        # Start grabbing some Y values:
+        # Start with the *wheel_shaft_diameter*:
+        north_wheel_shaft_y: float = -1.372201 * inches2mm
+        south_wheel_shaft_y: float = -1.399756 * inches2mm
+        self.wheel_shaft_diameter: float = (north_wheel_shaft_y - south_wheel_shaft_y) / 2.0
+
+        # Next: Read off the *motor_shaft_diameter*:
+        north_motor_shaft_y: float = 2.967165 * inches2mm
+        south_motor_shaft_y: float = 2.908110 * inches2mm
+        self.motor_shaft_diameter: float = (north_motor_shaft_y - south_motor_shaft_y) / 2.0
+
+        # Read off the *motor_casing_dy*:
+        north_motor_casing_y: float = 3.382512 * inches2mm
+        south_motor_casing_y: float = 2.492748 * inches2mm
+        self.motor_casing_dy: float = (north_motor_casing_y + south_motor_casing_y) / 2.0
+
+        # Read off the *gearbox_casing_dy*:
+        north_gearbox_casing_y: float = 3.331331 * inches2mm
+        south_gearbox_casing_y: float = 2.543929 * inches2mm
+        self.gearbox_casing_dy: float = (north_gearbox_casing_y + south_gearbox_casing_y) / 2.0
+
+        # Both the motor shaft and wheel shaft are *DEFINED* to be at Y=0.0, so we can
+        # easily compute the Y offsets:
+        self.motor_shaft_y_offset: float = (north_motor_shaft_y + south_motor_shaft_y) / 2.0
+        self.wheel_shaft_y_offset: float = (north_wheel_shaft_y + south_wheel_shaft_y) / 2.0
+
+        # Now capture the north electrical tabs:
+        north_upper_electrical_y: float = 3.208303 * inches2mm
+        north_lower_electrical_y: float = 3.188610 * inches2mm
+        north_electrical_dy: float = (north_upper_electrical_y - north_lower_electrical_y) / 2.0
+        self.north_electrical_y: float = (north_upper_electrical_y + north_lower_electrical_y) / 2.0
+
+        # Now capture the south electrical tab:
+        south_upper_electrical_y: float = 2.686650 * inches2mm
+        south_lower_electrical_y: float = 2.666957 * inches2mm
+        south_electrical_dy: float = (south_upper_electrical_y - south_lower_electrical_y) / 2.0
+        self.south_electrical_y: float = (south_upper_electrical_y + south_lower_electrical_y) / 2.0
+
+        # Compute *electrical_dy*:
+        self.electrical_dy: float = (north_electrical_dy + south_electrical_dy) / 2.0
+
+        # Read off off `.dxf` Front view:
+        # Do some Z dimensions:
+
+        # Start with motor wheel shaft:
+        top_motor_wheel_shaft_z: float = -2.642319 * inches2mm
+        bottom_motor_wheel_shaft_z: float = -2.760429 * inches2mm
+        self.wheel_shaft_diameter: float = (top_motor_wheel_shaft_z -
+                                            bottom_motor_wheel_shaft_z) / 2.0
+        # Remember: the wheel shaft is *DEFINED* as Z=0.0:
+        wheel_shaft_z = (top_motor_wheel_shaft_z + bottom_motor_wheel_shaft_z) / 2.0
+
+        # Grab the electrical tab locations:
+        top_electrical_tab_z: float = -1.842126 * inches2mm
+        bottom_electrical_tab_z: float = -1.926776 * inches2mm
+        self.electrical_tab_dz: float = (top_electrical_tab_z - bottom_electrical_tab_z) / 2.0
+        self.electrical_tab_z: float = ((top_electrical_tab_z + bottom_electrical_tab_z) / 2.0 -
+                                        wheel_shaft_z)
+        # By inferencece, the *motor_shaft_z* is the same:
+        self.motor_shaft_z: float = self.electrical_tab_z
+
+        # Compute *motor_casing_dz*:
+        top_motor_casing_z: float = -1.658071 * inches2mm
+        bottom_motor_casing_z: float = -2.110835 * inches2mm
+        self.motor_casing_dz: float = (top_motor_casing_z + bottom_motor_casing_z) / 2.0
+
+        # Compute *gearbox_casing_dz* realizing that the bottom of the gearbox is
+        # a half circle of diameter *gearbox_casing_dy*:
+        self.gearbox_casing_dz: float = (top_motor_casing_z - wheel_shaft_z +
+                                         self.gearbox_casing_dy / 2.0)
+
+        # Remember the relative distance for the base relative to the wheel shaft:
+        self.base_bottom_z = -3.469098 * inches2mm - wheel_shaft_z
+        self.base_top_z = -2.701374 * inches2mm - wheel_shaft_z
+
+        # Measure wheel shaft length using calipers:
+        self.wheel_shaft_length: float = 9.75
+
+        # Reserve a place for the actual motor as a *Module3D* object:
+        self.module3d: Optional[Module3D] = None
+
+    # RomiMotor.module_get():
+    def module_get(self) -> Module3D:
+        """Return motor as a Module3D."""
+        # Grab values from *romi_motor* (i.e. *self*):
+        romi_motor: RomiMotor = self
+        gearbox_casing_dx: float = romi_motor.gearbox_casing_dx
+        gearbox_casing_dy: float = romi_motor.gearbox_casing_dy
+        gearbox_casing_dz: float = romi_motor.gearbox_casing_dz
+
+        module3d: Optional[Module3D] = romi_motor.module3d
+        if module3d is None:
+            # Compute the module3d:
+            self.module3d = module3d
+
+            # Start with a cube of material
+            gearbox: Cube = Cube("Gearbox", gearbox_casing_dx, gearbox_casing_dy, gearbox_casing_dz)
+
+            # Create a *union3d* to store all of the parts into:
+            union3d: Union3D = Union3D("Romi Motor Union 3D", [gearbox])
+
+            # Convert it into a named moduled:
+            module3d = Module3D("Romi Motor Module", [union3d])
+
+        assert module3d is not None
+        return module3d
+
+    # RomiMotor.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram, if3d: If3D) -> None:
+        """Append RomiMotor to ScadProgram."""
+        romi_motor: RomiMotor = self
+        romi_motor_module: Module3D = romi_motor.module_get()
+        scad_program.append(romi_motor_module)
+        if3d.then_append('name == "romi_motor"',
+                         [UseModule3D("Romi Motor Use Module", romi_motor_module)])
+
+
 # OtherPi:
 class OtherPi:
     """Represents a different SBC compatible with Raspberry Pi."""
@@ -1916,6 +2051,10 @@ def main() -> int:  # pragma: no cover
 
     # Now construct an if-then-else sequence to showing the desired module:
     scad_program.append(Variable2D("Name", "name", '"romi_base"'))
+
+    # Append the *romi_motor* module to *scad_program*:
+    romi_motor: RomiMotor = RomiMotor()
+    romi_motor.scad_program_append(scad_program, if3d)
 
     # Append the roboto model to *scad_program*:
     hr2: HR2 = HR2(romi)

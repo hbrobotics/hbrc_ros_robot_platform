@@ -52,7 +52,7 @@ The basic class tree is:
 # <----------------------------------------100 Characters----------------------------------------> #
 
 # Import stuff from other libraries:
-from math import ceil, cos, degrees, pi, sin, sqrt
+from math import acos, ceil, cos, degrees, pi, sin, sqrt
 from typing import Any, Callable, IO, List, Optional, Set, Tuple
 
 
@@ -83,6 +83,14 @@ class P3D:
         # Use *p3d* instead of *self*:
         p3d: P3D = self
         return P3D(p3d.x * scale, p3d.y * scale, p3d.z * scale)
+
+    # P3D.__neg__():
+    def __neg__(self) -> "P3D":
+        """Return the negative of of a point."""
+        # USe *p3d* insetead of *self*:
+        p3d: P3D = self
+        negative: P3D = P3D(-p3d.x, -p3d.y, -p3d.z)
+        return negative
 
     # P3D.__rmul__():
     def __rmul__(self, scale: float) -> "P3D":
@@ -117,14 +125,40 @@ class P3D:
         p3d: P3D = self
         return P3D(p3d.x / scale, p3d.y / scale, p3d.z / scale)
 
+    # P3D.cross():
+    def cross(self, p3d2: "P3D") -> "P3D":
+        """Return the cross product of 2 points."""
+        p3d1: P3D = self
+        return P3D(p3d1.y * p3d2.z - p3d1.z * p3d2.y,
+                   p3d1.z * p3d2.x - p3d1.x * p3d2.z,
+                   p3d1.x * p3d2.y - p3d1.y * p3d2.x)
+
+    # P3D.dot():
+    def dot(self, p3d2: "P3D") -> float:
+        """Return the dot product of 2 points."""
+        p3d1: P3D = self
+        dot_product: float = p3d1.x * p3d2.x + p3d1.y * p3d2.y + p3d1.z * p3d2.z
+        return dot_product
+
     # P3D.distance():
-    def distance(self, p3d2) -> float:
+    def distance(self, p3d2: "P3D") -> float:
         """Compute the distance between two p3ds."""
         p3d1: P3D = self
         dx: float = p3d1.x - p3d2.x
         dy: float = p3d1.y - p3d2.y
         dz: float = p3d1.z - p3d2.z
-        return sqrt(dx * dx + dy * dy + dz * dz)
+        total_distance: float = sqrt(dx * dx + dy * dy + dz * dz)
+        return total_distance
+
+    # P3D.length():
+    def length(self) -> float:
+        """Return the distance from origin to a point."""
+        p3d: P3D = self
+        x: float = p3d.x
+        y: float = p3d.y
+        z: float = p3d.z
+        total_length: float = sqrt(x * x + y * y + z * z)
+        return total_length
 
 
 # P2D:
@@ -2136,6 +2170,90 @@ class Scad3D(Scad):
     def __init__(self, name: str) -> None:
         """Set the name of the 3-dimensional SCAD object."""
         super().__init__(name)
+
+
+# Cylinder:
+class Cylinder(Scad3D):
+    """Represents a cylinder in 3D space."""
+
+    # Cylinder.__init__():
+    def __init__(self, name: str, diameter: float, start_point: P3D, end_point: P3D,
+                 sides: int) -> None:
+        """Initialize Cylinder."""
+        # Initialize parent *Scad3D* class first:
+        super().__init__(name)
+        # Verify that the cylinder has a positive height:
+        height: float = start_point.distance(end_point)
+        if height <= 0.0:
+            raise ValueError(f"Cylinder '{name}' does not have positive height.")
+
+        # Stuff values into *cylinder* (i.e. *self*):
+        # cylinder: Cylinder = self
+        self.diameter: float = diameter
+        self.end_point: P3D = end_point
+        self.sides: int = sides
+        self.start_point: P3D = start_point
+
+    # Cylinder.__str__():
+    def __str__(self) -> str:
+        """Return string representation of Cylinder."""
+        # Grab some values from *cylinder* (i.e. *self*):
+        cylinder: Cylinder = self
+        diameter: float = cylinder.diameter
+        end_point: P3D = cylinder.end_point
+        name: str = cylinder.name
+        sides: int = cylinder.sides
+        start_point: P3D = cylinder.start_point
+        return f"Cylinder('{name}',{diameter},{start_point},{end_point},{sides})"
+
+    # Cylinder.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append OpenScad commands for cylinder to lines list."""
+        # Grab some values from *cylinder* (i.e. *self*):
+        cylinder: Cylinder = self
+        diameter: float = cylinder.diameter
+        end_point: P3D = cylinder.end_point
+        name: str = cylinder.name
+        sides: int = cylinder.sides
+        start_point: P3D = cylinder.start_point
+
+        height_vector: P3D = end_point - start_point
+        height: float = height_vector.length()
+        # Some algebra:
+        #     (1) dot(A, B) = |A| * |B| * cos(theta)
+        #     (2) dot(A, B) / (|A| * |B|) = cos(theta)
+        #     (3) theta = acos(dot(A, B) / (|A| * |B|))
+        # Now, let B be the unit length Z axis (i.e. (0, 0, 1)):
+        #     (4) theta = acos(dot(A, [0,0,1]) / (|A| * |[0,0,1]|))
+        #     (5) theta = acos((Ax*0 + Ay*0 + Az*1) / (|A| * 1))
+        #     (6) theta = acos(Az / |A|)
+        z_axis_angle: float = acos(height_vector.z / height)
+
+        # Output an OpenSCAD translate command if needed:
+        float_format: Callable[[float], str] = Scad.float_format
+        center_point: P3D = (start_point + end_point) / 2.0
+        if center_point.x != 0.0 or center_point.y != 0.0 or center_point.z != 0.0:
+            scad_lines.append(f"{indent}translate(v = ["
+                              f"{float_format(center_point.x)}, "
+                              f"{float_format(center_point.y)}, "
+                              f"{float_format(center_point.z)}])")
+
+        # Output an OpenSCAD rotate command if needed:
+        if z_axis_angle != 0.0:
+            # We need to rotate by an angle.  We use a cross product to compute a *rotate_axis*:
+            rotate_axis: P3D = P3D(0.0, 0.0, 1.0).cross(height_vector)
+            scad_lines.append(f"{indent} rotate(a = {z_axis_angle * 180.0 / pi}, "
+                              f"v = [{float_format(rotate_axis.x)}, "
+                              f"{float_format(rotate_axis.y)}, "
+                              f"{float_format(rotate_axis.z)}])")
+
+        # Output an OpenSCAD cylinder command:
+        scad_lines.append(f"{indent}  cylinder("
+                          f"h = {float_format(height)}, "
+                          f"d = {float_format(diameter)}, "
+                          f"$fn = {sides}, "
+                          "center = true});  "
+                          f"// Cylinder: '{name}'")
 
 
 # Cube:
