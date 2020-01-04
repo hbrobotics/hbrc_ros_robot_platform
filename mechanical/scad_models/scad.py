@@ -369,7 +369,7 @@ class Scad:
             "DarkOrange",
             "Orange",
             # Yellows:
-            " Gold",
+            "Gold",
             "Yellow",
             "LightYellow",
             "LemonChiffon",
