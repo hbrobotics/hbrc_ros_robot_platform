@@ -203,7 +203,7 @@ def test_cylinder() -> None:
     scad_lines: List[str] = []
     centered_cylinder.scad_lines_append(scad_lines, "")
     assert len(scad_lines) == 1
-    assert scad_lines[0] == ("  cylinder(h = 2.000, d = 1.000, $fn = 16, center = true});  "
+    assert scad_lines[0] == ("  cylinder(h = 2.000, d = 1.000, $fn = 16, center = true);  "
                              "// Cylinder: 'Centered Cylinder'"), "[0]!"
 
     # Now do a translated cylinder:
@@ -213,7 +213,7 @@ def test_cylinder() -> None:
     origin_start_cylinder.scad_lines_append(scad_lines, "")
     assert len(scad_lines) == 2
     assert scad_lines[0] == "translate(v = [0.000, 0.000, 0.500])", "[0]!"
-    assert scad_lines[1] == ("  cylinder(h = 1.000, d = 1.000, $fn = 16, center = true});  "
+    assert scad_lines[1] == ("  cylinder(h = 1.000, d = 1.000, $fn = 16, center = true);  "
                              "// Cylinder: 'Origin Start Cylinder'"), "[1]!"
 
     # Now do x_axis cylinder:
@@ -223,7 +223,7 @@ def test_cylinder() -> None:
     x_axis_cylinder.scad_lines_append(scad_lines, "")
     assert len(scad_lines) == 2
     assert scad_lines[0] == " rotate(a = 90.0, v = [0.000, 2.000, 0.000])", "[0]!"
-    assert scad_lines[1] == ("  cylinder(h = 2.000, d = 1.000, $fn = 16, center = true});  "
+    assert scad_lines[1] == ("  cylinder(h = 2.000, d = 1.000, $fn = 16, center = true);  "
                              "// Cylinder: 'X Axis Cylinder'"), "[1]!"
 
     # Make sure we detect zero height cylinder:

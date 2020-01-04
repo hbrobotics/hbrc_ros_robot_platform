@@ -2262,7 +2262,7 @@ class Cylinder(Scad3D):
                           f"h = {float_format(height)}, "
                           f"d = {float_format(diameter)}, "
                           f"$fn = {sides}, "
-                          "center = true});  "
+                          "center = true);  "
                           f"// Cylinder: '{name}'")
 
 

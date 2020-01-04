@@ -1,6 +1,6 @@
 # <--------------------------------------- 100 characters ---------------------------------------> #
 
-"""Code to genarate and openscad model of the Pololu Romi Base."""
+"""Code genarates an OpenSCAD model for HR2 (HBRC ROS Robot)."""
 
 # Pumpkin Pi: 104mm x 70mm.  Holes are the same as the Raspberry Pi with the upper left
 # hole in the upper left corner of the PCB.  The extra PCB space goes to the right and
@@ -8,10 +8,10 @@
 
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
-from scad_models.scad import (Color, Circle, CornerCube, Cube, If2D, If3D, LinearExtrude, Module2D,
-                              Module3D, P2D, P3D, Polygon, Scad, Scad3D, SimplePolygon,
-                              ScadProgram, Square, Translate3D, UseModule3D,
-                              Union3D, Variable2D)
+from scad_models.scad import (Color, Circle, CornerCube, Cube, Cylinder, If2D, If3D,
+                              LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon,
+                              Scad, Scad3D, SimplePolygon, ScadProgram, Square, Translate3D,
+                              UseModule3D, Union3D, Variable2D)
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -1750,12 +1750,12 @@ class RomiMotor:
 
         # Various values off of the Top view of the `.dxf` file.
         # Start grabbing some X values:
-        west_motor_casing_x: float = -6.326134 * inches2mm
-        gearbox_motor_casing_x: float = -5.782827 * inches2mm
-        east_motor_shaft_x: float = -5.083217 * inches2mm
-        self.gearbox_casing_dx: float = abs(gearbox_motor_casing_x - west_motor_casing_x)
-        self.motor_casing_dx: float = abs(west_motor_casing_x - gearbox_motor_casing_x)
-        self.motor_shaft_dx: float = abs(east_motor_shaft_x - west_motor_casing_x)
+        motor_shaft_east_x: float = -5.083217 * inches2mm
+        motor_casing_west_x: float = -5.253299 * inches2mm
+        gearbox_motor_casing_x: float = -5.782827 * inches2mm  # Gearbox/motor casing interface X
+        self.gearbox_casing_dx: float = abs(gearbox_motor_casing_x - motor_casing_west_x)
+        self.motor_casing_dx: float = abs(motor_casing_west_x - gearbox_motor_casing_x)
+        self.motor_shaft_dx: float = abs(motor_shaft_east_x - motor_casing_west_x)
 
         # Start grabbing some Y values:
         # Start with the *wheel_shaft_diameter*:
@@ -1764,23 +1764,25 @@ class RomiMotor:
         self.wheel_shaft_diameter: float = (north_wheel_shaft_y - south_wheel_shaft_y) / 2.0
 
         # Next: Read off the *motor_shaft_diameter*:
-        north_motor_shaft_y: float = 2.967165 * inches2mm
-        south_motor_shaft_y: float = 2.908110 * inches2mm
-        self.motor_shaft_diameter: float = (north_motor_shaft_y - south_motor_shaft_y) / 2.0
+        motor_shaft_north_y: float = 2.967165 * inches2mm
+        motor_shaft_south_y: float = 2.908110 * inches2mm
+        self.motor_shaft_diameter: float = abs(motor_shaft_north_y - motor_shaft_south_y)
 
         # Read off the *motor_casing_dy*:
-        north_motor_casing_y: float = 3.382512 * inches2mm
-        south_motor_casing_y: float = 2.492748 * inches2mm
-        self.motor_casing_dy: float = (north_motor_casing_y + south_motor_casing_y) / 2.0
+        motor_casing_north_y: float = 3.382512 * inches2mm
+        motor_casing_south_y: float = 2.492748 * inches2mm
+        self.motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
 
         # Read off the *gearbox_casing_dy*:
-        north_gearbox_casing_y: float = 3.331331 * inches2mm
-        south_gearbox_casing_y: float = 2.543929 * inches2mm
-        self.gearbox_casing_dy: float = (north_gearbox_casing_y + south_gearbox_casing_y) / 2.0
+        gearbox_casing_north_y: float = 3.331331 * inches2mm
+        gearbox_casing_south_y: float = 2.543929 * inches2mm
+        gearbox_casing_dy: float = abs(gearbox_casing_north_y - gearbox_casing_south_y)
+        # print(f"gearbox_casing_dy={gearbox_casing_dy}")
+        self.gearbox_casing_dy: float = gearbox_casing_dy
 
         # Both the motor shaft and wheel shaft are *DEFINED* to be at Y=0.0, so we can
         # easily compute the Y offsets:
-        self.motor_shaft_y_offset: float = (north_motor_shaft_y + south_motor_shaft_y) / 2.0
+        self.motor_shaft_y_offset: float = (motor_shaft_north_y + motor_shaft_south_y) / 2.0
         self.wheel_shaft_y_offset: float = (north_wheel_shaft_y + south_wheel_shaft_y) / 2.0
 
         # Now capture the north electrical tabs:
@@ -1818,22 +1820,28 @@ class RomiMotor:
         # By inferencece, the *motor_shaft_z* is the same:
         self.motor_shaft_z: float = self.electrical_tab_z
 
-        # Compute *motor_casing_dz*:
-        top_motor_casing_z: float = -1.658071 * inches2mm
-        bottom_motor_casing_z: float = -2.110835 * inches2mm
-        self.motor_casing_dz: float = (top_motor_casing_z + bottom_motor_casing_z) / 2.0
+        # Compute *motor_casing_dz*, *top_motor_casing_z*, and *bottom_motor_casing_z*:
+        motor_casing_top_z: float = -1.658071 * inches2mm - wheel_shaft_z
+        motor_casing_bottom_z: float = -2.110835 * inches2mm - wheel_shaft_z
+        self.motor_casing_dz: float = (motor_casing_top_z + motor_casing_bottom_z) / 2.0
+        self.motor_casing_top_z = motor_casing_top_z
+        self.motor_casing_bottom_z = motor_casing_bottom_z
 
-        # Compute *gearbox_casing_dz* realizing that the bottom of the gearbox is
-        # a half circle of diameter *gearbox_casing_dy*:
-        self.gearbox_casing_dz: float = (top_motor_casing_z - wheel_shaft_z +
-                                         self.gearbox_casing_dy / 2.0)
+        # Compute *gearbox_casing_dz* realizing the top half goes from the wheel axle (i.e. Y==0)
+        # and the bottom half is a half circle of diameter *gearbox_casing_dy*:
+        gearbox_casing_top_z: float = motor_casing_top_z
+        gearbox_casing_dz: float = (gearbox_casing_top_z + gearbox_casing_dy / 2.0)
+        gearbox_casing_bottom_z: float = gearbox_casing_top_z - gearbox_casing_dz
+        self.gearbox_casing_bottom_z: float = gearbox_casing_bottom_z
+        self.gearbox_casing_dz: float = gearbox_casing_dz
+        self.gearbox_casing_top_z: float = gearbox_casing_top_z
 
         # Remember the relative distance for the base relative to the wheel shaft:
         self.base_bottom_z = -3.469098 * inches2mm - wheel_shaft_z
         self.base_top_z = -2.701374 * inches2mm - wheel_shaft_z
 
-        # Measure wheel shaft length using calipers:
-        self.wheel_shaft_length: float = 9.75
+        # Measure *wheel_shaft_dx* length using calipers:
+        self.wheel_shaft_dx: float = 9.75
 
         # Reserve a place for the actual motor as a *Module3D* object:
         self.module3d: Optional[Module3D] = None
@@ -1845,7 +1853,18 @@ class RomiMotor:
         romi_motor: RomiMotor = self
         gearbox_casing_dx: float = romi_motor.gearbox_casing_dx
         gearbox_casing_dy: float = romi_motor.gearbox_casing_dy
-        gearbox_casing_dz: float = romi_motor.gearbox_casing_dz
+        gearbox_casing_bottom_z: float = romi_motor.gearbox_casing_bottom_z
+        gearbox_casing_top_z: float = romi_motor.gearbox_casing_top_z
+        motor_casing_dx: float = romi_motor.motor_casing_dx
+        motor_casing_dy: float = romi_motor.motor_casing_dy
+        motor_casing_bottom_z: float = romi_motor.motor_casing_bottom_z
+        motor_shaft_diameter: float = romi_motor.motor_shaft_diameter
+        motor_shaft_dx: float = romi_motor.motor_shaft_dx
+        motor_shaft_z: float = romi_motor.motor_shaft_z
+        # motor_casing_dz: float = romi_motor.motor_casing_dz
+        motor_casing_top_z: float = romi_motor.motor_casing_top_z
+        wheel_shaft_diameter: float = romi_motor.wheel_shaft_diameter
+        wheel_shaft_dx: float = romi_motor.wheel_shaft_dx
 
         module3d: Optional[Module3D] = romi_motor.module3d
         if module3d is None:
@@ -1853,10 +1872,40 @@ class RomiMotor:
             self.module3d = module3d
 
             # Start with a cube of material
-            gearbox: Cube = Cube("Gearbox", gearbox_casing_dx, gearbox_casing_dy, gearbox_casing_dz)
+            gearbox_casing: CornerCube = CornerCube("Gearbox Casing",
+                                                    P3D(-gearbox_casing_dx,
+                                                        -gearbox_casing_dy/2.0,
+                                                        gearbox_casing_bottom_z),
+                                                    P3D(0.0,
+                                                        gearbox_casing_dy/2.0,
+                                                        gearbox_casing_top_z))
+
+            motor_casing: CornerCube = CornerCube("Motor Casing",
+                                                  P3D(0.0,
+                                                      -motor_casing_dy/2.0,
+                                                      motor_casing_top_z),
+                                                  P3D(motor_casing_dx,
+                                                      motor_casing_dy/2.0,
+                                                      motor_casing_bottom_z))
+
+            motor_shaft: Cylinder = Cylinder("Motor Shaft", motor_shaft_diameter,
+                                             P3D(motor_casing_dx,
+                                                 0.0, motor_shaft_z),
+                                             P3D(motor_casing_dx + motor_shaft_dx,
+                                                 0.0, motor_shaft_z),
+                                             8)
+
+            wheel_shaft: Cylinder = Cylinder("Wheel Shaft", wheel_shaft_diameter,
+                                             P3D(-gearbox_casing_dx - wheel_shaft_dx, 0.0, 0.0),
+                                             P3D(-gearbox_casing_dx, 0.0, 0.0),
+                                             8)
 
             # Create a *union3d* to store all of the parts into:
-            union3d: Union3D = Union3D("Romi Motor Union 3D", [gearbox])
+            union3d: Union3D = Union3D("Romi Motor Union 3D",
+                                       [Color("Wheat Color", gearbox_casing, "Wheat"),
+                                        Color("Wheat Color", motor_casing, "Wheat"),
+                                        Color("Silver Color", motor_shaft, "Silver"),
+                                        Color("Silver Color", wheel_shaft, "Silver")])
 
             # Convert it into a named moduled:
             module3d = Module3D("Romi Motor Module", [union3d])
