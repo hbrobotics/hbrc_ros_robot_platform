@@ -2023,17 +2023,17 @@ class RomiMotorHolder:
         x_offset: float = (castor_slot_west_x + castor_slot_east_x) / 2.0
 
         # Now grab some X coordinates from west to east for the holder:
-        self.holder_west_x: float = -6.40487 * inches2mm - x_offset
-        self.motor_gearbox_west_x: float = -6.326134 * inches2mm - x_offset
-        self.motor_clip_west_x: float = -6.267075 * inches2mm - x_offset
-        self.motor_clip_east_x: float = -5.991492 * inches2mm - x_offset
-        self.motor_gearbox_east_x: float = -5.782827 * inches2mm - x_offset
-        self.base_clip_west_x: float = -5.704091 * inches2mm - x_offset
-        self.base_clip_east_x: float = -5.62535 * inches2mm - x_offset
+        holder_west_x: float = -6.40487 * inches2mm - x_offset
+        motor_gearbox_west_x: float = -6.326134 * inches2mm - x_offset
+        motor_clip_west_x: float = -6.267075 * inches2mm - x_offset
+        motor_clip_east_x: float = -5.991492 * inches2mm - x_offset
+        motor_gearbox_east_x: float = -5.782827 * inches2mm - x_offset
+        base_clip_west_x: float = -5.704091 * inches2mm - x_offset
+        base_clip_east_x: float = -5.62535 * inches2mm - x_offset
 
         # Lastly the bottom tabs are not really measurable from the `.dxf`, so use calipers:
-        self.west_tab_dx: float = 2.60
-        self.east_tab_dx: float = 2.10
+        west_tab_dx: float = 2.60
+        east_tab_dx: float = 2.10
 
         # Compute the *y_offset* using the wheel shaft:
         wheel_shaft_north_y: float = 2.996693 * inches2mm
@@ -2041,13 +2041,13 @@ class RomiMotorHolder:
         y_offset: float = (wheel_shaft_north_y + wheel_shaft_south_y) / 2.0
 
         # Now grap some Y coodinates from south to north for the holder:
-        self.holder_south_y: float = 2.465193 * inches2mm - y_offset
-        self.motor_gearbox_south_y: float = 2.543929 * inches2mm - y_offset
-        self.clip_lip_south_y: float = 2.642358 * inches2mm - y_offset
-        self.clip_lip_north_y: float = 3.232913 * inches2mm - y_offset
-        self.motor_gearbox_north_y: float = 3.331331 * inches2mm - y_offset
-        self.holder_north_y: float = 3.410067 * inches2mm - y_offset
-        self.base_clip_dy: float = 4.75  # Measured using calipers:
+        holder_south_y: float = 2.465193 * inches2mm - y_offset
+        motor_gearbox_south_y: float = 2.543929 * inches2mm - y_offset
+        clip_lip_south_y: float = 2.642358 * inches2mm - y_offset
+        clip_lip_north_y: float = 3.232913 * inches2mm - y_offset
+        motor_gearbox_north_y: float = 3.331331 * inches2mm - y_offset
+        holder_north_y: float = 3.410067 * inches2mm - y_offset
+        base_clip_dy: float = 4.75  # Measured using calipers:
 
         # Compute the *z_offset* using the wheel shaft:
         wheel_shaft_top_z: float = -2.642319 * inches2mm
@@ -2055,136 +2055,92 @@ class RomiMotorHolder:
         z_offset: float = (wheel_shaft_top_z + wheel_shaft_bottom_z) / 2.0
 
         # Grab some Z coordinates starting from top to bottom:
-        self.clip_top_z: float = -1.559654 * inches2mm - z_offset
-        self.motor_casing_top_z: float = -1.658071 * inches2mm - z_offset
-        self.motor_casing_bottom_z: float = -2.110835 * inches2mm - z_offset
-        self.lip_north_z: float = -2.228945 * inches2mm - z_offset
-        self.lip_south_z: float = -2.622638 * inches2mm - z_offset
-        self.base_clip_top_z: float = -2.560638 * inches2mm - z_offset
-        self.battery_base_top_z: float = -2.701374 * inches2mm - z_offset
-        self.base_top_z: float = -3.095083 * inches2mm - z_offset
-        self.base_bottom_z: float = -3.469098 * inches2mm - z_offset
+        clip_top_z: float = -1.559654 * inches2mm - z_offset
+        motor_casing_top_z: float = -1.658071 * inches2mm - z_offset
+        motor_casing_bottom_z: float = -2.110835 * inches2mm - z_offset
+        lip_north_z: float = -2.228945 * inches2mm - z_offset
+        lip_south_z: float = -2.622638 * inches2mm - z_offset
+        base_clip_top_z: float = -2.560638 * inches2mm - z_offset
+        battery_base_top_z: float = -2.701374 * inches2mm - z_offset
+        base_top_z: float = -3.095083 * inches2mm - z_offset
+        base_bottom_z: float = -3.469098 * inches2mm - z_offset
 
-        # Save the final motor holder as a *Module3D*:
-        self.holder_module: Optional[Module3D] = None
+        # Start with the two east most "lips":
+        base_clip: CornerCube = CornerCube("Base Clip",
+                                           P3D(base_clip_west_x,
+                                               -base_clip_dy/2.0, battery_base_top_z),
+                                           P3D(base_clip_east_x,
+                                               base_clip_dy/2.0, base_clip_top_z))
+        east_side: CornerCube = CornerCube("East Side",
+                                           P3D(motor_gearbox_east_x,
+                                               holder_south_y, base_bottom_z),
+                                           P3D(motor_gearbox_east_x + east_tab_dx,
+                                               holder_north_y, motor_casing_bottom_z))
+        north_clip: CornerCube = CornerCube("South Clip",
+                                            P3D(motor_clip_west_x,
+                                                motor_gearbox_north_y, motor_casing_bottom_z),
+                                            P3D(motor_clip_east_x,
+                                                holder_north_y, clip_top_z))
+        north_latch: CornerCube = CornerCube("North Latch",
+                                             P3D(motor_clip_west_x,
+                                                 clip_lip_north_y, motor_casing_top_z),
+                                             P3D(motor_clip_east_x,
+                                                 holder_north_y, clip_top_z))
+        north_lip: CornerCube = CornerCube("North Lip",
+                                           P3D(holder_west_x,
+                                               holder_north_y, lip_south_z),
+                                           P3D(motor_gearbox_west_x,
+                                               clip_lip_north_y, lip_north_z))
+        north_side: CornerCube = CornerCube("North Side",
+                                            P3D(motor_gearbox_west_x + west_tab_dx,
+                                                motor_gearbox_north_y, base_top_z),
+                                            P3D(motor_gearbox_east_x + east_tab_dx,
+                                                holder_north_y, motor_casing_bottom_z))
+        south_clip: CornerCube = CornerCube("North Clip",
+                                            P3D(motor_clip_west_x,
+                                                holder_south_y, motor_casing_bottom_z),
+                                            P3D(motor_clip_east_x,
+                                                motor_gearbox_south_y, clip_top_z))
+        south_latch: CornerCube = CornerCube("South Latch",
+                                             P3D(motor_clip_west_x,
+                                                 holder_south_y, motor_casing_top_z),
+                                             P3D(motor_clip_east_x,
+                                                 clip_lip_south_y, clip_top_z))
+        south_lip: CornerCube = CornerCube("South Lip",
+                                           P3D(holder_west_x,
+                                               clip_lip_south_y, lip_south_z),
+                                           P3D(motor_gearbox_west_x,
+                                               holder_south_y, lip_north_z))
+        south_side: CornerCube = CornerCube("South Side",
+                                            P3D(motor_gearbox_west_x + west_tab_dx,
+                                                holder_south_y, base_top_z),
+                                            P3D(motor_gearbox_east_x + east_tab_dx,
+                                                motor_gearbox_south_y, motor_casing_bottom_z))
+        west_side: CornerCube = CornerCube("West Side",
+                                           P3D(motor_gearbox_west_x,
+                                               holder_south_y, base_bottom_z),
+                                           P3D(motor_gearbox_west_x + west_tab_dx,
+                                               holder_north_y, motor_casing_bottom_z))
+
+        # Create *holder_union* to contain all of the pieces:
+        holder_union: Union3D = Union3D("Romi Motor Holder Union",
+                                        [base_clip, east_side,
+                                         north_clip, north_latch, north_lip, north_side,
+                                         south_clip, south_latch, south_lip, south_side,
+                                         west_side])
+
+        # Save the *holder_module* into *romi_motor_holder* (i.e. *self*):
+        holder_module = Module3D("Romi Motor Holder Module",
+                                 [Color("Blue Color", holder_union, "RoyalBlue")])
+        self.holder_module: Module3D = holder_module
 
     # RomiMotorHolder.module_get():
     def module_get(self) -> Module3D:
         """Return the motor holder object."""
-        # Grab Some values from *romi_motor_holder* (i.e. *self*):
+        #  Return the *module* from *romi_motor_holder* (i.e. *self*):
         romi_motor_holder: RomiMotorHolder = self
-        holder_module: Optional[Module3D] = romi_motor_holder.holder_module
-
-        # Compute *holder* if it has not already been computed:
-        if holder_module is None:
-            # Grab X coordinates from *romi_motor_holder* starting from west to east:
-            holder_west_x: float = romi_motor_holder.holder_west_x
-            motor_gearbox_west_x: float = romi_motor_holder.motor_gearbox_west_x
-            motor_gearbox_east_x: float = romi_motor_holder.motor_gearbox_east_x
-            motor_clip_west_x: float = self.motor_clip_west_x
-            motor_clip_east_x: float = self.motor_clip_east_x
-            # holder_east_x: float = romi_motor_holder.holder_east_x
-            base_clip_east_x: float = self.base_clip_east_x
-            base_clip_west_x: float = self.base_clip_west_x
-            west_tab_dx: float = romi_motor_holder.west_tab_dx
-            east_tab_dx: float = romi_motor_holder.east_tab_dx
-
-            # Grab some Y coodinates from *romi_motor_holder* starting from south to north:
-            holder_south_y: float = romi_motor_holder.holder_south_y
-            motor_gearbox_south_y: float = romi_motor_holder.motor_gearbox_south_y
-            clip_lip_south_y: float = romi_motor_holder.clip_lip_south_y
-            clip_lip_north_y: float = romi_motor_holder.clip_lip_north_y
-            motor_gearbox_north_y: float = romi_motor_holder.motor_gearbox_north_y
-            holder_north_y: float = romi_motor_holder.holder_north_y
-            base_clip_dy: float = romi_motor_holder.base_clip_dy
-
-            # Grab some Z coordinates from *romi_motor_holder* starting from top to bottom:
-            clip_top_z: float = romi_motor_holder.clip_top_z
-            motor_casing_top_z: float = romi_motor_holder.motor_casing_top_z
-            motor_casing_bottom_z: float = romi_motor_holder.motor_casing_bottom_z
-            lip_north_z: float = romi_motor_holder.lip_north_z
-            lip_south_z: float = romi_motor_holder.lip_south_z
-            base_clip_top_z: float = romi_motor_holder.base_clip_top_z
-            battery_base_top_z: float = romi_motor_holder.battery_base_top_z
-            base_top_z: float = romi_motor_holder.base_top_z
-            base_bottom_z: float = romi_motor_holder.base_bottom_z
-
-            # Start with the two east most "lips":
-            base_clip: CornerCube = CornerCube("Base Clip",
-                                               P3D(base_clip_west_x,
-                                                   -base_clip_dy/2.0, battery_base_top_z),
-                                               P3D(base_clip_east_x,
-                                                   base_clip_dy/2.0, base_clip_top_z))
-            east_side: CornerCube = CornerCube("East Side",
-                                               P3D(motor_gearbox_east_x,
-                                                   holder_south_y, base_bottom_z),
-                                               P3D(motor_gearbox_east_x + east_tab_dx,
-                                                   holder_north_y, motor_casing_bottom_z))
-            north_clip: CornerCube = CornerCube("South Clip",
-                                                P3D(motor_clip_west_x,
-                                                    motor_gearbox_north_y, motor_casing_bottom_z),
-                                                P3D(motor_clip_east_x,
-                                                    holder_north_y, clip_top_z))
-            north_latch: CornerCube = CornerCube("North Latch",
-                                                 P3D(motor_clip_west_x,
-                                                     clip_lip_north_y, motor_casing_top_z),
-                                                 P3D(motor_clip_east_x,
-                                                     holder_north_y, clip_top_z))
-            north_lip: CornerCube = CornerCube("North Lip",
-                                               P3D(holder_west_x,
-                                                   holder_north_y, lip_south_z),
-                                               P3D(motor_gearbox_west_x,
-                                                   clip_lip_north_y, lip_north_z))
-            north_side: CornerCube = CornerCube("North Side",
-                                                P3D(motor_gearbox_west_x + west_tab_dx,
-                                                    motor_gearbox_north_y, base_top_z),
-                                                P3D(motor_gearbox_east_x + east_tab_dx,
-                                                    holder_north_y, motor_casing_bottom_z))
-            south_clip: CornerCube = CornerCube("North Clip",
-                                                P3D(motor_clip_west_x,
-                                                    holder_south_y, motor_casing_bottom_z),
-                                                P3D(motor_clip_east_x,
-                                                    motor_gearbox_south_y, clip_top_z))
-            south_latch: CornerCube = CornerCube("South Latch",
-                                                 P3D(motor_clip_west_x,
-                                                     holder_south_y, motor_casing_top_z),
-                                                 P3D(motor_clip_east_x,
-                                                     clip_lip_south_y, clip_top_z))
-            south_lip: CornerCube = CornerCube("South Lip",
-                                               P3D(holder_west_x,
-                                                   clip_lip_south_y, lip_south_z),
-                                               P3D(motor_gearbox_west_x,
-                                                   holder_south_y, lip_north_z))
-            south_side: CornerCube = CornerCube("South Side",
-                                                P3D(motor_gearbox_west_x + west_tab_dx,
-                                                    holder_south_y, base_top_z),
-                                                P3D(motor_gearbox_east_x + east_tab_dx,
-                                                    motor_gearbox_south_y, motor_casing_bottom_z))
-            west_side: CornerCube = CornerCube("West Side",
-                                               P3D(motor_gearbox_west_x,
-                                                   holder_south_y, base_bottom_z),
-                                               P3D(motor_gearbox_west_x + west_tab_dx,
-                                                   holder_north_y, motor_casing_bottom_z))
-
-            # Create *holder* and cache it back into *romi_motor_holder*:
-            holder_union: Union3D = Union3D("Romi Motor Holder Union", [base_clip,
-                                                                        east_side,
-                                                                        north_clip,
-                                                                        north_latch,
-                                                                        north_lip,
-                                                                        north_side,
-                                                                        south_clip,
-                                                                        south_latch,
-                                                                        south_lip,
-                                                                        south_side,
-                                                                        west_side])
-            holder_module = Module3D("Romi Motor Holder Module",
-                                     [Color("Blue Color", holder_union, "RoyalBlue")])
-            romi_motor_holder.holder_module = holder_module
-
-        # Return *holder_module*:
-        assert isinstance(holder_module, Module3D)
-        return holder_module
+        module: Module3D = romi_motor_holder.holder_module
+        return module
 
     # RomiMotorHolder.scad_program_append():
     def scad_program_append(self, scad_program: ScadProgram, if3d: If3D) -> None:
