@@ -9,7 +9,7 @@
 # http://docplayer.net/42910792-
 # Hardware-assisted-tracing-on-arm-with-coresight-and-opencsd-mathieu-poirier.html
 from scad_models.scad import (Color, Circle, CornerCube, Cube, Cylinder, If2D, If3D,
-                              LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon,
+                              LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
                               Scad, Scad3D, SimplePolygon, ScadProgram, Square, Translate3D,
                               UseModule3D, Union3D, Variable2D)
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
@@ -28,26 +28,40 @@ class HR2:
         self.romi: Romi = romi
 
     # HR2.robot_get():
-    def robot_get(self) -> Scad3D:
+    def robot_get(self) -> Module3D:
         """Return the robot module."""
         # Grab some values from *hr2* (i.e. *self*):
         hr2: HR2 = self
         romi: Romi = hr2.romi
-        hr2_robot_model: Union3D = Union3D("HR2 Robot Model", [], lock=False)
         romi_base_module: Module3D = romi.base_module_get()
-        hr2_robot_model.append(UseModule3D("Use Romi Base Module", romi_base_module))
-        hr2_robot_model.lock()
-        return hr2_robot_model
+        romi_base_use_module: UseModule3D = UseModule3D("Romi Base Use Module", romi_base_module)
+        romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly()
+        wheel_assembly_module: Module3D = romi_wheel_assembly.module_get()
+        wheel_assembly_use_module: UseModule3D = UseModule3D("Wheel Assemlby Use Module",
+                                                             wheel_assembly_module)
+        other_pi: OtherPi = OtherPi()
+        other_pi_module: Module3D = other_pi.module_get()
+        other_pi_use_module: UseModule3D = UseModule3D("Other Pi Use Module", other_pi_module)
+
+        hr2_robot_module: Module3D = Module3D("HR2 Robot Module",
+                                              [romi_base_use_module,
+                                               wheel_assembly_use_module,
+                                               Rotate3D("Wheel Assembly Rotate",
+                                                        wheel_assembly_use_module,
+                                                        pi,
+                                                        P3D(0.0, 0.0, 1.0)),
+                                               Rotate3D("Other Pi Rotate", other_pi_use_module,
+                                                        pi/2.0, P3D(0.0, 0.0, 1.0))])
+        return hr2_robot_module
 
     # HR2.scad_program_append():
     def scad_program_append(self, scad_program: ScadProgram, if3d: If3D) -> None:
         """Append HR2 to a ScadProgram."""
         # Grab some values out of *hr2* (i.e. *self*):
         hr2: HR2 = self
-        hr2_robot: Scad3D = hr2.robot_get()
-        hr2_robot_module: Module3D = Module3D("HR2 Robot Module", [hr2_robot])
-        scad_program.append(hr2_robot_module)
-        if3d.name_match_append("hr2_robot", hr2_robot_module, ["Entire HR2 Robot Model"])
+        hr2_module: Module3D = hr2.robot_get()
+        scad_program.append(hr2_module)
+        if3d.name_match_append("hr2_robot", hr2_module, ["Entire HR2 Robot Model"])
 
 
 # MalePinConnector:
@@ -306,14 +320,32 @@ class Romi:
         romi: Romi = self
         base_module: Optional[Module3D] = romi.base_module
         if base_module is None:
+            # Grab some values from Top View of `.dxf` file:
+            # Start with the *z_offset*:
+            inches2mm: float = 25.4
+            shaft_north_z: float = -2.642319 * inches2mm
+            shaft_south_z: float = -2.760429 * inches2mm
+            z_offset: float = (shaft_north_z + shaft_south_z)/2.0
+
+            # Grab some more Z values:
+            battery_top_z: float = -2.701374 * inches2mm - z_offset
+            base_top_z: float = -3.095083 * inches2mm - z_offset
+            base_bottom_z: float = -3.469098 * inches2mm - z_offset
+            battery_dz: float = abs(battery_top_z - base_bottom_z)
+            base_dz: float = abs(base_top_z - base_bottom_z)
+
             # Now construct the base:
             romi_battery_base_polygon: Polygon = romi.battery_base_polygon_get()
             romi_battery_base: Scad3D = LinearExtrude("Romi Battery Base",
-                                                      romi_battery_base_polygon, 19.5)
+                                                      romi_battery_base_polygon, battery_dz)
             romi_base_polygon: Polygon = romi.base_polygon_get()
             romi_circular_base: Scad3D = LinearExtrude("Romi Circular Base",
-                                                       romi_base_polygon, 19.5 - 10.0)
-            romi_base: Union3D = Union3D("Romi Base", [romi_battery_base, romi_circular_base])
+                                                       romi_base_polygon, base_dz)
+            romi_base: Union3D = Union3D("Romi Base", [
+                Translate3D("Battery Base Translate", romi_battery_base,
+                            P3D(0.0, 0.0, base_bottom_z)),
+                Translate3D("Circular Base Translate", romi_circular_base,
+                            P3D(0.0, 0.0, base_bottom_z))])
             blue_romi_base: Color = Color("Blue Romi Base", romi_base, "Blue")
             base_module = Module3D("Romi Base Module", [blue_romi_base])
             romi.base_module = base_module
@@ -1537,7 +1569,7 @@ class Romi:
         # Now construct the base:
         romi_base_module: Module3D = romi.base_module_get()
         scad_program.append(romi_base_module)
-        if3d.name_match_append("romi_base", romi_base_module, ["Romi Base Polygon"])
+        if3d.name_match_append("romi_base", romi_base_module, ["Romi Base"])
 
     # Romi.upper_arc_holes_rectangles_get():
     def upper_arc_holes_rectangles_get(self) -> List[SimplePolygon]:
@@ -1749,54 +1781,69 @@ class RomiMotor:
         inches2mm: float = 25.4
 
         # Various values off of the Top view of the `.dxf` file.
-        # Start grabbing some X values:
-        electrical_east_x: float = -5.074161 * inches2mm
-        electrical_west_x: float = -5.253299 * inches2mm
-        motor_shaft_east_x: float = -5.083217 * inches2mm
-        motor_casing_west_x: float = -5.253299 * inches2mm
-        gearbox_motor_casing_x: float = -5.782827 * inches2mm  # Gearbox/motor casing interface X
+        # Start with X coordinates:
+        # Compute the *x_offset* using a couple of values from the upper castor at the upper rim:
+        inches2mm: float = 25.4
+        castor_slot_west_x: float = -3.995811 * inches2mm
+        castor_slot_east_x: float = -3.739909 * inches2mm
+        x_offset: float = (castor_slot_west_x + castor_slot_east_x) / 2.0
+
+        # Start grabbing some X values from west to east:
+        gearbox_casing_west_x: float = -6.326134 * inches2mm - x_offset
+        self.gearbox_casing_west_x: float = gearbox_casing_west_x
+        gearbox_motor_casing_x: float = -5.782827 * inches2mm - x_offset  # Gearbox/motor surface X
+        self.gearbox_motor_casing_x: float = gearbox_motor_casing_x
+        motor_casing_west_x: float = -5.253299 * inches2mm - x_offset
+        self.motor_casing_west_x: float = motor_casing_west_x
+        electrical_east_x: float = motor_casing_west_x
+        self.electrical_east_x: float = electrical_east_x
+        electrical_west_x: float = -5.074161 * inches2mm - x_offset
+        self.electrical_west_x = electrical_west_x
+        motor_shaft_west_x: float = motor_casing_west_x
+        self.motor_shaft_west_x: float = motor_shaft_west_x
+        motor_shaft_east_x: float = -5.085980 * inches2mm - x_offset
+        self.motor_shaft_east_x: float = motor_shaft_east_x
+
+        # Compute some *dx* values as well:
         self.electrical_dx: float = abs(electrical_east_x - electrical_west_x)
         self.gearbox_casing_dx: float = abs(gearbox_motor_casing_x - motor_casing_west_x)
         self.motor_casing_dx: float = abs(motor_casing_west_x - gearbox_motor_casing_x)
         self.motor_shaft_dx: float = abs(motor_shaft_east_x - motor_casing_west_x)
 
         # Start grabbing some Y values:
-        # Start with the *wheel_shaft_diameter*:
-        north_wheel_shaft_y: float = -1.372201 * inches2mm
-        south_wheel_shaft_y: float = -1.399756 * inches2mm
-        self.wheel_shaft_diameter: float = (north_wheel_shaft_y - south_wheel_shaft_y) / 2.0
+        # Compute *y_offset* and *wheel_shaft_diameter* using the wheel shaft `.dxf` file values :
+        wheel_shaft_north_y: float = 2.996693 * inches2mm
+        wheel_shaft_south_y: float = 2.893610 * inches2mm
+        y_offset: float = (wheel_shaft_north_y + wheel_shaft_south_y) / 2.0
+        wheel_shaft_north_y -= y_offset
+        wheel_shaft_south_y -= y_offset
+        self.wheel_shaft_diameter: float = abs(wheel_shaft_north_y - wheel_shaft_south_y)
 
-        # Next: Read off the *motor_shaft_diameter*:
-        motor_shaft_north_y: float = 2.967165 * inches2mm
-        motor_shaft_south_y: float = 2.908110 * inches2mm
+        # Now compute the *motor_shaft_diameter*:
+        motor_shaft_north_y: float = 2.967165 * inches2mm - y_offset
+        motor_shaft_south_y: float = 2.908110 * inches2mm - y_offset
         self.motor_shaft_diameter: float = abs(motor_shaft_north_y - motor_shaft_south_y)
 
         # Read off the *motor_casing_dy*:
-        motor_casing_north_y: float = 3.382512 * inches2mm
-        motor_casing_south_y: float = 2.492748 * inches2mm
+        motor_casing_north_y: float = 3.382512 * inches2mm - y_offset
+        motor_casing_south_y: float = 2.492748 * inches2mm - y_offset
         self.motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
 
         # Read off the *gearbox_casing_dy*:
-        gearbox_casing_north_y: float = 3.331331 * inches2mm
-        gearbox_casing_south_y: float = 2.543929 * inches2mm
+        gearbox_casing_north_y: float = 3.331331 * inches2mm - y_offset
+        gearbox_casing_south_y: float = 2.543929 * inches2mm - y_offset
         gearbox_casing_dy: float = abs(gearbox_casing_north_y - gearbox_casing_south_y)
-        # print(f"gearbox_casing_dy={gearbox_casing_dy}")
         self.gearbox_casing_dy: float = gearbox_casing_dy
 
-        # Both the motor shaft and wheel shaft are *DEFINED* to be at Y=0.0, so we can
-        # easily compute the Y offsets:
-        motor_shaft_y_offset: float = (motor_shaft_north_y + motor_shaft_south_y) / 2.0
-        # wheel_shaft_y_offset: float = (north_wheel_shaft_y + south_wheel_shaft_y) / 2.0
-
         # Now capture the north electrical tabs:
-        electrical_north_upper_y: float = 3.208303 * inches2mm - motor_shaft_y_offset
-        electrical_north_lower_y: float = 3.188610 * inches2mm - motor_shaft_y_offset
+        electrical_north_upper_y: float = 3.208303 * inches2mm - y_offset
+        electrical_north_lower_y: float = 3.188610 * inches2mm - y_offset
         electrical_north_dy: float = abs(electrical_north_upper_y - electrical_north_lower_y)
         self.electrical_north_y: float = (electrical_north_upper_y + electrical_north_lower_y) / 2.0
 
         # Now capture the south electrical tab:
-        electrical_south_upper_y: float = 2.686650 * inches2mm - motor_shaft_y_offset
-        electrical_south_lower_y: float = 2.666957 * inches2mm - motor_shaft_y_offset
+        electrical_south_upper_y: float = 2.686650 * inches2mm - y_offset
+        electrical_south_lower_y: float = 2.666957 * inches2mm - y_offset
         electrical_south_dy: float = abs(electrical_south_upper_y - electrical_south_lower_y)
         self.electrical_south_y: float = (electrical_south_upper_y + electrical_south_lower_y) / 2.0
 
@@ -1805,26 +1852,26 @@ class RomiMotor:
 
         # Read off off `.dxf` Front view:
         # Do some Z dimensions:
-
-        # Start with motor wheel shaft:
+        # Start with computing the *z_offset* from the wheel shaft (which is defined as Y=0.0):
         top_motor_wheel_shaft_z: float = -2.642319 * inches2mm
         bottom_motor_wheel_shaft_z: float = -2.760429 * inches2mm
+        z_offset: float = (top_motor_wheel_shaft_z + bottom_motor_wheel_shaft_z) / 2.0
+        top_motor_wheel_shaft_z -= z_offset
+        bottom_motor_wheel_shaft_z -= z_offset
         self.wheel_shaft_diameter: float = (top_motor_wheel_shaft_z -
                                             bottom_motor_wheel_shaft_z) / 2.0
-        # Remember: the wheel shaft is *DEFINED* as Z=0.0:
-        wheel_shaft_z = (top_motor_wheel_shaft_z + bottom_motor_wheel_shaft_z) / 2.0
 
         # Grab the electrical tab locations:
-        electrical_top_z: float = -1.842126 * inches2mm
-        electrical_bottom_z: float = -1.926776 * inches2mm
+        electrical_top_z: float = -1.842126 * inches2mm - z_offset
+        electrical_bottom_z: float = -1.926776 * inches2mm - z_offset
         self.electrical_dz: float = abs(electrical_top_z - electrical_bottom_z)
-        self.electrical_z: float = (electrical_top_z + electrical_bottom_z) / 2.0 - wheel_shaft_z
-        # By inferencece, the *motor_shaft_z* is the same:
+        self.electrical_z: float = (electrical_top_z + electrical_bottom_z) / 2.0
+        # By inference, the *motor_shaft_z* is the same:
         self.motor_shaft_z: float = self.electrical_z
 
         # Compute *motor_casing_dz*, *top_motor_casing_z*, and *bottom_motor_casing_z*:
-        motor_casing_top_z: float = -1.658071 * inches2mm - wheel_shaft_z
-        motor_casing_bottom_z: float = -2.110835 * inches2mm - wheel_shaft_z
+        motor_casing_top_z: float = -1.658071 * inches2mm - z_offset
+        motor_casing_bottom_z: float = -2.110835 * inches2mm - z_offset
         self.motor_casing_dz: float = (motor_casing_top_z + motor_casing_bottom_z) / 2.0
         self.motor_casing_top_z = motor_casing_top_z
         self.motor_casing_bottom_z = motor_casing_bottom_z
@@ -1838,101 +1885,114 @@ class RomiMotor:
         self.gearbox_casing_dz: float = gearbox_casing_dz
         self.gearbox_casing_top_z: float = gearbox_casing_top_z
 
-        # Remember the relative distance for the base relative to the wheel shaft:
-        self.base_bottom_z = -3.469098 * inches2mm - wheel_shaft_z
-        self.base_top_z = -2.701374 * inches2mm - wheel_shaft_z
+        # Remember the relative distance for the base:
+        self.base_bottom_z = -3.469098 * inches2mm - z_offset
+        self.base_top_z = -2.701374 * inches2mm - z_offset
 
         # Measure *wheel_shaft_dx* length using calipers:
         self.wheel_shaft_dx: float = 9.75
 
         # Reserve a place for the actual motor as a *Module3D* object:
-        self.module3d: Optional[Module3D] = None
+        self.module: Optional[Module3D] = None
 
     # RomiMotor.module_get():
     def module_get(self) -> Module3D:
         """Return motor as a Module3D."""
         # Grab values from *romi_motor* (i.e. *self*):
         romi_motor: RomiMotor = self
-        electrical_dx: float = romi_motor.electrical_dx
-        electrical_dy: float = romi_motor.electrical_dy
-        electrical_dz: float = romi_motor.electrical_dz
-        electrical_north_y: float = romi_motor.electrical_north_y
-        electrical_south_y: float = romi_motor.electrical_south_y
-        # electrical_south_y: float = romi_motor.electrical_south_y
-        electrical_z: float = romi_motor.electrical_z
-        gearbox_casing_dx: float = romi_motor.gearbox_casing_dx
-        gearbox_casing_dy: float = romi_motor.gearbox_casing_dy
-        gearbox_casing_bottom_z: float = romi_motor.gearbox_casing_bottom_z
-        gearbox_casing_top_z: float = romi_motor.gearbox_casing_top_z
-        motor_casing_bottom_z: float = romi_motor.motor_casing_bottom_z
-        motor_casing_dx: float = romi_motor.motor_casing_dx
-        motor_casing_dy: float = romi_motor.motor_casing_dy
-        motor_casing_top_z: float = romi_motor.motor_casing_top_z
-        motor_shaft_diameter: float = romi_motor.motor_shaft_diameter
-        motor_shaft_dx: float = romi_motor.motor_shaft_dx
-        motor_shaft_z: float = romi_motor.motor_shaft_z
-        wheel_shaft_diameter: float = romi_motor.wheel_shaft_diameter
-        wheel_shaft_dx: float = romi_motor.wheel_shaft_dx
+        module: Optional[Module3D] = romi_motor.module
 
-        module3d: Optional[Module3D] = romi_motor.module3d
-        if module3d is None:
-            # Compute the module3d:
-            self.module3d = module3d
+        # Construct *module* if it has not already been construted:
+        if module is None:
+            # Grab some X coordinates from *romi_motor*:
+            # electrical_dx: float = romi_motor.electrical_dx
+            electrical_east_x: float = self.electrical_east_x
+            electrical_west_x: float = self.electrical_west_x
+            gearbox_motor_casing_x: float = self.gearbox_motor_casing_x
+            # gearbox_casing_dx: float = romi_motor.gearbox_casing_dx
+            gearbox_casing_west_x: float = self.gearbox_casing_west_x
+            # motor_casing_dx: float = romi_motor.motor_casing_dx
+            motor_casing_west_x: float = self.motor_casing_west_x
+            # motor_shaft_dx: float = romi_motor.motor_shaft_dx
+            motor_shaft_east_x: float = self.motor_shaft_east_x
+            motor_shaft_west_x: float = self.motor_shaft_west_x
+            wheel_shaft_dx: float = romi_motor.wheel_shaft_dx
+
+            # Grab some Y coordinates from *romi_motor*:
+            electrical_dy: float = romi_motor.electrical_dy
+            electrical_north_y: float = romi_motor.electrical_north_y
+            electrical_south_y: float = romi_motor.electrical_south_y
+            gearbox_casing_dy: float = romi_motor.gearbox_casing_dy
+            motor_casing_dy: float = romi_motor.motor_casing_dy
+
+            # Grab some Z coordinates from *romi_motor*:
+            electrical_dz: float = romi_motor.electrical_dz
+            # electrical_south_y: float = romi_motor.electrical_south_y
+            electrical_z: float = romi_motor.electrical_z
+            gearbox_casing_bottom_z: float = romi_motor.gearbox_casing_bottom_z
+            gearbox_casing_top_z: float = romi_motor.gearbox_casing_top_z
+            motor_casing_bottom_z: float = romi_motor.motor_casing_bottom_z
+            motor_casing_top_z: float = romi_motor.motor_casing_top_z
+            motor_shaft_z: float = romi_motor.motor_shaft_z
+
+            # Grab the two shaft diameters:
+            motor_shaft_diameter: float = romi_motor.motor_shaft_diameter
+            wheel_shaft_diameter: float = romi_motor.wheel_shaft_diameter
 
             # Start with a cube of material
             gearbox_casing: CornerCube = CornerCube("Gearbox Casing",
-                                                    P3D(-gearbox_casing_dx,
+                                                    P3D(gearbox_casing_west_x,
                                                         -gearbox_casing_dy/2.0,
                                                         gearbox_casing_bottom_z),
-                                                    P3D(0.0,
+                                                    P3D(gearbox_motor_casing_x,
                                                         gearbox_casing_dy/2.0,
                                                         gearbox_casing_top_z))
             motor_casing: CornerCube = CornerCube("Motor Casing",
-                                                  P3D(0.0,
+                                                  P3D(gearbox_motor_casing_x,
                                                       -motor_casing_dy/2.0,
                                                       motor_casing_top_z),
-                                                  P3D(motor_casing_dx,
+                                                  P3D(motor_casing_west_x,
                                                       motor_casing_dy/2.0,
                                                       motor_casing_bottom_z))
             motor_shaft: Cylinder = Cylinder("Motor Shaft", motor_shaft_diameter,
-                                             P3D(motor_casing_dx,
-                                                 0.0, motor_shaft_z),
-                                             P3D(motor_casing_dx + motor_shaft_dx,
-                                                 0.0, motor_shaft_z),
+                                             P3D(motor_shaft_west_x, 0.0, motor_shaft_z),
+                                             P3D(motor_shaft_east_x, 0.0, motor_shaft_z),
                                              8)
             wheel_shaft: Cylinder = Cylinder("Wheel Shaft", wheel_shaft_diameter,
-                                             P3D(-gearbox_casing_dx - wheel_shaft_dx, 0.0, 0.0),
-                                             P3D(-gearbox_casing_dx, 0.0, 0.0),
+                                             P3D(gearbox_casing_west_x - wheel_shaft_dx, 0.0, 0.0),
+                                             P3D(gearbox_casing_west_x, 0.0, 0.0),
                                              8)
             electrical_north: CornerCube = CornerCube("Electrical North",
-                                                      P3D(motor_casing_dx,
+                                                      P3D(electrical_west_x,
                                                           electrical_north_y - electrical_dy/2.0,
                                                           electrical_z - electrical_dz/2.0),
-                                                      P3D(motor_casing_dx + electrical_dx,
+                                                      P3D(electrical_east_x,
                                                           electrical_north_y + electrical_dy/2.0,
                                                           electrical_z + electrical_dz/2.0))
             electrical_south: CornerCube = CornerCube("Electrical South",
-                                                      P3D(motor_casing_dx,
+                                                      P3D(electrical_west_x,
                                                           electrical_south_y - electrical_dy/2.0,
                                                           electrical_z - electrical_dz/2.0),
-                                                      P3D(motor_casing_dx + electrical_dx,
+                                                      P3D(electrical_east_x,
                                                           electrical_south_y + electrical_dy/2.0,
                                                           electrical_z + electrical_dz/2.0))
 
-            # Create a *union3d* to store all of the parts into:
-            union3d: Union3D = Union3D("Romi Motor Union 3D",
-                                       [Color("Wheat Color", gearbox_casing, "Wheat"),
-                                        Color("Wheat Color", motor_casing, "Wheat"),
-                                        Color("Silver Color", motor_shaft, "Silver"),
-                                        Color("Silver Color", wheel_shaft, "Silver"),
-                                        Color("Gold Color", electrical_north, "Gold"),
-                                        Color("Gold Color", electrical_south, "Gold")])
+            # Create a *union* to store all of the parts into:
+            union: Union3D = Union3D("Romi Motor Union 3D",
+                                     [Color("Wheat Color", gearbox_casing, "Wheat"),
+                                      Color("Wheat Color", motor_casing, "Wheat"),
+                                      Color("Silver Color", motor_shaft, "Silver"),
+                                      Color("Silver Color", wheel_shaft, "Silver"),
+                                      Color("Gold Color", electrical_north, "Gold"),
+                                      Color("Gold Color", electrical_south, "Gold")])
 
-            # Convert it into a named moduled:
-            module3d = Module3D("Romi Motor Module", [union3d])
+            # Compute *module* and cache into *romi_motor*:
+            module = Module3D("Romi Motor Module", [union])
+            romi_motor.module = module
 
-        assert module3d is not None
-        return module3d
+        # Return *module*:
+        assert isinstance(module, Module3D)
+        return module
 
     # RomiMotor.scad_program_append():
     def scad_program_append(self, scad_program: ScadProgram, if3d: If3D) -> None:
@@ -1948,17 +2008,242 @@ class RomiMotorHolder:
     """Represents the Romi Chasis Motor Holder."""
 
     # RomiMotorHolder.__init__():
-    def __init__(self, name: str) -> None:
+    def __init__(self) -> None:
         """Initialize the RomiMotorHolder."""
         # Load up *romi_motor_holder* (i.e. *self*):
         # romi_motor_holder: RomiMotorHolder = self
         self.motor_holder: Optional[Scad3D] = None
 
-    # RomiMotorHolder.holder_get():
-    def holder_get(self) -> Union3D:
-        """Return the motor holder objec."""
-        holder_union3d: Union3D = Union3D("Romi Motor Holder Union", [])
-        return holder_union3d
+        # Start reading values off of `.dxf` file:
+        # Start with X coordinates:
+        # Compute the *x_offset* using a couple of values from the upper castor at the upper rim:
+        inches2mm: float = 25.4
+        castor_slot_west_x: float = -3.995811 * inches2mm
+        castor_slot_east_x: float = -3.739909 * inches2mm
+        x_offset: float = (castor_slot_west_x + castor_slot_east_x) / 2.0
+
+        # Now grab some X coordinates from west to east for the holder:
+        self.holder_west_x: float = -6.40487 * inches2mm - x_offset
+        self.motor_gearbox_west_x: float = -6.326134 * inches2mm - x_offset
+        self.motor_clip_west_x: float = -6.267075 * inches2mm - x_offset
+        self.motor_clip_east_x: float = -5.991492 * inches2mm - x_offset
+        self.motor_gearbox_east_x: float = -5.782827 * inches2mm - x_offset
+        self.base_clip_west_x: float = -5.704091 * inches2mm - x_offset
+        self.base_clip_east_x: float = -5.62535 * inches2mm - x_offset
+
+        # Lastly the bottom tabs are not really measurable from the `.dxf`, so use calipers:
+        self.west_tab_dx: float = 2.60
+        self.east_tab_dx: float = 2.10
+
+        # Compute the *y_offset* using the wheel shaft:
+        wheel_shaft_north_y: float = 2.996693 * inches2mm
+        wheel_shaft_south_y: float = 2.893610 * inches2mm
+        y_offset: float = (wheel_shaft_north_y + wheel_shaft_south_y) / 2.0
+
+        # Now grap some Y coodinates from south to north for the holder:
+        self.holder_south_y: float = 2.465193 * inches2mm - y_offset
+        self.motor_gearbox_south_y: float = 2.543929 * inches2mm - y_offset
+        self.clip_lip_south_y: float = 2.642358 * inches2mm - y_offset
+        self.clip_lip_north_y: float = 3.232913 * inches2mm - y_offset
+        self.motor_gearbox_north_y: float = 3.331331 * inches2mm - y_offset
+        self.holder_north_y: float = 3.410067 * inches2mm - y_offset
+        self.base_clip_dy: float = 4.75  # Measured using calipers:
+
+        # Compute the *z_offset* using the wheel shaft:
+        wheel_shaft_top_z: float = -2.642319 * inches2mm
+        wheel_shaft_bottom_z: float = -2.760429 * inches2mm
+        z_offset: float = (wheel_shaft_top_z + wheel_shaft_bottom_z) / 2.0
+
+        # Grab some Z coordinates starting from top to bottom:
+        self.clip_top_z: float = -1.559654 * inches2mm - z_offset
+        self.motor_casing_top_z: float = -1.658071 * inches2mm - z_offset
+        self.motor_casing_bottom_z: float = -2.110835 * inches2mm - z_offset
+        self.lip_north_z: float = -2.228945 * inches2mm - z_offset
+        self.lip_south_z: float = -2.622638 * inches2mm - z_offset
+        self.base_clip_top_z: float = -2.560638 * inches2mm - z_offset
+        self.battery_base_top_z: float = -2.701374 * inches2mm - z_offset
+        self.base_top_z: float = -3.095083 * inches2mm - z_offset
+        self.base_bottom_z: float = -3.469098 * inches2mm - z_offset
+
+        # Save the final motor holder as a *Module3D*:
+        self.holder_module: Optional[Module3D] = None
+
+    # RomiMotorHolder.module_get():
+    def module_get(self) -> Module3D:
+        """Return the motor holder object."""
+        # Grab Some values from *romi_motor_holder* (i.e. *self*):
+        romi_motor_holder: RomiMotorHolder = self
+        holder_module: Optional[Module3D] = romi_motor_holder.holder_module
+
+        # Compute *holder* if it has not already been computed:
+        if holder_module is None:
+            # Grab X coordinates from *romi_motor_holder* starting from west to east:
+            holder_west_x: float = romi_motor_holder.holder_west_x
+            motor_gearbox_west_x: float = romi_motor_holder.motor_gearbox_west_x
+            motor_gearbox_east_x: float = romi_motor_holder.motor_gearbox_east_x
+            motor_clip_west_x: float = self.motor_clip_west_x
+            motor_clip_east_x: float = self.motor_clip_east_x
+            # holder_east_x: float = romi_motor_holder.holder_east_x
+            base_clip_east_x: float = self.base_clip_east_x
+            base_clip_west_x: float = self.base_clip_west_x
+            west_tab_dx: float = romi_motor_holder.west_tab_dx
+            east_tab_dx: float = romi_motor_holder.east_tab_dx
+
+            # Grab some Y coodinates from *romi_motor_holder* starting from south to north:
+            holder_south_y: float = romi_motor_holder.holder_south_y
+            motor_gearbox_south_y: float = romi_motor_holder.motor_gearbox_south_y
+            clip_lip_south_y: float = romi_motor_holder.clip_lip_south_y
+            clip_lip_north_y: float = romi_motor_holder.clip_lip_north_y
+            motor_gearbox_north_y: float = romi_motor_holder.motor_gearbox_north_y
+            holder_north_y: float = romi_motor_holder.holder_north_y
+            base_clip_dy: float = romi_motor_holder.base_clip_dy
+
+            # Grab some Z coordinates from *romi_motor_holder* starting from top to bottom:
+            clip_top_z: float = romi_motor_holder.clip_top_z
+            motor_casing_top_z: float = romi_motor_holder.motor_casing_top_z
+            motor_casing_bottom_z: float = romi_motor_holder.motor_casing_bottom_z
+            lip_north_z: float = romi_motor_holder.lip_north_z
+            lip_south_z: float = romi_motor_holder.lip_south_z
+            base_clip_top_z: float = romi_motor_holder.base_clip_top_z
+            battery_base_top_z: float = romi_motor_holder.battery_base_top_z
+            base_top_z: float = romi_motor_holder.base_top_z
+            base_bottom_z: float = romi_motor_holder.base_bottom_z
+
+            # Start with the two east most "lips":
+            base_clip: CornerCube = CornerCube("Base Clip",
+                                               P3D(base_clip_west_x,
+                                                   -base_clip_dy/2.0, battery_base_top_z),
+                                               P3D(base_clip_east_x,
+                                                   base_clip_dy/2.0, base_clip_top_z))
+            east_side: CornerCube = CornerCube("East Side",
+                                               P3D(motor_gearbox_east_x,
+                                                   holder_south_y, base_bottom_z),
+                                               P3D(motor_gearbox_east_x + east_tab_dx,
+                                                   holder_north_y, motor_casing_bottom_z))
+            north_clip: CornerCube = CornerCube("South Clip",
+                                                P3D(motor_clip_west_x,
+                                                    motor_gearbox_north_y, motor_casing_bottom_z),
+                                                P3D(motor_clip_east_x,
+                                                    holder_north_y, clip_top_z))
+            north_latch: CornerCube = CornerCube("North Latch",
+                                                 P3D(motor_clip_west_x,
+                                                     clip_lip_north_y, motor_casing_top_z),
+                                                 P3D(motor_clip_east_x,
+                                                     holder_north_y, clip_top_z))
+            north_lip: CornerCube = CornerCube("North Lip",
+                                               P3D(holder_west_x,
+                                                   holder_north_y, lip_south_z),
+                                               P3D(motor_gearbox_west_x,
+                                                   clip_lip_north_y, lip_north_z))
+            north_side: CornerCube = CornerCube("North Side",
+                                                P3D(motor_gearbox_west_x + west_tab_dx,
+                                                    motor_gearbox_north_y, base_top_z),
+                                                P3D(motor_gearbox_east_x + east_tab_dx,
+                                                    holder_north_y, motor_casing_bottom_z))
+            south_clip: CornerCube = CornerCube("North Clip",
+                                                P3D(motor_clip_west_x,
+                                                    holder_south_y, motor_casing_bottom_z),
+                                                P3D(motor_clip_east_x,
+                                                    motor_gearbox_south_y, clip_top_z))
+            south_latch: CornerCube = CornerCube("South Latch",
+                                                 P3D(motor_clip_west_x,
+                                                     holder_south_y, motor_casing_top_z),
+                                                 P3D(motor_clip_east_x,
+                                                     clip_lip_south_y, clip_top_z))
+            south_lip: CornerCube = CornerCube("South Lip",
+                                               P3D(holder_west_x,
+                                                   clip_lip_south_y, lip_south_z),
+                                               P3D(motor_gearbox_west_x,
+                                                   holder_south_y, lip_north_z))
+            south_side: CornerCube = CornerCube("South Side",
+                                                P3D(motor_gearbox_west_x + west_tab_dx,
+                                                    holder_south_y, base_top_z),
+                                                P3D(motor_gearbox_east_x + east_tab_dx,
+                                                    motor_gearbox_south_y, motor_casing_bottom_z))
+            west_side: CornerCube = CornerCube("West Side",
+                                               P3D(motor_gearbox_west_x,
+                                                   holder_south_y, base_bottom_z),
+                                               P3D(motor_gearbox_west_x + west_tab_dx,
+                                                   holder_north_y, motor_casing_bottom_z))
+
+            # Create *holder* and cache it back into *romi_motor_holder*:
+            holder_union: Union3D = Union3D("Romi Motor Holder Union", [base_clip,
+                                                                        east_side,
+                                                                        north_clip,
+                                                                        north_latch,
+                                                                        north_lip,
+                                                                        north_side,
+                                                                        south_clip,
+                                                                        south_latch,
+                                                                        south_lip,
+                                                                        south_side,
+                                                                        west_side])
+            holder_module = Module3D("Romi Motor Holder Module",
+                                     [Color("Blue Color", holder_union, "RoyalBlue")])
+            romi_motor_holder.holder_module = holder_module
+
+        # Return *holder_module*:
+        assert isinstance(holder_module, Module3D)
+        return holder_module
+
+    # RomiMotorHolder.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram, if3d: If3D) -> None:
+        """Append RomiMotorHolder to a ScadProgram."""
+        # Grab seom values out of *romi_motor_holder* (i.e. *self*):
+        romi_motor_holder: RomiMotorHolder = self
+        holder_module: Module3D = romi_motor_holder.module_get()
+        scad_program.append(holder_module)
+        if3d.name_match_append("romi_motor_holder", holder_module, ["Romi Motor Holder"])
+
+
+# RomiWheelAssembly:
+class RomiWheelAssembly:
+    """Represents a Romi Chasis Wheel Assembly."""
+
+    # RomiWheelAssembly.__init__():
+    def __init__(self) -> None:
+        """Initialize the RomiWheelAssembly."""
+        self.wheel_assembly_module: Optional[Module3D] = None
+
+    # RomiWheelAssembly.module_get():
+    def module_get(self) -> Module3D:
+        """Return the RomiWheelAssembly Module."""
+        # Grab the *wheel_assembly_module* from *romi_wheel_asembly* (i.e. *self*):
+        romi_wheel_assembly: RomiWheelAssembly = self
+        wheel_assembly_module: Optional[Module3D] = romi_wheel_assembly.wheel_assembly_module
+
+        # Instantiate *wheel_assembly_module* if we have not already done so:
+        if wheel_assembly_module is None:
+            # Construct the *romi_motor_use_module*:
+            romi_motor: RomiMotor = RomiMotor()
+            romi_motor_module: Module3D = romi_motor.module_get()
+            romi_motor_use_module: UseModule3D = UseModule3D("Romi Motor Use Module",
+                                                             romi_motor_module)
+
+            # Construct the *romi_motor_holder_use_module*:
+            romi_motor_holder: RomiMotorHolder = RomiMotorHolder()
+            romi_motor_holder_module: Module3D = romi_motor_holder.module_get()
+            romi_motor_holder_use_module: UseModule3D = UseModule3D("Romi Motor Holder Use Module",
+                                                                    romi_motor_holder_module)
+
+            # Construct the *wheel_assembly_module* and cache it into *romi_wheel_assembly*:
+            wheel_assembly_module = Module3D("Romi Wheel Assembly Module",
+                                             [romi_motor_holder_use_module,
+                                              romi_motor_use_module])
+            romi_wheel_assembly.wheel_assembly_module = wheel_assembly_module
+
+        # Return *wheel_assembly_module*:
+        assert isinstance(wheel_assembly_module, Module3D)
+        return wheel_assembly_module
+
+    # RomiWheelAssembly.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram, if3d: If3D) -> None:
+        """Append RomiWheelAssembly to a ScadProgram."""
+        # Grab *wheel_assembly_module* from *romi_wheel_assembly* (i.e. *self*):
+        romi_wheel_assembly: RomiWheelAssembly = self
+        wheel_assembly_module: Module3D = romi_wheel_assembly.module_get()
+        scad_program.append(wheel_assembly_module)
+        if3d.name_match_append("wheel_assembly", wheel_assembly_module, ["Rome Wheel Assembly"])
 
 
 # OtherPi:
@@ -2065,18 +2350,12 @@ class OtherPi:
                                 "Black"))
         return connectors
 
-    # OtherPi.scad_program_append():
-    def scad_program_append(self, scad_program: ScadProgram, if2d: If2D, if3d: If3D) -> None:
-        """Append OtherPi OpenScad code to a ScadProgram."""
-        # Create the PCB *Polygon* and *Module2D*:
+    # OtherPi.module_get():
+    def module_get(self) -> Module3D:
+        """Return OtherPi as a Module."""
+        # Now create the *other_pi_module*:
         other_pi: OtherPi = self
         other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
-        other_pi_pcb_module: Module2D = Module2D("Other_Pi_PCB_Polygon_Module",
-                                                 [other_pi_pcb_polygon])
-        scad_program.append(other_pi_pcb_module)
-        if2d.name_match_append("other_pi_pcb", other_pi_pcb_module, ["Other Pi PCB"])
-
-        # Now create the *other_pi_module*:
         other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
         other_pi_translated_pcb: Scad3D = Translate3D("Translated Other PCB",
                                                       LinearExtrude("OtherPi PCB",
@@ -2092,10 +2371,25 @@ class OtherPi:
                                                              P3D(-(3.5 + 58/2.0),
                                                                  -(70.0 - (3.5 + 49.0/2.0)),
                                                                  1.000))
-        other_pi_model_module: Module3D = Module3D("OtherPi_Model_Module",
-                                                   [translated_other_pi_model])
+        other_pi_module: Module3D = Module3D("Other Pi Module", [translated_other_pi_model])
+        return other_pi_module
+
+    # OtherPi.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram, if2d: If2D, if3d: If3D) -> None:
+        """Append OtherPi OpenScad code to a ScadProgram."""
+        # Create the PCB *Polygon* and *Module2D*:
+        other_pi: OtherPi = self
+        other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
+        other_pi_pcb_module: Module2D = Module2D("Other_Pi_PCB_Polygon_Module",
+                                                 [other_pi_pcb_polygon])
+        # Perform the 2D appending:
+        scad_program.append(other_pi_pcb_module)
+        if2d.name_match_append("other_pi_pcb", other_pi_pcb_module, ["Other Pi PCB"])
+
+        # Perform the actual appending:
+        other_pi_model_module: Module3D = other_pi.module_get()
         scad_program.append(other_pi_model_module)
-        if3d.name_match_append("otherpi_model", other_pi_model_module, ["Other Pi"])
+        if3d.name_match_append("other_pi", other_pi_model_module, ["Other Pi"])
 
 
 def main() -> int:  # pragma: no cover
@@ -2136,6 +2430,12 @@ def main() -> int:  # pragma: no cover
     # Append the *romi_motor* module to *scad_program*:
     romi_motor: RomiMotor = RomiMotor()
     romi_motor.scad_program_append(scad_program, if3d)
+
+    romi_motor_holder: RomiMotorHolder = RomiMotorHolder()
+    romi_motor_holder.scad_program_append(scad_program, if3d)
+
+    romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly()
+    romi_wheel_assembly.scad_program_append(scad_program, if3d)
 
     # Append the roboto model to *scad_program*:
     hr2: HR2 = HR2(romi)

@@ -2833,7 +2833,7 @@ class Rotate3D(Scad3D):
         rotate_text: str = "{0:.6f}".format(rotate * 180.0 / pi)
 
         # Append everything to *scad_lines*:
-        scad_lines.append(f"{indent}translate(a = {rotate_text}, "
+        scad_lines.append(f"{indent}rotate(a = {rotate_text}, "
                           f"v=[{axis_x_text}, {axis_y_text}, {axis_z_text}]) {{  "
                           f"// Rotate3D: '{name}'")
         scad3d.scad_lines_append(scad_lines, indent + " ")

@@ -767,7 +767,7 @@ def test_rotate3d() -> None:
     scad_lines: List[str] = []
     rotate1.scad_lines_append(scad_lines, "")
     assert len(scad_lines) == 3
-    assert scad_lines[0] == ("translate(a = 45.000000, v=[0.000, 0.000, 1.000]) {  "
+    assert scad_lines[0] == ("rotate(a = 45.000000, v=[0.000, 0.000, 1.000]) {  "
                              "// Rotate3D: 'Rotate3D 1'"), "[0]!"
     assert scad_lines[1] == (" cube(size = [1.000, 2.000, 3.000], center = true);  "
                              "// Cube: 'Cube 1'"), "[1]!"
