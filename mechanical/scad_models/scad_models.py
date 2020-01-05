@@ -1790,25 +1790,18 @@ class RomiMotor:
 
         # Start grabbing some X values from west to east:
         gearbox_casing_west_x: float = -6.326134 * inches2mm - x_offset
-        self.gearbox_casing_west_x: float = gearbox_casing_west_x
         gearbox_motor_casing_x: float = -5.782827 * inches2mm - x_offset  # Gearbox/motor surface X
-        self.gearbox_motor_casing_x: float = gearbox_motor_casing_x
         motor_casing_west_x: float = -5.253299 * inches2mm - x_offset
-        self.motor_casing_west_x: float = motor_casing_west_x
         electrical_east_x: float = motor_casing_west_x
-        self.electrical_east_x: float = electrical_east_x
         electrical_west_x: float = -5.074161 * inches2mm - x_offset
-        self.electrical_west_x = electrical_west_x
         motor_shaft_west_x: float = motor_casing_west_x
-        self.motor_shaft_west_x: float = motor_shaft_west_x
         motor_shaft_east_x: float = -5.085980 * inches2mm - x_offset
-        self.motor_shaft_east_x: float = motor_shaft_east_x
 
         # Compute some *dx* values as well:
-        self.electrical_dx: float = abs(electrical_east_x - electrical_west_x)
-        self.gearbox_casing_dx: float = abs(gearbox_motor_casing_x - motor_casing_west_x)
-        self.motor_casing_dx: float = abs(motor_casing_west_x - gearbox_motor_casing_x)
-        self.motor_shaft_dx: float = abs(motor_shaft_east_x - motor_casing_west_x)
+        # electrical_dx: float = abs(electrical_east_x - electrical_west_x)
+        # gearbox_casing_dx: float = abs(gearbox_motor_casing_x - motor_casing_west_x)
+        # motor_casing_dx: float = abs(motor_casing_west_x - gearbox_motor_casing_x)
+        # motor_shaft_dx: float = abs(motor_shaft_east_x - motor_casing_west_x)
 
         # Start grabbing some Y values:
         # Compute *y_offset* and *wheel_shaft_diameter* using the wheel shaft `.dxf` file values :
@@ -1817,38 +1810,38 @@ class RomiMotor:
         y_offset: float = (wheel_shaft_north_y + wheel_shaft_south_y) / 2.0
         wheel_shaft_north_y -= y_offset
         wheel_shaft_south_y -= y_offset
-        self.wheel_shaft_diameter: float = abs(wheel_shaft_north_y - wheel_shaft_south_y)
+        wheel_shaft_diameter: float = abs(wheel_shaft_north_y - wheel_shaft_south_y)
 
         # Now compute the *motor_shaft_diameter*:
         motor_shaft_north_y: float = 2.967165 * inches2mm - y_offset
         motor_shaft_south_y: float = 2.908110 * inches2mm - y_offset
-        self.motor_shaft_diameter: float = abs(motor_shaft_north_y - motor_shaft_south_y)
+        motor_shaft_diameter: float = abs(motor_shaft_north_y - motor_shaft_south_y)
 
         # Read off the *motor_casing_dy*:
         motor_casing_north_y: float = 3.382512 * inches2mm - y_offset
         motor_casing_south_y: float = 2.492748 * inches2mm - y_offset
-        self.motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
+        motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
 
         # Read off the *gearbox_casing_dy*:
         gearbox_casing_north_y: float = 3.331331 * inches2mm - y_offset
         gearbox_casing_south_y: float = 2.543929 * inches2mm - y_offset
         gearbox_casing_dy: float = abs(gearbox_casing_north_y - gearbox_casing_south_y)
-        self.gearbox_casing_dy: float = gearbox_casing_dy
+        gearbox_casing_dy: float = gearbox_casing_dy
 
         # Now capture the north electrical tabs:
         electrical_north_upper_y: float = 3.208303 * inches2mm - y_offset
         electrical_north_lower_y: float = 3.188610 * inches2mm - y_offset
         electrical_north_dy: float = abs(electrical_north_upper_y - electrical_north_lower_y)
-        self.electrical_north_y: float = (electrical_north_upper_y + electrical_north_lower_y) / 2.0
+        electrical_north_y: float = (electrical_north_upper_y + electrical_north_lower_y) / 2.0
 
         # Now capture the south electrical tab:
         electrical_south_upper_y: float = 2.686650 * inches2mm - y_offset
         electrical_south_lower_y: float = 2.666957 * inches2mm - y_offset
         electrical_south_dy: float = abs(electrical_south_upper_y - electrical_south_lower_y)
-        self.electrical_south_y: float = (electrical_south_upper_y + electrical_south_lower_y) / 2.0
+        electrical_south_y: float = (electrical_south_upper_y + electrical_south_lower_y) / 2.0
 
         # Compute *electrical_dy*:
-        self.electrical_dy: float = (electrical_north_dy + electrical_south_dy) / 2.0
+        electrical_dy: float = (electrical_north_dy + electrical_south_dy) / 2.0
 
         # Read off off `.dxf` Front view:
         # Do some Z dimensions:
@@ -1858,140 +1851,92 @@ class RomiMotor:
         z_offset: float = (top_motor_wheel_shaft_z + bottom_motor_wheel_shaft_z) / 2.0
         top_motor_wheel_shaft_z -= z_offset
         bottom_motor_wheel_shaft_z -= z_offset
-        self.wheel_shaft_diameter: float = (top_motor_wheel_shaft_z -
-                                            bottom_motor_wheel_shaft_z) / 2.0
+        wheel_shaft_diameter: float = (top_motor_wheel_shaft_z - bottom_motor_wheel_shaft_z) / 2.0
 
         # Grab the electrical tab locations:
         electrical_top_z: float = -1.842126 * inches2mm - z_offset
         electrical_bottom_z: float = -1.926776 * inches2mm - z_offset
-        self.electrical_dz: float = abs(electrical_top_z - electrical_bottom_z)
-        self.electrical_z: float = (electrical_top_z + electrical_bottom_z) / 2.0
+        electrical_dz: float = abs(electrical_top_z - electrical_bottom_z)
+        electrical_z: float = (electrical_top_z + electrical_bottom_z) / 2.0
         # By inference, the *motor_shaft_z* is the same:
-        self.motor_shaft_z: float = self.electrical_z
+        motor_shaft_z: float = electrical_z
 
         # Compute *motor_casing_dz*, *top_motor_casing_z*, and *bottom_motor_casing_z*:
         motor_casing_top_z: float = -1.658071 * inches2mm - z_offset
         motor_casing_bottom_z: float = -2.110835 * inches2mm - z_offset
-        self.motor_casing_dz: float = (motor_casing_top_z + motor_casing_bottom_z) / 2.0
-        self.motor_casing_top_z = motor_casing_top_z
-        self.motor_casing_bottom_z = motor_casing_bottom_z
+        # motor_casing_dz: float = (motor_casing_top_z + motor_casing_bottom_z) / 2.0
+        motor_casing_top_z = motor_casing_top_z
+        motor_casing_bottom_z = motor_casing_bottom_z
 
         # Compute *gearbox_casing_dz* realizing the top half goes from the wheel axle (i.e. Y==0)
         # and the bottom half is a half circle of diameter *gearbox_casing_dy*:
         gearbox_casing_top_z: float = motor_casing_top_z
         gearbox_casing_dz: float = (gearbox_casing_top_z + gearbox_casing_dy / 2.0)
         gearbox_casing_bottom_z: float = gearbox_casing_top_z - gearbox_casing_dz
-        self.gearbox_casing_bottom_z: float = gearbox_casing_bottom_z
-        self.gearbox_casing_dz: float = gearbox_casing_dz
-        self.gearbox_casing_top_z: float = gearbox_casing_top_z
-
-        # Remember the relative distance for the base:
-        self.base_bottom_z = -3.469098 * inches2mm - z_offset
-        self.base_top_z = -2.701374 * inches2mm - z_offset
+        gearbox_casing_bottom_z: float = gearbox_casing_bottom_z
+        gearbox_casing_dz: float = gearbox_casing_dz
+        gearbox_casing_top_z: float = gearbox_casing_top_z
 
         # Measure *wheel_shaft_dx* length using calipers:
-        self.wheel_shaft_dx: float = 9.75
+        wheel_shaft_dx: float = 9.75
 
-        # Reserve a place for the actual motor as a *Module3D* object:
-        self.module: Optional[Module3D] = None
+        # Construct everything oup of cubes of material:
+        gearbox_casing: CornerCube = CornerCube("Gearbox Casing",
+                                                P3D(gearbox_casing_west_x,
+                                                    -gearbox_casing_dy/2.0,
+                                                    gearbox_casing_bottom_z),
+                                                P3D(gearbox_motor_casing_x,
+                                                    gearbox_casing_dy/2.0,
+                                                    gearbox_casing_top_z))
+        motor_casing: CornerCube = CornerCube("Motor Casing",
+                                              P3D(gearbox_motor_casing_x,
+                                                  -motor_casing_dy/2.0,
+                                                  motor_casing_top_z),
+                                              P3D(motor_casing_west_x,
+                                                  motor_casing_dy/2.0,
+                                                  motor_casing_bottom_z))
+        motor_shaft: Cylinder = Cylinder("Motor Shaft", motor_shaft_diameter,
+                                         P3D(motor_shaft_west_x, 0.0, motor_shaft_z),
+                                         P3D(motor_shaft_east_x, 0.0, motor_shaft_z),
+                                         8)
+        wheel_shaft: Cylinder = Cylinder("Wheel Shaft", wheel_shaft_diameter,
+                                         P3D(gearbox_casing_west_x - wheel_shaft_dx, 0.0, 0.0),
+                                         P3D(gearbox_casing_west_x, 0.0, 0.0),
+                                         8)
+        electrical_north: CornerCube = CornerCube("Electrical North",
+                                                  P3D(electrical_west_x,
+                                                      electrical_north_y - electrical_dy/2.0,
+                                                      electrical_z - electrical_dz/2.0),
+                                                  P3D(electrical_east_x,
+                                                      electrical_north_y + electrical_dy/2.0,
+                                                      electrical_z + electrical_dz/2.0))
+        electrical_south: CornerCube = CornerCube("Electrical South",
+                                                  P3D(electrical_west_x,
+                                                      electrical_south_y - electrical_dy/2.0,
+                                                      electrical_z - electrical_dz/2.0),
+                                                  P3D(electrical_east_x,
+                                                      electrical_south_y + electrical_dy/2.0,
+                                                      electrical_z + electrical_dz/2.0))
+
+        # Create a *union* to store all of the parts into:
+        union: Union3D = Union3D("Romi Motor Union 3D",
+                                 [Color("Wheat Color", gearbox_casing, "Wheat"),
+                                  Color("Wheat Color", motor_casing, "Wheat"),
+                                  Color("Silver Color", motor_shaft, "Silver"),
+                                  Color("Silver Color", wheel_shaft, "Silver"),
+                                  Color("Gold Color", electrical_north, "Gold"),
+                                  Color("Gold Color", electrical_south, "Gold")])
+
+        # Create *module* and save into *romi_motor* (i.e. *self*):
+        module = Module3D("Romi Motor Module", [union])
+        self.module: Module3D = module
 
     # RomiMotor.module_get():
     def module_get(self) -> Module3D:
         """Return motor as a Module3D."""
         # Grab values from *romi_motor* (i.e. *self*):
         romi_motor: RomiMotor = self
-        module: Optional[Module3D] = romi_motor.module
-
-        # Construct *module* if it has not already been construted:
-        if module is None:
-            # Grab some X coordinates from *romi_motor*:
-            # electrical_dx: float = romi_motor.electrical_dx
-            electrical_east_x: float = self.electrical_east_x
-            electrical_west_x: float = self.electrical_west_x
-            gearbox_motor_casing_x: float = self.gearbox_motor_casing_x
-            # gearbox_casing_dx: float = romi_motor.gearbox_casing_dx
-            gearbox_casing_west_x: float = self.gearbox_casing_west_x
-            # motor_casing_dx: float = romi_motor.motor_casing_dx
-            motor_casing_west_x: float = self.motor_casing_west_x
-            # motor_shaft_dx: float = romi_motor.motor_shaft_dx
-            motor_shaft_east_x: float = self.motor_shaft_east_x
-            motor_shaft_west_x: float = self.motor_shaft_west_x
-            wheel_shaft_dx: float = romi_motor.wheel_shaft_dx
-
-            # Grab some Y coordinates from *romi_motor*:
-            electrical_dy: float = romi_motor.electrical_dy
-            electrical_north_y: float = romi_motor.electrical_north_y
-            electrical_south_y: float = romi_motor.electrical_south_y
-            gearbox_casing_dy: float = romi_motor.gearbox_casing_dy
-            motor_casing_dy: float = romi_motor.motor_casing_dy
-
-            # Grab some Z coordinates from *romi_motor*:
-            electrical_dz: float = romi_motor.electrical_dz
-            # electrical_south_y: float = romi_motor.electrical_south_y
-            electrical_z: float = romi_motor.electrical_z
-            gearbox_casing_bottom_z: float = romi_motor.gearbox_casing_bottom_z
-            gearbox_casing_top_z: float = romi_motor.gearbox_casing_top_z
-            motor_casing_bottom_z: float = romi_motor.motor_casing_bottom_z
-            motor_casing_top_z: float = romi_motor.motor_casing_top_z
-            motor_shaft_z: float = romi_motor.motor_shaft_z
-
-            # Grab the two shaft diameters:
-            motor_shaft_diameter: float = romi_motor.motor_shaft_diameter
-            wheel_shaft_diameter: float = romi_motor.wheel_shaft_diameter
-
-            # Start with a cube of material
-            gearbox_casing: CornerCube = CornerCube("Gearbox Casing",
-                                                    P3D(gearbox_casing_west_x,
-                                                        -gearbox_casing_dy/2.0,
-                                                        gearbox_casing_bottom_z),
-                                                    P3D(gearbox_motor_casing_x,
-                                                        gearbox_casing_dy/2.0,
-                                                        gearbox_casing_top_z))
-            motor_casing: CornerCube = CornerCube("Motor Casing",
-                                                  P3D(gearbox_motor_casing_x,
-                                                      -motor_casing_dy/2.0,
-                                                      motor_casing_top_z),
-                                                  P3D(motor_casing_west_x,
-                                                      motor_casing_dy/2.0,
-                                                      motor_casing_bottom_z))
-            motor_shaft: Cylinder = Cylinder("Motor Shaft", motor_shaft_diameter,
-                                             P3D(motor_shaft_west_x, 0.0, motor_shaft_z),
-                                             P3D(motor_shaft_east_x, 0.0, motor_shaft_z),
-                                             8)
-            wheel_shaft: Cylinder = Cylinder("Wheel Shaft", wheel_shaft_diameter,
-                                             P3D(gearbox_casing_west_x - wheel_shaft_dx, 0.0, 0.0),
-                                             P3D(gearbox_casing_west_x, 0.0, 0.0),
-                                             8)
-            electrical_north: CornerCube = CornerCube("Electrical North",
-                                                      P3D(electrical_west_x,
-                                                          electrical_north_y - electrical_dy/2.0,
-                                                          electrical_z - electrical_dz/2.0),
-                                                      P3D(electrical_east_x,
-                                                          electrical_north_y + electrical_dy/2.0,
-                                                          electrical_z + electrical_dz/2.0))
-            electrical_south: CornerCube = CornerCube("Electrical South",
-                                                      P3D(electrical_west_x,
-                                                          electrical_south_y - electrical_dy/2.0,
-                                                          electrical_z - electrical_dz/2.0),
-                                                      P3D(electrical_east_x,
-                                                          electrical_south_y + electrical_dy/2.0,
-                                                          electrical_z + electrical_dz/2.0))
-
-            # Create a *union* to store all of the parts into:
-            union: Union3D = Union3D("Romi Motor Union 3D",
-                                     [Color("Wheat Color", gearbox_casing, "Wheat"),
-                                      Color("Wheat Color", motor_casing, "Wheat"),
-                                      Color("Silver Color", motor_shaft, "Silver"),
-                                      Color("Silver Color", wheel_shaft, "Silver"),
-                                      Color("Gold Color", electrical_north, "Gold"),
-                                      Color("Gold Color", electrical_south, "Gold")])
-
-            # Compute *module* and cache into *romi_motor*:
-            module = Module3D("Romi Motor Module", [union])
-            romi_motor.module = module
-
-        # Return *module*:
-        assert isinstance(module, Module3D)
+        module: Module3D = romi_motor.module
         return module
 
     # RomiMotor.scad_program_append():
