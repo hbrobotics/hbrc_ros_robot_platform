@@ -1791,6 +1791,7 @@ class RomiMotor:
         # Start grabbing some X values from west to east:
         gearbox_casing_west_x: float = -6.326134 * inches2mm - x_offset
         gearbox_motor_casing_x: float = -5.782827 * inches2mm - x_offset  # Gearbox/motor surface X
+        gearbox_casing_dx: float = abs(gearbox_motor_casing_x - gearbox_casing_west_x)
         motor_casing_west_x: float = -5.253299 * inches2mm - x_offset
         electrical_east_x: float = motor_casing_west_x
         electrical_west_x: float = -5.074161 * inches2mm - x_offset
@@ -1880,14 +1881,28 @@ class RomiMotor:
         # Measure *wheel_shaft_dx* length using calipers:
         wheel_shaft_dx: float = 9.75
 
-        # Construct everything oup of cubes of material:
-        gearbox_casing: CornerCube = CornerCube("Gearbox Casing",
-                                                P3D(gearbox_casing_west_x,
-                                                    -gearbox_casing_dy/2.0,
-                                                    gearbox_casing_bottom_z),
-                                                P3D(gearbox_motor_casing_x,
-                                                    gearbox_casing_dy/2.0,
-                                                    gearbox_casing_top_z))
+        # The *gearbox_casing* is pretty involved.  It is cube with a rounded bottom.
+        # It is linear extruded from a rectangular polygon with a rounded end:
+        gearbox_case_polygon: SimplePolygon = SimplePolygon("Gearbox Simple Polygon", [])
+        # The polygon needs to be layed out in the X/Y plane, where as the final orientation
+        # is in the Y/Z plane.  So we substitute Z values for X values in the *P2D* below.
+        # We lay this polygon out with the wheel axis pointing upward from the origin:
+        gearbox_case_polygon.point_append(P2D(gearbox_casing_top_z, gearbox_casing_dy/2.0))
+        gearbox_case_polygon.arc_append(center=P2D(0.0, 0.0),  # Wheel axis is at (0.0, 0.0)
+                                        radius=gearbox_casing_dy/2.0,
+                                        start_angle=pi/2.0, end_angle=3.0*pi/2.0,
+                                        points_count=16)
+        gearbox_case_polygon.point_append(P2D(gearbox_casing_top_z, -gearbox_casing_dy/2.0))
+        gearbox_case_polygon.lock()
+        extruded_gearbox_case: LinearExtrude = LinearExtrude("Gearbox Casing Linear Extrude",
+                                                             gearbox_case_polygon,
+                                                             gearbox_casing_dx)
+        upright_gearbox: Rotate3D = Rotate3D("Upright Gearbox", extruded_gearbox_case,
+                                             -pi/2.0, P3D(0.0, 1.0, 0.0))
+        gearbox_casing: Translate3D = Translate3D("Geabox Casing", upright_gearbox,
+                                                  P3D(gearbox_motor_casing_x, 0.0, 0.0))
+
+        # Construct everything else out of cubes of material:
         motor_casing: CornerCube = CornerCube("Motor Casing",
                                               P3D(gearbox_motor_casing_x,
                                                   -motor_casing_dy/2.0,
@@ -1993,6 +2008,8 @@ class RomiMotorHolder:
         motor_gearbox_north_y: float = 3.331331 * inches2mm - y_offset
         holder_north_y: float = 3.410067 * inches2mm - y_offset
         base_clip_dy: float = 4.75  # Measured using calipers:
+        # holder_dy: float = abs(holder_north_y - holder_south_y)
+        motor_gearbox_dy: float = abs(motor_gearbox_north_y - motor_gearbox_south_y)
 
         # Compute the *z_offset* using the wheel shaft:
         wheel_shaft_top_z: float = -2.642319 * inches2mm
@@ -2037,7 +2054,7 @@ class RomiMotorHolder:
                                            P3D(motor_gearbox_west_x,
                                                clip_lip_north_y, lip_north_z))
         north_side: CornerCube = CornerCube("North Side",
-                                            P3D(motor_gearbox_west_x + west_tab_dx,
+                                            P3D(motor_gearbox_west_x,
                                                 motor_gearbox_north_y, base_top_z),
                                             P3D(motor_gearbox_east_x + east_tab_dx,
                                                 holder_north_y, motor_casing_bottom_z))
@@ -2057,15 +2074,38 @@ class RomiMotorHolder:
                                            P3D(motor_gearbox_west_x,
                                                holder_south_y, lip_north_z))
         south_side: CornerCube = CornerCube("South Side",
-                                            P3D(motor_gearbox_west_x + west_tab_dx,
+                                            P3D(motor_gearbox_west_x,
                                                 holder_south_y, base_top_z),
                                             P3D(motor_gearbox_east_x + east_tab_dx,
                                                 motor_gearbox_south_y, motor_casing_bottom_z))
-        west_side: CornerCube = CornerCube("West Side",
-                                           P3D(motor_gearbox_west_x,
-                                               holder_south_y, base_bottom_z),
-                                           P3D(motor_gearbox_west_x + west_tab_dx,
-                                               holder_north_y, motor_casing_bottom_z))
+
+        # The *west_side* has a more complicated geometry.  It needs a half circle to make
+        # room for the motor edge.  It is formed via a polygon that is subsequently  extruded,
+        # rotated, and translated.  The west side final location is in the Y/Z plane, but the
+        # polygon starts on the X/Y plane.  Thus, Z coordinates are show up in the X filed
+        # of *P2D*'s:
+        west_side_polygon: SimplePolygon = SimplePolygon("West Side Polygon", [], lock=False)
+        west_side_polygon.point_append(P2D(0.0, holder_north_y))
+        west_side_polygon.point_append(P2D(base_bottom_z, holder_north_y))
+        west_side_polygon.point_append(P2D(base_bottom_z, holder_south_y))
+        west_side_polygon.point_append(P2D(0.0, holder_south_y))
+        west_side_polygon.arc_append(center=P2D(0.0, 0.0), radius=motor_gearbox_dy/2.0,
+                                     start_angle=3.0*pi/2.0, end_angle=pi/2.0,
+                                     points_count=16)
+        west_side_polygon.lock()
+
+        # Now convert *west_side_polygon* into *west_side*:
+        extruded_west_side: LinearExtrude = LinearExtrude("Extruded West Side",
+                                                          west_side_polygon, west_tab_dx)
+        rotated_west_side: Rotate3D = Rotate3D("Rotated West Side", extruded_west_side,
+                                               -pi/2.0, P3D(0.0, 1.0, 0.0))
+        west_side: Translate3D = Translate3D("West Side", rotated_west_side,
+                                             P3D(motor_gearbox_west_x + west_tab_dx, 0.0, 0.0))
+        # west_side: CornerCube = CornerCube("West Side",
+        #                                    P3D(motor_gearbox_west_x,
+        #                                        holder_south_y, base_bottom_z),
+        #                                    P3D(motor_gearbox_west_x + west_tab_dx,
+        #                                        holder_north_y, motor_casing_bottom_z))
 
         # Create *holder_union* to contain all of the pieces:
         holder_union: Union3D = Union3D("Romi Motor Holder Union",
