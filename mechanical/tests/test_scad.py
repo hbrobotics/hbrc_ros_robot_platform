@@ -867,10 +867,14 @@ def test_scad_program() -> None:
     scad_program.append(circle1)
     scad_lines: List[str] = []
     scad_program.scad_lines_append(scad_lines, "")
-    assert len(scad_lines) == 3
+    assert len(scad_lines) == 7
     assert scad_lines[0] == "// Begin ScadProgram('ScadProgram 1')", "[0]!"
-    assert scad_lines[1] == "circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[10]!"
-    assert scad_lines[2] == "// End ScadProgram('ScadProgram 1')", "[2]!"
+    assert scad_lines[1] == "circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
+    assert scad_lines[2] == "if (false) {  // If2D 'Name If2D'", "[2]!"
+    assert scad_lines[3] == "}  // End If2D 'Name If2D'", "[3]!"
+    assert scad_lines[4] == "if (false) {  // If3D 'Name If3D'", "[4]!"
+    assert scad_lines[5] == "}  // End If3D 'Name If3D'", "[5]!"
+    assert scad_lines[6] == "// End ScadProgram('ScadProgram 1')", "[7]!"
 
 
 def test_simple_polygon() -> None:

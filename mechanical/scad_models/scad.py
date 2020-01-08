@@ -570,6 +570,8 @@ class ScadProgram:
         """Initialize a ScadProgram."""
         # Load values into *scad_program* (i.e. *self*):
         # scad_program: ScadProgram = self
+        self.if2d: If2D = If2D("Name If2D", "false", [])
+        self.if3d: If3D = If3D("Name If3D", "false", [])
         self.name: str = name
         self.scads: List[Scad] = []
 
@@ -610,6 +612,14 @@ class ScadProgram:
         scad: Scad
         for scad in scads:
             scad.scad_lines_append(scad_lines, indent)
+
+        # Output *if2d* and *if3d*:
+        if2d: If2D = scad_program.if2d
+        if2d.lock()
+        if2d.scad_lines_append(scad_lines, indent)
+        if3d: If3D = scad_program.if3d
+        if3d.lock()
+        if3d.scad_lines_append(scad_lines, indent)
 
         # Append the final comment:
         scad_lines.append(f"{indent}// End ScadProgram('{name}')")
@@ -832,10 +842,11 @@ class Module2D(Scad2D):
         super().__init__(name)
 
         # Load values into *module2d* (i.e. *self*):
-        # module2d: Module2D = self
+        module2d: Module2D = self
         self.is_operator: bool = is_operator
         self.locked: bool = lock
         self.scad2ds: List[Scad2D] = scad2ds[:]  # Make a copy
+        self.use_module: UseModule2D = UseModule2D(f"{name} Use Module", module2d)
 
     # Module2D.__str__():
     def __str__(self) -> str:  # pragma: no cover
@@ -942,6 +953,13 @@ class Module2D(Scad2D):
 
         # Output the closing '}':
         scad_lines.append(f"{indent}}}")
+
+    # Module2d.use_module_get():
+    def use_module_get(self) -> "UseModule2D":
+        """Return the UseModule associated with Module2D."""
+        module2d: Module2D = self
+        use_module: UseModule2D = module2d.use_module
+        return use_module
 
 
 # Polygon:
@@ -2382,7 +2400,7 @@ class Color(Scad3D):
 
     # Color.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
-        """Append If3D to a list of lines.
+        """Append Color to a list of lines.
 
         Args:
             *scad_lines* (*List*[*str*]): The lines list to append the
@@ -2663,6 +2681,7 @@ class Module3D(Scad3D):
         self.is_operator: bool = is_operator
         self.locked: bool = lock
         self.scad3ds: List[Scad3D] = scad3ds[:]  # Make a copy
+        self.use_module3d: UseModule3D = UseModule3D(f"Use {name}", self)
 
     # Module3D.__str__():
     def __str__(self) -> str:  # pragma: no cover
@@ -2769,6 +2788,14 @@ class Module3D(Scad3D):
 
         # Output the closing '}':
         scad_lines.append(f"{indent}}}")
+
+    # Module3D.use_module_get():
+    def use_module_get(self) -> "UseModule3D":
+        """Return a *UseModule3D for a Module3D."""
+        # Grab use_module3D from *Module3D* (i.e. *self*) and return it:
+        module3d: Module3D = self
+        use_module3d: UseModule3D = module3d.use_module3d
+        return use_module3d
 
 
 # Rotate3D(Scad3D):

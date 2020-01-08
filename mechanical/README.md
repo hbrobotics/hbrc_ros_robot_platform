@@ -177,41 +177,14 @@ systems and Linux distributions you are on your own.
 
   where NAME is one of:  <!-- NAME list starts here. -->
 
-  * `battery_base_polygon`:
-    Romi Battery Base Polygon
+  * `expansion`:
+    Romi Expansion Polygon
 
   * `hr2_robot`:
-    Entire HR2 Robot Model
-
-  * `other_pi`:
-    Other Pi
-
-  * `other_pi_pcb`:
-    Other Pi PCB
-
-  * `raspi3b_model`:
-    Raspberry Pi 3B+
-
-  * `raspi3b_pcb`:
-    Raspberry Pi3B+ PCB Polygon
+    HR2 Robot
 
   * `romi_base`:
-    Romi Base
-
-  * `romi_base_polygon`:
     Romi Base Polygon
-
-  * `romi_expansion`:
-    Romi Expansion Chasis Polygon
-
-  * `romi_motor`:
-    Romi Motor
-
-  * `romi_motor_holder`:
-    Romi Motor Holder
-
-  * `wheel_assembly`:
-    Rome Wheel Assembly
 
   After you run `openscad`, use your mouse to select `[Design]`=>`[Preveiw]` and `openscad`
   will show the resulting model.
@@ -345,6 +318,11 @@ There a a bunch of miscellaneous files in the `mechanical` directory:
 
 * [romi_base.html](romi_base.html): This contains the same content as the `romi_base.csv`
   file, but in HTML table format.  It is easier to read in a web browser.
+
+
+
+
+
 
 
 

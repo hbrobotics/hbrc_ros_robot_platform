@@ -22,56 +22,55 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from scad_models.scad_models import HR2, OtherPi, RaspberryPi3, Romi, RomiMotor
-from scad_models.scad import If2D, If3D, ScadProgram
+from scad_models.scad_models import (HR2, MasterPCB, OtherPi, RaspberryPi3, RomiBase,
+                                     RomiExpansionPlate, RomiMagnet, RomiMotor, RomiMotorHolder,
+                                     RomiWheelAssembly)
+from scad_models.scad import ScadProgram
 
 
 # test_hr2():
 def test_hr2():
     """Test the HR2 class."""
-    romi: Romi = Romi()
-    hr2: HR2 = HR2(romi)
-    scad_program: ScadProgram = ScadProgram("Top Level program")
-    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
-    hr2.scad_program_append(scad_program, if3d)
+    scad_program: ScadProgram = ScadProgram("Top Level Program")
+    master_pcb: MasterPCB = MasterPCB(scad_program)
+    other_pi: OtherPi = OtherPi(scad_program)
+    romi_base: RomiBase = RomiBase(scad_program)
+    romi_magnet: RomiMagnet = RomiMagnet(scad_program)
+    romi_base.holes_slots_rectangles_write()
+    romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program)
+    romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly(scad_program, romi_base,
+                                                               romi_motor_holder, romi_magnet)
+    hr2: HR2 = HR2(scad_program, romi_base, romi_wheel_assembly, other_pi, master_pcb)
+    hr2 = hr2
 
 
 # test_raspi3b():
 def test_raspi3b():
     """Test RaspberryPi3 class."""
-    raspi3b: RaspberryPi3 = RaspberryPi3()
-    scad_program: ScadProgram = ScadProgram("Top Level program")
-    if2d: If2D = If2D("If2D If/Then/Else", "false", [])
-    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
-    raspi3b.scad_program_append(scad_program, if2d, if3d)
+    scad_program: ScadProgram = ScadProgram("Top Level Program")
+    raspi3b: RaspberryPi3 = RaspberryPi3(scad_program)
+    raspi3b = raspi3b
 
 
-# test_romi():
-def test_romi():
-    """Test the Romi class."""
-    romi: Romi = Romi()
-    romi.debugging = False
-    scad_program: ScadProgram = ScadProgram("Top Level program")
-    if2d: If2D = If2D("If2D If/Then/Else", "false", [])
-    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
-    romi.scad_program_append(scad_program, if2d, if3d)
-    romi.holes_slots_rectangles_write()
+# test_romi_expansion_plate():
+def test_romi_expansion_plate():
+    """Test RomiExpanstionPlate class."""
+    scad_program: ScadProgram = ScadProgram("Top Level Program")
+    romi_expansion_plate: RomiExpansionPlate = RomiExpansionPlate(scad_program)
+    romi_expansion_plate = romi_expansion_plate
 
 
 # test_romi_motor():
 def test_romi_motor():
     """Test RomiMotor class."""
-    romi_motor: RomiMotor = RomiMotor()
-    scad_program: ScadProgram = ScadProgram("Top Level program")
-    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
-    romi_motor.scad_program_append(scad_program, if3d)
+    scad_program: ScadProgram = ScadProgram("Top Level Program")
+    romi_motor: RomiMotor = RomiMotor(scad_program)
+    romi_motor = romi_motor
 
 
 # test_other_pi():
 def test_other_pi() -> None:
     """Test OtherPi class."""
-    other_pi: OtherPi = OtherPi()
     scad_program: ScadProgram = ScadProgram("Top Level program")
-    if2d: If2D = If2D("If2D If/Then/Else", "false", [])
-    if3d: If3D = If3D("If3D If/Then/Else", "false", [])
-    other_pi.scad_program_append(scad_program, if2d, if3d)
+    other_pi: OtherPi = OtherPi(scad_program)
+    other_pi = other_pi
