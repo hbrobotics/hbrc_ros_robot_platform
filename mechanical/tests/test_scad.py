@@ -589,11 +589,13 @@ def test_p2d() -> None:
     assert f"{p23 * 2.0}" == "P2D(4.000,6.000)"
     assert f"{2.0 * p23}" == "P2D(4.000,6.000)"
 
-    # Test distance:
+    # Test distance and length:
     p10: P2D = P2D(1.0, 0.0)
     assert f"{origin.distance(p10)}" == "1.0"
+    assert f"{p10.length()}" == "1.0"
     p01: P2D = P2D(0.0, 1.0)
     assert f"{origin.distance(p01)}" == "1.0"
+    assert f"{p01.length()}" == "1.0"
 
     # Division scaling:
     assert f"{p23 / 2.0}" == "P2D(1.000,1.500)"

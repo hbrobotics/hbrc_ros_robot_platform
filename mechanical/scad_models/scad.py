@@ -226,6 +226,15 @@ class P2D:
         dy: float = p2d1.y - p2d2.y
         return sqrt(dx * dx + dy * dy)
 
+    # P2D.length():
+    def length(self) -> float:
+        """Return distance between origin and P2D."""
+        # Extract *dx* and *dy* from *p2d* (i.e. *self*):
+        p2d: P2D = self
+        dx: float = p2d.x
+        dy: float = p2d.y
+        return sqrt(dx * dx + dy * dy)
+
     # P2D.rotate():
     def rotate(self, angle: float, center: "Optional[P2D]" = None) -> "P2D":
         """Rotate a P2D by angle around the origin."""

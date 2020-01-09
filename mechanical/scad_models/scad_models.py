@@ -18,7 +18,73 @@ from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
 # DXF:
 class DXF:
-    """Represents a .DXF file for getting dimensiont from."""
+    """Represents a .DXF file for getting dimensiont from.
+
+    Pololu provides `.dxf` files to grab locations out of.  This class
+    basically provides a way to convert points read directly out of a
+    `.dxf` file and convert them to points in the correct units (mm
+    rather than inches) and offset such that the robot origin is at the
+    center of the base circle and at the center of the wheel shaft.
+
+    Figuring out where everything is located is done with a combination
+    of reading drawing in section 6 of the "Pololu Romi Chassis User's
+    Guide" and extracting values from the `romi-chassis.dxf` file
+    available from the Pololu web site.  `romi-chassis.dxf` is also
+    stored in the git repository to make sure it does not go away.
+
+    It is important to notice that the section 6 drawings are
+    upside-down from the `romi-chassis.dxf`.  Sigh.  For the modeling
+    of this platform, the `.dxf` file orientation is used.  Sigh.
+    Also, the `.dxf` file seems to be in units of inches rather than
+    millimeters.  The rest of this code uses millimeters, so we always
+    immdiately convert the inches coordinate values to millimeters.
+
+    There are two `.dxf` files:
+    * `romi-chassis.dxf`: The primary `.dxf` file for the Romi chasis
+       base assembly.
+    * `romi-chassis-expansion-plate.dxf`: The `.dxf` file for the Romi
+       expansion plate.
+    Both of these files can be found in the `dxf` sub-directory.
+
+    This class has 6 read-only attributes:
+    * `inches2mm` (float): The constant 25.4 to convert inches to mm.
+    * `name` (float): The name of the DXF object.
+    * `offset_side_y`: The `.dxf` X coordinate of side view that
+      corresponds to the Y "center".  For the base plate this
+      corresponds to center of wheel axle.  For the expansion plate
+      this corrsponds to the top long edge.  The expansion plate
+      `.dxf` file uses the term "profile view" instead of "side view".
+    * `offset_top_y`: The `.dxf` Y coordinate of corresponds to the
+      Y "center" in the top view.  Again, this value corrsponds to
+      the wheel axle center for the Romi Base and the top long edge
+      of the expansion plate.
+    * `offset_x`: The X coordinate of the X "center" the both the side
+      and front views.  For the Romi base, this is the center of
+      circular base and for the expansion plate, this is the center
+      of the long edge.
+    * `offset_z`: The Y corrdinate in the `.dxf` file for the Z
+      "center" for both the front view and side (or profile) view.
+      For the Romi base this is center of the wheel axle and for
+      the expansion base, this is bottom edge.
+
+    The *DXF* class is sub-classed by *BaseDXF* and *ExpansionDXF*.
+    The *__init__* methods for these two sub-classes comute the correct
+    values for the attributes listed above.  Other that that the
+    methods of the *DXF* class are used:
+    * hole_locate: Locate the center and diameter of a hole and
+      return it as a *Circle* object.
+    * point_locate: Locate a trop view point and return it as *P2D*
+      object.
+    * rectangle_locate: Locoate a rectangle and return it as
+      *Square* object.  The rectangle is identified using opposite
+      corners.
+    * side_point_locate: Locate a point on the side view.  The Y
+      coordinate is stored in the *x* attribute and the Z coordinate
+      is stored in the *y* attribute of the returned *P2D*.
+    * x_locate: Locate an X coordinate from the top or front view.
+    * y_locate: Locate a Y coordinate from the top view.
+    * z_locate: Locate a Z coordinate from the front or side view.
+    """
 
     # DXF.__init__():
     def __init__(self, name: str, offset_x: float, offset_top_y: float,
@@ -35,7 +101,7 @@ class DXF:
 
     # DXF.hole_locate():
     def hole_locate(self, name: str, x1: float, y1: float, x2: float, y2: float) -> Circle:
-        """Locate top view hole in DXF by opposite corners."""
+        """Return a located top view hole using opposite corners."""
         # Grab some values from *dxf* (i.e. *self*):
         dxf: DXF = self
         inches2mm: float = dxf.inches2mm
@@ -62,7 +128,7 @@ class DXF:
 
     # DXF.point_locate():
     def point_locate(self, x: float, y: float) -> P2D:
-        """Locate and return a point on Romi base."""
+        """Return a top view located point."""
         # Grab some values from *dxf* (i.e. *self*):
         dxf: DXF = self
         inches2mm: float = dxf.inches2mm
@@ -80,7 +146,7 @@ class DXF:
     # DXF.rectangle_locate():
     def rectangle_locate(self, name: str, x1: float, y1: float,
                          x2: float, y2: float) -> Square:
-        """Locate a non-rotated rectangle and return it as a Square.
+        """Return a located rectangle on top view as a Square.
 
         Args:
             *name* (*str*): The name to assign to the returned *Square*.
@@ -114,6 +180,48 @@ class DXF:
         rectangle: Square = Square(name, dx, dy, center)
         return rectangle
 
+    # DXF.x_locate():
+    def x_locate(self, dxf_x: float) -> float:
+        """Return a X coordinate from top or front view."""
+        # Grab some values from *dxf* (i.e. *self*):
+        dxf: DXF = self
+        inches2mm: float = dxf.inches2mm
+        offset_x: float = dxf.offset_x
+
+        # Convert from inches to mm:
+        dxf_x *= inches2mm
+
+        # Return the resulting Y coordinate (in millimeters):
+        return dxf_x - offset_x
+
+    # DXF.y_locate():
+    def y_locate(self, dxf_y: float) -> float:
+        """Return a Y coordinate from top view."""
+        # Grab some values from *dxf* (i.e. *self*):
+        dxf: DXF = self
+        inches2mm: float = dxf.inches2mm
+        offset_top_y: float = dxf.offset_top_y
+
+        # Convert from inches to mm:
+        dxf_y *= inches2mm
+
+        # Return the resulting Y coordinate (in millimeters):
+        return dxf_y - offset_top_y
+
+    # DXF.z_locate():
+    def z_locate(self, dxf_y: float) -> float:
+        """Return a Z coordinate from front/side view."""
+        # Grab some values from *dxf* (i.e. *self*):
+        dxf: DXF = self
+        inches2mm: float = dxf.inches2mm
+        offset_z: float = dxf.offset_z
+
+        # Convert from inches to mm:
+        dxf_y *= inches2mm
+
+        # Return the resulting Z coordinate (in millimeters):
+        return dxf_y - offset_z
+
 
 # BaseDXF:
 class BaseDXF(DXF):
@@ -129,7 +237,7 @@ class BaseDXF(DXF):
         offset_x: float = (caster_west_x + caster_east_x) / 2.0
 
         # Compute *offset_top_y* which is the Y offset for the Top view using the motor shaft.
-        # (Do not use the wheel shaft since it has a notch cut in it!
+        # (Do not use the wheel shaft since it has a flat cut in it!):
         motor_shaft_north_y: float = 2.967165 * inches2mm
         motor_shaft_south_y: float = 2.908110 * inches2mm
         offset_top_y: float = (motor_shaft_north_y + motor_shaft_south_y) / 2.0
@@ -140,13 +248,19 @@ class BaseDXF(DXF):
         motor_shaft_south_y: float = 3.489772 * inches2mm
         offset_side_y: float = (motor_shaft_north_y + motor_shaft_south_y) / 2.0
 
-        # Compute the *offset_z* using the motor shaft:
-        motor_shaft_top_z = -2.759752 * inches2mm
-        motor_shaft_bottom_z = -2.643004 * inches2mm
-        offset_z: float = (motor_shaft_top_z + motor_shaft_bottom_z) / 2.0
+        # Compute the *offset_z* using the wheel shaft.  The wheel shaft has a flat
+        # on it, so this extracted using the side view.
+        wheel_shaft_top_z = -2.759752 * inches2mm
+        wheel_shaft_bottom_z = -2.643004 * inches2mm
+        offset_z: float = (wheel_shaft_top_z + wheel_shaft_bottom_z) / 2.0
+        wheel_shaft_diameter: float = abs(wheel_shaft_top_z - wheel_shaft_bottom_z)
 
         # Initialize the parent *DXF* class:
         super().__init__("Romi Base DXF", offset_x, offset_top_y, offset_side_y, offset_z)
+
+        # Save *wheel_shaft_diameter* into *base_dxf* (i.e. *self*):
+        # base_dxf: BaseDXF = self
+        self.wheel_shaft_diameter: float = wheel_shaft_diameter
 
 
 # ExpansionDXF:
@@ -168,7 +282,7 @@ class ExpansionDXF(DXF):
         # Compute the *offset_side_y* using the right most edge of the Profile (i.e. side) View:
         offset_side_y: float = 4.940795 * inches2mm
 
-        # Compute the *offset_z*: using the bottom most edge of the Proview (i.e. side) View:
+        # Compute the *offset_z*: using the bottom most edge of the Profile (i.e. side) View:
         offset_z: float = -2.107961 * inches2mm
 
         # Initialize the parent *DXF* class:
@@ -385,29 +499,19 @@ class MalePinConnector:
 class MasterPCB:
     """Represents Master PCB that the various Pi boards mount to."""
 
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
         """Initialize the MasterPCB."""
-        # Compute *x_offset* using top-most caster mounting slot:
-        inches2mm: float = 25.4
-        castor_slot_west_x: float = -3.995811 * inches2mm
-        castor_slot_east_x: float = -3.739909 * inches2mm
-        x_offset: float = (castor_slot_west_x + castor_slot_east_x) / 2.0
-
-        # Now Grab the PCB sides:
-        pcb_west_x: float = -5.704087 * inches2mm - x_offset  # Corresponds to east side of gearbox.
-        pcb_east_x: float = -2.031642 * inches2mm - x_offset  # Corresponds to west side of gearbox.
+        # Now Grab the PCB sides.  Arbitrarily set Y to 0 since is in not needed:
+        pcb_west_x: float = base_dxf.x_locate(-5.704087)  # East side of gearbox.
+        pcb_east_x: float = base_dxf.x_locate(-2.031642)  # West side of gearbox.
         pcb_dx: float = abs(pcb_east_x - pcb_west_x)
 
         # Currently set *pcb_dy* equal to the area covring the 4 Raspberry Pi holes:
         pcb_dy: float = 7.00 + 58.00 + 7.00
 
-        # Comute the *z_offset* using the wheel shaft:
-        wheel_shaft_top_z: float = -2.642319 * inches2mm
-        wheel_shaft_bottom_z: float = -2.760429 * inches2mm
-        z_offset: float = (wheel_shaft_top_z + wheel_shaft_bottom_z)/2.0
-
-        # Find the bottom edge of the motor casin:
-        motor_casing_bottom_z: float = -2.110835 * inches2mm - z_offset
+        # Find the bottom edge of the motor casing.  Arbitrarily set Y to 0.0 since it is unneeded.
+        # The Y coordinate cooresponds to the Z height.
+        motor_casing_bottom_z: float = base_dxf.z_locate(-2.110835)
         pcb_height: float = 1.00
 
         # Create the *pcb_polygon*:
@@ -423,7 +527,6 @@ class MasterPCB:
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
         module: Module3D = Module3D("Master PCB Module", [colored_pcb])
         scad_program.append(module)
-        # master_pcb: MasterPCB = self
         self.module: Module3D = module
 
 
@@ -432,69 +535,24 @@ class RomiBase:
     """Represents the Romi Chasis Base."""
 
     # RomiBase.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
         """Initialize Romi and append to ScadProgram."""
-        # Figuring out where everything is located is done with a combination of reading
-        # drawing in section 6 of the "Pololu Romi Chassis User's Guide" and extracting
-        # values from the `romi-chassis.dxf` file available from the Pololu web site.
-        # `romi-chassis.dxf` is also stored in the git repository to make sure it does
-        # not go away.
-        #
-        # It is important to notice that the section 6 drawings are upside-down from
-        # the `romi-chassis.dxf`.  For the modeling of this platform, the `.dxf` file
-        # orientation is used.  Sigh.  Also, the `.dxf` file seems to be in units of
-        # inches rather than millimeters.  The rest of this code uses millimeters, so we
-        # multiply inches coordinate values by *inches2mm* as soon as possible.
-        #
-        # Finally, the origin of the `.dxf` is off  to the lower right rather that in the
-        # traditional center for differential drive robots.  There are various "locate"
-        # methods that take values in inches from the `.dxf` file and generate an
-        # appropriate data structure (usuually a *Polygon*.)  All of these "locate"
-        # methods need to have *offset_origin* to convert to a robot center in millimeters.
-
         # Set *debugging* to *True* to print out debugging messages:
         debugging: bool = False  # True
 
-        # Let's get started computing *origin_offet*:
-        #
-        # It is pretty clear that the motor axles are intended to go through the center of the
-        # Romi platform along the X axis.  By reading the values for the top and bottom of the
-        # axle (in inches) from the `.dxf` file we can compute *y_origin_offset*:
-        # *y_origin_offset* in millimeters:
-        inches2mm: float = 25.4
-        axel_y_above: float = 2.967165 * inches2mm
-        axel_y_below: float = 2.908110 * inches2mm
-        y_origin_offset: float = (axel_y_above + axel_y_below) / 2.0
-
-        # The *x_origin_offset* is computed using the upper castor hole location:
-        upper_castor_x_left: float = -3.930756 * inches2mm
-        upper_castor_x_right: float = -3.805256 * inches2mm
-        x_origin_offset: float = (upper_castor_x_left + upper_castor_x_right) / 2.0
-
-        # Finally we have *origin_offset* in millimeters and can save it back into *romi*
-        # (i.e. *self*):
-        origin_offset = P2D(x_origin_offset, y_origin_offset)
-
-        # Loade some values into *romi_base* (i.e. *self*) right now:
+        # Load some values into *romi_base* (i.e. *self*) right now:
         romi_base: RomiBase = self
         self.debugging = debugging
-        self.origin_offset: P2D = origin_offset
-        self.base_dxf: BaseDXF = BaseDXF()
-        self.expansion_dxf: ExpansionDXF = ExpansionDXF()
+        self.base_dxf: BaseDXF = base_dxf
 
-        if debugging:  # pragma: no cover
-            print(f"origin_offset={origin_offset}")
+        # if debugging:  # pragma: no cover
+        #    print(f"origin_offset={origin_offset}")
 
-        # Grab some values from Top View of `.dxf` file:
-        # Start with the *z_offset*:
-        shaft_north_z: float = -2.642319 * inches2mm
-        shaft_south_z: float = -2.760429 * inches2mm
-        z_offset: float = (shaft_north_z + shaft_south_z)/2.0
-
-        # Grab some more Z values:
-        battery_top_z: float = -2.701374 * inches2mm - z_offset
-        base_top_z: float = -3.095083 * inches2mm - z_offset
-        base_bottom_z: float = -3.469098 * inches2mm - z_offset
+        # Grab some Z values (X values are arbtrarily set to 0.0). We use the Y coordiante
+        # which is actually the Z value:
+        base_bottom_z: float = base_dxf.z_locate(-3.469098)
+        battery_top_z: float = base_dxf.z_locate(-2.701374)
+        base_top_z: float = base_dxf.z_locate(-3.095083)
         battery_dz: float = abs(battery_top_z - base_bottom_z)
         base_dz: float = abs(base_top_z - base_bottom_z)
 
@@ -535,6 +593,7 @@ class RomiBase:
         """Return the outline of the Romi Base."""
         # Grab some values from *romi* (i.e. *self*):
         romi_base: RomiBase = self
+        base_dxf: BaseDXF = romi_base.base_dxf
         debugging: bool = romi_base.debugging
 
         # These other dimensions are read off of the drawings in section 6 of the
@@ -570,16 +629,14 @@ class RomiBase:
         wheel_well_corner: P2D = P2D(wheel_well_x, wheel_well_y)
 
         # Compute the dimensions of the "neck" area of the *romi* platform:
-        inches2mm: float = 25.4
-        left_neck_x: float = -5.704091 * inches2mm
-        right_neck_x: float = -2.031646 * inches2mm
-        neck_dx: float = right_neck_x - left_neck_x
+        neck_west_x: float = base_dxf.x_locate(-5.704091)
+        neck_east_x: float = base_dxf.x_locate(-2.031646)
+        neck_dx: float = abs(neck_east_x - neck_west_x)
         half_neck_dx: float = neck_dx / 2.0
-        top_neck_y: float = 3.410067 * inches2mm
-        bottom_neck_y: float = 2.465193 * inches2mm
-        neck_dy: float = top_neck_y - bottom_neck_y
-        assert neck_dy > 0.0
-        half_neck_dy = neck_dy / 2.0
+        neck_top_y: float = base_dxf.y_locate(3.410067)
+        next_bottom_y: float = base_dxf.y_locate(2.465193)
+        neck_dy: float = abs(neck_top_y - next_bottom_y)
+        half_neck_dy: float = neck_dy / 2.0
         # print(f"neck_dx={neck_dx}mm")
 
         # Perform any requested *debugging*:
@@ -589,7 +646,7 @@ class RomiBase:
 
         # Verify that the *distance* from the *origin* to the *wheel_well_corner* matches *radius*:
         origin: P2D = P2D(0.0, 0.0)
-        wheel_well_radius: float = origin.distance(wheel_well_corner)
+        wheel_well_radius: float = wheel_well_corner.length()
         assert abs(radius - wheel_well_radius) < .00001, "Something is not right"
 
         # Now we can draw the *outline_polygon* of the Romi platform.  It conists of two arcs
@@ -603,7 +660,7 @@ class RomiBase:
         arc_count = 21
         outline_polygon.arc_append(origin, radius, upper_start_angle, upper_end_angle, arc_count)
 
-        # Create the left wheel well:
+        # Create the west wheel well:
         outline_polygon.point_append(P2D(-half_wheel_well_dx, half_wheel_well_dy))
         outline_polygon.point_append(P2D(-half_wheel_well_dx, half_neck_dy))
         outline_polygon.point_append(P2D(-half_neck_dx, half_neck_dy))
@@ -847,10 +904,7 @@ class RomiBase:
         """Return the holes for the Romi battery case."""
         # Grab some values from *romi* (i.e. *self*):
         romi_base: RomiBase = self
-        # debugging: bool = romi.debugging
         base_dxf: BaseDXF = romi_base.base_dxf
-        inches2mm: float = 25.4
-        origin_offset: P2D = romi_base.origin_offset
 
         # All of the battery holes are done relative to the *battery_reference_hole*
         # indicated on the drawing of the dimensions and mounting holes seciont of the
@@ -983,20 +1037,23 @@ class RomiBase:
         simple_polygons.extend(cutout_polygons)
 
         # There are 4 slots for where the encoder connectors through hole pins land.
-        # We will measure two on the right side and mirror them to the left side:
-        x1: float = -2.031646 * inches2mm - origin_offset.x - 8.85
-        dx: float = 2.5
-        x2: float = x1 - dx
-        x3: float = x2 - 1.65
-        x4: float = x3 - dx
-        dy: float = 0.70 * inches2mm
+        # There are only two of the 4 slots visible in the `.dxf`, so we find the
+        # *inner_encoder_slot* corners using *base_dxf*:
+        inner_encoder_corner_ne: P2D = base_dxf.point_locate(-2.552508, 3.288024)
+        inner_encoder_corner_sw: P2D = base_dxf.point_locate(-2.652508, 2.587232)
+        encoder_dx: float = abs(inner_encoder_corner_ne.x - inner_encoder_corner_sw.x)
+        encoder_dy: float = abs(inner_encoder_corner_ne.y - inner_encoder_corner_sw.y)
+        inner_encoder_center: P2D = (inner_encoder_corner_ne + inner_encoder_corner_sw) / 2.0
 
-        outer_center: P2D = P2D((x1 + x2) / 2.0, 0.0)
-        outer_encoder_slot: Square = Square("RIGHT: Outer Encoder Slot", dx, dy, outer_center,
-                                            corner_radius=dx/2.0, corner_count=3)
-        inner_center: P2D = P2D((x3 + x4) / 2.0, 0.0)
-        inner_encoder_slot: Square = Square("RIGHT: Inner Encoder Slot", dx, dy, inner_center,
-                                            corner_radius=dx/2.0, corner_count=3)
+        # The distance between the closest edges of the inner and outer encoder slot
+        # is measuered using calipers to be 1.65mm:
+        outer_encoder_center: P2D = inner_encoder_center + P2D(1.65 + encoder_dx / 2.0, 0.0)
+
+        # Now compute *outer_encoder_slot* and *inner_encoder_slot*:
+        outer_encoder_slot: Square = Square("RIGHT: Outer Encoder Slot",
+                                            encoder_dx, encoder_dy, outer_encoder_center)
+        inner_encoder_slot: Square = Square("RIGHT: Inner Encoder Slot",
+                                            encoder_dx, encoder_dy, inner_encoder_center)
 
         # Collect the encoder slots into *encoder_slots* and append to *polygons*:
         encoder_slots: List[SimplePolygon] = [
@@ -1209,8 +1266,6 @@ class RomiBase:
         # Grab some values from *romi_base* (i.e. *self*):
         romi_base: RomiBase = self
         debugging: bool = romi_base.debugging
-        inches2mm: float = 25.4
-        origin_offset: P2D = romi_base.origin_offset
         base_dxf: BaseDXF = romi_base.base_dxf
 
         # The resulting *Polygon*'s are collected into *lower_arc_holes_rectangles*:
@@ -1246,27 +1301,21 @@ class RomiBase:
             print(f"lower_start_center={lower_start_center}")
 
         # Compute the *lower_arc_radius*:
-        origin: P2D = P2D(0.0, 0.0)
-        lower_hole_radius: float = origin.distance(lower_start_center)
+        lower_hole_radius: float = lower_start_center.length()
 
         # There are two sizes of rectangle -- small and large.  The width appears to
         # be the same for both, so we only need *rectangle_width*, *small_rectangle_length*
         # and *large_rectangle_length*.  Lastly, we need to find one *rectangle_center*
         # so we can determine the *rectangle_radius* from the *origin*:
-        large_upper_left_corner: P2D = (P2D(-1.248201 * inches2mm, 1.259484 * inches2mm) -
-                                        origin_offset)
-        large_lower_left_corner: P2D = (P2D(-1.33137 * inches2mm, 1.136248 * inches2mm) -
-                                        origin_offset)
-        large_upper_right_corner: P2D = (P2D(-1.205772 * inches2mm, 1.230858 * inches2mm) -
-                                         origin_offset)
+        large_upper_left_corner: P2D = base_dxf.point_locate(-1.248201, 1.259484)
+        large_lower_left_corner: P2D = base_dxf.point_locate(-1.331370, 1.136248)
+        large_upper_right_corner: P2D = base_dxf.point_locate(-1.205772, 1.230858)
         large_rectangle_length: float = large_upper_left_corner.distance(large_lower_left_corner)
         rectangle_width: float = large_upper_left_corner.distance(large_upper_right_corner)
         rectangle_center: P2D = (large_upper_right_corner + large_lower_left_corner) / 2.0
-        rectangle_radius: float = origin.distance(rectangle_center)
-        small_upper_left_corner: P2D = (P2D(-1.368228 * inches2mm, 1.081638 * inches2mm) -
-                                        origin_offset)
-        small_lower_left_corner: P2D = (P2D(-1.431575 * inches2mm, 0.987760 * inches2mm) -
-                                        origin_offset)
+        rectangle_radius: float = rectangle_center.length()
+        small_upper_left_corner: P2D = base_dxf.point_locate(-1.368228, 1.081638)
+        small_lower_left_corner: P2D = base_dxf.point_locate(-1.431575, 0.987760)
         small_rectangle_length: float = small_upper_left_corner.distance(small_lower_left_corner)
         if debugging:  # pragma: no cover
             print(f"lower_hole_radius={lower_hole_radius}")
@@ -1409,8 +1458,6 @@ class RomiBase:
         romi_base: RomiBase = self
         base_dxf: BaseDXF = romi_base.base_dxf
         debugging: bool = romi_base.debugging
-        inches2mm: float = 25.4
-        origin_offset: P2D = romi_base.origin_offset
 
         # The resulting *Polygon*'s are collected into *upper_arc_holes_rectangles*:
         upper_arc_holes_rectangles: List[SimplePolygon] = []
@@ -1441,27 +1488,21 @@ class RomiBase:
             print(f"upper_end_center={upper_end_center}")
 
         # Compute the *upper_hole_radius*:
-        origin: P2D = P2D(0.0, 0.0)
-        upper_hole_radius: float = origin.distance(upper_start_center)
+        upper_hole_radius: float = upper_start_center.length()
 
         # There are two sizes of rectangle -- small and large.  The width appears to
         # be the same for both, so we only need *rectangle_width*, *small_rectangle_length*
         # and *large_rectangle_length*.  Lastly, we need to find one *rectangle_center*
-        # so we can determine the *rectangle_radius* from the *origin*:
-        large_upper_inner_corner: P2D = (P2D(-1.33137 * inches2mm, 4.739012 * inches2mm) -
-                                         origin_offset)
-        large_lower_inner_corner: P2D = (P2D(-1.248201 * inches2mm, 4.615776 * inches2mm) -
-                                         origin_offset)
-        large_lower_outer_corner: P2D = (P2D(-1.205772 * inches2mm, 4.644402 * inches2mm) -
-                                         origin_offset)
+        # so we can determine the *rectangle_radius* from the origin:
+        large_upper_inner_corner: P2D = base_dxf.point_locate(-1.331370, 4.739012)
+        large_lower_inner_corner: P2D = base_dxf.point_locate(-1.248201, 4.615776)
+        large_lower_outer_corner: P2D = base_dxf.point_locate(-1.205772, 4.644402)
         large_rectangle_length: float = large_upper_inner_corner.distance(large_lower_inner_corner)
         rectangle_width: float = large_lower_inner_corner.distance(large_lower_outer_corner)
         rectangle_center: P2D = (large_upper_inner_corner + large_lower_outer_corner) / 2.0
-        rectangle_radius: float = origin.distance(rectangle_center)
-        small_upper_inner_corner: P2D = (P2D(-1.431575 * inches2mm, 4.887512 * inches2mm) -
-                                         origin_offset)
-        small_lower_inner_corner: P2D = (P2D(-1.368228 * inches2mm, 4.793638 * inches2mm) -
-                                         origin_offset)
+        rectangle_radius: float = rectangle_center.length()
+        small_upper_inner_corner: P2D = base_dxf.point_locate(-1.431575, 4.887512)
+        small_lower_inner_corner: P2D = base_dxf.point_locate(-1.368228, 4.793638)
         small_rectangle_length: float = small_upper_inner_corner.distance(small_lower_inner_corner)
         if debugging:  # pragma: no cover
             print(f"upper_hole_radius={upper_hole_radius}")
@@ -1767,7 +1808,7 @@ class RomiExpansionPlate:
         romi_expansion_plate: RomiExpansionPlate = self
         # The various dimensions are from `mechanical/pdf/romi-chasis-expansion_plate.pdf`
         # We use the same orientation as in the `.pdf` file, where the rounded portion is
-        # towards the bottom and the flat portion is on top.  The orgin is set to be at the
+        # towards the bottom and the flat portion is on top.  The origin is set to be at the
         # center of the top edge.  All measurements are in millimeters:
         total_dx: float = 145.5
         half_total_dx: float = total_dx / 2.0
@@ -1894,28 +1935,20 @@ class RomiMagnet:
     """Represents the Romi Encoder Magnet."""
 
     # RomiMagnet.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
         """Initialize RomiMagnet and append to ScadProgram."""
-        # Compute *x_offset* using top-most caster mounting slot:
-        inches2mm: float = 25.4
-        castor_slot_west_x: float = -3.995811 * inches2mm
-        castor_slot_east_x: float = -3.739909 * inches2mm
-        x_offset: float = (castor_slot_west_x + castor_slot_east_x) / 2.0
-
         # Find the east end of the west motor shaft:
-        motor_shaft_east_x: float = -5.08598 * inches2mm - x_offset
+        motor_shaft_east_x: float = base_dxf.x_locate(-5.08598)
 
         # The motor shaft is aligned with the Y-axis a 0.0:
-        motor_shaft_north_y: float = 2.967165 * inches2mm
-        motor_shaft_south_y: float = 2.908110 * inches2mm
+        motor_shaft_north_y: float = base_dxf.y_locate(2.967165)
+        motor_shaft_south_y: float = base_dxf.y_locate(2.908110)
         motor_shaft_diameter: float = abs(motor_shaft_north_y - motor_shaft_south_y)
 
-        # Compute the *z_offset* using the top and bottom of the wheel shaft:
-        wheel_shaft_top_z: float = -2.642319 * inches2mm
-        wheel_shaft_bottom_z: float = -2.760429 * inches2mm
-        z_offset: float = (wheel_shaft_top_z + wheel_shaft_bottom_z) / 2.0
-        electrical_top_z: float = -1.842126 * inches2mm - z_offset
-        electrical_bottom_z: float = -1.926776 * inches2mm - z_offset
+        # Compute the top and bottom of the motor electrical connectors.  Use the center
+        # of this to be *motor_shaft_z*.  The Z axis is mapped to the Y axis for the front view:
+        electrical_top_z: float = base_dxf.z_locate(-1.842126)
+        electrical_bottom_z: float = base_dxf.z_locate(-1.926776)
         # The center of the electrical connector is assumed to be aligned with the *motor_shaft_z*:
         motor_shaft_z: float = (electrical_top_z + electrical_bottom_z) / 2.0
 
@@ -1947,65 +1980,46 @@ class RomiMotor:
     """Represents the RomiMotor."""
 
     # RomiMotor.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
         """Initialize RomiMotor."""
         # Various values off of the Top view of the `.dxf` file.
         # Start with X coordinates:
-        # Compute the *x_offset* using a couple of values from the upper castor at the upper rim:
-        inches2mm: float = 25.4
-        castor_slot_west_x: float = -3.995811 * inches2mm
-        castor_slot_east_x: float = -3.739909 * inches2mm
-        x_offset: float = (castor_slot_west_x + castor_slot_east_x) / 2.0
-
         # Start grabbing some X values from west to east:
-        gearbox_casing_west_x: float = -6.326134 * inches2mm - x_offset
-        gearbox_motor_casing_x: float = -5.782827 * inches2mm - x_offset  # Gearbox/motor surface X
+        gearbox_casing_west_x: float = base_dxf.x_locate(-6.326134)
+        # Gearbox/motor surface X
+        gearbox_motor_casing_x: float = base_dxf.x_locate(-5.782827)
         gearbox_casing_dx: float = abs(gearbox_motor_casing_x - gearbox_casing_west_x)
-        motor_casing_west_x: float = -5.253299 * inches2mm - x_offset
+        motor_casing_west_x: float = base_dxf.x_locate(-5.253299)
         electrical_east_x: float = motor_casing_west_x
-        electrical_west_x: float = -5.074161 * inches2mm - x_offset
+        electrical_west_x: float = base_dxf.x_locate(-5.074161)
         motor_shaft_west_x: float = motor_casing_west_x
-        motor_shaft_east_x: float = -5.085980 * inches2mm - x_offset
-
-        # Compute some *dx* values as well:
-        # electrical_dx: float = abs(electrical_east_x - electrical_west_x)
-        # gearbox_casing_dx: float = abs(gearbox_motor_casing_x - motor_casing_west_x)
-        # motor_casing_dx: float = abs(motor_casing_west_x - gearbox_motor_casing_x)
-        # motor_shaft_dx: float = abs(motor_shaft_east_x - motor_casing_west_x)
+        motor_shaft_east_x: float = base_dxf.x_locate(-5.085980)
 
         # Start grabbing some Y values:
-        # Compute *y_offset* and *wheel_shaft_diameter* using the wheel shaft `.dxf` file values :
-        wheel_shaft_north_y: float = 2.996693 * inches2mm
-        wheel_shaft_south_y: float = 2.893610 * inches2mm
-        y_offset: float = (wheel_shaft_north_y + wheel_shaft_south_y) / 2.0
-        wheel_shaft_north_y -= y_offset
-        wheel_shaft_south_y -= y_offset
-        wheel_shaft_diameter_y: float = abs(wheel_shaft_north_y - wheel_shaft_south_y)
-
-        # Now compute the *motor_shaft_diameter*:
-        motor_shaft_north_y: float = 2.967165 * inches2mm - y_offset
-        motor_shaft_south_y: float = 2.908110 * inches2mm - y_offset
+        # Compute the *motor_shaft_diameter*:
+        motor_shaft_north_y: float = base_dxf.y_locate(2.967165)
+        motor_shaft_south_y: float = base_dxf.y_locate(2.908110)
         motor_shaft_diameter: float = abs(motor_shaft_north_y - motor_shaft_south_y)
 
         # Read off the *motor_casing_dy*:
-        motor_casing_north_y: float = 3.382512 * inches2mm - y_offset
-        motor_casing_south_y: float = 2.492748 * inches2mm - y_offset
+        motor_casing_north_y: float = base_dxf.y_locate(3.382512)
+        motor_casing_south_y: float = base_dxf.y_locate(2.492748)
         motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
 
         # Read off the *gearbox_casing_dy*:
-        gearbox_casing_north_y: float = 3.331331 * inches2mm - y_offset
-        gearbox_casing_south_y: float = 2.543929 * inches2mm - y_offset
+        gearbox_casing_north_y: float = base_dxf.y_locate(3.331331)
+        gearbox_casing_south_y: float = base_dxf.y_locate(2.543929)
         gearbox_casing_dy: float = abs(gearbox_casing_north_y - gearbox_casing_south_y)
 
         # Now capture the north electrical tabs:
-        electrical_north_upper_y: float = 3.208303 * inches2mm - y_offset
-        electrical_north_lower_y: float = 3.188610 * inches2mm - y_offset
+        electrical_north_upper_y: float = base_dxf.y_locate(3.208303)
+        electrical_north_lower_y: float = base_dxf.y_locate(3.188610)
         electrical_north_dy: float = abs(electrical_north_upper_y - electrical_north_lower_y)
         electrical_north_y: float = (electrical_north_upper_y + electrical_north_lower_y) / 2.0
 
         # Now capture the south electrical tab:
-        electrical_south_upper_y: float = 2.686650 * inches2mm - y_offset
-        electrical_south_lower_y: float = 2.666957 * inches2mm - y_offset
+        electrical_south_upper_y: float = base_dxf.y_locate(2.686650)
+        electrical_south_lower_y: float = base_dxf.y_locate(2.666957)
         electrical_south_dy: float = abs(electrical_south_upper_y - electrical_south_lower_y)
         electrical_south_y: float = (electrical_south_upper_y + electrical_south_lower_y) / 2.0
 
@@ -2014,26 +2028,19 @@ class RomiMotor:
 
         # Read off off `.dxf` Front view:
         # Do some Z dimensions:
-        # Start with computing the *z_offset* from the wheel shaft (which is defined as Y=0.0):
-        top_motor_wheel_shaft_z: float = -2.642319 * inches2mm
-        bottom_motor_wheel_shaft_z: float = -2.760429 * inches2mm
-        z_offset: float = (top_motor_wheel_shaft_z + bottom_motor_wheel_shaft_z) / 2.0
-        top_motor_wheel_shaft_z -= z_offset
-        bottom_motor_wheel_shaft_z -= z_offset
-        wheel_shaft_diameter_z: float = (top_motor_wheel_shaft_z - bottom_motor_wheel_shaft_z) / 2.0
-        wheel_shaft_diameter: float = (wheel_shaft_diameter_y + wheel_shaft_diameter_z) / 2.0
+        wheel_shaft_diameter: float = base_dxf.wheel_shaft_diameter
 
         # Grab the electrical tab locations:
-        electrical_top_z: float = -1.842126 * inches2mm - z_offset
-        electrical_bottom_z: float = -1.926776 * inches2mm - z_offset
+        electrical_top_z: float = base_dxf.z_locate(-1.842126)
+        electrical_bottom_z: float = base_dxf.z_locate(-1.926776)
         electrical_dz: float = abs(electrical_top_z - electrical_bottom_z)
         electrical_z: float = (electrical_top_z + electrical_bottom_z) / 2.0
         # By inference, the *motor_shaft_z* is the same:
         motor_shaft_z: float = electrical_z
 
         # Compute *motor_casing_dz*, *top_motor_casing_z*, and *bottom_motor_casing_z*:
-        motor_casing_top_z: float = -1.658071 * inches2mm - z_offset
-        motor_casing_bottom_z: float = -2.110835 * inches2mm - z_offset
+        motor_casing_top_z: float = base_dxf.z_locate(-1.658071)
+        motor_casing_bottom_z: float = base_dxf.z_locate(-2.110835)
         # motor_casing_dz: float = (motor_casing_top_z + motor_casing_bottom_z) / 2.0
         motor_casing_top_z = motor_casing_top_z
         motor_casing_bottom_z = motor_casing_bottom_z
@@ -2041,14 +2048,12 @@ class RomiMotor:
         # Compute *gearbox_casing_dz* realizing the top half goes from the wheel axle (i.e. Y==0)
         # and the bottom half is a half circle of diameter *gearbox_casing_dy*:
         gearbox_casing_top_z: float = motor_casing_top_z
-        # gearbox_casing_dz: float = (gearbox_casing_top_z + gearbox_casing_dy / 2.0)
-        # gearbox_casing_bottom_z: float = gearbox_casing_top_z - gearbox_casing_dz
 
         # Measure *wheel_shaft_dx* length using calipers:
         wheel_shaft_dx: float = 9.75
 
         # The *gearbox_casing* is pretty involved.  It is cube with a rounded bottom.
-        # It is linear extruded from a rectangular polygon with a rounded end:
+        # It is linear extruded from a rectangular polygon with a rounded bottom:
         gearbox_case_polygon: SimplePolygon = SimplePolygon("Gearbox Simple Polygon", [])
         # The polygon needs to be layed out in the X/Y plane, where as the final orientation
         # is in the Y/Z plane.  So we substitute Z values for X values in the *P2D* below.
@@ -2120,64 +2125,44 @@ class RomiMotorHolder:
     """Represents the Romi Chasis Motor Holder."""
 
     # RomiMotorHolder.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
         """Initialize the RomiMotorHolder and append to ScadProgram."""
-        # Load up *romi_motor_holder* (i.e. *self*):
-        # romi_motor_holder: RomiMotorHolder = self
-        self.motor_holder: Optional[Scad3D] = None
-
-        # Start reading values off of `.dxf` file:
+        # Start reading values off of *base_dxf*:
         # Start with X coordinates:
-        # Compute the *x_offset* using a couple of values from the upper castor at the upper rim:
-        inches2mm: float = 25.4
-        castor_slot_west_x: float = -3.995811 * inches2mm
-        castor_slot_east_x: float = -3.739909 * inches2mm
-        x_offset: float = (castor_slot_west_x + castor_slot_east_x) / 2.0
-
         # Now grab some X coordinates from west to east for the holder:
-        holder_west_x: float = -6.40487 * inches2mm - x_offset
-        motor_gearbox_west_x: float = -6.326134 * inches2mm - x_offset
-        motor_clip_west_x: float = -6.267075 * inches2mm - x_offset
-        motor_clip_east_x: float = -5.991492 * inches2mm - x_offset
-        motor_gearbox_east_x: float = -5.782827 * inches2mm - x_offset
-        base_clip_west_x: float = -5.704091 * inches2mm - x_offset
-        base_clip_east_x: float = -5.62535 * inches2mm - x_offset
+        holder_west_x: float = base_dxf.x_locate(-6.40487)
+        motor_gearbox_west_x: float = base_dxf.x_locate(-6.326134)
+        motor_clip_west_x: float = base_dxf.x_locate(-6.267075)
+        motor_clip_east_x: float = base_dxf.x_locate(-5.991492)
+        motor_gearbox_east_x: float = base_dxf.x_locate(-5.782827)
+        base_clip_west_x: float = base_dxf.x_locate(-5.704091)
+        base_clip_east_x: float = base_dxf.x_locate(-5.625350)
 
         # Lastly the bottom tabs are not really measurable from the `.dxf`, so use calipers:
         west_tab_dx: float = 2.60
         east_tab_dx: float = 2.10
 
-        # Compute the *y_offset* using the wheel shaft:
-        wheel_shaft_north_y: float = 2.996693 * inches2mm
-        wheel_shaft_south_y: float = 2.893610 * inches2mm
-        y_offset: float = (wheel_shaft_north_y + wheel_shaft_south_y) / 2.0
-
         # Now grap some Y coodinates from south to north for the holder:
-        holder_south_y: float = 2.465193 * inches2mm - y_offset
-        motor_gearbox_south_y: float = 2.543929 * inches2mm - y_offset
-        clip_lip_south_y: float = 2.642358 * inches2mm - y_offset
-        clip_lip_north_y: float = 3.232913 * inches2mm - y_offset
-        motor_gearbox_north_y: float = 3.331331 * inches2mm - y_offset
-        holder_north_y: float = 3.410067 * inches2mm - y_offset
+        holder_south_y: float = base_dxf.y_locate(2.465193)
+        motor_gearbox_south_y: float = base_dxf.y_locate(2.543929)
+        clip_lip_south_y: float = base_dxf.y_locate(2.642358)
+        clip_lip_north_y: float = base_dxf.y_locate(3.232913)
+        motor_gearbox_north_y: float = base_dxf.y_locate(3.331331)
+        holder_north_y: float = base_dxf.y_locate(3.410067)
         base_clip_dy: float = 4.75  # Measured using calipers:
         # holder_dy: float = abs(holder_north_y - holder_south_y)
         motor_gearbox_dy: float = abs(motor_gearbox_north_y - motor_gearbox_south_y)
 
-        # Compute the *z_offset* using the wheel shaft:
-        wheel_shaft_top_z: float = -2.642319 * inches2mm
-        wheel_shaft_bottom_z: float = -2.760429 * inches2mm
-        z_offset: float = (wheel_shaft_top_z + wheel_shaft_bottom_z) / 2.0
-
         # Grab some Z coordinates starting from top to bottom:
-        clip_top_z: float = -1.559654 * inches2mm - z_offset
-        motor_casing_top_z: float = -1.658071 * inches2mm - z_offset
-        motor_casing_bottom_z: float = -2.110835 * inches2mm - z_offset
-        lip_north_z: float = -2.228945 * inches2mm - z_offset
-        lip_south_z: float = -2.622638 * inches2mm - z_offset
-        base_clip_top_z: float = -2.560638 * inches2mm - z_offset
-        battery_base_top_z: float = -2.701374 * inches2mm - z_offset
-        base_top_z: float = -3.095083 * inches2mm - z_offset
-        base_bottom_z: float = -3.469098 * inches2mm - z_offset
+        clip_top_z: float = base_dxf.z_locate(-1.559654)
+        motor_casing_top_z: float = base_dxf.z_locate(-1.658071)
+        motor_casing_bottom_z: float = base_dxf.z_locate(-2.110835)
+        lip_north_z: float = base_dxf.z_locate(-2.228945)
+        lip_south_z: float = base_dxf.z_locate(-2.622638)
+        base_clip_top_z: float = base_dxf.z_locate(-2.560638)
+        battery_base_top_z: float = base_dxf.z_locate(-2.701374)
+        base_top_z: float = base_dxf.z_locate(-3.095083)
+        base_bottom_z: float = base_dxf.z_locate(-3.469098)
 
         # Start with the two east most "lips":
         base_clip: CornerCube = CornerCube("Base Clip",
@@ -2293,11 +2278,11 @@ class RomiWheelAssembly:
         # romi_wheel_assembly: RomiWheelAssembly = self
         self.module: Module3D = module
 
-        # Save arguments into *romi_wheel_assembly* (i.e. *self*)
+        # Save arguments into *romi_wheel_assembly* (i.e. *self*).
         # romi_wheel_assembly: Romi_Wheel_Assembly = self
-        self.romi_magnet: RomiMagnet = RomiMagnet(scad_program)
-        self.romi_motor: RomiMotor = RomiMotor(scad_program)
-        self.romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program)
+        self.romi_magnet: RomiMagnet = romi_magnet
+        self.romi_motor: RomiMotor = romi_motor
+        self.romi_motor_holder: RomiMotorHolder = romi_motor_holder
 
 
 # PiBoard:
@@ -2594,7 +2579,8 @@ def main() -> int:  # pragma: no cover
     scad_program.append(Variable2D("Name", "name", '"hr_robot"'))
 
     # Create the *romi* object for constructing various portions of a Romi platform:
-    romi_base: RomiBase = RomiBase(scad_program)
+    base_dxf: BaseDXF = BaseDXF()
+    romi_base: RomiBase = RomiBase(scad_program, base_dxf)
     romi_base.holes_slots_rectangles_write()
 
     # Now create *other_pi* and append it as well:
@@ -2604,9 +2590,9 @@ def main() -> int:  # pragma: no cover
     # raspi3b: RaspberryPi3 = RaspberryPi3(scad_program)
 
     # Create the *romi_wheel_assembly*:
-    romi_motor: RomiMotor = RomiMotor(scad_program)
-    romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program)
-    romi_magnet: RomiMagnet = RomiMagnet(scad_program)
+    romi_motor: RomiMotor = RomiMotor(scad_program, base_dxf)
+    romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program, base_dxf)
+    romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)
     romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly(scad_program, romi_motor,
                                                                romi_motor_holder, romi_magnet)
 
@@ -2617,7 +2603,7 @@ def main() -> int:  # pragma: no cover
     romi_expansion_plate: RomiExpansionPlate = RomiExpansionPlate(scad_program)
     romi_expansion_plate = romi_expansion_plate
 
-    master_pcb: MasterPCB = MasterPCB(scad_program)
+    master_pcb: MasterPCB = MasterPCB(scad_program, base_dxf)
 
     # Now create *hr2*:
     hr2: HR2 = HR2(scad_program, romi_base, romi_wheel_assembly, other_pi, master_pcb)

@@ -186,7 +186,7 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Square","BATTERY: Upper Right Battery Slot",25.000,36.200,37.500,5.600,0.000,0.000,3
 "Square","CENTER: Bottom Castor Rectangle",0.000,-44.249,3.200,1.597,0.000,0.000,3
 "Square","CENTER: Bottom Rectangle",0.000,-79.609,3.776,1.400,0.000,0.000,3
-"Square","LEFT: Inner Encoder Slot",-32.394,0.000,2.500,17.780,0.000,1.250,3
+"Square","LEFT: Inner Encoder Slot",-32.140,0.000,2.540,17.800,0.000,0.000,3
 "Square","LEFT: LOWER Short Slot",-37.490,-30.500,2.300,4.800,0.000,1.150,8
 "Square","LEFT: LOWER Slot 'AO'",-30.995,-32.989,7.300,2.300,-150.000,1.150,8
 "Square","LEFT: LOWER Slot 'Aa'",-24.500,-36.739,7.300,2.300,-90.000,1.150,8
@@ -204,22 +204,22 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Square","LEFT: LOWER: Rectangle 1",-60.490,-22.500,1.300,3.776,0.000,0.000,3
 "Square","LEFT: LOWER: Rectangle 2",-60.490,-27.500,1.300,2.877,0.000,0.000,3
 "Square","LEFT: LOWER: Rectangle 3",-60.490,-32.500,1.300,3.776,0.000,0.000,3
-"Square","LEFT: Lower left Rectangle 0",-66.030,-44.547,1.300,3.776,34.006,0.000,3
-"Square","LEFT: Lower left Rectangle 1",-63.000,-48.739,1.300,2.877,37.727,0.000,3
-"Square","LEFT: Lower left Rectangle 10",-25.649,-75.409,1.300,2.877,71.215,0.000,3
-"Square","LEFT: Lower left Rectangle 11",-20.701,-76.915,1.300,2.877,74.936,0.000,3
-"Square","LEFT: Lower left Rectangle 12",-15.666,-78.096,1.300,3.776,78.657,0.000,3
-"Square","LEFT: Lower left Rectangle 13",-10.565,-78.948,1.300,2.877,82.378,0.000,3
-"Square","LEFT: Lower left Rectangle 14",-5.419,-79.467,1.300,2.877,86.099,0.000,3
-"Square","LEFT: Lower left Rectangle 2",-59.704,-52.724,1.300,2.877,41.448,0.000,3
-"Square","LEFT: Lower left Rectangle 3",-56.156,-56.488,1.300,3.776,45.169,0.000,3
-"Square","LEFT: Lower left Rectangle 4",-52.372,-60.013,1.300,2.877,48.890,0.000,3
-"Square","LEFT: Lower left Rectangle 5",-48.367,-63.285,1.300,2.877,52.610,0.000,3
-"Square","LEFT: Lower left Rectangle 6",-44.158,-66.291,1.300,3.776,56.331,0.000,3
-"Square","LEFT: Lower left Rectangle 7",-39.763,-69.017,1.300,2.877,60.052,0.000,3
-"Square","LEFT: Lower left Rectangle 8",-35.200,-71.452,1.300,2.877,63.773,0.000,3
-"Square","LEFT: Lower left Rectangle 9",-30.489,-73.586,1.300,3.776,67.494,0.000,3
-"Square","LEFT: Outer Encoder Slot",-36.544,0.000,2.500,17.780,0.000,1.250,3
+"Square","LEFT: Lower left Rectangle 0",-66.027,-44.546,1.300,3.776,34.006,0.000,3
+"Square","LEFT: Lower left Rectangle 1",-62.997,-48.737,1.300,2.877,37.727,0.000,3
+"Square","LEFT: Lower left Rectangle 10",-25.648,-75.406,1.300,2.877,71.215,0.000,3
+"Square","LEFT: Lower left Rectangle 11",-20.700,-76.912,1.300,2.877,74.936,0.000,3
+"Square","LEFT: Lower left Rectangle 12",-15.665,-78.093,1.300,3.776,78.657,0.000,3
+"Square","LEFT: Lower left Rectangle 13",-10.564,-78.945,1.300,2.877,82.378,0.000,3
+"Square","LEFT: Lower left Rectangle 14",-5.419,-79.464,1.300,2.877,86.099,0.000,3
+"Square","LEFT: Lower left Rectangle 2",-59.702,-52.722,1.300,2.877,41.448,0.000,3
+"Square","LEFT: Lower left Rectangle 3",-56.154,-56.486,1.300,3.776,45.169,0.000,3
+"Square","LEFT: Lower left Rectangle 4",-52.370,-60.011,1.300,2.877,48.890,0.000,3
+"Square","LEFT: Lower left Rectangle 5",-48.365,-63.283,1.300,2.877,52.610,0.000,3
+"Square","LEFT: Lower left Rectangle 6",-44.156,-66.288,1.300,3.776,56.331,0.000,3
+"Square","LEFT: Lower left Rectangle 7",-39.761,-69.014,1.300,2.877,60.052,0.000,3
+"Square","LEFT: Lower left Rectangle 8",-35.199,-71.449,1.300,2.877,63.773,0.000,3
+"Square","LEFT: Lower left Rectangle 9",-30.488,-73.583,1.300,3.776,67.494,0.000,3
+"Square","LEFT: Outer Encoder Slot",-35.060,0.000,2.540,17.800,0.000,0.000,3
 "Square","LEFT: UPPER Slot 'aO'",-23.440,65.761,7.300,2.300,-150.000,1.150,8
 "Square","LEFT: UPPER Slot 'bO'",-23.440,58.261,7.300,2.300,150.000,1.150,8
 "Square","LEFT: UPPER Slot 'cO'",-36.430,58.261,7.300,2.300,30.000,1.150,8
@@ -228,20 +228,20 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Square","LEFT: UPPER: Rectangle 1",-60.490,22.500,1.300,3.776,0.000,0.000,3
 "Square","LEFT: UPPER: Rectangle 2",-60.490,27.500,1.300,2.877,0.000,0.000,3
 "Square","LEFT: UPPER: Rectangle 3",-60.490,32.500,1.300,3.776,0.000,0.000,3
-"Square","LEFT: Upper Right Rectangle 0",-66.030,44.547,1.300,3.776,-34.006,0.000,3
-"Square","LEFT: Upper Right Rectangle 1",-63.000,48.739,1.300,2.877,-37.727,0.000,3
-"Square","LEFT: Upper Right Rectangle 10",-25.649,75.409,1.300,2.877,-71.215,0.000,3
-"Square","LEFT: Upper Right Rectangle 11",-20.701,76.915,1.300,2.877,-74.936,0.000,3
-"Square","LEFT: Upper Right Rectangle 12",-15.666,78.096,1.300,3.776,-78.657,0.000,3
-"Square","LEFT: Upper Right Rectangle 2",-59.704,52.724,1.300,2.877,-41.448,0.000,3
-"Square","LEFT: Upper Right Rectangle 3",-56.156,56.488,1.300,3.776,-45.169,0.000,3
-"Square","LEFT: Upper Right Rectangle 4",-52.372,60.013,1.300,2.877,-48.889,0.000,3
-"Square","LEFT: Upper Right Rectangle 5",-48.367,63.285,1.300,2.877,-52.610,0.000,3
-"Square","LEFT: Upper Right Rectangle 6",-44.158,66.291,1.300,3.776,-56.331,0.000,3
-"Square","LEFT: Upper Right Rectangle 7",-39.763,69.017,1.300,2.877,-60.052,0.000,3
-"Square","LEFT: Upper Right Rectangle 8",-35.200,71.452,1.300,2.877,-63.773,0.000,3
-"Square","LEFT: Upper Right Rectangle 9",-30.489,73.585,1.300,3.776,-67.494,0.000,3
-"Square","RIGHT: Inner Encoder Slot",32.394,0.000,2.500,17.780,0.000,1.250,3
+"Square","LEFT: Upper Right Rectangle 0",-66.027,44.546,1.300,3.776,-34.006,0.000,3
+"Square","LEFT: Upper Right Rectangle 1",-62.997,48.737,1.300,2.877,-37.727,0.000,3
+"Square","LEFT: Upper Right Rectangle 10",-25.648,75.406,1.300,2.877,-71.215,0.000,3
+"Square","LEFT: Upper Right Rectangle 11",-20.701,76.912,1.300,2.877,-74.936,0.000,3
+"Square","LEFT: Upper Right Rectangle 12",-15.666,78.093,1.300,3.776,-78.657,0.000,3
+"Square","LEFT: Upper Right Rectangle 2",-59.701,52.722,1.300,2.877,-41.448,0.000,3
+"Square","LEFT: Upper Right Rectangle 3",-56.154,56.486,1.300,3.776,-45.169,0.000,3
+"Square","LEFT: Upper Right Rectangle 4",-52.370,60.011,1.300,2.877,-48.889,0.000,3
+"Square","LEFT: Upper Right Rectangle 5",-48.365,63.283,1.300,2.877,-52.610,0.000,3
+"Square","LEFT: Upper Right Rectangle 6",-44.156,66.288,1.300,3.776,-56.331,0.000,3
+"Square","LEFT: Upper Right Rectangle 7",-39.761,69.014,1.300,2.877,-60.052,0.000,3
+"Square","LEFT: Upper Right Rectangle 8",-35.199,71.449,1.300,2.877,-63.773,0.000,3
+"Square","LEFT: Upper Right Rectangle 9",-30.488,73.583,1.300,3.776,-67.494,0.000,3
+"Square","RIGHT: Inner Encoder Slot",32.140,0.000,2.540,17.800,0.000,0.000,3
 "Square","RIGHT: LOWER Short Slot",37.490,-30.500,2.300,4.800,0.000,1.150,8
 "Square","RIGHT: LOWER Slot 'AO'",30.995,-32.989,7.300,2.300,150.000,1.150,8
 "Square","RIGHT: LOWER Slot 'Aa'",24.500,-36.739,7.300,2.300,90.000,1.150,8
@@ -259,22 +259,22 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Square","RIGHT: LOWER: Rectangle 1",60.490,-22.500,1.300,3.776,0.000,0.000,3
 "Square","RIGHT: LOWER: Rectangle 2",60.490,-27.500,1.300,2.877,0.000,0.000,3
 "Square","RIGHT: LOWER: Rectangle 3",60.490,-32.500,1.300,3.776,0.000,0.000,3
-"Square","RIGHT: Lower left Rectangle 0",66.030,-44.547,1.300,3.776,-34.006,0.000,3
-"Square","RIGHT: Lower left Rectangle 1",63.000,-48.739,1.300,2.877,-37.727,0.000,3
-"Square","RIGHT: Lower left Rectangle 10",25.649,-75.409,1.300,2.877,-71.215,0.000,3
-"Square","RIGHT: Lower left Rectangle 11",20.701,-76.915,1.300,2.877,-74.936,0.000,3
-"Square","RIGHT: Lower left Rectangle 12",15.666,-78.096,1.300,3.776,-78.657,0.000,3
-"Square","RIGHT: Lower left Rectangle 13",10.565,-78.948,1.300,2.877,-82.378,0.000,3
-"Square","RIGHT: Lower left Rectangle 14",5.419,-79.467,1.300,2.877,-86.099,0.000,3
-"Square","RIGHT: Lower left Rectangle 2",59.704,-52.724,1.300,2.877,-41.448,0.000,3
-"Square","RIGHT: Lower left Rectangle 3",56.156,-56.488,1.300,3.776,-45.169,0.000,3
-"Square","RIGHT: Lower left Rectangle 4",52.372,-60.013,1.300,2.877,-48.890,0.000,3
-"Square","RIGHT: Lower left Rectangle 5",48.367,-63.285,1.300,2.877,-52.610,0.000,3
-"Square","RIGHT: Lower left Rectangle 6",44.158,-66.291,1.300,3.776,-56.331,0.000,3
-"Square","RIGHT: Lower left Rectangle 7",39.763,-69.017,1.300,2.877,-60.052,0.000,3
-"Square","RIGHT: Lower left Rectangle 8",35.200,-71.452,1.300,2.877,-63.773,0.000,3
-"Square","RIGHT: Lower left Rectangle 9",30.489,-73.586,1.300,3.776,-67.494,0.000,3
-"Square","RIGHT: Outer Encoder Slot",36.544,0.000,2.500,17.780,0.000,1.250,3
+"Square","RIGHT: Lower left Rectangle 0",66.027,-44.546,1.300,3.776,-34.006,0.000,3
+"Square","RIGHT: Lower left Rectangle 1",62.997,-48.737,1.300,2.877,-37.727,0.000,3
+"Square","RIGHT: Lower left Rectangle 10",25.648,-75.406,1.300,2.877,-71.215,0.000,3
+"Square","RIGHT: Lower left Rectangle 11",20.700,-76.912,1.300,2.877,-74.936,0.000,3
+"Square","RIGHT: Lower left Rectangle 12",15.665,-78.093,1.300,3.776,-78.657,0.000,3
+"Square","RIGHT: Lower left Rectangle 13",10.564,-78.945,1.300,2.877,-82.378,0.000,3
+"Square","RIGHT: Lower left Rectangle 14",5.419,-79.464,1.300,2.877,-86.099,0.000,3
+"Square","RIGHT: Lower left Rectangle 2",59.702,-52.722,1.300,2.877,-41.448,0.000,3
+"Square","RIGHT: Lower left Rectangle 3",56.154,-56.486,1.300,3.776,-45.169,0.000,3
+"Square","RIGHT: Lower left Rectangle 4",52.370,-60.011,1.300,2.877,-48.890,0.000,3
+"Square","RIGHT: Lower left Rectangle 5",48.365,-63.283,1.300,2.877,-52.610,0.000,3
+"Square","RIGHT: Lower left Rectangle 6",44.156,-66.288,1.300,3.776,-56.331,0.000,3
+"Square","RIGHT: Lower left Rectangle 7",39.761,-69.014,1.300,2.877,-60.052,0.000,3
+"Square","RIGHT: Lower left Rectangle 8",35.199,-71.449,1.300,2.877,-63.773,0.000,3
+"Square","RIGHT: Lower left Rectangle 9",30.488,-73.583,1.300,3.776,-67.494,0.000,3
+"Square","RIGHT: Outer Encoder Slot",35.060,0.000,2.540,17.800,0.000,0.000,3
 "Square","RIGHT: UPPER Slot 'aO'",23.440,65.761,7.300,2.300,150.000,1.150,8
 "Square","RIGHT: UPPER Slot 'bO'",23.440,58.261,7.300,2.300,-150.000,1.150,8
 "Square","RIGHT: UPPER Slot 'cO'",36.430,58.261,7.300,2.300,-30.000,1.150,8
@@ -283,16 +283,16 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Square","RIGHT: UPPER: Rectangle 1",60.490,22.500,1.300,3.776,0.000,0.000,3
 "Square","RIGHT: UPPER: Rectangle 2",60.490,27.500,1.300,2.877,0.000,0.000,3
 "Square","RIGHT: UPPER: Rectangle 3",60.490,32.500,1.300,3.776,0.000,0.000,3
-"Square","RIGHT: Upper Right Rectangle 0",66.030,44.547,1.300,3.776,34.006,0.000,3
-"Square","RIGHT: Upper Right Rectangle 1",63.000,48.739,1.300,2.877,37.727,0.000,3
-"Square","RIGHT: Upper Right Rectangle 10",25.649,75.409,1.300,2.877,71.215,0.000,3
-"Square","RIGHT: Upper Right Rectangle 11",20.701,76.915,1.300,2.877,74.936,0.000,3
-"Square","RIGHT: Upper Right Rectangle 12",15.666,78.096,1.300,3.776,78.657,0.000,3
-"Square","RIGHT: Upper Right Rectangle 2",59.704,52.724,1.300,2.877,41.448,0.000,3
-"Square","RIGHT: Upper Right Rectangle 3",56.156,56.488,1.300,3.776,45.169,0.000,3
-"Square","RIGHT: Upper Right Rectangle 4",52.372,60.013,1.300,2.877,48.889,0.000,3
-"Square","RIGHT: Upper Right Rectangle 5",48.367,63.285,1.300,2.877,52.610,0.000,3
-"Square","RIGHT: Upper Right Rectangle 6",44.158,66.291,1.300,3.776,56.331,0.000,3
-"Square","RIGHT: Upper Right Rectangle 7",39.763,69.017,1.300,2.877,60.052,0.000,3
-"Square","RIGHT: Upper Right Rectangle 8",35.200,71.452,1.300,2.877,63.773,0.000,3
-"Square","RIGHT: Upper Right Rectangle 9",30.489,73.585,1.300,3.776,67.494,0.000,3
+"Square","RIGHT: Upper Right Rectangle 0",66.027,44.546,1.300,3.776,34.006,0.000,3
+"Square","RIGHT: Upper Right Rectangle 1",62.997,48.737,1.300,2.877,37.727,0.000,3
+"Square","RIGHT: Upper Right Rectangle 10",25.648,75.406,1.300,2.877,71.215,0.000,3
+"Square","RIGHT: Upper Right Rectangle 11",20.701,76.912,1.300,2.877,74.936,0.000,3
+"Square","RIGHT: Upper Right Rectangle 12",15.666,78.093,1.300,3.776,78.657,0.000,3
+"Square","RIGHT: Upper Right Rectangle 2",59.701,52.722,1.300,2.877,41.448,0.000,3
+"Square","RIGHT: Upper Right Rectangle 3",56.154,56.486,1.300,3.776,45.169,0.000,3
+"Square","RIGHT: Upper Right Rectangle 4",52.370,60.011,1.300,2.877,48.889,0.000,3
+"Square","RIGHT: Upper Right Rectangle 5",48.365,63.283,1.300,2.877,52.610,0.000,3
+"Square","RIGHT: Upper Right Rectangle 6",44.156,66.288,1.300,3.776,56.331,0.000,3
+"Square","RIGHT: Upper Right Rectangle 7",39.761,69.014,1.300,2.877,60.052,0.000,3
+"Square","RIGHT: Upper Right Rectangle 8",35.199,71.449,1.300,2.877,63.773,0.000,3
+"Square","RIGHT: Upper Right Rectangle 9",30.488,73.583,1.300,3.776,67.494,0.000,3
