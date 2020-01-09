@@ -593,11 +593,60 @@ class ScadProgram:
         return f"ScadProgram('{name}')"
 
     # ScadProgram.append():
-    def append(self, scad: Scad):
+    def append(self, scad: Scad) -> None:
         """Append a Scad to a ScadProgram."""
         scad_program: ScadProgram = self
         scads: List[Scad] = scad_program.scads
         scads.append(scad)
+
+    # ScadProgram.read_me_update():
+    def read_me_update(self, read_me_text: str) -> str:
+        """Update the README.md file with acceptable selecton names."""
+        # Grab some values from *scad_program* (i.e. *self*):
+        scad_program: ScadProgram = self
+        if2d: If2D = scad_program.if2d
+        if3d: If3D = scad_program.if3d
+
+        # Construct and sort *all_named_mark_downs* from *if2d* and *if3d*:
+        all_named_mark_downs: List[Tuple[str, ...]] = if2d.named_mark_downs + if3d.named_mark_downs
+        all_named_mark_downs.sort()
+
+        # Split *read_me_text* into *read_me_lines* and search for the markers that
+        # specify the *start_index* and *end_index* of where to insert the updates:
+        read_me_lines: List[str] = read_me_text.split('\n')
+        end_index: int = -1
+        start_index: int = -1
+        read_me_line_index: int
+        read_me_line: str
+        for read_me_line_index, read_me_line in enumerate(read_me_lines):
+            if read_me_line.endswith('>'):
+                if read_me_line.endswith("<!-- NAME list starts here. -->"):
+                    start_index = read_me_line_index + 1
+                elif read_me_line.endswith("<!-- NAME list ends here. -->"):
+                    end_index = read_me_line_index
+        assert start_index >= 0 and end_index >= 0, "README.md is broken"
+
+        # Extract *before_lines*, *previous_middle_lines*, and *after_lines*:
+        before_lines: List[str] = read_me_lines[:start_index]
+        # previous_middle_lines: List[str] = read_me_lines[start_index:end_index]
+        after_lines: List[str] = read_me_lines[end_index:]
+
+        # Construct *new_middle_lines*:
+        new_middle_lines: List[str] = []
+        named_mark_down: Tuple[str, ...]
+        for named_mark_down in all_named_mark_downs:
+            name: str = named_mark_down[0]
+            new_middle_lines.append("")
+            new_middle_lines.append(f"  * `{name}`:")
+            mark_down_line: str
+            for mark_down_line in named_mark_down[1:]:
+                new_middle_lines.append(f"    {mark_down_line}")
+        new_middle_lines.append("")
+
+        # Consturct *new_read_me_text* from *new_lines* and return it:
+        new_lines: List[str] = before_lines + new_middle_lines + after_lines
+        new_read_me_text: str = '\n'.join(new_lines)
+        return new_read_me_text
 
     # ScadProgram.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:

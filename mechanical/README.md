@@ -170,8 +170,9 @@ systems and Linux distributions you are on your own.
 
 * Run `openscad` and run "[Design]=>[Preview]":
 
-  There is one `scad_models.scad` file from which all of the variouls
-  models are derived.  To view each model:
+  There is one `scad_models.scad` file from which all of the various
+  models are derived.  To select a particular model to show use the
+  OpenSCAD `-D` option as follows:
 
             openscad scad_models.scad -D 'name="NAME"'
 
@@ -186,6 +187,7 @@ systems and Linux distributions you are on your own.
   * `romi_base`:
     Romi Base Polygon
 
+  <!-- NAME list ends here. -->
   After you run `openscad`, use your mouse to select `[Design]`=>`[Preveiw]` and `openscad`
   will show the resulting model.
 
@@ -318,6 +320,21 @@ There a a bunch of miscellaneous files in the `mechanical` directory:
 
 * [romi_base.html](romi_base.html): This contains the same content as the `romi_base.csv`
   file, but in HTML table format.  It is easier to read in a web browser.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

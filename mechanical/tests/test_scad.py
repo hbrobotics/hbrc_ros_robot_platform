@@ -866,17 +866,61 @@ def test_scad_program() -> None:
     scad_program: ScadProgram = ScadProgram("ScadProgram 1")
     assert str(scad_program) == "ScadProgram('ScadProgram 1')"
     circle1: Circle = Circle('Circle 1', 1.0, 8)
-    scad_program.append(circle1)
+    circle1_module: Module2D = Module2D("Circle 1 Module", [circle1])
+    scad_program.append(circle1_module)
+    scad_program.if2d.name_match_append("circle1", circle1_module, ["Circle1 1"])
+
     scad_lines: List[str] = []
     scad_program.scad_lines_append(scad_lines, "")
-    assert len(scad_lines) == 7
+    assert len(scad_lines) == 11
     assert scad_lines[0] == "// Begin ScadProgram('ScadProgram 1')", "[0]!"
-    assert scad_lines[1] == "circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[1]!"
-    assert scad_lines[2] == "if (false) {  // If2D 'Name If2D'", "[2]!"
-    assert scad_lines[3] == "}  // End If2D 'Name If2D'", "[3]!"
-    assert scad_lines[4] == "if (false) {  // If3D 'Name If3D'", "[4]!"
-    assert scad_lines[5] == "}  // End If3D 'Name If3D'", "[5]!"
-    assert scad_lines[6] == "// End ScadProgram('ScadProgram 1')", "[7]!"
+    assert scad_lines[1] == "module Circle_1_Module() {", "[1]!"
+    assert scad_lines[2] == " circle(d=1.000, $fn=8);  // Circle 'Circle 1'", "[2]!"
+    assert scad_lines[3] == "}", "[3]!"
+    assert scad_lines[4] == "if (false) {  // If2D 'Name If2D'", "[4]!"
+    assert scad_lines[5] == "} else if (name == \"circle1\") {", "[5]!"
+    assert scad_lines[6] == " Circle_1_Module(); // UseModule2D('circle1 Use Module')", "[6]!"
+    assert scad_lines[7] == "}  // End If2D 'Name If2D'", "[7]!"
+    assert scad_lines[8] == "if (false) {  // If3D 'Name If3D'", "[8]!"
+    assert scad_lines[9] == "}  // End If3D 'Name If3D'", "[9]!"
+    assert scad_lines[10] == "// End ScadProgram('ScadProgram 1')", "[10]!"
+
+    # Create an *initial_read_me_text*:
+    read_me_lines: List[str] = [
+        "# README.md",
+        "Beginning of README.md",
+        "<!-- NAME list starts here. -->",
+        " * `old_name`:",
+        "   Old Name",
+        " * `circle1`:",
+        "   Circle 1",
+        "",
+        "<!-- NAME list ends here. -->",
+        "End of README.md",
+        ""
+        ]
+    initial_read_me_text: str = '\n'.join(read_me_lines)
+
+    # Now produce *updated_read_me_text* from *initial_read_me_text*:
+    updated_read_me_text: str = scad_program.read_me_update(initial_read_me_text)
+
+    # Verify that we get the right output back:
+    updated_read_me_lines: List[str] = updated_read_me_text.split('\n')
+    assert len(updated_read_me_lines) == 10
+    assert updated_read_me_lines[0] == "# README.md", "[0]!"
+    assert updated_read_me_lines[1] == "Beginning of README.md", "[1]!"
+    assert updated_read_me_lines[2] == "<!-- NAME list starts here. -->", "[2]!"
+    assert updated_read_me_lines[3] == "", "[3]!"
+    assert updated_read_me_lines[4] == "  * `circle1`:", "[4]!"
+    assert updated_read_me_lines[5] == "    Circle1 1", "[5]!"
+    assert updated_read_me_lines[6] == "", "[6]!"
+    assert updated_read_me_lines[7] == "<!-- NAME list ends here. -->", "[7]!"
+    assert updated_read_me_lines[8] == "End of README.md", "[8]!"
+    assert updated_read_me_lines[9] == "", "[9]!"
+
+    # Now generate *final_read_me_text* and verify that it exactly matches *updated_read_me_text*:
+    final_read_me_text: str = scad_program.read_me_update(updated_read_me_text)
+    assert final_read_me_text == updated_read_me_text
 
 
 def test_simple_polygon() -> None:

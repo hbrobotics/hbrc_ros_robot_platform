@@ -2618,54 +2618,14 @@ def main() -> int:  # pragma: no cover
     with open("scad_models.scad", "w") as scad_file:
         scad_file.write(scad_text)
 
-    # Collect all of the name information from *if2d* and *if3d* and sort it by name:
-    if2d: If2D = scad_program.if2d
-    if3d: If3D = scad_program.if3d
-    all_named_mark_downs: List[Tuple[str, ...]] = if2d.named_mark_downs + if3d.named_mark_downs
-    all_named_mark_downs.sort()
-
-    # Update the `README.md` to list all of the acceptable views for `OpenSCAD`:
-    # Read in `README.md` and split it into *read_me_lines*:
-    read_me_text: str
+    # Update the `README.md` file:
+    read_me_text: str = ""
+    read_me_file: IO[Any]
     with open("README.md") as read_me_file:
         read_me_text = read_me_file.read()
-    read_me_lines: List[str] = read_me_text.split('\n')
-
-    # Search *readme_lines* for the lines to be replaced:
-    end_index: int = -1
-    start_index: int = -1
-    read_me_line_index: int
-    read_me_line: str
-    for read_me_line_index, read_me_line in enumerate(read_me_lines):
-        if read_me_line.endswith('>') and read_me_line.endswith("<!-- NAME list starts here. -->"):
-            start_index = read_me_line_index + 1
-        if start_index >= 0 and read_me_line.startswith("  After"):
-            end_index = read_me_line_index
-            break
-    assert start_index >= 0 and end_index >= 0, "README.md is broken"
-
-    # Extract *before_lines*, *previous_middle_lines*, and *after_lines*:
-    before_lines: List[str] = read_me_lines[:start_index]
-    previous_middle_lines: List[str] = read_me_lines[start_index:end_index]
-    after_lines: List[str] = read_me_lines[end_index:]
-
-    # Construct *new_middle_lines*:
-    new_middle_lines: List[str] = []
-    named_mark_down: Tuple[str, ...]
-    for named_mark_down in all_named_mark_downs:
-        name: str = named_mark_down[0]
-        new_middle_lines.append("")
-        new_middle_lines.append(f"  * `{name}`:")
-        mark_down_line: str
-        for mark_down_line in named_mark_down[1:]:
-            new_middle_lines.append(f"    {mark_down_line}")
-    new_middle_lines.append("")
-
-    # Output updated `README.md` if anything has changed:
-    if previous_middle_lines != new_middle_lines:
-        new_lines: List[str] = before_lines + new_middle_lines + after_lines + [""]
-        new_read_me_text: str = '\n'.join(new_lines)
+    updated_read_me_text: str = scad_program.read_me_update(read_me_text)
+    if read_me_text != updated_read_me_text:
         with open("README.md", "w") as read_me_file:
-            read_me_file.write(new_read_me_text)
+            read_me_file.write(updated_read_me_text)
 
     return 0
