@@ -22,10 +22,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from scad_models.scad_models import (BaseDXF, HR2, MasterPCB, OtherPi, RaspberryPi3, RomiBase,
+from scad_models.scad_models import (BaseDXF, HR2, MasterBoard, OtherPi, RaspberryPi3, RomiBase,
                                      RomiExpansionPlate, RomiMagnet, RomiMotor, RomiMotorHolder,
                                      RomiWheelAssembly)
-from scad_models.scad import ScadProgram
+from scad_models.scad import (P3D, ScadProgram)
+from typing import Any, List, Tuple
 
 
 # test_hr2():
@@ -33,7 +34,11 @@ def test_hr2():
     """Test the HR2 class."""
     scad_program: ScadProgram = ScadProgram("Top Level Program")
     base_dxf: BaseDXF = BaseDXF()
-    master_pcb: MasterPCB = MasterPCB(scad_program, base_dxf)
+    pi_offset: P3D = P3D(0.0, 0.0, 0.0)
+    romi_base_keys: List[Tuple[Any, ...]] = [
+        ("Circle", "BATTERY: Upper Hole (1, 0)", -35.000, 17.000)
+    ]
+    master_board: MasterBoard = MasterBoard(scad_program, base_dxf, pi_offset, romi_base_keys)
     other_pi: OtherPi = OtherPi(scad_program)
     romi_base: RomiBase = RomiBase(scad_program, base_dxf)
     romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)
@@ -41,7 +46,7 @@ def test_hr2():
     romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program, base_dxf)
     romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly(scad_program, romi_base,
                                                                romi_motor_holder, romi_magnet)
-    hr2: HR2 = HR2(scad_program, romi_base, romi_wheel_assembly, other_pi, master_pcb)
+    hr2: HR2 = HR2(scad_program, romi_base, romi_wheel_assembly, master_board, other_pi, pi_offset)
     hr2 = hr2
 
 

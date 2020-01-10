@@ -12,7 +12,7 @@ from scad_models.scad import (Color, Circle, CornerCube, Cube, Cylinder, If2D, I
                               LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
                               Scad, Scad3D, SimplePolygon, ScadProgram, Square, Translate3D,
                               UseModule3D, Union3D, Variable2D)
-from typing import Any, Dict, IO, List, Optional, Set, Tuple
+from typing import Any, Dict, IO, List, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
 
@@ -144,37 +144,36 @@ class DXF:
         return point
 
     # DXF.rectangle_locate():
-    def rectangle_locate(self, name: str, x1: float, y1: float,
-                         x2: float, y2: float) -> Square:
+    def rectangle_locate(self, name: str, dxf_x1: float, dxf_y1: float,
+                         dxf_x2: float, dxf_y2: float) -> Square:
         """Return a located rectangle on top view as a Square.
 
         Args:
             *name* (*str*): The name to assign to the returned *Square*.
-            *x1* (*float*): One of sides of the rectangle in inches.
-            *y1* (*float*): Either the top or bottom edge the rectangle
-                in inches.
-            *x1* (*float*): One of sides of the rectangle in inches.
-            *y2* (*float*): The other top/bottom edge of the rectangle
-                in inches:
+            *dxf_x1* (*float*): One of sides of the rectangle in inches.
+            *dxf_y1* (*float*): Either the top/bottom edge of the
+                rectangle in inches.
+            *dxf_x1* (*float*): The other sides of the rectangle in
+                inches.
+            *dxf_y2* (*float*): The other top/bottom edge of the
+                rectangle in inches:
 
         Returns:
             (*Square*) Returns a *Square* that represents the rectangle.
 
         """
-        # Grab some values from *dxf* (i.e. *self*):
+        # Use *dxf* (i.e. *self*) to convert *dxf_x1*, *dxf_y1*, *dxf_x2*, and *dxf_y2*
+        # into *x1*, *y1*, *x2*, and *y2* (i.e. millemeters with corrector X/Y origin.
         dxf: DXF = self
-        inches2mm: float = dxf.inches2mm
-        offset_top_y: float = dxf.offset_top_y
-        offset_x: float = dxf.offset_x
+        x1: float = dxf.x_locate(dxf_x1)
+        y1: float = dxf.y_locate(dxf_y1)
+        x2: float = dxf.x_locate(dxf_x2)
+        y2: float = dxf.y_locate(dxf_y2)
 
-        # Convert *x1*, *y1*, *x2*, and *y2* from inches to millimeters:
-        x1 *= inches2mm
-        y1 *= inches2mm
-        x2 *= inches2mm
-        y2 *= inches2mm
+        # Compute *dx*, *dy*, and *center*:
         dx: float = abs(x2 - x1)
         dy: float = abs(y2 - y1)
-        center: P2D = P2D((x1 + x2) / 2.0 - offset_x, (y1 + y2) / 2.0 - offset_top_y)
+        center: P2D = P2D((x1 + x2) / 2.0, (y1 + y2) / 2.0)
 
         # Create and return the *rectangle* (which is represented as a *Square* object):
         rectangle: Square = Square(name, dx, dy, center)
@@ -295,39 +294,15 @@ class HR2:
 
     # HR2.__init__():
     def __init__(self, scad_program: ScadProgram, romi_base: "RomiBase",
-                 romi_wheel_assembly: "RomiWheelAssembly", pi_board: "PiBoard",
-                 master_pcb: "MasterPCB") -> None:
+                 romi_wheel_assembly: "RomiWheelAssembly", master_board: "MasterBoard",
+                 pi_board: "PiBoard", pi_offset: P3D) -> None:
         """Initialize the HR2 and append to ScadProgram."""
         # Stuff *romi_base* and *romi_wheel_assemlby* into *hr2* (i.e. *self*):
         # hr2: HR2 = self
-        self.master_pcb: MasterPCB = master_pcb
+        self.master_board: MasterBoard = master_board
         self.pi_board: PiBoard = pi_board
         self.romi_base: RomiBase = romi_base
         self.romi_wheel_assembly: RomiWheelAssembly = romi_wheel_assembly
-
-        # Create the *pi_receptical_2x20*:
-        header_height: float = 8.50 - 2.54
-        pin_height: float = 3.20
-        pcb_height: float = 1.00
-        insulation_height: float = 2.54
-        horizontal_height: float = pcb_height + insulation_height + header_height
-        receptical_2x20: FemalePinConnector = FemalePinConnector(scad_program, 2, 20,
-                                                                 header_height,
-                                                                 pin_height)
-        horizontal_2x20_rotate: Rotate3D = Rotate3D("Horizontal 2x20 Receptical 180 Degree Rotate",
-                                                    receptical_2x20.module.use_module_get(),
-                                                    pi, P3D(0.0, 1.0, 0.0))
-        vertical_2x20_translate: Translate3D = Translate3D("Vertical Translate 2x20 Receptical",
-                                                           horizontal_2x20_rotate,
-                                                           P3D(0.0, 0.0, horizontal_height))
-        horizontal_2x20_translate: Translate3D = Translate3D("Horizontal 2x20 translate",
-                                                             vertical_2x20_translate,
-                                                             P3D(0.0, 49.0 / 2.0, 0.0))
-
-        pi_receptical_2x20: Union3D = Union3D("Pi and 2x20 Receptical",
-                                              [pi_board.module_get().use_module_get(),
-                                               horizontal_2x20_translate])
-        pi_board_offset: P3D = P3D(0.0, 0.0, 4.0)
 
         # Create *module*, append to *scad_program* and save into *romi_base* (i.e. *self*):
         romi_wheel_assembly_use_module: UseModule3D = romi_wheel_assembly.module.use_module_get()
@@ -338,12 +313,14 @@ class HR2:
                                               romi_wheel_assembly_use_module,
                                               pi,
                                               P3D(0.0, 0.0, 1.0)),
-                                     Translate3D("Pi Board Tranlate",
-                                                 Rotate3D("Pi/Receptical Rotate",
-                                                          pi_receptical_2x20,
-                                                          pi/2.0, P3D(0.0, 0.0, 1.0)),
-                                                 pi_board_offset),
-                                     master_pcb.module.use_module_get()])
+                                     Translate3D("Other Pi Translate",
+                                                 Rotate3D("Vertical Rotate Pi Board 90 Degrees",
+                                                          pi_board.module.use_module_get(),
+                                                          pi/2.0,
+                                                          P3D(0.0, 0.0, 1.0)),
+                                                 pi_offset),
+                                     master_board.module.use_module_get()])
+
         scad_program.append(module)
         # romi_base: RomiBase = self
         self.module = module
@@ -353,82 +330,123 @@ class HR2:
         if3d.name_match_append("hr2_robot", module, ["HR2 Robot"])
 
 
-# FemalePinConnector:
-class FemalePinConnector:
-    """Represents an NxM .1 inch female pin connector."""
+# PinReceptical:
+class PinReceptical:
+    """Represents an NxM .1 inch female pin receptical connector."""
 
-    # FemalePinConnector.__init__():
-    def __init__(self, scad_program: ScadProgram, rows: int, columns: int,
-                 header_height: float, pin_height: float, center=P2D(0.0, 0.0)) -> None:
-        """Initialize FemalePinConnector and append to ScadProgram."""
-        # Save the arguments into *female_pin_connector* (i.e. *self*):
-        # female_pin_connector: FemalePinConnector = self
-        self.center: P2D = center
+    # PinReceptical.__init__():
+    def __init__(self, scad_program: ScadProgram, name: str, rows: int, columns: int,
+                 receptical_height: float, pin_height: float, center: P3D = P3D(0.0, 0.0, 0.0),
+                 extra_dx: float = 0.0, extra_dy: float = 0.0,
+                 key_dx: float = 0.0, key_dy: float = 0.0,
+                 is_vertical: bool = True, is_top: bool = True,
+                 color_name: str = "MidnightBlue") -> None:
+        """Initialize PinReceptical and append to ScadProgram."""
+        # Save the arguments into *pin_receptical* (i.e. *self*):
+        # pin_receptical: PinReceptical = self
+        self.center: P3D = center
+        self.color_name: str = color_name
         self.columns: int = columns
-        self.header_height: float = header_height
+        self.extra_dx: float = extra_dx
+        self.extra_dy: float = extra_dy
+        self.key_dx: float = extra_dx
+        self.key_dy: float = extra_dy
+        self.is_top: bool = is_top
+        self.is_vertical: bool = is_vertical
+        self.name: str = name
         self.pin_height: float = pin_height
+        self.receptical_height: float = receptical_height
         self.rows: int = rows
 
+        # Use *is_vertical* to flip *rows* with *columns*:
+        if is_vertical:
+            rows, columns = columns, rows
+
         # Compute some constants:
-        name: str = f"{rows}x{columns}"
-        self.name: str = name
-        pin_pitch = 2.54  # x.1in = 2.54mm
+        center_x: float = center.x
+        center_y: float = center.y
+        center_z: float = center.z
+        pin_pitch = 2.54  # 0.1in = 2.54mm
         half_pin_pitch: float = pin_pitch / 2.0
-        pin_hole_dx_dy: float = half_pin_pitch / 2.0
-        pin_dy: float = pin_pitch
-        pin_dx: float = float(columns - 1) * pin_pitch
-        total_dx: float = pin_dx + 3 * pin_pitch
-        total_dy: float = 6.00
+        receptical_hole_dx_dy: float = half_pin_pitch / 2.0
+        pcb_hole_diameter: float = sqrt(3.0) * receptical_hole_dx_dy
+        pins_dy: float = float(rows - 1) * pin_pitch
+        pins_dx: float = float(columns - 1) * pin_pitch
+        receptical_pin_center_z: float = (-pin_height/2.0 if is_top else pin_height/2.0) + center_z
+        total_dx: float = pins_dx + pin_pitch + extra_dx
+        total_dy: float = pins_dy + pin_pitch + extra_dy
 
-        # Create the *Union3D* *pin_connector* and append *insulation_base* to it:
-        # Create a *Polygon* for the econnector:
-        header_polygon: Polygon = Polygon(f"{name} Female Header", [], lock=False)
+        # Generate the list of *receptical_pins*, *receptical_holes*, *pcb_holes*, where
+        #
+        # * *recepttical_pins* (*List*[*Scad3D*]): A list of the the pins sticking out
+        #   of the bottom of the receptical.
+        # * *receptical_holes* (*List*[*SimplePolygon*]): A list of *Square*'s that represents
+        #   where the mating male header pins will go.
+        # * *pcb_holes* (*List*[*SimplePolygon*]): A list of *Circle*'s that represent where
+        #   the holes in the PCB for thie pins need to go.
+        #
+        # These are all done in the same loop to share some common code:
 
-        # Create the *header_exterior_square*:
-        header_exterior_square: Square = Square(f"{name} Header Outline Square",
-                                                total_dx, total_dy, center=center)
-        header_polygon.append(header_exterior_square)
+        # Start by creatinging the three lists and saving *pcb_holes* into *pin_receptical*
+        # (i.e. *self*):
+        receptical_pins: List[Scad3D] = []
+        receptical_holes: List[SimplePolygon] = []
+        pcb_holes: List[SimplePolygon] = []
+        self.pcb_holes: List[SimplePolygon] = pcb_holes
 
-        female_connector: Union3D = Union3D(f"{name} Female Connector", [], lock=False)
-
-        # Generate the *header_pin_hole*'s and the actual pins:
-        start_x: float = -pin_dx/2.0 + center.x
-        start_y: float = -pin_dy/2.0 + center.y
-        x_index: int
+        # Iterate across the *rows* and *columns* and fill in the three lists decribed above:
+        start_x: float = -pins_dx/2.0 + center_x
+        start_y: float = -pins_dy/2.0 + center_y
         y_index: int
         for y_index in range(rows):
             y: float = start_y + float(y_index) * pin_pitch
+            x_index: int
             for x_index in range(columns):
                 x: float = start_x + float(x_index) * pin_pitch
 
-                # Create the *header_pin_hole* and append to *header_polygon*:
-                header_pin_center: P2D = P2D(x, y)
-                header_pin_hole: Square = Square(f"Pin ({x_index},{y_index})",
-                                                 pin_hole_dx_dy, pin_hole_dx_dy,
-                                                 center=header_pin_center)
-                header_polygon.append(header_pin_hole)
+                # Append a *pcb_hole* to *pcb_holes*:
+                pcb_hole_center: P2D = P2D(x, y)
+                pcb_hole: Circle = Circle(f"{name} PCB Hole: ({x_index},{y_index})",
+                                          pcb_hole_diameter, 8, center=pcb_hole_center)
+                pcb_holes.append(pcb_hole)
 
-                # Create the *connector_pin* and append to *female_connector*:
-                connector_pin_center: P3D = P3D(x, y, -pin_height/2.0)
-                connector_pin: Cube = Cube(f"Pin ({x_index},{y_index})",
-                                           pin_hole_dx_dy, pin_hole_dx_dy, pin_height,
-                                           center=connector_pin_center)
-                female_connector.append(Color("Gold Color", connector_pin, "Gold"))
+                # Append a *receptical_hole* to *receptical_holes*:
+                receptical_hole: Square = Square(f"{name} Receptical Hole: ({x_index},{y_index})",
+                                                 receptical_hole_dx_dy, receptical_hole_dx_dy,
+                                                 center=pcb_hole_center)
+                receptical_holes.append(receptical_hole)
 
-        # Now extrude the connector:
-        header_base: LinearExtrude = LinearExtrude("Header Linear Extrude",
-                                                   header_polygon, header_height)
-        female_connector.append(Color("Gray Color", header_base, "Gray"))
+                # Create the *gold_receptical_pin* and append to *receptical_pins*:
+                receptical_pin_center: P3D = P3D(x, y, receptical_pin_center_z)
+                receptical_pin: Cube = Cube(f"{name} Pin: ({x_index},{y_index})",
+                                            receptical_hole_dx_dy, receptical_hole_dx_dy,
+                                            pin_height, center=receptical_pin_center)
+                gold_receptical_pin: Color = Color("Gold Color", receptical_pin, "Gold")
+                receptical_pins.append(gold_receptical_pin)
 
-        # Lock up header_polygon and *female_connector*:
-        header_polygon.lock()
-        female_connector.lock()
+        # Now create the *receptical_polygon* that will be extruded for the *receptical_base*:
+        receptical_exterior_square: SimplePolygon = Square(f"{name} Receptical Outline Square",
+                                                           total_dx, total_dy,
+                                                           center=P2D(center_x, center_y))
+        receptical_polygon: Polygon = Polygon(f"{name} Receptical Polygon",
+                                              [receptical_exterior_square] + receptical_holes)
 
-        # Create final *module*, append to *scad_program* and save into *female_pin_connector*
+        # Create the *colored_receptical_base* from *receptical_base*:
+        receptical_base: LinearExtrude = LinearExtrude(f"{name} Receptical Base",
+                                                       receptical_polygon, receptical_height)
+        receptical_z: float = center_z if is_top else center_z - receptical_height
+        translated_receptical_base: Translate3D = Translate3D(f"{name} Translated Receptical Base",
+                                                              receptical_base,
+                                                              P3D(0.0, 0.0, receptical_z))
+        colored_receptical_base: Scad3D = Color(f"{name} {color_name} Receptical Base",
+                                                translated_receptical_base, color_name)
+
+        # Create the final *module*, append to *scad_program*, and save into *pin_receptical*
         # (i.e. *self*):
-        module: Module3D = Module3D(f"{name} Female Pin Connector Module", [female_connector])
+        module: Module3D = Module3D(f"{name} Receptical Module",
+                                    [colored_receptical_base] + receptical_pins)
         scad_program.append(module)
-        # female_pin_connector: FemalePinConnector = self
+        # pin_recptical: PinReceptical = self
         self.module: Module3D = module
 
 
@@ -495,38 +513,126 @@ class MalePinConnector:
         return pin_connector
 
 
-# MasterPCB:
-class MasterPCB:
+# MasterBoard:
+class MasterBoard:
     """Represents Master PCB that the various Pi boards mount to."""
 
-    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
-        """Initialize the MasterPCB."""
+    # Masterboard.__init__():
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, pi_offset: P3D,
+                 romi_base_keys: List[Tuple[Any, ...]]) -> None:
+        """Initialize the MasterBoard."""
         # Now Grab the PCB sides.  Arbitrarily set Y to 0 since is in not needed:
-        pcb_west_x: float = base_dxf.x_locate(-5.704087)  # East side of gearbox.
-        pcb_east_x: float = base_dxf.x_locate(-2.031642)  # West side of gearbox.
-        pcb_dx: float = abs(pcb_east_x - pcb_west_x)
+        # Start with some X coordinates:
+        holder_inside_tab_dx: float = 2.60  # Measured with calipers.
+        wheel_well_west_x: float = base_dxf.x_locate(-6.326134)
+        holder_east_x: float = base_dxf.x_locate(-2.031646) - holder_inside_tab_dx
+        holder_west_x: float = base_dxf.x_locate(-5.704091) + holder_inside_tab_dx
+        holder_slop_dx: float = 0.500
+        wheel_well_east_x: float = base_dxf.x_locate(-1.409591)
 
+        # Now grab some Y coordinates:
         # Currently set *pcb_dy* equal to the area covring the 4 Raspberry Pi holes:
         pcb_dy: float = 7.00 + 58.00 + 7.00
+        holder_north_y: float = base_dxf.y_locate(3.410067)
+        holder_south_y: float = base_dxf.y_locate(2.465193)
+        holder_slop_dy: float = 0.500
 
         # Find the bottom edge of the motor casing.  Arbitrarily set Y to 0.0 since it is unneeded.
         # The Y coordinate cooresponds to the Z height.
         motor_casing_bottom_z: float = base_dxf.z_locate(-2.110835)
-        pcb_height: float = 1.00
+        pcb_top_z: float = motor_casing_bottom_z
+        pcb_dz: float = 1.00
+        pcb_bottom_z: float = pcb_top_z - pcb_dz
 
-        # Create the *pcb_polygon*:
-        external_polygon: Square = Square("Master PCB External Square", pcb_dx, pcb_dy)
-        pcb_polygon: Polygon = Polygon("Master PCB Polygon", [external_polygon])
+        # Create the *pi_receptical_2x20*:
+        receptical_height: float = 8.50 - 2.54
+        pin_height: float = 3.20
+        # insulation_height: float = 2.54
+        # horizontal_height: float = pcb_height + insulation_height + header_height
+        receptical_center: P3D = P3D(pi_offset.x - 49.0/2.0, pi_offset.y, pcb_bottom_z)
+        receptical_2x20: PinReceptical = PinReceptical(scad_program, "Master Board", 2, 20,
+                                                       receptical_height, pin_height,
+                                                       center=receptical_center,
+                                                       is_vertical=True, is_top=False)
+
+        # Now populate *external_polygon* with points that will leave some room around the
+        # two motor holder.  Start in the upper right corner and move around clockwise:
+        external_polygon_points: List[P2D] = [
+            P2D(wheel_well_east_x, pcb_dy / 2.0),
+            P2D(wheel_well_west_x, pcb_dy / 2.0),
+            P2D(wheel_well_west_x, holder_north_y + holder_slop_dy),
+            P2D(holder_west_x - holder_slop_dx, holder_north_y + holder_slop_dy),
+            P2D(holder_west_x - holder_slop_dx, holder_south_y - holder_slop_dy),
+            P2D(wheel_well_west_x, holder_south_y - holder_slop_dy),
+            P2D(wheel_well_west_x, -pcb_dy / 2.0),
+            P2D(wheel_well_east_x, -pcb_dy / 2.0),
+            P2D(wheel_well_east_x, holder_south_y - holder_slop_dy),
+            P2D(holder_east_x + holder_slop_dx, holder_south_y - holder_slop_dy),
+            P2D(holder_east_x + holder_slop_dx, holder_north_y + holder_slop_dy),
+            P2D(wheel_well_east_x, holder_north_y + holder_slop_dy)
+        ]
+        external_polygon: SimplePolygon = SimplePolygon("Master PCB External Simple Polygon",
+                                                        external_polygon_points, lock=True)
+
+        # Now add some Pi Board mounting holes:
+        pi_hole_diameter: float = 2.75
+        pi_hole_pitch_dx: float = 49.00
+        pi_hole_pitch_dy: float = 58.00
+        pi_offset_2d: P2D = P2D(pi_offset.x, pi_offset.y)
+        pi_hole1: SimplePolygon = Circle("Pi Hole 1", pi_hole_diameter, 8,
+                                         P2D(-pi_hole_pitch_dx / 2.0, -pi_hole_pitch_dy / 2.0)
+                                         + pi_offset_2d)
+        pi_hole2: Circle = Circle("Pi Hole 1", pi_hole_diameter, 8,
+                                  P2D(pi_hole_pitch_dx / 2.0, -pi_hole_pitch_dy / 2.0)
+                                  + pi_offset_2d)
+        pi_hole3: Circle = Circle("Pi Hole 1", pi_hole_diameter, 8,
+                                  P2D(-pi_hole_pitch_dx / 2.0, pi_hole_pitch_dy / 2.0)
+                                  + pi_offset_2d)
+        pi_hole4: Circle = Circle("Pi Hole 1", pi_hole_diameter, 8,
+                                  P2D(pi_hole_pitch_dx / 2.0, pi_hole_pitch_dy / 2.0)
+                                  + pi_offset_2d)
+        pi_holes: List[SimplePolygon] = [pi_hole1, pi_hole2, pi_hole3, pi_hole4]
+
+        # Create the romi_base_mounting holes:
+        romi_base_mounting_holes: List[SimplePolygon] = []
+        romi_base_mounting_hole_names: List[str] = [
+            "BATTERY: Lower Hole (4, 2)",
+            "BATTERY: Lower Hole (-4, 2)",
+            "BATTERY: Upper Hole (0, 1)",
+            "BATTERY: Upper Hole (9, 1)"
+        ]
+        romi_base_key: Tuple[Any, ...]
+        for romi_base_key in romi_base_keys:
+            key_name: str = romi_base_key[1]
+            if key_name in romi_base_mounting_hole_names:
+                x: float = romi_base_key[2]
+                y: float = romi_base_key[3]
+                diameter: float = romi_base_key[4]
+                romi_base_mounting_hole: Circle = Circle(f"Master Board Mount: '{key_name}'",
+                                                         diameter, 16, center=P2D(x, y))
+                romi_base_mounting_holes.append(romi_base_mounting_hole)
+
+        # Create *pcb_polygon*:
+        pcb_polygon: Polygon = Polygon("Master PCB Polygon",
+                                       [external_polygon] + pi_holes +
+                                       receptical_2x20.pcb_holes + romi_base_mounting_holes)
+
+        pcb_polygon.lock()
+        pcb_polygon_module: Module2D = Module2D("Master PCB Module", [pcb_polygon])
+        scad_program.append(pcb_polygon_module)
+        scad_program.if2d.name_match_append("master_pcb", pcb_polygon_module, ["Master PCB"])
 
         # Create *colored_pcb* from *pcb_polygon* by extrusion and translation:
-        extruded_pcb: LinearExtrude = LinearExtrude("Extruded PCB", pcb_polygon, pcb_height)
+        extruded_pcb: LinearExtrude = LinearExtrude("Extruded PCB", pcb_polygon, pcb_dz)
         translated_pcb: Translate3D = Translate3D("Translated PCB", extruded_pcb,
-                                                  P3D(0.0, 0.0, motor_casing_bottom_z - pcb_height))
+                                                  P3D(0.0, 0.0, pcb_bottom_z))
         colored_pcb: Color = Color("Green Color", translated_pcb, "Green")
 
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
-        module: Module3D = Module3D("Master PCB Module", [colored_pcb])
+        module: Module3D = Module3D("Master Board Module",
+                                    [colored_pcb, receptical_2x20.module.use_module_get()])
         scad_program.append(module)
+        scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
         self.module: Module3D = module
 
 
@@ -939,7 +1045,7 @@ class RomiBase:
                     y: float = reference_hole_center_y + lower_battery_y_offsets[y_index]
                     lower_hole_center: P2D = P2D(x, y)
                     lower_hole: Circle = reference_hole.copy(("BATTERY: Lower Hole "
-                                                             f"({2-x_index}, {y_index})"),
+                                                             f"({4-x_index}, {y_index})"),
                                                              center=lower_hole_center)
                     simple_polygons.append(lower_hole)
 
@@ -953,7 +1059,7 @@ class RomiBase:
                 y = reference_hole_center_y + upper_battery_y_offsets[y_index]
                 upper_hole_center: P2D = P2D(x, y)
                 upper_hole: Circle = reference_hole.copy(("BATTERY: Upper Hole "
-                                                         f"({2-x_index}, {y_index})"),
+                                                         f"({x_index}, {y_index})"),
                                                          center=upper_hole_center)
                 simple_polygons.append(upper_hole)
 
@@ -1624,19 +1730,26 @@ class RomiBase:
         vertical_rectangles: List[Square] = upper_rectangles + lower_rectangles
         return vertical_rectangles
 
+    # RomiBase.base_keys_get():
+    def keys_get(self) -> List[Tuple[Any, ...]]:
+        """Return the RomiBase hole/rectangle/slot keys."""
+        romi_base: RomiBase = self
+        romi_base_polygon: Polygon = romi_base.base_polygon_get()
+        romi_base_simple_polygons: List[SimplePolygon] = romi_base_polygon.simple_polygons_get()
+        romi_base_simple_polygon: SimplePolygon
+        keys: List[Tuple[Any, ...]] = [romi_base_simple_polygon.key()
+                                       for romi_base_simple_polygon
+                                       in romi_base_simple_polygons[1:]]  # Note 1st one is skipped
+        # Sort *keys* and return the result:
+        keys.sort()
+        return keys
+
     # RomiBase.holes_slots_rectangles_write():
     def holes_slots_rectangles_write(self):
         """Write out the holes, slots, and rectangle lcoations."""
         # Obtain the hole, slot and rectangle locations:
         romi_base: RomiBase = self
-        romi_base_polygon: Polygon = romi_base.base_polygon_get()
-        romi_base_simple_polygons: List[SimplePolygon] = romi_base_polygon.simple_polygons_get()
-        romi_base_simple_polygon: SimplePolygon
-        # Generate *romi_base_keys* skipping the first *SimplePolygon* which is the outer one:
-        romi_base_keys: List[Tuple[Any, ...]] = [romi_base_simple_polygon.key()
-                                                 for romi_base_simple_polygon
-                                                 in romi_base_simple_polygons[1:]]
-        romi_base_keys.sort()
+        romi_base_keys: List[Tuple[Any, ...]] = romi_base.keys_get()
 
         # Now output the hole/slot/rectangle `.csv` file:
         csv_file: IO[Any]
@@ -2290,18 +2403,11 @@ class PiBoard:
     """Represents a Raspberry Pi or compatible SBC."""
 
     # PiBoard.__init__():
-    def __init__(self):
+    def __init__(self, module: Module3D) -> None:
         """Initialize PiBoard parent class."""
-        self.module: Optional[Module3D] = None
-
-    # PiBoard.module_get():
-    def module_get(self) -> Module3D:
-        """Return the Module for PiBoard."""
-        # Grab *module* from *pi_board* (i.e. *self*):
-        pi_board: PiBoard = self
-        module: Optional[Module3D] = pi_board.module
-        assert isinstance(module, Module3D)
-        return module
+        # Save *module* into *pi_board* (i.e. *self*):
+        # pi_board: PiBoard = self
+        self.module: Module3D = module
 
 
 # OtherPi:
@@ -2311,30 +2417,30 @@ class OtherPi(PiBoard):
     # OtherPi.__init__():
     def __init__(self, scad_program: ScadProgram) -> None:
         """Initialize OtherPi."""
-        super().__init__()
+        # Compute *other_pi_pcb_polygon* from *other_pi* (i.e. *self*):
         other_pi: OtherPi = self
         other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
-        other_pi_model: Union3D = Union3D("OtherPi Model", [], lock=False)
-        other_pi_translated_pcb: Scad3D = Translate3D("Translated Other PCB",
-                                                      LinearExtrude("OtherPi PCB",
-                                                                    other_pi_pcb_polygon, 1.000),
-                                                      P3D(0.0, 0.0, -0.99))
-        other_pi_green_pcb: Color = Color("Green OtherPi PCB", other_pi_translated_pcb, "Green")
-        other_pi_model.append(Translate3D("Move Down 1mm",
-                                          other_pi_green_pcb, P3D(-0.990, 0.0, 0.0)))
-        other_pi_model.extend(other_pi.connectors_get())
-        other_pi_model.lock()
-        translated_other_pi_model: Translate3D = Translate3D("Translated Other Pi Model",
-                                                             other_pi_model,
-                                                             P3D(-(3.5 + 58/2.0),
-                                                                 -(70.0 - (3.5 + 49.0/2.0)),
-                                                                 1.000))
+        other_pi_connectors: List[Scad3D] = other_pi.connectors_get()
+
+        # No construct *green_other_pi_pcb* from *other_pi_polygon*:
+        pcb_height: float = 0.990
+        other_pi_pcb: LinearExtrude = LinearExtrude("OtherPi PCB", other_pi_pcb_polygon, pcb_height)
+        translated_other_pi_pcb: Translate3D = Translate3D("Translated Other Pi",
+                                                           other_pi_pcb,
+                                                           P3D(0.0, 0.0, -pcb_height))
+        green_other_pi_pcb: Scad3D = Color("Green OtherPi PCB", translated_other_pi_pcb, "Green")
+        other_pi_union: Union3D = Union3D("Other Pi Union",
+                                          [green_other_pi_pcb] + other_pi_connectors)
+        translate_other_pi: Scad3D = Translate3D("Translate Other Pi",
+                                                 other_pi_union,
+                                                 P3D(-(3.5 + 58/2.0),
+                                                     -(70.0 - (3.5 + 49.0/2.0)),
+                                                     0.0))
 
         # Create *module*, append it to *scad_program*, and save it into *other_pi* (i.e. *self*):
-        module: Module3D = Module3D("Other Pi Module", [translated_other_pi_model])
+        module: Module3D = Module3D("Other Pi Module", [translate_other_pi])
         scad_program.append(module)
-        # other_pi: OtherPi = self
-        self.module: Module3D = module
+        super().__init__(module)
 
     # OtherPi.board_polygon_get():
     def pcb_polygon_get(self) -> Polygon:
@@ -2439,9 +2545,6 @@ class RaspberryPi3(PiBoard):
     # RaspberryPi3.__init__():
     def __init__(self, scad_program: ScadProgram) -> None:
         """Initialize RaspberryPi3 and append to ScadProgram."""
-        # Initialize *PiBoard* parent class:
-        super().__init__()
-
         # Create the R
         raspi3b: RaspberryPi3 = self
         raspi3b_pcb_polygon: Polygon = raspi3b.pcb_polygon_get()
@@ -2467,7 +2570,8 @@ class RaspberryPi3(PiBoard):
         # Create *module*, append it to *scad_program* and save it into *raspi3b* (i.e. *self*):
         module: Module3D = Module3D("RasPi3B_Module", [translated_raspi3b])
         scad_program.append(module)
-        self.module: Module3D = module
+        # Initialize *PiBoard* parent class:
+        super().__init__(module)
 
     # RaspberryPi3.pcb_polygon_get():
     def pcb_polygon_get(self) -> Polygon:
@@ -2582,8 +2686,10 @@ def main() -> int:  # pragma: no cover
     base_dxf: BaseDXF = BaseDXF()
     romi_base: RomiBase = RomiBase(scad_program, base_dxf)
     romi_base.holes_slots_rectangles_write()
+    romi_base_keys: List[Tuple[Any, ...]] = romi_base.keys_get()
 
     # Now create *other_pi* and append it as well:
+    pi_offset: P3D = P3D(-4.0, 0.0, 5.5)
     other_pi: OtherPi = OtherPi(scad_program)
 
     # Create *raspi3b*:
@@ -2597,16 +2703,16 @@ def main() -> int:  # pragma: no cover
                                                                romi_motor_holder, romi_magnet)
 
     # Create the 2x20 receptical:
-    # female_pin_connector_2x20: FemalePinConnector = FemalePinConnector(scad_program,
-    #                                                                    2, 20, 8.50 - 2.54, 3.20)
+    # receptical_2x20: PinReceptical = PinReceptical(scad_program,
+    #                                                2, 20, 8.50 - 2.54, 3.20)
 
     romi_expansion_plate: RomiExpansionPlate = RomiExpansionPlate(scad_program)
     romi_expansion_plate = romi_expansion_plate
 
-    master_pcb: MasterPCB = MasterPCB(scad_program, base_dxf)
+    master_board: MasterBoard = MasterBoard(scad_program, base_dxf, pi_offset, romi_base_keys)
 
     # Now create *hr2*:
-    hr2: HR2 = HR2(scad_program, romi_base, romi_wheel_assembly, other_pi, master_pcb)
+    hr2: HR2 = HR2(scad_program, romi_base, romi_wheel_assembly, master_board, other_pi, pi_offset)
     hr2 = hr2
 
     # Generate `scad_models.scad`:

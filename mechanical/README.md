@@ -184,6 +184,12 @@ systems and Linux distributions you are on your own.
   * `hr2_robot`:
     HR2 Robot
 
+  * `master_board`:
+    Master Board
+
+  * `master_pcb`:
+    Master PCB
+
   * `romi_base`:
     Romi Base Polygon
 
