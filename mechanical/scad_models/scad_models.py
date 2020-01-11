@@ -312,14 +312,15 @@ class EncoderBoard:
 
         # Compute some constants:
         north_electrical_dy: float = abs(north_electrical_north_y - north_electrical_south_y)
+        north_electrical_y: float = (north_electrical_north_y + north_electrical_south_y) / 2.0
         south_electrical_dy: float = abs(south_electrical_north_y - south_electrical_south_y)
-        electrical_dy: float = abs(north_electrical_dy + south_electrical_dy)
+        south_electrical_y: float = (south_electrical_north_y + south_electrical_south_y) / 2.0
+        electrical_dy: float = (north_electrical_dy + south_electrical_dy) / 2.0
         electrical_dz: float = abs(electrical_top_z - electrical_bottom_z)
         motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
         motor_casing_dz: float = abs(motor_casing_top_z - motor_casing_bottom_z)
         motor_shaft_diameter: float = (motor_shart_north_y + motor_shart_south_y) / 2.0
         motor_shaft_z: float = motor_casing_bottom_z + motor_casing_dz / 2.0
-        electrical_z: float = (electrical_top_z - electrical_bottom_z) / 2.0
         pcb_translate: P3D = P3D(motor_casing_east_x, 0.0, motor_shaft_z)
 
         # The PCB is designed flat with the motor shaft in the center and then rotated on end
@@ -328,32 +329,34 @@ class EncoderBoard:
         pcb_dy: float = motor_casing_dy + 2.0 * pcb_dy_extra
         pcb_dx: float = motor_casing_dz
         pcb_height: float = 1.0
-        pcb_shaft_diameter_extra: float = 1.0
+        pcb_shaft_diameter_extra: float = 3.0
         pcb_shaft_hole_diameter: float = motor_shaft_diameter + pcb_shaft_diameter_extra
-        pcb_slot_extra: float = 0.5
+        pcb_slot_extra: float = 0.400
         pcb_slot_dx: float = electrical_dz + pcb_slot_extra
         pcb_slot_dy: float = electrical_dy + pcb_slot_extra
-        pcb_north_slot_center: P2D = P2D(electrical_z, north_electrical_dy)
-        pcb_south_slot_center: P2D = P2D(electrical_z, south_electrical_dy)
+        pcb_north_slot_center: P2D = P2D(0.0, north_electrical_y)
+        pcb_south_slot_center: P2D = P2D(0.0, south_electrical_y)
 
         pcb_exterior: Square = Square("Encoder PCB Exterior Square", pcb_dx, pcb_dy)
-        pcb_shaft_hole: Circle = Circle("Encoder Shaft Hole", pcb_shaft_hole_diameter, 8)
+        pcb_shaft_hole: Circle = Circle("Encoder Shaft Hole", pcb_shaft_hole_diameter, 16)
         pcb_north_electrical_slot: Square = Square("Encoder North Electrical Slot",
                                                    pcb_slot_dx, pcb_slot_dy,
                                                    center=pcb_north_slot_center,
-                                                   corner_radius=north_electrical_dy/2.0)
-        pcb_south_electrical_slot: Square = Square("Encoder North Electrical Slot",
+                                                   corner_radius=pcb_slot_extra/2.0,
+                                                   corner_count=1)
+        pcb_south_electrical_slot: Square = Square("Encoder South Electrical Slot",
                                                    pcb_slot_dx, pcb_slot_dy,
                                                    center=pcb_south_slot_center,
-                                                   corner_radius=north_electrical_dy/2.0)
+                                                   corner_radius=pcb_slot_extra/2.0,
+                                                   corner_count=1)
         # Now create *pcb_polygon*:
-        pcb_polygon: Polygon = Polygon("PCB Polygon", [
+        pcb_polygon: Polygon = Polygon("Encoder PCB Polygon", [
             pcb_exterior,
             pcb_shaft_hole,
             pcb_north_electrical_slot,
             pcb_south_electrical_slot
         ], lock=True)
-        encoder_pcb_module: Module2D = Module2D("Encode PCB Module", [pcb_polygon])
+        encoder_pcb_module: Module2D = Module2D("Encoder PCB Module", [pcb_polygon])
         scad_program.append(encoder_pcb_module)
         scad_program.if2d.name_match_append("encoder_pcb", encoder_pcb_module, ["Encoder PCB"])
 
@@ -686,10 +689,10 @@ class MasterBoard:
         # Create the romi_base_mounting holes:
         romi_base_mounting_holes: List[SimplePolygon] = []
         romi_base_mounting_hole_names: List[str] = [
-            "BATTERY: Lower Hole (4, 2)",
-            "BATTERY: Lower Hole (-4, 2)",
             "BATTERY: Upper Hole (0, 1)",
-            "BATTERY: Upper Hole (9, 1)"
+            "BATTERY: Upper Hole (9, 1)",
+            "LEFT: LOWER Hex Hole (9, 0)",
+            "RIGHT: LOWER Hex Hole (9, 0)"
         ]
         romi_base_key: Tuple[Any, ...]
         for romi_base_key in romi_base_keys:
@@ -2160,8 +2163,8 @@ class RomiMagnet:
         magnet_thickness: float = 2.05
 
         # Create a round *Polygon* with hole in the middle for the motor shaft:
-        magnet_exterior: Circle = Circle("Magnet Exterior", magnet_diameter, 16)
-        motor_shaft_hole: Circle = Circle("Magnet Shaft Hole", motor_shaft_diameter, 8)
+        magnet_exterior: Circle = Circle("Magnet Exterior", magnet_diameter, 32)
+        motor_shaft_hole: Circle = Circle("Magnet Shaft Hole", motor_shaft_diameter, 16)
         magnet_polygon: Polygon = Polygon("Magnet Polygon", [magnet_exterior, motor_shaft_hole])
 
         # Extrude, rotate and translate *magnet_polygon* into *translated_magnet*:
@@ -2287,11 +2290,11 @@ class RomiMotor:
         motor_shaft: Cylinder = Cylinder("Motor Shaft", motor_shaft_diameter,
                                          P3D(motor_shaft_west_x, 0.0, motor_shaft_z),
                                          P3D(motor_shaft_east_x, 0.0, motor_shaft_z),
-                                         8)
+                                         16)
         wheel_shaft: Cylinder = Cylinder("Wheel Shaft", wheel_shaft_diameter,
                                          P3D(gearbox_casing_west_x - wheel_shaft_dx, 0.0, 0.0),
                                          P3D(gearbox_casing_west_x, 0.0, 0.0),
-                                         8)
+                                         16)
         electrical_north: CornerCube = CornerCube("Electrical North",
                                                   P3D(electrical_west_x,
                                                       electrical_north_y - electrical_dy/2.0,
