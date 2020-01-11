@@ -288,6 +288,96 @@ class ExpansionDXF(DXF):
         super().__init__("Romi Base DXF", offset_x, offset_top_y, offset_side_y, offset_z)
 
 
+# EncoderBoard:
+class EncoderBoard:
+    """Represents a motor encoder board."""
+
+    # EncoderBoard.__init__():
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
+        """Initialize the EncoderBoard and append to ScadProgram."""
+        # Grab some X/Y/Z coordinates from *base_dxf*:
+        motor_casing_east_x: float = base_dxf.x_locate(-5.253299)
+        motor_casing_north_y: float = base_dxf.y_locate(3.382512)
+        north_electrical_north_y: float = base_dxf.y_locate(3.208303)
+        north_electrical_south_y: float = base_dxf.y_locate(3.188610)
+        motor_shart_north_y: float = base_dxf.y_locate(2.967165)
+        motor_shart_south_y: float = base_dxf.y_locate(2.908110)
+        south_electrical_north_y: float = base_dxf.y_locate(2.686650)
+        south_electrical_south_y: float = base_dxf.y_locate(2.666957)
+        motor_casing_south_y: float = base_dxf.y_locate(2.492748)
+        motor_casing_top_z: float = base_dxf.z_locate(-1.658071)
+        electrical_top_z: float = base_dxf.z_locate(-1.842126)
+        electrical_bottom_z: float = base_dxf.z_locate(-1.926776)
+        motor_casing_bottom_z: float = base_dxf.z_locate(-2.110835)
+
+        # Compute some constants:
+        north_electrical_dy: float = abs(north_electrical_north_y - north_electrical_south_y)
+        south_electrical_dy: float = abs(south_electrical_north_y - south_electrical_south_y)
+        electrical_dy: float = abs(north_electrical_dy + south_electrical_dy)
+        electrical_dz: float = abs(electrical_top_z - electrical_bottom_z)
+        motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
+        motor_casing_dz: float = abs(motor_casing_top_z - motor_casing_bottom_z)
+        motor_shaft_diameter: float = (motor_shart_north_y + motor_shart_south_y) / 2.0
+        motor_shaft_z: float = motor_casing_bottom_z + motor_casing_dz / 2.0
+        electrical_z: float = (electrical_top_z - electrical_bottom_z) / 2.0
+        pcb_translate: P3D = P3D(motor_casing_east_x, 0.0, motor_shaft_z)
+
+        # The PCB is designed flat with the motor shaft in the center and then rotated on end
+        # and translated into position.  This tends to swap X and Z coordinates:
+        pcb_dy_extra: float = 4.0 * 2.54
+        pcb_dy: float = motor_casing_dy + 2.0 * pcb_dy_extra
+        pcb_dx: float = motor_casing_dz
+        pcb_height: float = 1.0
+        pcb_shaft_diameter_extra: float = 1.0
+        pcb_shaft_hole_diameter: float = motor_shaft_diameter + pcb_shaft_diameter_extra
+        pcb_slot_extra: float = 0.5
+        pcb_slot_dx: float = electrical_dz + pcb_slot_extra
+        pcb_slot_dy: float = electrical_dy + pcb_slot_extra
+        pcb_north_slot_center: P2D = P2D(electrical_z, north_electrical_dy)
+        pcb_south_slot_center: P2D = P2D(electrical_z, south_electrical_dy)
+
+        pcb_exterior: Square = Square("Encoder PCB Exterior Square", pcb_dx, pcb_dy)
+        pcb_shaft_hole: Circle = Circle("Encoder Shaft Hole", pcb_shaft_hole_diameter, 8)
+        pcb_north_electrical_slot: Square = Square("Encoder North Electrical Slot",
+                                                   pcb_slot_dx, pcb_slot_dy,
+                                                   center=pcb_north_slot_center,
+                                                   corner_radius=north_electrical_dy/2.0)
+        pcb_south_electrical_slot: Square = Square("Encoder North Electrical Slot",
+                                                   pcb_slot_dx, pcb_slot_dy,
+                                                   center=pcb_south_slot_center,
+                                                   corner_radius=north_electrical_dy/2.0)
+        # Now create *pcb_polygon*:
+        pcb_polygon: Polygon = Polygon("PCB Polygon", [
+            pcb_exterior,
+            pcb_shaft_hole,
+            pcb_north_electrical_slot,
+            pcb_south_electrical_slot
+        ], lock=True)
+        encoder_pcb_module: Module2D = Module2D("Encode PCB Module", [pcb_polygon])
+        scad_program.append(encoder_pcb_module)
+        scad_program.if2d.name_match_append("encoder_pcb", encoder_pcb_module, ["Encoder PCB"])
+
+        # Now create *polygon_pcb*:
+        encoder_pcb: LinearExtrude = LinearExtrude("PCB Board", pcb_polygon, pcb_height)
+        green_encoder_pcb: Color = Color("Green Encoder PCB", encoder_pcb, "Green")
+
+        # Now rotate to vertical and traslate to the left motor:
+        rotated_encoder_pcb: Rotate3D = Rotate3D("Rotated Encoder PCB", green_encoder_pcb,
+                                                 pi/2.0, P3D(0.0, 1.0, 0.0))
+        translated_encoder_pcb: Translate3D = Translate3D("Translated Encoder PCB",
+                                                          rotated_encoder_pcb,
+                                                          pcb_translate)
+
+        # Create *module*, append to *scad_program*, and save into *encoder_board* (i.e. *self*):
+        module: Module3D = Module3D("EncoderBoard Module", [
+            translated_encoder_pcb
+        ])
+        scad_program.append(module)
+        scad_program.if3d.name_match_append("encoder_board", module, ["Encoder Board"])
+        # encoder_board: EncoderBoard = self
+        self.module: Module3D = module
+
+
 # HR2:
 class HR2:
     """Represents the HR2 platform."""
@@ -2379,17 +2469,20 @@ class RomiWheelAssembly:
 
     # RomiWheelAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, romi_motor: RomiMotor,
-                 romi_motor_holder: RomiMotorHolder, romi_magnet: RomiMagnet) -> None:
+                 romi_motor_holder: RomiMotorHolder, romi_magnet: RomiMagnet,
+                 encoder_board: EncoderBoard) -> None:
         """Initialize RomiWheelAssembly and append to ScadProgram."""
         # Construct *module*, append to *scad_program*, and store into *rom_wheel_assembly*
         # (i.e. *self*):
         module = Module3D("Romi Wheel Assembly Module",
                           [romi_motor.module.use_module_get(),
                            romi_motor_holder.module.use_module_get(),
-                           romi_magnet.module.use_module_get()])
+                           romi_magnet.module.use_module_get(),
+                           encoder_board.module.use_module_get()])
         scad_program.append(module)
         # romi_wheel_assembly: RomiWheelAssembly = self
         self.module: Module3D = module
+        scad_program.if3d.name_match_append("wheel_assembly", module, ["wheel_assembly"])
 
         # Save arguments into *romi_wheel_assembly* (i.e. *self*).
         # romi_wheel_assembly: Romi_Wheel_Assembly = self
@@ -2699,8 +2792,10 @@ def main() -> int:  # pragma: no cover
     romi_motor: RomiMotor = RomiMotor(scad_program, base_dxf)
     romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program, base_dxf)
     romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)
+    encoder_board: EncoderBoard = EncoderBoard(scad_program, base_dxf)
     romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly(scad_program, romi_motor,
-                                                               romi_motor_holder, romi_magnet)
+                                                               romi_motor_holder, romi_magnet,
+                                                               encoder_board)
 
     # Create the 2x20 receptical:
     # receptical_2x20: PinReceptical = PinReceptical(scad_program,

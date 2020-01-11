@@ -178,6 +178,12 @@ systems and Linux distributions you are on your own.
 
   where NAME is one of:  <!-- NAME list starts here. -->
 
+  * `encoder_board`:
+    Encoder Board
+
+  * `encoder_pcb`:
+    Encoder PCB
+
   * `expansion`:
     Romi Expansion Polygon
 
@@ -192,6 +198,9 @@ systems and Linux distributions you are on your own.
 
   * `romi_base`:
     Romi Base Polygon
+
+  * `wheel_assembly`:
+    wheel_assembly
 
   <!-- NAME list ends here. -->
   After you run `openscad`, use your mouse to select `[Design]`=>`[Preveiw]` and `openscad`
