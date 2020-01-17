@@ -26,10 +26,10 @@
 
 import io
 from math import pi, sqrt
-from scad_models.scad import (Circle, Color, CornerCube, Cube, Cylinder, If2D, If3D, LinearExtrude,
-                              Module2D, Module3D, P2D, P3D, Polygon, Rotate3D, Scad3D, ScadProgram,
-                              SimplePolygon, Square, Translate3D, Union3D, UseModule2D,
-                              UseModule3D, Variable2D)
+from scad_models.scad import (Circle, Color, CornerCube, Cube, Cylinder, Difference3D, If2D, If3D,
+                              LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
+                              Scad3D, ScadProgram, SimplePolygon, Square, Translate3D, Union3D,
+                              UseModule2D, UseModule3D, Variable2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -232,6 +232,73 @@ def test_cylinder() -> None:
         assert False, "This line should never be reached"  # pragma: no cover
     except ValueError as value_error:
         assert f"{value_error}" == "Cylinder 'Zero Height Cylinder' does not have positive height."
+
+
+def test_difference3d() -> None:
+    """Test Difference3D class."""
+    # Create some cube corners:
+    origin: P3D = P3D(0.0, 0.0, 0.0)
+    corner1_bsw: P3D = P3D(-1.0, -1.0, -1.0)
+    corner1_tne: P3D = P3D(1.0, 1.0, 1.0)
+    corner2_bsw: P3D = P3D(-2.0, -2.0, -2.0)
+    corner2_tne: P3D = P3D(2.0, 2.0, 2.0)
+
+    # Create some *Cube*'s:
+    center_cube1: Scad3D = CornerCube("Small Cube", corner1_bsw, corner1_tne)
+    center_cube2: Scad3D = CornerCube("Big Cube", corner2_bsw, corner2_tne)
+    bsw_cube2: Scad3D = CornerCube("BSW Cube", corner2_bsw, origin)
+    tne_cube2: Scad3D = CornerCube("TNE Cube", origin, corner2_tne)
+
+    # Create the *difference3d* and perform some operations:
+    difference3d: Difference3D = Difference3D("Difference3D 1", center_cube2, [], lock=False)
+    assert f"{difference3d}" == "Difference3D('Difference3D 1','Big Cube',[],lock=False)"
+    difference3d.append(center_cube1)
+    assert f"{difference3d}" == ("Difference3D('Difference3D 1','Big Cube',"
+                                 "['Small Cube'],lock=False)")
+    difference3d.extend([bsw_cube2, tne_cube2])
+    assert f"{difference3d}" == ("Difference3D('Difference3D 1','Big Cube',"
+                                 "['Small Cube','BSW Cube','TNE Cube'],lock=False)")
+
+    # Verify that *scad_lines_append* method fails if not locked:
+    scad_lines: List[str] = []
+    try:
+        difference3d.scad_lines_append(scad_lines, "")
+        assert False, "This lines should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Difference3D 'Difference3D 1' is not locked yet."
+
+    # Verify that *scad_lines_append* succeeds if *locked*:
+    difference3d.lock()
+    difference3d.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 10
+    assert scad_lines[0] == "difference() {  // Difference3D: 'Difference3D 1'", "[0]!"
+    assert scad_lines[1] == (" cube(size = [4.000, 4.000, 4.000], center = true);  "
+                             "// Cube: 'Big Cube'"), "[1]!"
+    assert scad_lines[2] == (" cube(size = [2.000, 2.000, 2.000], center = true);  "
+                             "// Cube: 'Small Cube'"), "[2]!"
+    assert scad_lines[3] == " translate(v = [-1.000, -1.000, -1.000]) {", "[3]!"
+    assert scad_lines[4] == ("  cube(size = [2.000, 2.000, 2.000], center = true);  "
+                             "// Cube: 'BSW Cube'"), "[4]!"
+    assert scad_lines[5] == " }", "[5]!"
+    assert scad_lines[6] == " translate(v = [1.000, 1.000, 1.000]) {", "[6]!"
+    assert scad_lines[7] == ("  cube(size = [2.000, 2.000, 2.000], center = true);  "
+                             "// Cube: 'TNE Cube'"), "[7]!"
+    assert scad_lines[8] == " }", "[8]!"
+    assert scad_lines[9] == "}  // End: Difference3D: 'Difference3D 1'", "[9]!"
+
+    # Now verify that *append* and *extend* methods fail if locked:
+    try:
+        difference3d.append(center_cube2)
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == ("Can not append to Difference3D 'Difference3D 1' "
+                                    "because it is locked")
+    try:
+        difference3d.extend([bsw_cube2, tne_cube2])
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == ("Can not extend Difference3D 'Difference3D 1' "
+                                    "because it is locked")
 
 
 def test_if2d() -> None:
@@ -471,12 +538,12 @@ def test_module2d() -> None:
         module2d1.append(circle1)
         assert False, "append() should have failed"  # pragma: no cover
     except ValueError as value_error:
-        assert f"{value_error}" == "Can not append to Module2D 'Module2D 1' because is locked"
+        assert f"{value_error}" == "Can not append to Module2D 'Module2D 1' because it is locked"
     try:
         module2d1.extend([circle1])
         assert False, "extend() should have failed"  # pragma: no cover
     except ValueError as value_error:
-        assert f"{value_error}" == "Can not extend Module2D 'Module2D 1' because is locked"
+        assert f"{value_error}" == "Can not extend Module2D 'Module2D 1' because it is locked"
 
     # Now test *__getitem__* method:
     assert module2d1[0] == circle1
@@ -536,12 +603,12 @@ def test_module3d() -> None:
         module3d1.append(cube1)
         assert False, "append() should have failed"  # pragma: no cover
     except ValueError as value_error:
-        assert f"{value_error}" == "Can not append to Module3D 'Module3D 1' because is locked"
+        assert f"{value_error}" == "Can not append to Module3D 'Module3D 1' because it is locked"
     try:
         module3d1.extend([cube1])
         assert False, "extend() should have failed"  # pragma: no cover
     except ValueError as value_error:
-        assert f"{value_error}" == "Can not extend Module3D 'Module3D 1' because is locked"
+        assert f"{value_error}" == "Can not extend Module3D 'Module3D 1' because it is locked"
 
     # Now test *__getitem__* method:
     assert module3d1[0] == cube1
@@ -1302,12 +1369,12 @@ def test_union3d() -> None:
         cubes_union.append(cube1)
         assert "This line should not be reached"  # pragma: no cover
     except ValueError as value_error:
-        assert f"{value_error}" == "Can not append to Union3D 'Cubes Union' because is locked"
+        assert f"{value_error}" == "Can not append to Union3D 'Cubes Union' because it is locked"
     try:
         cubes_union.extend([cube2, cube3])
         assert "This line should not be reached"  # pragma: no cover
     except ValueError as value_error:
-        assert f"{value_error}" == "Can not extend Union3D 'Cubes Union' because is locked"
+        assert f"{value_error}" == "Can not extend Union3D 'Cubes Union' because it is locked"
 
 
 def test_use_module2d() -> None:

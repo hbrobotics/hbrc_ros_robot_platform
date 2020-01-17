@@ -196,6 +196,9 @@ systems and Linux distributions you are on your own.
   * `master_pcb`:
     Master PCB
 
+  * `other_pi`:
+    OtherPI SBC
+
   * `romi_base`:
     Romi Base Polygon
 

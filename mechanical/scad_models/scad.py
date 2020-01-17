@@ -953,7 +953,7 @@ class Module2D(Scad2D):
         # Make sure that we are not *locked*:
         if locked:
             name: str = module2d.name
-            raise ValueError(f"Can not append to Module2D '{name}' because is locked")
+            raise ValueError(f"Can not append to Module2D '{name}' because it is locked")
 
         # Perform the *append*:
         scad2ds.append(scad2d)
@@ -969,7 +969,7 @@ class Module2D(Scad2D):
         # Make sure that we are not *locked*:
         if locked:
             name: str = module2d.name
-            raise ValueError(f"Can not extend Module2D '{name}' because is locked")
+            raise ValueError(f"Can not extend Module2D '{name}' because it is locked")
 
         # Perform the *append*:
         scad2ds.extend(new_scad2ds)
@@ -2253,6 +2253,7 @@ class Variable2D(Scad2D):
 class Scad3D(Scad):
     """Represents 3-dimensional Scad objects."""
 
+    # Scad3D.__init__():
     def __init__(self, name: str) -> None:
         """Set the name of the 3-dimensional SCAD object."""
         super().__init__(name)
@@ -2516,6 +2517,124 @@ class CornerCube(Cube):
         super().__init__(name, dx, dy, dz, center=center)
 
 
+# Difference3D:
+class Difference3D(Scad3D):
+    """Represents the subtraction of SCAD3 objects."""
+
+    # Difference3D.__init__():
+    def __init__(self, name: str, root: Scad3D,
+                 subtracts: List[Scad3D], lock: bool = True) -> None:
+        """Initialize a *Difference3D* with SCAD3D's to subtract.
+
+        Args:
+            *name* (*str*):
+                The name of the differenct operation that is mainly
+                used for debugging `.scad` code.
+            *root: (*Scad3D*):
+                The root *Scad3D* object to subtract from.
+            *subtracts* (*List*[*Scad3D*]):
+                A list of *Scad3D*'s to subtract from *root*.
+            *lock* (*bool*) (Optional: defaults to *True*):
+                When *True* no further *Scad3D* objects can be
+                appended to the *Difference3D* object (i.e. *self*);
+                otherwise, the *append* and *extend* methods are
+                allowed.
+
+        """
+        # Initialize the *Scad3D* parent class:
+        super().__init__(name)
+
+        # Save *root* and *subtracts* into *difference3d* (i.e. *self*):
+        # difference3d: Difference3D = self
+        self.root: Scad3D = root
+        self.subtracts: List[Scad3D] = subtracts[:]  # Copy contents of list
+        self.locked: bool = lock
+
+    # Difference3D.__str__()
+    def __str__(self) -> str:
+        """Return a short text string for Difference3D."""
+        # Grab some values from *difference3d* (i.e. *self*):
+        difference3d: Difference3D = self
+        name: str = difference3d.name
+        root: Scad3D = difference3d.root
+        subtracts: List[Scad3D] = difference3d.subtracts
+        locked: bool = difference3d.locked
+
+        subtract: Scad3D
+        subtract_names: str = ','.join([f"'{subtract.name}'" for subtract in subtracts])
+        return f"Difference3D('{name}','{root.name}',[{subtract_names}],lock={locked})"
+
+    # Difference3D.append():
+    def append(self, scad3d: Scad3D) -> None:
+        """Append a Scad3D to a Difference3D."""
+        # Grab some values from *difference3d* (i.e. *self*):
+        difference3d: Difference3D = self
+        subtracts: List[Scad3D] = difference3d.subtracts
+        locked: bool = difference3d.locked
+
+        # Fail if *difference3d* is *locked*:
+        if locked:
+            name: str = difference3d.name
+            raise ValueError(f"Can not append to Difference3D '{name}' because it is locked")
+
+        # Just do the append:
+        subtracts.append(scad3d)
+
+    # Diffrence3D.extend():
+    def extend(self, scad3ds: List[Scad3D]) -> None:
+        """Append a list of Scad3D's to a Difference3D."""
+        # Grab some values from *difference3d* (i.e. *self*):
+        difference3d: Difference3D = self
+        subtracts: List[Scad3D] = difference3d.subtracts
+        locked: bool = difference3d.locked
+
+        # Faile *difference3d* is *locked*:
+        if locked:
+            name: str = difference3d.name
+            raise ValueError(f"Can not extend Difference3D '{name}' because it is locked")
+
+        # Just do the extends.
+        subtracts.extend(scad3ds)
+
+    # Difference3D.lock():
+    def lock(self) -> None:
+        """Lock Difference3D from further appends or extends."""
+        # Set lock for *difference3d* (i.e. *self*):
+        difference3d: Difference3D = self
+        difference3d.locked = True
+
+    # Difference3D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Difference3D to a list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]):
+                The lines list to append the *difference3d*
+                (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *difference3d* (i.e. *self*):
+        difference3d: Difference3D = self
+        name: str = difference3d.name
+        root: Scad3D = difference3d.root
+        subtracts: List[Scad3D] = difference3d.subtracts
+        locked: bool = difference3d.locked
+
+        # Ensure that *difference3d* is *locked*:
+        if not locked:
+            raise ValueError(f"Difference3D '{name}' is not locked yet.")
+
+        # Append the `difference` operation to *scad_lines* indented by *indent*:
+        scad_lines.append(f"{indent}difference() {{  // Difference3D: '{name}'")
+        next_indent: str = indent + " "
+        root.scad_lines_append(scad_lines, next_indent)
+        subtract: Scad3D
+        for subtract in subtracts:
+            subtract.scad_lines_append(scad_lines, next_indent)
+        scad_lines.append(f"{indent}}}  // End: Difference3D: '{name}'")
+
+
 # If3D:
 class If3D(Scad3D):
     """Represents a Scad3D if-then-else statement chain."""
@@ -2629,6 +2748,7 @@ class If3D(Scad3D):
 class LinearExtrude(Scad3D):
     """Represents an OpenScad `linear_extrude` command."""
 
+    # LinearExtruded.__init__():
     def __init__(self, name: str, scad2d: Scad2D, height: float, center: bool = False,
                  twist: float = 0.0, convexity: int = -1, slices: int = -1,
                  initial_scale: float = 1.0, final_scale: float = 1.0) -> None:
@@ -2788,9 +2908,10 @@ class Module3D(Scad3D):
         # Make sure that we are not *locked*:
         if locked:
             name: str = module3d.name
-            raise ValueError(f"Can not append to Module3D '{name}' because is locked")
+            raise ValueError(f"Can not append to Module3D '{name}' because it is locked")
 
         # Perform the *append*:
+        assert isinstance(scad3d, Scad3D)
         scad3ds.append(scad3d)
 
     # Module3D.extend():
@@ -2804,10 +2925,14 @@ class Module3D(Scad3D):
         # Make sure that we are not *locked*:
         if locked:
             name: str = module3d.name
-            raise ValueError(f"Can not extend Module3D '{name}' because is locked")
+            raise ValueError(f"Can not extend Module3D '{name}' because it is locked")
 
         # Perform the *append*:
-        scad3ds.extend(new_scad3ds)
+        scad3d: Scad3D
+        for index, scad3d in enumerate(scad3ds):
+            assert isinstance(scad3d, Scad3D), (f"Index {index} is of type "
+                                                f"{scad3d.__class__.__name__}")
+        scad3ds.extend(new_scad3ds[:])
 
     # Module3D.lock():
     def lock(self):
@@ -2840,8 +2965,11 @@ class Module3D(Scad3D):
 
         # Output the *scad3d*s:
         next_indent: str = indent + " "
+        index: int
         scad3d: Scad3D
-        for scad3d in scad3ds:
+        for index, scad3d in enumerate(scad3ds):
+            assert isinstance(scad3d, Scad3D), (f"Index {index} is of type "
+                                                f"{scad3d.__class__.__name__}")
             scad3d.scad_lines_append(scad_lines, next_indent)
 
         # Output the closing '}':
@@ -3024,7 +3152,7 @@ class Union3D(Scad3D):
         # Make sure that we are not *locked*:
         if locked:
             name: str = union3d.name
-            raise ValueError(f"Can not append to Union3D '{name}' because is locked")
+            raise ValueError(f"Can not append to Union3D '{name}' because it is locked")
 
         # Perform the *append*:
         scad3ds.append(scad3d)
@@ -3040,7 +3168,7 @@ class Union3D(Scad3D):
         # Make sure that we are not *locked*:
         if locked:
             name: str = union3d.name
-            raise ValueError(f"Can not extend Union3D '{name}' because is locked")
+            raise ValueError(f"Can not extend Union3D '{name}' because it is locked")
 
         # Perform the *append*:
         scad3ds.extend(new_scad3ds)
