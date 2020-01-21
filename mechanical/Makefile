@@ -50,6 +50,11 @@ PNG_FILES :=					\
     $(PNG_DIRECTORY)/thumb_expansion.png	\
     $(PNG_DIRECTORY)/thumb_romi_base.png
 
+# These are the generated `.scad` files that should be removed for the `clean` target:
+SCAD_FILES :=					\
+    rectangular_connector.scad			\
+    scad_models.scad
+
 # These are the directories that are entirely removed for the `clean` target:
 CLEAN_DIRECTORIES :=				\
     .mypy_cache					\
@@ -97,8 +102,8 @@ README.html: README.md
 
 # Cleans everything up:
 clean:
-	rm -f ${ALL_PYL_FILES} ${ALL_COVER_FILES} ${DXF_FILES} ${PNG_FILES} .coverage
-	rm -f README.html~ README.html setup.py,cover
+	rm -f ${ALL_PYL_FILES} ${ALL_COVER_FILES} ${DXF_FILES} ${PNG_FILES} ${SCAD_FILES}
+	rm -f README.html~ README.html setup.py,cover .coverage
 	rm -rf ${CLEAN_DIRECTORIES}
 
 # The documentation for `pytest` and `pytest-cov` is a bit weak.  None of this makes

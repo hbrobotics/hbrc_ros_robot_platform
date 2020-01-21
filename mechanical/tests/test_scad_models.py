@@ -40,7 +40,9 @@ def test_hr2():
     romi_base_keys: List[Tuple[Any, ...]] = [
         ("Circle", "BATTERY: Upper Hole (0, 1)", -35.000, 17.000, 2.300, 2.3000)
     ]
-    master_board: MasterBoard = MasterBoard(scad_program, base_dxf, pi_offset, romi_base_keys)
+    master_board_dz: float = 0.0
+    master_board: MasterBoard = MasterBoard(scad_program, base_dxf,
+                                            master_board_dz, pi_offset, romi_base_keys)
     other_pi: OtherPi = OtherPi(scad_program)
     romi_base: RomiBase = RomiBase(scad_program, base_dxf)
     romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)

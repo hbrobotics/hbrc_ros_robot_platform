@@ -196,6 +196,12 @@ systems and Linux distributions you are on your own.
   * `master_pcb`:
     Master PCB
 
+  * `nucleo144`:
+    Nucleo144 Board
+
+  * `nucleo144_pcb`:
+    Nucleo144 PCB
+
   * `other_pi`:
     OtherPI SBC
 
