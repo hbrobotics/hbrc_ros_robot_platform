@@ -53,7 +53,7 @@ The basic class tree is:
 
 # Import stuff from other libraries:
 from math import acos, ceil, cos, degrees, pi, sin, sqrt
-from typing import Any, Callable, IO, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple
 
 
 # P3D:
@@ -583,6 +583,7 @@ class ScadProgram:
         self.if3d: If3D = If3D("Name If3D", "false", [])
         self.name: str = name
         self.scads: List[Scad] = []
+        self.modules_table: Dict[str, Scad] = {}
 
     # ScadProgram.__str__():
     def __str__(self) -> str:
@@ -596,6 +597,11 @@ class ScadProgram:
     def append(self, scad: Scad) -> None:
         """Append a Scad to a ScadProgram."""
         scad_program: ScadProgram = self
+        modules_table: Dict[str, Scad] = scad_program.modules_table
+        scad_name: str = scad.name
+        if isinstance(scad, Module2D) or isinstance(scad, Module3D):
+            assert scad_name not in modules_table, f"Module {scad_name} has already been defined"
+        modules_table[scad_name] = scad
         scads: List[Scad] = scad_program.scads
         scads.append(scad)
 

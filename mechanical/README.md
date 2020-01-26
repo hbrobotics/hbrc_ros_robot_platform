@@ -178,11 +178,14 @@ systems and Linux distributions you are on your own.
 
   where NAME is one of:  <!-- NAME list starts here. -->
 
+  * `east_encoder_pcb`:
+    Encoder PCB
+
   * `encoder_board`:
     Encoder Board
 
-  * `encoder_pcb`:
-    Encoder PCB
+  * `encoder_board`:
+    Encoder Board
 
   * `expansion`:
     Romi Expansion Polygon
@@ -207,6 +210,12 @@ systems and Linux distributions you are on your own.
 
   * `romi_base`:
     Romi Base Polygon
+
+  * `west_encoder_pcb`:
+    Encoder PCB
+
+  * `wheel_assembly`:
+    wheel_assembly
 
   * `wheel_assembly`:
     wheel_assembly

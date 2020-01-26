@@ -47,12 +47,20 @@ def test_hr2():
     romi_base: RomiBase = RomiBase(scad_program, base_dxf)
     romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)
     romi_base.holes_slots_rectangles_write()
+    romi_motor: RomiMotor = RomiMotor(scad_program, base_dxf)
     romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program, base_dxf)
-    encoder_board: EncoderBoard = EncoderBoard(scad_program, base_dxf)
-    romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly(scad_program, romi_base,
-                                                               romi_motor_holder, romi_magnet,
-                                                               encoder_board)
-    hr2: HR2 = HR2(scad_program, romi_base, romi_wheel_assembly, master_board, other_pi, pi_offset)
+    east_encoder_board: EncoderBoard = EncoderBoard(scad_program, base_dxf, True)
+    east_romi_wheel_assembly: RomiWheelAssembly
+    east_romi_wheel_assembly = RomiWheelAssembly(scad_program, "East Wheel Assembly",
+                                                 romi_motor, romi_motor_holder,
+                                                 romi_magnet, east_encoder_board)
+    west_encoder_board: EncoderBoard = EncoderBoard(scad_program, base_dxf, False)
+    west_romi_wheel_assembly: RomiWheelAssembly
+    west_romi_wheel_assembly = RomiWheelAssembly(scad_program, "West Wheel Assembly",
+                                                 romi_motor, romi_motor_holder,
+                                                 romi_magnet, west_encoder_board)
+    hr2: HR2 = HR2(scad_program, romi_base, east_romi_wheel_assembly, west_romi_wheel_assembly,
+                   master_board, other_pi, pi_offset)
     hr2 = hr2
 
 

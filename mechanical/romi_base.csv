@@ -27,7 +27,6 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Circle","BATTERY: Upper Hole (1, 1)",-35.000,29.300,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (1, 2)",-35.000,41.600,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (2, 0)",-25.000,17.000,2.300,2.300,0.000
-"Circle","BATTERY: Upper Hole (2, 1)",-25.000,29.300,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (2, 2)",-25.000,41.600,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (3, 0)",-15.000,17.000,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (3, 1)",-15.000,29.300,2.300,2.300,0.000
@@ -42,7 +41,6 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Circle","BATTERY: Upper Hole (6, 1)",15.000,29.300,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (6, 2)",15.000,41.600,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (7, 0)",25.000,17.000,2.300,2.300,0.000
-"Circle","BATTERY: Upper Hole (7, 1)",25.000,29.300,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (7, 2)",25.000,41.600,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (8, 0)",35.000,17.000,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (8, 1)",35.000,29.300,2.300,2.300,0.000
@@ -50,6 +48,8 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Circle","BATTERY: Upper Hole (9, 0)",45.000,17.000,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (9, 1)",45.000,29.300,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (9, 2)",45.000,41.600,2.300,2.300,0.000
+"Circle","Battery: Upper Slot (2, 1)",-25.000,29.300,3.500,3.500,0.000
+"Circle","Battery: Upper Slot (7, 1)",25.000,29.300,3.500,3.500,0.000
 "Circle","CENTER: Top Castor Hole",-0.004,64.007,3.186,3.186,0.000
 "Circle","LEFT: LOWER Hex Hole (0, 5)",-11.509,-66.739,3.184,3.184,0.000
 "Circle","LEFT: LOWER Hex Hole (10, 1)",-54.811,-36.739,3.184,3.184,0.000
