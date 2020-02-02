@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from math import cos, pi, sin
 from scad_models.scad_models import (BaseDXF, EncoderBoard, HR2, MasterBoard, OtherPi,
                                      RaspberryPi3, RectangularConnector, RomiBase,
                                      RomiExpansionPlate, RomiMagnet, RomiMotor,
@@ -85,30 +86,30 @@ def test_rectangular_connector():
     pcb_exterior: Square = Square("PCB Exterior Square", 100.0, 100.0, center=P2D(45.0, 45.0))
     pcb_polygon.append(pcb_exterior)
 
-    connector_quad_pitch: float = 25.0
+    offset_pitch: float = 10.0
     rectangular_connectors: List[Scad3D] = []
     pcb_height: float = 1.0
-    is_vertical: bool
-    for is_vertical in (True, False):
-        vertical_name: str = 'V' if is_vertical else 'H'
-        dx: float = 0.0 if is_vertical else connector_quad_pitch
-        dy: float = connector_quad_pitch if is_vertical else 0.0
-        right_angle_length: float
+
+    # Do of *vertical_rotate* of 0, 45, and 90 degrees:
+    vertical_rotate: float
+    for vertical_rotate in (0.0, pi / 4.0, pi / 2.0):
+        vertical_name: str = str(int(vertical_rotate * 180.0 / pi))
+        position: int = 1
         for is_top in (True, False):
             z: float = pcb_height if is_top else 0.0
             top_name: str = 'T' if is_top else 'B'
-            dx_dy_adjust: float = -0.5 + (0.0 if is_top else 0.5)
             male_female_index: int
             for male_female_index, male_pin_height in enumerate([0.0, 2.54]):
                 male_female_name: str = "MF"[male_female_index]
-                if male_pin_height > 0.0:
-                    dx_dy_adjust += 0.25
+                right_angle_length: float
                 right_angle_index: int
-                index: int
-                for right_angle_index, right_angle_length in enumerate([0.0, -3.0, 3.0]):
-                    x: float = (float(right_angle_index + 1) + dx_dy_adjust) * dx
-                    y: float = (float(right_angle_index + 1) + dx_dy_adjust) * dy
-                    right_angle_name: str = "LCR"[right_angle_index]
+                for right_angle_index, right_angle_length in enumerate([0.0, 3.0]):
+                    # See origin rotate math above:
+                    offset: float = float(position) * offset_pitch
+                    position += 1
+                    x: float = offset * cos(vertical_rotate)
+                    y: float = offset * sin(vertical_rotate)
+                    right_angle_name: str = "VR"[right_angle_index]
                     full_name = f"{top_name}{vertical_name}{right_angle_name}{male_female_name}"
                     center: P3D = P3D(x, y, z)
 
@@ -118,10 +119,12 @@ def test_rectangular_connector():
                                                                  1, 2, 2.54, 2.54,
                                                                  male_pin_height=male_pin_height,
                                                                  center=center,
+                                                                 cut_out=True,
                                                                  right_angle_length=(
                                                                      right_angle_length),
-                                                                 is_vertical=is_vertical,
+                                                                 vertical_rotate=vertical_rotate,
                                                                  is_top=is_top,
+                                                                 insulation_color="Orange",
                                                                  pcb_polygon=pcb_polygon)
                     rectangular_connectors.append(rectangular_connector.module.use_module_get())
 

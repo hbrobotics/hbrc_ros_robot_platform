@@ -6,10 +6,10 @@
 # hole in the upper left corner of the PCB.  The extra PCB space goes to the right and
 # down on the Pumpkin Pi.
 
-from scad_models.scad import (Color, Circle, CornerCube, Cylinder, If2D, If3D,
+from scad_models.scad import (Color, Circle, CornerCube, Cylinder, If2D, If3D, Difference2D,
                               LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
-                              Scad, Scad3D, SimplePolygon, ScadProgram, Square, Translate3D,
-                              UseModule3D, Union3D, Variable2D)
+                              Scad, Scad2D, Scad3D, SimplePolygon, ScadProgram, Square,
+                              Translate3D, UseModule3D, Union3D, Variable2D)
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import asin, atan2, ceil, cos, degrees, nan, pi, sin, sqrt
 
@@ -395,13 +395,14 @@ class EncoderBoard:
                                  pcb_north_y - offset if is_east else pcb_south_y + offset,
                                  0.0)
         header: RectangularConnector
+        degrees90: float = pi / 2.0
         header = RectangularConnector(scad_program, f"{side_name} North Encoder Header",
                                       1, 5, 2.50, 3.90 - 2.50, male_pin_height=6.00,
                                       right_angle_length=(3.05 + 0.127),
                                       center=header_center,
                                       insulation_color="Lime",
                                       pcb_polygon=pcb_polygon,
-                                      is_vertical=True, is_top=False)
+                                      vertical_rotate=degrees90, is_top=False)
         header_use_module: Scad3D = header.module.use_module_get()
 
         # Now that the connector holes have been added to *pcb_polygon*, it can be locked,
@@ -461,20 +462,20 @@ class HR2:
 
         # Create *module*, append to *scad_program* and save into *romi_base* (i.e. *self*):
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
-        module: Module3D = Module3D("HR2 Robot Module",
-                                    [romi_base.module.use_module_get(),
-                                     west_romi_wheel_assembly.module.use_module_get(),
-                                     Rotate3D("East Wheel Assembly Rotate",
-                                              east_romi_wheel_assembly.module.use_module_get(),
-                                              pi,
-                                              P3D(0.0, 0.0, 1.0)),
-                                     Translate3D("Other Pi Translate",
-                                                 Rotate3D("Vertical Rotate Pi Board 90 Degrees",
-                                                          pi_board.module.use_module_get(),
-                                                          pi/2.0, z_axis),
-                                                 pi_offset),
-                                     master_board.module.use_module_get()])
-
+        hr2_scad3ds: List[Scad3D] = [
+            romi_base.module.use_module_get(),
+            west_romi_wheel_assembly.module.use_module_get(),
+            Rotate3D("East Wheel Assembly Rotate",
+                     east_romi_wheel_assembly.module.use_module_get(),
+                     pi,
+                     P3D(0.0, 0.0, 1.0)),
+            Translate3D("Other Pi Translate",
+                        Rotate3D("Vertical Rotate Pi Board 90 Degrees",
+                                 pi_board.module.use_module_get(),
+                                 pi/2.0, z_axis),
+                        pi_offset),
+            master_board.module.use_module_get()]
+        module: Module3D = Module3D("HR2 Robot Module", hr2_scad3ds)
         scad_program.append(module)
         # romi_base: RomiBase = self
         self.module = module
@@ -498,6 +499,8 @@ class Nucleo144:
         # Misc. constants:
         morpho_pin_columns: int = 36
         morpho_pin_rows: int = 2
+        degrees90: float = pi / 2.0
+        mount_hole_diameter: float = 3.200
         # morpho_total_pins: int = morpho_pin_rows * morpho_pin_columns
 
         # X Coordinates:
@@ -543,9 +546,6 @@ class Nucleo144:
         zio_pin_dz: float = 7.60 + pcb_dz
         zio_insulation_dz: float = 8.85
 
-        # Misc. Constants:
-        mount_hole_diameter: float = 3.200
-
         # Create *pcb_polygon* and load it with *external_outline*:
         pcb_polygon: Polygon = Polygon("Nucleo144 PCB Polygon", [], lock=False)
         external_outline: Square = Square("Nucleo144 PCB Outline", pcb_dx, pcb_dy)
@@ -564,7 +564,7 @@ class Nucleo144:
                                                      center=east_morpho_connector_center,
                                                      insulation_color="DarkRed",
                                                      pcb_polygon=pcb_polygon,
-                                                     is_top=False, is_vertical=True)
+                                                     is_top=False, vertical_rotate=degrees90)
         west_morpho_connector_center: P3D = P3D(-morpho_center_dx / 2.0, morpho_center_y, 0.0)
         self.west_morpho_connector_center: P3D = west_morpho_connector_center
         west_morpho_connector: RectangularConnector
@@ -574,7 +574,7 @@ class Nucleo144:
                                                      center=west_morpho_connector_center,
                                                      insulation_color="DarkRed",
                                                      pcb_polygon=pcb_polygon,
-                                                     is_top=False, is_vertical=True)
+                                                     is_top=False, vertical_rotate=degrees90)
         east_ground_connector: RectangularConnector
         west_ground_connector: RectangularConnector
         east_ground_connector = RectangularConnector(scad_program, "East Ground Connector",
@@ -599,28 +599,32 @@ class Nucleo144:
                                                          zio7_center_y,
                                                          pcb_dz),
                                               insulation_color="SlateBlue",
-                                              pcb_polygon=pcb_polygon, is_vertical=True)
+                                              cut_out=True,
+                                              pcb_polygon=pcb_polygon, vertical_rotate=degrees90)
         zio8_connector = RectangularConnector(scad_program, "Zio 8 Connector",
                                               2, 8, zio_insulation_dz, zio_pin_dz,
                                               center=P3D(-zio_center_dx / 2.0,
                                                          zio8_center_y,
                                                          pcb_dz),
                                               insulation_color="SlateBlue",
-                                              pcb_polygon=pcb_polygon, is_vertical=True)
+                                              cut_out=True,
+                                              pcb_polygon=pcb_polygon, vertical_rotate=degrees90)
         zio9_connector = RectangularConnector(scad_program, "Zio 9 Connector",
                                               2, 15, zio_insulation_dz, zio_pin_dz,
                                               center=P3D(-zio_center_dx / 2.0,
                                                          zio9_center_y,
                                                          pcb_dz),
                                               insulation_color="SlateBlue",
-                                              pcb_polygon=pcb_polygon, is_vertical=True)
+                                              cut_out=True,
+                                              pcb_polygon=pcb_polygon, vertical_rotate=degrees90)
         zio10_connector = RectangularConnector(scad_program, "Zio 10 Connector",
                                                2, 17, zio_insulation_dz, zio_pin_dz,
                                                center=P3D(zio_center_dx / 2.0,
                                                           zio10_center_y,
                                                           pcb_dz),
                                                insulation_color="SlateBlue",
-                                               pcb_polygon=pcb_polygon, is_vertical=True)
+                                               cut_out=True,
+                                               pcb_polygon=pcb_polygon, vertical_rotate=degrees90)
 
         # Create the *ethernet_connector*, using measurements taken via calipers:
         ethernet_corner_cube: CornerCube = CornerCube("Ethernet Connector Corner Cube",
@@ -735,6 +739,9 @@ class MasterBoard:
         pcb_dz: float = 1.00
         pcb_top_z: float = pcb_bottom_z + pcb_dz
 
+        # Miscellaneous constants:
+        degrees90: float = pi / 2.0
+
         # Create *pcb_polygon* and fill it with the *external_polygon* and start filling
         # it up with various holes:
         pcb_polygon: Polygon = Polygon("Master PCB Polygon", [], lock=False)
@@ -811,11 +818,12 @@ class MasterBoard:
         receptcale_2x20: RectangularConnector
         receptacle_2x20 = RectangularConnector(scad_program, "Pi", 2, 20,
                                                receptacle_height, pcb_pin_height,
+                                               cut_out=True,
                                                pcb_polygon=pcb_polygon,
                                                pin_dx_dy=0.41,
                                                center=receptacle_center,
                                                insulation_color="Maroon",
-                                               is_vertical=True, is_top=False)
+                                               vertical_rotate=degrees90, is_top=False)
 
         # Create the 2 EncoderBoard 1x5 Female connectors and append the mounting holes
         # to *pcb_polygon*:
@@ -838,9 +846,10 @@ class MasterBoard:
                                                           f"{name} Encoder Receptacle",
                                                           1, 5, 4.57, 2.92,
                                                           center=center,
+                                                          cut_out=True,
                                                           pcb_polygon=pcb_polygon,
                                                           insulation_color="Olive",
-                                                          is_vertical=True)
+                                                          vertical_rotate=degrees90)
             encoder_receptacles_use_modules.append(encoder_receptacle_1x3.module.use_module_get())
 
         # Create *nucleo144* object and rotate 90 degrees around *z_axis*:
@@ -893,6 +902,7 @@ class MasterBoard:
                                                       "South Morpho Connector",
                                                       2, 36, 5.00, 2.92,
                                                       center=south_morpho_center,
+                                                      cut_out=True,
                                                       pcb_polygon=pcb_polygon,
                                                       insulation_color="Teal")
         west_morpho_connector_center: P3D = nucleo144.west_morpho_connector_center
@@ -904,6 +914,7 @@ class MasterBoard:
                                                       "North Morpho Connector",
                                                       2, 36, 5.00, 2.92,
                                                       center=north_morpho_center,
+                                                      cut_out=True,
                                                       pcb_polygon=pcb_polygon,
                                                       insulation_color="Teal")
 
@@ -940,6 +951,277 @@ class MasterBoard:
         self.module: Module3D = module
 
 
+# PiBoard:
+class PiBoard:
+    """Represents a Raspberry Pi or compatible SBC."""
+
+    # PiBoard.__init__():
+    def __init__(self, module: Module3D) -> None:
+        """Initialize PiBoard parent class."""
+        # Save *module* into *pi_board* (i.e. *self*):
+        # pi_board: PiBoard = self
+        self.module: Module3D = module
+
+
+# OtherPi:
+class OtherPi(PiBoard):
+    """Represents a different SBC compatible with Raspberry Pi."""
+
+    # OtherPi.__init__():
+    def __init__(self, scad_program: ScadProgram) -> None:
+        """Initialize OtherPi."""
+        # Compute *other_pi_pcb_polygon* from *other_pi* (i.e. *self*):
+        other_pi: OtherPi = self
+        other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
+
+        # No construct *green_other_pi_pcb* from *other_pi_polygon*:
+        pcb_height: float = 0.990
+        other_pi_pcb: LinearExtrude = LinearExtrude("OtherPi PCB", other_pi_pcb_polygon, pcb_height)
+        translated_other_pi_pcb: Translate3D = Translate3D("Translated Other Pi",
+                                                           other_pi_pcb,
+                                                           P3D(0.0, 0.0, -pcb_height))
+        green_other_pi_pcb: Scad3D = Color("Green OtherPi PCB", translated_other_pi_pcb, "Green")
+
+        # Create the Male 2x20 Header:
+        male_2x20_header_center: P3D = P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0, 0.0)
+        # male_2x20_header_center = P3D(0.0, 0.0, 0.0)
+        male_2x20_header: RectangularConnector
+        male_2x20_header = RectangularConnector(scad_program, "Other Pi", 2, 20,
+                                                2.54, 2.54, 5.08,
+                                                center=male_2x20_header_center,
+                                                insulation_color="DarkBlue")
+
+        connectors: List[Scad3D] = []
+        connectors.append(Color("Silver Ethernet Connector",
+                                CornerCube("Ethernet Connector",
+                                           P3D(80.00, 29.26, 0.00),
+                                           P3D(105.00, 44.51, 13.08)),  # 80.00? 105?
+                                "Silver"))
+        connectors.append(Color("Silver USB2 Connector",
+                                CornerCube("USB2 Connector",
+                                           P3D(85.00, 12.82, 0.00),
+                                           P3D(104.00, 25.57, 15.33)),  # 85.00? 104.00?
+                                "Silver"))
+        connectors.append(Color("Silver West Connector",
+                                CornerCube("West Connector",
+                                           P3D(98.00, 50.69, 0.00),
+                                           P3D(105.00, 58.09, 3.00)),  # 98.00? 3.00? 105??
+                                "Silver"))
+        connectors.append(Color("Black North Connector",
+                                CornerCube("North Connector",
+                                           P3D(70.03, 60.92, 0.00),
+                                           P3D(76.38, 66.00, 5.00)),  # 5.00? 66.00??
+                                "Black"))
+        connectors.append(male_2x20_header.module.use_module_get())
+        # connectors.append(Translate3D("2x20 Male Header",
+        #                               male_2x20_header.module.use_module_get(),
+        #                               P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0, 0.0)))
+        connectors.append(Color("Black Audio Connector",
+                                CornerCube("Audio Connector",
+                                           P3D(66.31, -1.00, 0.00),
+                                           P3D(72.31, 14.00, 5.12)),  # -1.00? 14.00?
+                                "Black"))
+        connectors.append(Color("Silver USB3A Connector",
+                                CornerCube("USB3A Connector",
+                                           P3D(9.54, 0.00, 0.00),
+                                           P3D(18.52, 10.00, 2.95)),  # 10.00?
+                                "Silver"))
+        connectors.append(Color("Silver USB3B Connector",
+                                CornerCube("USB3B Connector",
+                                           P3D(22.73, 0.00, 0.00),
+                                           P3D(31.71, 10.00, 2.95)),  # 10.00?
+                                "Silver"))
+        connectors.append(Color("Silver Power Connector",
+                                CornerCube("Power Connector",
+                                           P3D(-1.00, 22.50, 0.00),
+                                           P3D(8.00, 29.00, 2.95)),  # -1.00? 8.00?
+                                "Silver"))
+        connectors.append(Color("White JST Connector",
+                                CornerCube("JST Connector",
+                                           P3D(0.00, 55.01, 0.00),
+                                           P3D(3.00, 63.37, 2.95)),  # 0.00? 3.00?
+                                "White"))
+        connectors.append(Color("Black Buttons Area",
+                                CornerCube("Buttons Area",
+                                           P3D(85.51, 62.12, 0.00),
+                                           P3D(98.23, 68.74, 2.95)),  # 10.00?
+                                "Black"))
+        self.connectors: List[Scad3D] = connectors
+
+        other_pi_union: Union3D = Union3D("Other Pi Union",
+                                          [green_other_pi_pcb] + connectors)
+        translate_other_pi: Scad3D = Translate3D("Translate Other Pi",
+                                                 other_pi_union,
+                                                 P3D(-(3.5 + 58/2.0),
+                                                     -(70.0 - (3.5 + 49.0/2.0)),
+                                                     0.0))
+
+        # Create *module*, append it to *scad_program*, and save it into *other_pi* (i.e. *self*):
+        module: Module3D = Module3D("Other Pi Module", [translate_other_pi])
+        scad_program.append(module)
+        scad_program.if3d.name_match_append("other_pi", module, ["OtherPI SBC"])
+        super().__init__(module)
+
+    # OtherPi.board_polygon_get():
+    def pcb_polygon_get(self) -> Polygon:
+        """Return the PCB Polygon that represents the PCB."""
+        # Define the board dimensions:
+        pcb_dx: float = 104.00
+        pcb_dy: float = 70.00
+
+        # Define the mounting hole centers:
+        upper_left_hole_center: P2D = P2D(3.5, pcb_dy - 3.5)
+        upper_right_hole_center: P2D = P2D(3.5 + 58.0, pcb_dy - 3.5)
+        lower_left_hole_center: P2D = P2D(3.5, pcb_dy - 3.5 - 49.0)
+        lower_right_hole_center: P2D = P2D(3.5 + 58.0, pcb_dy - 3.5 - 49.0)
+
+        # Create the *pcb_outline* with the origin in the lower left corner:
+        pcb_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
+        pcb_outline: Square = Square("PCB Outline", pcb_dx, pcb_dy, pcb_center)
+
+        # Define the holes:
+        hole_diameter: float = 2.75
+        upper_left_hole: Circle = Circle("Upper Left Hole",
+                                         hole_diameter, 16, upper_left_hole_center)
+        upper_right_hole: Circle = Circle("Upper Right Hole",
+                                          hole_diameter, 16, upper_right_hole_center)
+        lower_left_hole: Circle = Circle("Lower Left Hole",
+                                         hole_diameter, 16, lower_left_hole_center)
+        lower_right_hole: Circle = Circle("Lower Right Hole",
+                                          hole_diameter, 16, lower_right_hole_center)
+
+        # Create *pcb_polygon* and append the *pcb_outline* and associated mounting holes:
+        pcb_polygon: Polygon = Polygon("OtherPi PCB Poylgon", [pcb_outline], lock=False)
+        pcb_polygon.extend([upper_left_hole, upper_right_hole, lower_left_hole, lower_right_hole])
+
+        # Lock *pcb_polygon* and return it:
+        pcb_polygon.lock()
+        return pcb_polygon
+
+
+# RaspberryPi3:
+class RaspberryPi3(PiBoard):
+    """Represents a Raspberry Pi 3B+."""
+
+    # RaspberryPi3.__init__():
+    def __init__(self, scad_program: ScadProgram) -> None:
+        """Initialize RaspberryPi3 and append to ScadProgram."""
+        # Create the R
+        raspi3b: RaspberryPi3 = self
+        raspi3b_pcb_polygon: Polygon = raspi3b.pcb_polygon_get()
+        raspi3b_pcb_polygon_module: Module2D = Module2D("RasPi3B_PCB_Polygon_Module",
+                                                        [raspi3b_pcb_polygon])
+        scad_program.append(raspi3b_pcb_polygon_module)
+
+        # Construct the green PCB:
+        raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
+        translated_raspi3b_pcb: Translate3D = Translate3D("Translated Rasp3B PCB",
+                                                          raspi3b_pcb,
+                                                          P3D(0.0, 0.0, -1.0))
+        raspi3b_green_pcb: Color = Color("Green Rasp3B PCB", translated_raspi3b_pcb, "Green")
+
+        connectors: List[Scad3D] = []
+        mating_length: float = 5.840
+        male_pin_connector2x20: RectangularConnector
+        male_pin_connector2x20 = RectangularConnector(scad_program,
+                                                      "A", 2, 20, mating_length, 2.54, 2.00)
+        male_pin_connector2x2: RectangularConnector
+        male_pin_connector2x2 = RectangularConnector(scad_program,
+                                                     "B", 2, 2, mating_length, 2.54, 2.00)
+        male_pin_connector2x1: RectangularConnector
+        male_pin_connector2x1 = RectangularConnector(scad_program,
+                                                     "C", 2, 1, mating_length, 2.54, 2.00)
+        connectors.append(Translate3D("Translate 2x20 Connector",
+                                      male_pin_connector2x20.module.use_module_get(),
+                                      P3D((57.90 + 7.10) / 2.0, 52.50, 0.0)))
+        connectors.append(Translate3D("Tanslate 2x2 Connector",
+                                      male_pin_connector2x2.module.use_module_get(),
+                                      P3D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0, 0.0)))
+        connectors.append(Translate3D("Translate 2x1 Connector",
+                                      male_pin_connector2x1.module.use_module_get(),
+                                      P3D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0, 0.0)))
+        connectors.append(Color("Silver RJ45 Connector",
+                                CornerCube("RJ45 Connecttor",
+                                           P3D(65.650, 2.495, 0.000),
+                                           P3D(87.000, 18.005, 13.500)),
+                                "Silver"))
+        connectors.append(Color("Silver Lower USB2",
+                                CornerCube("Lower USB2",
+                                           P3D(69.30, 22.43, 0.00),
+                                           P3D(87.00, 34.57, 16.00)),
+                                "Silver"))
+        connectors.append(Color("Silver Upper USB2",
+                                CornerCube("Upper USB2",
+                                           P3D(69.30, 40.43, 0.00),
+                                           P3D(87.00, 53.57, 16.00)),
+                                "Silver"))
+        connectors.append(Color("Black Camera Connector",
+                                CornerCube("Camera Connector",
+                                           P3D(43.55, 0.30, 0.00),
+                                           P3D(47.50, 22.70, 5.50)),
+                                "Black"))
+        connectors.append(Color("Silver HDMI Connector",
+                                CornerCube("HDMI Connector",
+                                           P3D(24.75, -1.50, 0.00),
+                                           P3D(39.25, 10.65, 6.50)),
+                                "Silver"))
+        connectors.append(Color("Silver Power Connector",
+                                CornerCube("Power Connector",
+                                           P3D(6.58, -1.22, 0.00),
+                                           P3D(14.62, 14.35, 2.00)),
+                                "Silver"))
+        connectors.append(Color("Black LCD Connector",
+                                CornerCube("LCD Connector",
+                                           P3D(2.65, 16.80, 0.00),
+                                           P3D(5.45, 39.20, 5.50)),
+                                "Black"))
+        self.connectors: List[Scad3D] = connectors
+
+        # Construct the final *raspi3b_union:
+        raspi3b_union: Union3D = Union3D("Rasp3B Model", connectors + [raspi3b_green_pcb])
+        translated_raspi3b: Translate3D = Translate3D("Translated RasPi3B Model",
+                                                      raspi3b_union,
+                                                      P3D(-(3.5 + 58.0/2.0),
+                                                          -(3.5 + 49.0/2.0), 1.000))
+
+        # Create *module*, append it to *scad_program* and save it into *raspi3b* (i.e. *self*):
+        module: Module3D = Module3D("RasPi3B_Module", [translated_raspi3b])
+        scad_program.append(module)
+        # Initialize *PiBoard* parent class:
+        super().__init__(module)
+
+    # RaspberryPi3.pcb_polygon_get():
+    def pcb_polygon_get(self) -> Polygon:
+        """Return the RasPi 3B+ PCB Polygon."""
+        # Origin is set to lower left so all dimensions are postive except for
+        # one or two connectors along the bottom edge:
+        pcb_dx: float = 85.0
+        holes_dx: float = 58
+        pcb_dy: float = 56.0
+        pcb_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
+        pcb_board_outline: Square = Square("RasPi3B+ PCB Outiline",
+                                           pcb_dx, pcb_dy, center=pcb_center)
+
+        # Define the 4 holes:
+        hole_diameter = 3.2
+        lower_left_hole: Circle = Circle("Lower Left Hole", hole_diameter, 8,
+                                         center=P2D(3.5, 3.5))
+        lower_right_hole: Circle = Circle("Lower Right Hole", hole_diameter, 8,
+                                          center=P2D(3.5 + holes_dx, 3.5))
+        upper_left_hole: Circle = Circle("Upper Left Hole", hole_diameter, 8,
+                                         center=P2D(3.5, pcb_dy - 3.5))
+        upper_right_hole: Circle = Circle("Lower Left Hole", hole_diameter, 8,
+                                          center=P2D(3.5 + holes_dx, pcb_dy - 3.5))
+
+        # Create and return the *pcb_polygon*:
+        pcb_polygon: Polygon = Polygon("Rasp3b+ PCB", [pcb_board_outline,
+                                                       lower_left_hole,
+                                                       lower_right_hole,
+                                                       upper_left_hole,
+                                                       upper_right_hole])
+        return pcb_polygon
+
+
 # RectangularConnector:
 class RectangularConnector:
     """Represents an NxM .1 inch male pin connector."""
@@ -949,12 +1231,14 @@ class RectangularConnector:
                  insulation_height: float, pcb_pin_height: float, male_pin_height: float = 0.0,
                  center: P3D = P3D(0.0, 0.0, 0.0),
                  rows_pitch: float = 2.54, columns_pitch: float = 2.54,
+                 is_top: bool = True,
+                 vertical_rotate: float = 0.0,
                  pin_dx_dy: float = 0.640,
                  rows_extra_insulation: float = 0.000,
                  columns_extra_insulation: float = 0.000,
                  right_angle_length: float = 0.000,
+                 cut_out: bool = False,
                  pcb_polygon: Optional[Polygon] = None, pcb_hole_diameter: float = 0.0,
-                 is_vertical: bool = False, is_top: bool = True,
                  insulation_color: str = "Black", pin_color: str = "Gold") -> None:
         """Initialize RectangularConnector and append to ScadProgram.
 
@@ -1004,6 +1288,14 @@ class RectangularConnector:
                 Set to positive to have a right angle pins pointig in
                 positve row direction and negative in the negative
                 row direction.
+            *vertical_rotate* (*float*):
+                (Optional: defaults to 0.0)
+                The amount to rotate the connector around the vertical Z
+                axis in radians.
+            *cut_out* (*bool*):
+                (Optional: Defaults to *False)
+                If *True*, cut away some insulation to show how deep the
+                pins will go down.
             *pcb_polygon* (Optional[*Polygon*]):
                 (Optional: Defaults to *None*)
                 Specifies a *Polygon* object to append pin holes to.
@@ -1011,9 +1303,6 @@ class RectangularConnector:
                 (Optional: Defaults to 0.0)
                 When non-zero, specifies the hole diameter for the PCB
                 holes.  When zero, a reasonable hole size is selected.
-            *is_vertical* (*bool*):
-                (Optional: defaults to *False*)
-                When *True*, the rows and columns values are swapped.
             *is_top* (*bool*):
                 (Optional: defaults to *True*):
                 When *True*, the mating pins point upwards and when
@@ -1042,7 +1331,7 @@ class RectangularConnector:
         self.right_angle_length: float = right_angle_length
         self.pcb_polygon: Optional[Polygon] = pcb_polygon
         self.pcb_hole_diameter: float = pcb_hole_diameter
-        self.is_vertical: bool = is_vertical
+        self.vertical_rotate: float = vertical_rotate
         self.is_top: bool = is_top
         self.insulation_color: str = insulation_color
         self.pin_color: str = pin_color
@@ -1057,6 +1346,8 @@ class RectangularConnector:
         assert insulation_height > 0.0, f"Insulation Height (={insulation_height}) must be positive"
         assert pcb_pin_height > 0.0, f"PCB Pin Height (={pcb_pin_height}) must be positive"
         assert pin_dx_dy > 0.0, f"Pin DX/DY (={pin_dx_dy}) must be positive"
+        assert right_angle_length >= 0.0, (f"Right Angle Length (={right_angle_length} "
+                                           "must be non-negative)")
 
         # Define some local variables and constants:
         # X coordinate constants:
@@ -1077,27 +1368,8 @@ class RectangularConnector:
         right_angle_stop_dz: float = pcb_pin_height
         # Miscellaneous constants:
         full_name: str = f"{name} {rows}x{columns}"
-        have_right_angle: bool = right_angle_length != 0.0
+        have_right_angle: bool = right_angle_length > 0.0
         is_female: bool = male_pin_height <= 0.0
-
-        # Swap row values with column values if *is_vertical* is *True*:
-        if is_vertical:
-            insulation_dx, insulation_dy = insulation_dy, insulation_dx
-            right_angle_dx, right_angle_dy = right_angle_dy, right_angle_dx
-            rows_extra_insulation, columns_extra_insulation = (columns_extra_insulation,
-                                                               rows_extra_insulation)
-            row_pins_dy, column_pins_dx = column_pins_dx, row_pins_dy
-            rows, columns = columns, rows
-            rows_pitch, columns_pitch = columns_pitch, rows_pitch
-
-        # Invert the DZ values for bottom mount:
-        if not is_top:
-            pin_above_dz *= -1.0
-            male_pin_height *= -1.0
-            insulation_height *= -1.0
-            pcb_pin_height *= -1.0
-            right_angle_start_dz *= -1.0
-            right_angle_stop_dz *= -1.0
 
         # Create the *insulation_polygon* and append *insulation_exterior* to it:
         insulation_polygon: Polygon = Polygon(f"{full_name} Insulation Polygon", [], lock=False)
@@ -1162,17 +1434,49 @@ class RectangularConnector:
                                                      center=P2D(x, y))
                     insulation_polygon.append(receptacle_hole)
 
-                # Do any any needed PCB holes:
+                # Do any any needed PCB holes preforming any *vertical_rotate*:
                 if pcb_polygon is not None:
+                    # If *is_top* is *False*, we need to invert the rotation direction:
+                    hole_rotate: float = vertical_rotate  # if is_top else -vertical_rotate
+                    # Rotation of a point around the origin:
+                    # https://en.wikipedia.org/wiki/Rotation_(mathematics):
+                    # x' = x * cos(theta) - y * sin(theta)
+                    # y' = x * sin(theta) + y * cos(theta)
+                    cos_hole_rotate: float = cos(hole_rotate)
+                    sin_hole_rotate: float = sin(hole_rotate)
+                    rotated_x: float = x * cos_hole_rotate - y * sin_hole_rotate
+                    rotated_y: float = x * sin_hole_rotate + y * cos_hole_rotate
                     hole: Circle = Circle(f"{full_name} ({column_index}:{row_index}) PCB Hole",
                                           pcb_hole_diameter, 8,
-                                          center=P2D(x + center_x, y + center_y))
+                                          center=P2D(center_x + rotated_x,
+                                                     center_y + rotated_y))
                     pcb_polygon.append(hole)
-
-        # Now lock up *insulation_polygon* and produce *colored_insulation*:
         insulation_polygon.lock()
+
+        # Deal with *cut-out* that trims some insulation away from connector to see
+        # the pins better.  This allows visual inspection of how deep male pins being
+        # inserted into a female receptacle.
+        insulation_scad2d: Scad2D = insulation_polygon
+        if cut_out:
+            # Create a couple of rectangles that trim away some insulation:
+            cut_out_dy: float = rows_pitch + rows_extra_insulation
+            sixth_insulation_dx: float = insulation_dx / 6.0
+            forth_insulation_dx: float = insulation_dx / 4.0
+            ne_cutout_square: Square = Square("NE Cutout Square",
+                                              sixth_insulation_dx, cut_out_dy,
+                                              center=P2D(forth_insulation_dx,
+                                                         insulation_dy / 2.0))
+            sw_cutout_square: Square = Square("NE Cutout Square",
+                                              sixth_insulation_dx, cut_out_dy,
+                                              center=P2D(-forth_insulation_dx,
+                                                         -insulation_dy / 2.0))
+
+            # Create a difference to subtract out the two cut-outs:
+            insulation_scad2d = Difference2D(f"{full_name} Cutouts remove", insulation_polygon,
+                                             [ne_cutout_square, sw_cutout_square])
+
         extruded_insulation: LinearExtrude = LinearExtrude(f"{full_name} Extruded Insulation",
-                                                           insulation_polygon,
+                                                           insulation_scad2d,
                                                            abs(insulation_height))
         translated_insulation: Scad3D = (extruded_insulation if insulation_height > 0.0
                                          else Translate3D(f"{full_name} Translated Insulation",
@@ -1181,44 +1485,48 @@ class RectangularConnector:
         colored_insulation: Scad3D = Color(f"{insulation_color} Insulation",
                                            translated_insulation, insulation_color)
 
-        # Now stuff everything in *union_connector* and then translate it:
+        # Now stuff everything in *union_connector* and then rotate and translate it into the
+        # final position:
         union_connector: Union3D = Union3D(f"{full_name} Union",
                                            [colored_insulation] + connector_pins, lock=True)
 
         # For right angle pins, we need to translate the origin to the point between the bent pins,
         # but on the inside side surface of the insulation block.  Next, we need to rotate the
         # connector by 90 degrees in the correct direction so that the correct pins are sticking
-        # into the PCB.  This is confusing, tedious and error prone code that was largely
-        # determined by trail and error.  It is really hard to make sense of:
+        # into the PCB:
+        x_axis: P3D = P3D(1.0, 0.0, 0.0)
         pre_centered_connector: Scad3D = union_connector
         if have_right_angle:
             # We need to translate to the inside surface of the insulator and between the bent pins:
-            reorigin: P3D
-            z: float = pcb_pin_height + (-half_pin_dx_dy if is_top else half_pin_dx_dy)
-            if is_vertical:
-                x = insulation_dx / 2.0 if right_angle_length < 0.0 else -insulation_dx / 2.0
-                reorigin = P3D(x, 0.0, z)
-            else:
-                y = insulation_dy / 2.0 if right_angle_length < 0.0 else -insulation_dy / 2.0
-                reorigin = P3D(0.0, y, z)
-            reorigined_connector: Translate3D = Translate3D(f"Reorigined {full_name}",
-                                                            union_connector, reorigin)
+            reorigin_x = 0.0
+            reorigin_y: float = -insulation_dy / 2.0
+            # reorigin_y = 0.0  # For debugging only
+            reorigin_z: float = pcb_pin_height - half_pin_dx_dy
+            # reorigin_z = 0.0  # for debugging only
+            reorigin: P3D = P3D(reorigin_x, reorigin_y, reorigin_z)
+            right_angle_reorigined_connector: Translate3D = Translate3D(f"Reorigined {full_name}",
+                                                                        union_connector, reorigin)
 
-            # Rotate along the *x_axis* if the connector is horizontal
-            # (i.e. *is_vertical* == *False) or along the *negative_y_axis* otherwise.
-            # The choice of *negative_y_axis* vs. positive Y axis is determined by trail and error:
-            x_axis: P3D = P3D(1.0, 0.0, 0.0)
-            negative_y_axis: P3D = P3D(0.0, -1.0, 0.0)
-            rotation_axis: P3D = negative_y_axis if is_vertical else x_axis
+            # Finally create *pre_centered_connector* where each
+            degrees90: float = pi / 2.0
+            # degrees90 = 0.0  # for debugging only
+            right_angle_rotated_connector: Rotate3D = Rotate3D(f"Rotated {full_name}",
+                                                               right_angle_reorigined_connector,
+                                                               -degrees90, x_axis)
+            pre_centered_connector = right_angle_rotated_connector
 
-            # Finally create *rotated_connector*.  *sign* was totally determined by trial
-            # and error until it "worked*:
-            sign: float = ((-1.0 if is_top else 1.0) if right_angle_length > 0.0
-                           else (1.0 if is_top else -1.0))
-            rotate_angle: float = sign * (pi / 2.0)
-            rotated_connector: Rotate3D = Rotate3D(f"Rotated {full_name}", reorigined_connector,
-                                                   rotate_angle, rotation_axis)
-            pre_centered_connector = rotated_connector
+        # When *is_top* is *False*, we need to flip the connector 180 degrees over to the bottom:
+        if not is_top:
+            pre_centered_connector = Rotate3D(f"{full_name} Bottom Rotate",
+                                              pre_centered_connector, pi, x_axis)
+
+        # Now do any requested *vertical_rotate*:
+        if vertical_rotate != 0.0:
+            z_axis: P3D = P3D(0.0, 0.0, 1.0)
+            pre_centered_connector = Rotate3D(f"{full_name} Vertical Rotate "
+                                              f"{vertical_rotate*180.0/pi}deg",
+                                              pre_centered_connector,
+                                              vertical_rotate, z_axis)
 
         # Perform the final translation to *recentered_connector*:
         recentered_connector: Scad3D = Translate3D(f"Recentered {full_name}",
@@ -1652,12 +1960,27 @@ class RomiBase:
             for y_index in range(3):
                 y = reference_hole_center_y + upper_battery_y_offsets[y_index]
                 upper_hole_center: P2D = P2D(x, y)
-                upper_hole: Circle = reference_hole.copy(("BATTERY: Upper Hole "
-                                                         f"({x_index}, {y_index})"),
-                                                         center=upper_hole_center)
+                upper_hole: SimplePolygon
                 if x_index in (2, 7) and y_index == 1:
-                    upper_hole = Circle(f"Battery: Upper Slot ({x_index}, {y_index})",
-                                        3.5, 16, center=upper_hole_center)
+                    slot_north_y: float = base_dxf.y_locate(4.142358)
+                    slot_south_y: float = base_dxf.y_locate(4.036051)
+                    slot_dy: float = abs(slot_north_y - slot_south_y)
+                    slot_east_x: float
+                    slot_west_x: float
+                    if x_index == 2:  # -4.852118
+                        slot_east_x = base_dxf.x_locate(-4.780091)
+                        slot_west_x = base_dxf.x_locate(-4.904465)
+                    else:
+                        slot_east_x = base_dxf.x_locate(-2.831272)
+                        slot_west_x = base_dxf.x_locate(-2.955646)
+                    slot_dx: float = abs(slot_east_x - slot_west_x)
+                    upper_hole = Square(f"BATTERY: Upper Slot ({x_index}, {y_index})",
+                                        slot_dx, slot_dy, center=upper_hole_center,
+                                        corner_radius=slot_dy/2.0, corner_count=2)
+                else:
+                    upper_hole = reference_hole.copy(("BATTERY: Upper Hole "
+                                                      f"({x_index}, {y_index})"),
+                                                     center=upper_hole_center)
                 simple_polygons.append(upper_hole)
 
         # There are 6 rectangular slots that have a nub on the end to cleverly indicate battery
@@ -1889,9 +2212,32 @@ class RomiBase:
 
                     # Only create holes when *pattern_character* is upper case:
                     if pattern_character.isupper():
-                        # Put in the *right_hole*:
-                        hole: Circle = Circle(f"RIGHT: {label} Hex Hole ({x_index}, {y_index})",
-                                              hole_diameter, points_count, hole_center)
+                        hole: SimplePolygon
+                        if pattern_character == 'A' and label == "LOWER":
+                            # The 'A' location is actually a small vertical slot:
+                            a_slot_east_x: float = base_dxf.x_locate(-2.850146)
+                            a_slot_west_x: float = base_dxf.x_locate(-2.956453)
+                            a_slot_dx: float = abs(a_slot_east_x - a_slot_west_x)
+                            a_slot_center_x: float = (a_slot_east_x + a_slot_west_x) / 2.0
+                            a_slot_north_y: float = base_dxf.y_locate(1.858083)
+                            a_slot_south_y: float = base_dxf.y_locate(1.733720)
+                            a_slot_center_y: float = (a_slot_north_y + a_slot_north_y) / 2.0
+                            a_slot_dy: float = abs(a_slot_north_y - a_slot_south_y)
+                            a_slot_center: P2D = P2D(a_slot_center_x, a_slot_center_y)
+                            a_corner_radius: float = min(a_slot_dx, a_slot_dy) / 2.0
+                            a_name: str = f"RIGHT: {label} Small Hex Slot ({x_index}, {y_index})"
+                            print(f"a_slot_dx={a_slot_dx} a_slot_dy={a_slot_dy} "
+                                  f"a_corner_radius={a_corner_radius}")
+                            print(f"a_slot_center={a_slot_center} hole_center={hole_center}")
+                            print(f"a_name='{a_name}")
+                            hole = Square(a_name,
+                                          a_slot_dx, a_slot_dy,
+                                          center=hole_center,
+                                          corner_radius=a_corner_radius, corner_count=2)
+                        else:
+                            # Put in the *right_hole*:
+                            hole = Circle(f"RIGHT: {label} Hex Hole ({x_index}, {y_index})",
+                                          hole_diameter, points_count, hole_center)
                         simple_polygons.append(hole)
 
         # Now sweep through *slot_pairs* and install all of the slots:
@@ -2999,275 +3345,185 @@ class RomiWheelAssembly:
         self.encoder_board: EncoderBoard = encoder_board
 
 
-# PiBoard:
-class PiBoard:
-    """Represents a Raspberry Pi or compatible SBC."""
+# Spacer:
+class Spacer:
+    """Represents a Spacer."""
 
-    # PiBoard.__init__():
-    def __init__(self, module: Module3D) -> None:
-        """Initialize PiBoard parent class."""
-        # Save *module* into *pi_board* (i.e. *self*):
-        # pi_board: PiBoard = self
-        self.module: Module3D = module
+    # Spacer.__init__():
+    def __init__(self, scad_program: ScadProgram, name: str, height: float, screw_class: str,
+                 diameter: float = 0.0, is_hex: bool = False,
+                 bottom_center: P3D = P3D(0.0, 0.0, 0.0),
+                 bottom_height: float = 0.0, top_height: float = 0.0, color: str = "GoldenRod",
+                 bottom_washers: List[Tuple[str, ...]] = [],
+                 top_washers: List[Tuple[str, ...]] = []) -> None:
+        """Generate a spacer with optional washers.
 
+        All length measurements are in millimeters:
 
-# OtherPi:
-class OtherPi(PiBoard):
-    """Represents a different SBC compatible with Raspberry Pi."""
+        Args:
+            *scad_program* (*ScadProgram*):
+                The *ScadProgram* to append the spacer module to.
+            *name* (*str*):
+                The name of the spacer.
+            *height*: (*float*):
+                The spacer height.
+            *screw_class*: (*str*):
+                The diameter of the screw to be supported, currently
+                only "M2" and "M3" are supported.
+            *diameter*: (*float*):
+                (Optional: Defaults to 0.0 which causes the diameter
+                to be looked up from the screw class.
+            *is_threaded*: (*bool*):
+                (Optional: Defaults to *True*.)
+                If *True*, the spacer body is threaded; otherwise the
+                spacer body is unthread.
+            *is_hex*: (*bool*):
+                (Optional: Defaults to *False*.):
+                If *True*, the *Diameter* is the width of a hex spacer;
+                otherwise the spacer is round.
+            *bottom_center*: (*P3D*):
+                (Optional: Defualts to *P3D*(0.0, 0.0, 0.0))
+            *bottom_height* (*float*):
+                (Optional: Defaults to 0.0 which means no male thread.)
+                The bottom male thread extrusion.
+            *top_height* (*float*):
+                (Optional: Defaults to 0.0 which means no male thread.)
+                The top male thread extrusion.
+            *color*: (*str*):
+                (Optional: Defaults to "GoldenRod" (i.e. Brass.))
+            *bottom_washers* (*List*[*Tuple*(*str*, ...)]):
+                The list of bottom washers to put below the spacer.
+                Each washer is specifed as a strings Tuple of the form:
+                        ("height", "width", "color")
+                where the "height" is the washer height in millimeters,
+                "width" is the width in millimeters, and the "color" is
+                a valid color.  If no color is specified, "Silver" is
+                used.
+            *top_washers* (*List*[*Tuple*(*str*, ...)]):
+                Same as *bottom_washers*, but puts the washers on top.
 
-    # OtherPi.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
-        """Initialize OtherPi."""
-        # Compute *other_pi_pcb_polygon* from *other_pi* (i.e. *self*):
-        other_pi: OtherPi = self
-        other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
+        """
+        # Verify argument sanity:
+        assert name != "", "name is empty"
+        assert height > 0.0, f"height (={height}) is not positive"
+        assert screw_class in ("M2", "M3"), (f"screw_class (='{screw_class})' "
+                                             "is not either 'M2' or 'M3'")
+        assert diameter >= 0.0, f"diameter (={diameter}) is negative"
+        assert bottom_height >= 0.0, f"bottom_height (={bottom_height}) is negative)"
+        assert top_height >= 0.0, f"top_height (={top_height}) is negative)"
+        washer: Tuple[str, ...]
+        for washer in bottom_washers + top_washers:
+            assert 2 <= len(washer) <= 3, "top/bottom washer (={bottom_wasters}) is too big/small"
+            try:
+                float(washer[0]) + float(washer[1])
+            except ValueError as value_error:
+                assert False, f"{value_error}"  # pragma: no_cover
 
-        # No construct *green_other_pi_pcb* from *other_pi_polygon*:
-        pcb_height: float = 0.990
-        other_pi_pcb: LinearExtrude = LinearExtrude("OtherPi PCB", other_pi_pcb_polygon, pcb_height)
-        translated_other_pi_pcb: Translate3D = Translate3D("Translated Other Pi",
-                                                           other_pi_pcb,
-                                                           P3D(0.0, 0.0, -pcb_height))
-        green_other_pi_pcb: Scad3D = Color("Green OtherPi PCB", translated_other_pi_pcb, "Green")
+        # Determin some standard constants based on *screw_class*:
+        screw_size: float
+        standard_fit: float
+        if screw_class == "M2":
+            screw_size = 2.00
+            standard_fit = 2.20
+        elif screw_class == "M3":
+            screw_size = 3.00
+            standard_fit = 3.30
+        else:
+            assert False, "Bad screw class"  # pragma: no cover
 
-        # Create the Male 2x20 Header:
-        male_2x20_header_center: P3D = P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0, 0.0)
-        # male_2x20_header_center = P3D(0.0, 0.0, 0.0)
-        male_2x20_header: RectangularConnector
-        male_2x20_header = RectangularConnector(scad_program, "Other Pi", 2, 20,
-                                                2.54, 2.54, 5.08,
-                                                center=male_2x20_header_center,
-                                                insulation_color="DarkBlue")
+        # Detemine the *hex_diameter* using math (http://mathworld.wolfram.com/RegularPolygon.html):
+        #     (1) r = R * cos(pi / n)
+        #     (2) R = r / cos(pi / n)
+        # where:
+        #     R is the circle diameter,
+        #     r is the center to side distance, and
+        #     n is the number of sides.
+        hex_diameter: float = diameter / cos(pi / float(6))
 
-        connectors: List[Scad3D] = []
-        connectors.append(Color("Silver Ethernet Connector",
-                                CornerCube("Ethernet Connector",
-                                           P3D(80.00, 29.26, 0.00),
-                                           P3D(105.00, 44.51, 13.08)),  # 80.00? 105?
-                                "Silver"))
-        connectors.append(Color("Silver USB2 Connector",
-                                CornerCube("USB2 Connector",
-                                           P3D(85.00, 12.82, 0.00),
-                                           P3D(104.00, 25.57, 15.33)),  # 85.00? 104.00?
-                                "Silver"))
-        connectors.append(Color("Silver West Connector",
-                                CornerCube("West Connector",
-                                           P3D(98.00, 50.69, 0.00),
-                                           P3D(105.00, 58.09, 3.00)),  # 98.00? 3.00? 105??
-                                "Silver"))
-        connectors.append(Color("Black North Connector",
-                                CornerCube("North Connector",
-                                           P3D(70.03, 60.92, 0.00),
-                                           P3D(76.38, 66.00, 5.00)),  # 5.00? 66.00??
-                                "Black"))
-        connectors.append(male_2x20_header.module.use_module_get())
-        # connectors.append(Translate3D("2x20 Male Header",
-        #                               male_2x20_header.module.use_module_get(),
-        #                               P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0, 0.0)))
-        connectors.append(Color("Black Audio Connector",
-                                CornerCube("Audio Connector",
-                                           P3D(66.31, -1.00, 0.00),
-                                           P3D(72.31, 14.00, 5.12)),  # -1.00? 14.00?
-                                "Black"))
-        connectors.append(Color("Silver USB3A Connector",
-                                CornerCube("USB3A Connector",
-                                           P3D(9.54, 0.00, 0.00),
-                                           P3D(18.52, 10.00, 2.95)),  # 10.00?
-                                "Silver"))
-        connectors.append(Color("Silver USB3B Connector",
-                                CornerCube("USB3B Connector",
-                                           P3D(22.73, 0.00, 0.00),
-                                           P3D(31.71, 10.00, 2.95)),  # 10.00?
-                                "Silver"))
-        connectors.append(Color("Silver Power Connector",
-                                CornerCube("Power Connector",
-                                           P3D(-1.00, 22.50, 0.00),
-                                           P3D(8.00, 29.00, 2.95)),  # -1.00? 8.00?
-                                "Silver"))
-        connectors.append(Color("White JST Connector",
-                                CornerCube("JST Connector",
-                                           P3D(0.00, 55.01, 0.00),
-                                           P3D(3.00, 63.37, 2.95)),  # 0.00? 3.00?
-                                "White"))
-        connectors.append(Color("Black Buttons Area",
-                                CornerCube("Buttons Area",
-                                           P3D(85.51, 62.12, 0.00),
-                                           P3D(98.23, 68.74, 2.95)),  # 10.00?
-                                "Black"))
-        self.connectors: List[Scad3D] = connectors
+        # Compute *bottom_washers_height* and *top_washers_height*:
+        bottom_washers_height: float = 0.0
+        for washer in bottom_washers:
+            bottom_washers_height += float(washer[1])
+        top_washers_height: float = 0.0
+        for washer in top_washers:
+            top_washers_height += float(washer[1])
 
-        other_pi_union: Union3D = Union3D("Other Pi Union",
-                                          [green_other_pi_pcb] + connectors)
-        translate_other_pi: Scad3D = Translate3D("Translate Other Pi",
-                                                 other_pi_union,
-                                                 P3D(-(3.5 + 58/2.0),
-                                                     -(70.0 - (3.5 + 49.0/2.0)),
-                                                     0.0))
+        # Construct *body_stack* with *bottom_cylinder*, *extruded_body*, and *top_cylinder*:
+        body_stack: List[Scad3D] = []
+        if True:
+            # If appropriate, construct the bottom threaded portion:
+            spacer_stack: List[Scad3D] = []
+            if bottom_height > 0.0:
+                bottom_cylinder: Scad3D = Cylinder(f"Bottom Male {name}", screw_size,
+                                                   P3D(0.0, 0.0, -bottom_height),
+                                                   P3D(0.0, 0.0, 0.0), 8)
+                body_stack.append(bottom_cylinder)
 
-        # Create *module*, append it to *scad_program*, and save it into *other_pi* (i.e. *self*):
-        module: Module3D = Module3D("Other Pi Module", [translate_other_pi])
+            # Now construct the body:
+            body_diameter: float = hex_diameter if is_hex else diameter
+            body_sides: int = 6 if is_hex else 16
+            spacer_polygon: Polygon
+            body_polygon: Polygon = Polygon(f"{name} Polygon", [
+                Circle(f"{name} Body Exterior", body_diameter, body_sides),
+                Circle(f"{name} Body Hole", screw_size, 8)])
+            extruded_body: LinearExtrude = LinearExtrude(f"Extruded {name}",
+                                                         body_polygon, height)
+            body_stack.append(extruded_body)
+
+            # If appropriate, construct the top threaded portion:
+            if top_height > 0.0:
+                top_cylinder: Scad3D = Cylinder(f"top Male {name}", screw_size,
+                                                P3D(0.0, 0.0, height),
+                                                P3D(0.0, 0.0, height + top_height), 8)
+                body_stack.append(top_cylinder)
+
+        # Weld the *body_stack* into *body_union* and color it, and append to *spacer_stack*:
+        body_union: Union3D = Union3D(f"{name} Body Union", body_stack)
+        colored_body: Color = Color(f"Colored {name} Body", body_union, color)
+        spacer_stack.append(colored_body)
+
+        # Stack up the *bottom_washers* into *spacer_stack* using *spacer* (i.e. *self*)
+        # *washer_append* method.  Keep track of the to *z* height:
+        z: float = -bottom_washers_height
+        spacer: Spacer = self
+        washer_index: int
+        for washer_index, washer in enumerate(bottom_washers):
+            z = spacer.washer_append(f"{name} Bottom[{washer_index}]",
+                                     washer, standard_fit, z, spacer_stack)
+
+        # Stack up the *top_washers*:
+        z = height
+        for washer_index, washer in enumerate(top_washers):
+            z = spacer.washer_append(f"{name} Top['{washer_index}]",
+                                     washer, standard_fit, z, spacer_stack)
+
+        # Construct the *spacer_union*, the final *module* and append to *scad_program*:
+        spacer_union: Union3D = Union3D(f"{name} Union", spacer_stack)
+        translated_stack: Translate3D = Translate3D(f"Translated {name}",
+                                                    spacer_union, bottom_center)
+        module: Module3D = Module3D(f"{name} Module", [translated_stack])
         scad_program.append(module)
-        scad_program.if3d.name_match_append("other_pi", module, ["OtherPI SBC"])
-        super().__init__(module)
+        self.module = module
 
-    # OtherPi.board_polygon_get():
-    def pcb_polygon_get(self) -> Polygon:
-        """Return the PCB Polygon that represents the PCB."""
-        # Define the board dimensions:
-        pcb_dx: float = 104.00
-        pcb_dy: float = 70.00
+    def washer_append(self, name: str, washer: Tuple[str, ...], inside_diameter: float,
+                      start_z: float, spacer_stack: List[Scad3D]) -> float:
+        """Construct one washer."""
+        # Unpack *washer*:
+        washer_height: float = float(washer[0])
+        washer_diameter: float = float(washer[1])
+        washer_color: str = washer[2] if len(washer) >= 3 else "Silver"
 
-        # Define the mounting hole centers:
-        upper_left_hole_center: P2D = P2D(3.5, pcb_dy - 3.5)
-        upper_right_hole_center: P2D = P2D(3.5 + 58.0, pcb_dy - 3.5)
-        lower_left_hole_center: P2D = P2D(3.5, pcb_dy - 3.5 - 49.0)
-        lower_right_hole_center: P2D = P2D(3.5 + 58.0, pcb_dy - 3.5 - 49.0)
-
-        # Create the *pcb_outline* with the origin in the lower left corner:
-        pcb_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
-        pcb_outline: Square = Square("PCB Outline", pcb_dx, pcb_dy, pcb_center)
-
-        # Define the holes:
-        hole_diameter: float = 2.75
-        upper_left_hole: Circle = Circle("Upper Left Hole",
-                                         hole_diameter, 16, upper_left_hole_center)
-        upper_right_hole: Circle = Circle("Upper Right Hole",
-                                          hole_diameter, 16, upper_right_hole_center)
-        lower_left_hole: Circle = Circle("Lower Left Hole",
-                                         hole_diameter, 16, lower_left_hole_center)
-        lower_right_hole: Circle = Circle("Lower Right Hole",
-                                          hole_diameter, 16, lower_right_hole_center)
-
-        # Create *pcb_polygon* and append the *pcb_outline* and associated mounting holes:
-        pcb_polygon: Polygon = Polygon("OtherPi PCB Poylgon", [pcb_outline], lock=False)
-        pcb_polygon.extend([upper_left_hole, upper_right_hole, lower_left_hole, lower_right_hole])
-
-        # Lock *pcb_polygon* and return it:
-        pcb_polygon.lock()
-        return pcb_polygon
-
-
-# RaspberryPi3:
-class RaspberryPi3(PiBoard):
-    """Represents a Raspberry Pi 3B+."""
-
-    # RaspberryPi3.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
-        """Initialize RaspberryPi3 and append to ScadProgram."""
-        # Create the R
-        raspi3b: RaspberryPi3 = self
-        raspi3b_pcb_polygon: Polygon = raspi3b.pcb_polygon_get()
-        raspi3b_pcb_polygon_module: Module2D = Module2D("RasPi3B_PCB_Polygon_Module",
-                                                        [raspi3b_pcb_polygon])
-        scad_program.append(raspi3b_pcb_polygon_module)
-
-        # Construct the green PCB:
-        raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
-        translated_raspi3b_pcb: Translate3D = Translate3D("Translated Rasp3B PCB",
-                                                          raspi3b_pcb,
-                                                          P3D(0.0, 0.0, -1.0))
-        raspi3b_green_pcb: Color = Color("Green Rasp3B PCB", translated_raspi3b_pcb, "Green")
-
-        connectors: List[Scad3D] = []
-        mating_length: float = 5.840
-        male_pin_connector2x20: RectangularConnector
-        male_pin_connector2x20 = RectangularConnector(scad_program,
-                                                      "A", 2, 20, mating_length, 2.54, 2.00)
-        male_pin_connector2x2: RectangularConnector
-        male_pin_connector2x2 = RectangularConnector(scad_program,
-                                                     "B", 2, 2, mating_length, 2.54, 2.00)
-        male_pin_connector2x1: RectangularConnector
-        male_pin_connector2x1 = RectangularConnector(scad_program,
-                                                     "C", 2, 1, mating_length, 2.54, 2.00)
-        connectors.append(Translate3D("Translate 2x20 Connector",
-                                      male_pin_connector2x20.module.use_module_get(),
-                                      P3D((57.90 + 7.10) / 2.0, 52.50, 0.0)))
-        connectors.append(Translate3D("Tanslate 2x2 Connector",
-                                      male_pin_connector2x2.module.use_module_get(),
-                                      P3D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0, 0.0)))
-        connectors.append(Translate3D("Translate 2x1 Connector",
-                                      male_pin_connector2x1.module.use_module_get(),
-                                      P3D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0, 0.0)))
-        connectors.append(Color("Silver RJ45 Connector",
-                                CornerCube("RJ45 Connecttor",
-                                           P3D(65.650, 2.495, 0.000),
-                                           P3D(87.000, 18.005, 13.500)),
-                                "Silver"))
-        connectors.append(Color("Silver Lower USB2",
-                                CornerCube("Lower USB2",
-                                           P3D(69.30, 22.43, 0.00),
-                                           P3D(87.00, 34.57, 16.00)),
-                                "Silver"))
-        connectors.append(Color("Silver Upper USB2",
-                                CornerCube("Upper USB2",
-                                           P3D(69.30, 40.43, 0.00),
-                                           P3D(87.00, 53.57, 16.00)),
-                                "Silver"))
-        connectors.append(Color("Black Camera Connector",
-                                CornerCube("Camera Connector",
-                                           P3D(43.55, 0.30, 0.00),
-                                           P3D(47.50, 22.70, 5.50)),
-                                "Black"))
-        connectors.append(Color("Silver HDMI Connector",
-                                CornerCube("HDMI Connector",
-                                           P3D(24.75, -1.50, 0.00),
-                                           P3D(39.25, 10.65, 6.50)),
-                                "Silver"))
-        connectors.append(Color("Silver Power Connector",
-                                CornerCube("Power Connector",
-                                           P3D(6.58, -1.22, 0.00),
-                                           P3D(14.62, 14.35, 2.00)),
-                                "Silver"))
-        connectors.append(Color("Black LCD Connector",
-                                CornerCube("LCD Connector",
-                                           P3D(2.65, 16.80, 0.00),
-                                           P3D(5.45, 39.20, 5.50)),
-                                "Black"))
-        self.connectors: List[Scad3D] = connectors
-
-        # Construct the final *raspi3b_union:
-        raspi3b_union: Union3D = Union3D("Rasp3B Model", connectors + [raspi3b_green_pcb])
-        translated_raspi3b: Translate3D = Translate3D("Translated RasPi3B Model",
-                                                      raspi3b_union,
-                                                      P3D(-(3.5 + 58.0/2.0),
-                                                          -(3.5 + 49.0/2.0), 1.000))
-
-        # Create *module*, append it to *scad_program* and save it into *raspi3b* (i.e. *self*):
-        module: Module3D = Module3D("RasPi3B_Module", [translated_raspi3b])
-        scad_program.append(module)
-        # Initialize *PiBoard* parent class:
-        super().__init__(module)
-
-    # RaspberryPi3.pcb_polygon_get():
-    def pcb_polygon_get(self) -> Polygon:
-        """Return the RasPi 3B+ PCB Polygon."""
-        # Origin is set to lower left so all dimensions are postive except for
-        # one or two connectors along the bottom edge:
-        pcb_dx: float = 85.0
-        holes_dx: float = 58
-        pcb_dy: float = 56.0
-        pcb_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
-        pcb_board_outline: Square = Square("RasPi3B+ PCB Outiline",
-                                           pcb_dx, pcb_dy, center=pcb_center)
-
-        # Define the 4 holes:
-        hole_diameter = 3.2
-        lower_left_hole: Circle = Circle("Lower Left Hole", hole_diameter, 8,
-                                         center=P2D(3.5, 3.5))
-        lower_right_hole: Circle = Circle("Lower Right Hole", hole_diameter, 8,
-                                          center=P2D(3.5 + holes_dx, 3.5))
-        upper_left_hole: Circle = Circle("Upper Left Hole", hole_diameter, 8,
-                                         center=P2D(3.5, pcb_dy - 3.5))
-        upper_right_hole: Circle = Circle("Lower Left Hole", hole_diameter, 8,
-                                          center=P2D(3.5 + holes_dx, pcb_dy - 3.5))
-
-        # Create and return the *pcb_polygon*:
-        pcb_polygon: Polygon = Polygon("Rasp3b+ PCB", [pcb_board_outline,
-                                                       lower_left_hole,
-                                                       lower_right_hole,
-                                                       upper_left_hole,
-                                                       upper_right_hole])
-        return pcb_polygon
+        # Create *washer_polygon*:
+        washer_polygon: Polygon = Polygon(name, [
+            Circle(f"{name} Exterior", washer_diameter, 16),
+            Circle(f"{name} Hole", inside_diameter, 8)])
+        extruded_washer: LinearExtrude = LinearExtrude(f"Extruded {name}",
+                                                       washer_polygon, washer_height)
+        translated_washer: Translate3D = Translate3D(f"Translated {name}",
+                                                     extruded_washer, P3D(0.0, 0.0, start_z))
+        colored_washer: Color = Color(f"{washer_color} {name}", translated_washer, washer_color)
+        spacer_stack.append(colored_washer)
+        return start_z + washer_height
 
 
 def main() -> int:  # pragma: no cover
@@ -3296,13 +3552,31 @@ def main() -> int:  # pragma: no cover
     romi_base.holes_slots_rectangles_write()
     romi_base_keys: List[Tuple[Any, ...]] = romi_base.keys_get()
 
+    # romi_base_key: Tuple[Any, ...]
+    # The tuple is stored as:
+    #    ("Polygon Type", "Name", X, Y, DX, DY, Corner, Radius, Corner_Count),
+    # where all non-strings are floats except the Corner_Count:
+    # romi_base_keys_table: Dict[str, Tuple[Any, ...]] = {romi_base_key[1]: romi_base_key
+    #                                                     for romi_base_key in romi_base_keys}
+    # pi_slot_ne: Tuple[Any, ...] = romi_base_keys_table["BATTERY: Upper Slot (7, 1)"]
+    # pi_slot_nw: Tuple[Any, ...] = romi_base_keys_table["BATTERY: Upper Slot (2, 1)"]
+    # pi_slot_se: Tuple[Any, ...] = romi_base_keys_table["RIGHT: LOWER Small Hex Slot (3, 0)"]
+    # pi_slot_sw: Tuple[Any, ...] = romi_base_keys_table["LEFT: LOWER Small Hex Slot (3, 0)"]
+    # pi_x: float = (pi_slot_se[2] + pi_slot_sw[2]) / 2.0
+    # pi_y: float = (pi_slot_ne[3] + pi_slot_se[3]) / 2.0
+    #
+    # It turns out that the code above results in the origin:
+    pi_x: float = 0.0
+    pi_y: float = 0.0
+
     motor_casing_bottom_z: float = base_dxf.z_locate(-2.110835)
     master_board_z: float = motor_casing_bottom_z + 4.000
 
     # Now create *other_pi* and append it as well:
     # Distance between Pi board and Master board (bottom surface to bottom surface):
     pi_dz: float = 7.00
-    pi_offset: P3D = P3D(-3.0, -7.0, master_board_z - pi_dz)
+    pi_offset: P3D = P3D(pi_x, pi_y, master_board_z - pi_dz)
+    print(f"pi_offset={pi_offset}")
     other_pi: OtherPi = OtherPi(scad_program)
 
     # Create *raspi3b*:

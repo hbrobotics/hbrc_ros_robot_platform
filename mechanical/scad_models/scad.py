@@ -851,6 +851,124 @@ class Scad2D(Scad):
         assert False, f"{class_name}.scad_lines_append() has not been implemented yet."
 
 
+# Difference2D:
+class Difference2D(Scad2D):
+    """Represents the subtraction of SCAD3 objects."""
+
+    # Difference2D.__init__():
+    def __init__(self, name: str, root: Scad2D,
+                 subtracts: List[Scad2D], lock: bool = True) -> None:
+        """Initialize a *Difference2D* with Scad2D's to subtract.
+
+        Args:
+            *name* (*str*):
+                The name of the differenct operation that is mainly
+                used for debugging `.scad` code.
+            *root: (*Scad2D*):
+                The root *Scad2D* object to subtract from.
+            *subtracts* (*List*[*Scad2D*]):
+                A list of *Scad2D*'s to subtract from *root*.
+            *lock* (*bool*) (Optional: defaults to *True*):
+                When *True* no further *Scad2D* objects can be
+                appended to the *Difference2D* object (i.e. *self*);
+                otherwise, the *append* and *extend* methods are
+                allowed.
+
+        """
+        # Initialize the *Scad2D* parent class:
+        super().__init__(name)
+
+        # Save *root* and *subtracts* into *difference2d* (i.e. *self*):
+        # difference2d: Difference2D = self
+        self.root: Scad2D = root
+        self.subtracts: List[Scad2D] = subtracts[:]  # Copy contents of list
+        self.locked: bool = lock
+
+    # Difference2D.__str__()
+    def __str__(self) -> str:
+        """Return a short text string for Difference2D."""
+        # Grab some values from *difference2d* (i.e. *self*):
+        difference2d: Difference2D = self
+        name: str = difference2d.name
+        root: Scad2D = difference2d.root
+        subtracts: List[Scad2D] = difference2d.subtracts
+        locked: bool = difference2d.locked
+
+        subtract: Scad2D
+        subtract_names: str = ','.join([f"'{subtract.name}'" for subtract in subtracts])
+        return f"Difference2D('{name}','{root.name}',[{subtract_names}],lock={locked})"
+
+    # Difference2D.append():
+    def append(self, scad2d: Scad2D) -> None:
+        """Append a Scad2D to a Difference2D."""
+        # Grab some values from *difference2d* (i.e. *self*):
+        difference2d: Difference2D = self
+        subtracts: List[Scad2D] = difference2d.subtracts
+        locked: bool = difference2d.locked
+
+        # Fail if *difference2d* is *locked*:
+        if locked:
+            name: str = difference2d.name
+            raise ValueError(f"Can not append to Difference2D '{name}' because it is locked")
+
+        # Just do the append:
+        subtracts.append(scad2d)
+
+    # Diffrence2D.extend():
+    def extend(self, scad2ds: List[Scad2D]) -> None:
+        """Append a list of Scad2D's to a Difference2D."""
+        # Grab some values from *difference2d* (i.e. *self*):
+        difference2d: Difference2D = self
+        subtracts: List[Scad2D] = difference2d.subtracts
+        locked: bool = difference2d.locked
+
+        # Faile *difference2d* is *locked*:
+        if locked:
+            name: str = difference2d.name
+            raise ValueError(f"Can not extend Difference2D '{name}' because it is locked")
+
+        # Just do the extends.
+        subtracts.extend(scad2ds)
+
+    # Difference2D.lock():
+    def lock(self) -> None:
+        """Lock Difference2D from further appends or extends."""
+        # Set lock for *difference2d* (i.e. *self*):
+        difference2d: Difference2D = self
+        difference2d.locked = True
+
+    # Difference2D.scad_lines_append():
+    def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
+        """Append Difference2D to a list of lines.
+
+        Args:
+            *scad_lines* (*List*[*str*]):
+                The lines list to append the *difference2d*
+                (i.e. *self*) to.
+            *indent* (*str*): The indentatation prefix for each line.
+
+        """
+        # Grab some values from *difference2d* (i.e. *self*):
+        difference2d: Difference2D = self
+        name: str = difference2d.name
+        root: Scad2D = difference2d.root
+        subtracts: List[Scad2D] = difference2d.subtracts
+        locked: bool = difference2d.locked
+
+        # Ensure that *difference2d* is *locked*:
+        if not locked:
+            raise ValueError(f"Difference2D '{name}' is not locked yet.")
+
+        # Append the `difference` operation to *scad_lines* indented by *indent*:
+        scad_lines.append(f"{indent}difference() {{  // Difference2D: '{name}'")
+        next_indent: str = indent + " "
+        root.scad_lines_append(scad_lines, next_indent)
+        subtract: Scad2D
+        for subtract in subtracts:
+            subtract.scad_lines_append(scad_lines, next_indent)
+        scad_lines.append(f"{indent}}}  // End: Difference2D: '{name}'")
+
+
 # Echo2D:
 # class Echo2D(Scad2D):
 #     """Represents an OpenCAD 2D echo command."""

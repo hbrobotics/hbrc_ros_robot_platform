@@ -26,10 +26,11 @@
 
 import io
 from math import pi, sqrt
-from scad_models.scad import (Circle, Color, CornerCube, Cube, Cylinder, Difference3D, If2D, If3D,
-                              LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
-                              Scad3D, ScadProgram, SimplePolygon, Square, Translate3D, Union3D,
-                              UseModule2D, UseModule3D, Variable2D)
+from scad_models.scad import (Circle, Color, CornerCube, Cube, Cylinder, Difference2D,
+                              Difference3D, If2D, If3D, LinearExtrude, Module2D, Module3D,
+                              P2D, P3D, Polygon, Rotate3D, Scad2D, Scad3D, ScadProgram,
+                              SimplePolygon, Square, Translate3D, Union3D, UseModule2D,
+                              UseModule3D, Variable2D)
 import scad_models.scad as scad
 from typing import Any, IO, List, Tuple
 
@@ -232,6 +233,68 @@ def test_cylinder() -> None:
         assert False, "This line should never be reached"  # pragma: no cover
     except ValueError as value_error:
         assert f"{value_error}" == "Cylinder 'Zero Height Cylinder' does not have positive height."
+
+
+def test_difference2d() -> None:
+    """Test Difference2D class."""
+    # Create some *Squares*'s:
+    center_square1: Scad2D = Square("Center Square", 2.0, 2.0)
+    center_square2: Scad2D = Square("Big Square", 4.0, 4.0)
+    sw_square2: Scad2D = Square("SW Square", 2.0, 2.0, center=P2D(-1.0, -1.0))
+    ne_square2: Scad2D = Square("NE Square", 2.0, 2.0, center=P2D(1.0, 1.0))
+
+    # Create the *difference2d* and perform some operations:
+    difference2d: Difference2D = Difference2D("Difference2D 1", center_square2, [], lock=False)
+    assert f"{difference2d}" == "Difference2D('Difference2D 1','Big Square',[],lock=False)"
+    difference2d.append(center_square1)
+    assert f"{difference2d}" == ("Difference2D('Difference2D 1','Big Square',"
+                                 "['Center Square'],lock=False)")
+    difference2d.extend([sw_square2, ne_square2])
+    assert f"{difference2d}" == ("Difference2D('Difference2D 1','Big Square',"
+                                 "['Center Square','SW Square','NE Square'],lock=False)")
+
+    # Verify that *scad_lines_append* method fails if not locked:
+    scad_lines: List[str] = []
+    try:
+        difference2d.scad_lines_append(scad_lines, "")
+        assert False, "This lines should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "Difference2D 'Difference2D 1' is not locked yet."
+
+    # Verify that *scad_lines_append* succeeds if *locked*:
+    difference2d.lock()
+    difference2d.scad_lines_append(scad_lines, "")
+    assert len(scad_lines) == 12
+    assert scad_lines[0] == "difference() {  // Difference2D: 'Difference2D 1'", "[0]!"
+    assert scad_lines[1] == (" // Square 'Big Square' dx=4.000 dy=4.000 "
+                             "center=P2D(0.000,0.000) corner_radius=0.000 corner_count=3"), "[1]!"
+    assert scad_lines[2] == (" square([4.000, 4.000], center = true);"), "[2]!"
+    assert scad_lines[3] == (" // Square 'Center Square' dx=2.000 dy=2.000 "
+                             "center=P2D(0.000,0.000) corner_radius=0.000 corner_count=3"), "[3]!"
+    assert scad_lines[4] == (" square([2.000, 2.000], center = true);"), "[4]!"
+    assert scad_lines[5] == (" // Square 'SW Square' dx=2.000 dy=2.000 "
+                             "center=P2D(-1.000,-1.000) corner_radius=0.000 corner_count=3"), "[5]!"
+    assert scad_lines[6] == (" translate([-1.000, -1.000])"), "[6]!"
+    assert scad_lines[7] == ("  square([2.000, 2.000], center = true);"), "[7]!"
+    assert scad_lines[8] == (" // Square 'NE Square' dx=2.000 dy=2.000 center=P2D(1.000,1.000)"
+                             " corner_radius=0.000 corner_count=3"), "[8]!"
+    assert scad_lines[9] == (" translate([1.000, 1.000])"), "[9]!"
+    assert scad_lines[10] == ("  square([2.000, 2.000], center = true);"), "[10]!"
+    assert scad_lines[11] == ("}  // End: Difference2D: 'Difference2D 1'"), "[11]!"
+
+    # Now verify that *append* and *extend* methods fail if locked:
+    try:
+        difference2d.append(center_square2)
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == ("Can not append to Difference2D 'Difference2D 1' "
+                                    "because it is locked")
+    try:
+        difference2d.extend([sw_square2, ne_square2])
+        assert False, "This line should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == ("Can not extend Difference2D 'Difference2D 1' "
+                                    "because it is locked")
 
 
 def test_difference3d() -> None:
