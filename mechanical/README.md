@@ -178,20 +178,26 @@ systems and Linux distributions you are on your own.
 
   where NAME is one of:  <!-- NAME list starts here. -->
 
-  * `east_encoder_pcb`:
+  * `encoder_board`:
+    Encoder Board
+
+  * `encoder_pcb`:
     Encoder PCB
 
-  * `encoder_board`:
-    Encoder Board
+  * `hr2_base_assembly`:
+    HR2 Base Assembly
 
-  * `encoder_board`:
-    Encoder Board
+  * `hr2_master_assembly`:
+    HR2 Base Assembly
 
-  * `expansion`:
-    Romi Expansion Polygon
+  * `hr2_nucleo_assembly`:
+    HR2 Nucleo144 Assembly
 
-  * `hr2_robot`:
-    HR2 Robot
+  * `hr2_pi_assembly`:
+    HR2 Base Assembly
+
+  * `hr2_wheel_assembly`:
+    HR2 Wheel Assembly
 
   * `master_board`:
     Master Board
@@ -211,14 +217,8 @@ systems and Linux distributions you are on your own.
   * `romi_base`:
     Romi Base Polygon
 
-  * `west_encoder_pcb`:
-    Encoder PCB
-
   * `wheel_assembly`:
-    wheel_assembly
-
-  * `wheel_assembly`:
-    wheel_assembly
+    Wheel Assembly
 
   <!-- NAME list ends here. -->
   After you run `openscad`, use your mouse to select `[Design]`=>`[Preveiw]` and `openscad`
@@ -235,19 +235,70 @@ systems and Linux distributions you are on your own.
 
 ### PNG Files
   
-  The `mechanical/png` directory is where various `.png` image files are
-  stored.  Right now there are images for the `romi_base` and `expansion`
-  models:
+The `mechanical/png` directory is where various `.png` image files are
+stored.  Right now there are images for the `romi_base` and `expansion`
+models:
 
   * [mechanical/png/expansion.png](png/expansion.png):
-    The OpenSCAD modle of the Romi Expansion Chasis:
+    The OpenSCAD model of the Romi Expansion Chassis:
     <Br>
     ![](png/thumb_expansion.png)
 
   * [mechanical/png/romi_base.png](png/romi_base.png):
-    The OpenSCAD model of for the Romi Chassi Base:
+    The OpenSCAD model of for the Romi Chassis Base:
     <Br>
     ![](png/thumb_romi_base.png)
+ 
+The robot is assembled in the following order:
+
+  1. [`mechancal/png/hr2_base_assembly.png`](png/hr2_base_assembly.png):
+     Start with the Romi Chassis base, add *empty* motor holders and spacers
+     to mount the "Pi" board and Master board on:
+     <Br>
+     ![](png/thumb_hr2_base_assembly.png)
+
+  2. [`mechancal/png/hr2_pi_assembly.png`](png/hr2_pi_assembly.png):
+     Mount the Raspberry Pi compatible SBC (Single Board Computer)
+     on the 4 spacers.  Since robots vibrate, it is recommended that every
+     screw have a lock washer.
+     <Br>
+     ![](png/thumb_hr2_pi_assembly.png)
+
+  3. [`mechancal/png/hr2_master_assembly.png`](png/hr2_master_assembly.png):
+     First mount the appropriate spacers on a master board (please use lock washers.)
+     Also, there is a vertical alignment screw that needs to stick straight up.
+     It is M2.5 and needs to be attached with a lock washer and a hex nut.
+     Do not forget this screw, because it is really easy to plug the Nucleo144
+     board in offset by one or more pins otherwise.  Improperly installing the
+     the Nucleo144 can destroy it.  Next mount the master board onto the robot.
+     The connector on the bottom of the board will plug into the 2x20 connector
+     on the Pi compatible SBC.  Finally, screw in the screws that mount the master
+     board to the appropriate spacers (use lock washers!)  Note: the female receptacles
+     are frequently shown in "debug" mode so that notches of material are taken out the
+     the sides so that it is possible to see how deep the mating male pins go into
+     the receptacle.
+     <Br>
+     ![](png/thumb_hr2_master_assembly.png)
+
+  4. [`mechancal/png/hr2_wheel_assembly.png`](png/hr2_wheel_assembly.png):
+     Now assemble the two motor/encoder/magnet/wheel sub-assemblies.  The motor
+     sub-assemblies are interchangeable; there is no left vs. right.  They
+     are held in place by the plastic motor holder clips.
+     <Br>
+     ![](png/thumb_hr2_wheel_assembly.png)
+
+  5. [`mechancal/png/hr2_nucleo_assembly.png`](png/hr2_nucleo_assembly.png):
+     Next, make sure that the veritcal alignment screw is still mounted
+     sicking up.  If you did not install it back in step 3, go back to
+     step 3 and install it.  It is really trivial to incorrectly install and
+     destroy the Nucleo144 without the alignment screw.  Mount the Nucleo144
+     onto the master board and screw it onto the 4 spacers (with lock washers.)
+     Note that the Nucleo144 is frequently shown in debug mode with the center
+     cut away to improve visiblity down to the mater board.
+     <Br>
+     ![](png/thumb_hr2_nucleo_assembly.png)
+  
+That is it for now.
 
 ### DXF Files
 
@@ -353,28 +404,3 @@ There a a bunch of miscellaneous files in the `mechanical` directory:
 
 * [romi_base.html](romi_base.html): This contains the same content as the `romi_base.csv`
   file, but in HTML table format.  It is easier to read in a web browser.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

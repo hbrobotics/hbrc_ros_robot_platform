@@ -1195,7 +1195,7 @@ class MasterBoard:
         extruded_pcb: LinearExtrude = LinearExtrude("Extruded PCB", pcb_polygon, pcb_dz)
         translated_pcb: Translate3D = Translate3D("Translated PCB", extruded_pcb,
                                                   P3D(0.0, 0.0, pcb_bottom_z))
-        colored_pcb: Color = Color("Green Color", translated_pcb, "SeaGreen")
+        colored_pcb: Color = Color("Green Color", translated_pcb, "SpringGreen")
 
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
         module: Module3D = Module3D("Master Board Module",

@@ -48,13 +48,10 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Circle","BATTERY: Upper Hole (9, 0)",45.000,17.000,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (9, 1)",45.000,29.300,2.300,2.300,0.000
 "Circle","BATTERY: Upper Hole (9, 2)",45.000,41.600,2.300,2.300,0.000
-"Circle","Battery: Upper Slot (2, 1)",-25.000,29.300,3.500,3.500,0.000
-"Circle","Battery: Upper Slot (7, 1)",25.000,29.300,3.500,3.500,0.000
 "Circle","CENTER: Top Castor Hole",-0.004,64.007,3.186,3.186,0.000
 "Circle","LEFT: LOWER Hex Hole (0, 5)",-11.509,-66.739,3.184,3.184,0.000
 "Circle","LEFT: LOWER Hex Hole (10, 1)",-54.811,-36.739,3.184,3.184,0.000
 "Circle","LEFT: LOWER Hex Hole (2, 5)",-20.170,-66.739,3.184,3.184,0.000
-"Circle","LEFT: LOWER Hex Hole (3, 0)",-24.500,-29.239,3.184,3.184,0.000
 "Circle","LEFT: LOWER Hex Hole (3, 4)",-24.500,-59.239,3.184,3.184,0.000
 "Circle","LEFT: LOWER Hex Hole (4, 1)",-28.830,-36.739,3.184,3.184,0.000
 "Circle","LEFT: LOWER Hex Hole (4, 3)",-28.830,-51.739,3.184,3.184,0.000
@@ -112,7 +109,6 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Circle","RIGHT: LOWER Hex Hole (0, 5)",11.509,-66.739,3.184,3.184,0.000
 "Circle","RIGHT: LOWER Hex Hole (10, 1)",54.811,-36.739,3.184,3.184,0.000
 "Circle","RIGHT: LOWER Hex Hole (2, 5)",20.170,-66.739,3.184,3.184,0.000
-"Circle","RIGHT: LOWER Hex Hole (3, 0)",24.500,-29.239,3.184,3.184,0.000
 "Circle","RIGHT: LOWER Hex Hole (3, 4)",24.500,-59.239,3.184,3.184,0.000
 "Circle","RIGHT: LOWER Hex Hole (4, 1)",28.830,-36.739,3.184,3.184,0.000
 "Circle","RIGHT: LOWER Hex Hole (4, 3)",28.830,-51.739,3.184,3.184,0.000
@@ -184,6 +180,8 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Square","BATTERY: Upper Outer Left Cutout",-45.100,48.750,17.300,5.500,0.000,0.000,3
 "Square","BATTERY: Upper Outer Right Cutout",45.100,48.750,17.300,5.500,0.000,0.000,3
 "Square","BATTERY: Upper Right Battery Slot",25.000,36.200,37.500,5.600,0.000,0.000,3
+"Square","BATTERY: Upper Slot (2, 1)",-25.000,29.300,3.159,2.700,0.000,1.350,2
+"Square","BATTERY: Upper Slot (7, 1)",25.000,29.300,3.159,2.700,0.000,1.350,2
 "Square","CENTER: Bottom Castor Rectangle",0.000,-44.249,3.200,1.597,0.000,0.000,3
 "Square","CENTER: Bottom Rectangle",0.000,-79.609,3.776,1.400,0.000,0.000,3
 "Square","LEFT: Inner Encoder Slot",-32.140,0.000,2.540,17.800,0.000,0.000,3
@@ -200,6 +198,7 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Square","LEFT: LOWER Slot 'aL'",-30.995,-47.989,7.300,2.300,-150.000,1.150,8
 "Square","LEFT: LOWER Slot 'aN'",-24.500,-51.739,7.300,2.300,-90.000,1.150,8
 "Square","LEFT: LOWER Slot 'aO'",-30.995,-40.489,7.300,2.300,150.000,1.150,8
+"Square","LEFT: LOWER Small Hex Slot (3, 0)",-24.500,-29.239,2.700,3.159,0.000,1.350,2
 "Square","LEFT: LOWER: Rectangle 0",-60.490,-17.500,1.300,2.876,0.000,0.000,3
 "Square","LEFT: LOWER: Rectangle 1",-60.490,-22.500,1.300,3.776,0.000,0.000,3
 "Square","LEFT: LOWER: Rectangle 2",-60.490,-27.500,1.300,2.877,0.000,0.000,3
@@ -255,6 +254,7 @@ Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count
 "Square","RIGHT: LOWER Slot 'aL'",30.995,-47.989,7.300,2.300,150.000,1.150,8
 "Square","RIGHT: LOWER Slot 'aN'",24.500,-51.739,7.300,2.300,90.000,1.150,8
 "Square","RIGHT: LOWER Slot 'aO'",30.995,-40.489,7.300,2.300,-150.000,1.150,8
+"Square","RIGHT: LOWER Small Hex Slot (3, 0)",24.500,-29.239,2.700,3.159,0.000,1.350,2
 "Square","RIGHT: LOWER: Rectangle 0",60.490,-17.500,1.300,2.876,0.000,0.000,3
 "Square","RIGHT: LOWER: Rectangle 1",60.490,-22.500,1.300,3.776,0.000,0.000,3
 "Square","RIGHT: LOWER: Rectangle 2",60.490,-27.500,1.300,2.877,0.000,0.000,3
