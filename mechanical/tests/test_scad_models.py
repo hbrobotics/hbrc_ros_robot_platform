@@ -23,46 +23,20 @@
 # SOFTWARE.
 
 from math import cos, pi, sin
-from scad_models.scad_models import (BaseDXF, EncoderBoard, HR2, MasterBoard, OtherPi,
-                                     RaspberryPi3, RectangularConnector, RomiBase,
-                                     RomiExpansionPlate, RomiMagnet, RomiMotor,
-                                     RomiMotorHolder, RomiWheelAssembly)
+from scad_models.scad_models import (BaseDXF, HR2Robot, OtherPi,
+                                     RaspberryPi3, RectangularConnector,
+                                     RomiExpansionPlate, RomiMotor, Spacer)
 from scad_models.scad import (Color, CornerCube, Difference3D, LinearExtrude, Module3D,
                               P2D, P3D, Polygon, Scad3D, ScadProgram, Square)
 from typing import Any, IO, List, Tuple
 
 
-# test_hr2():
-def test_hr2():
+# test_hr2_robot():
+def test_hr2_robot():
     """Test the HR2 class."""
     scad_program: ScadProgram = ScadProgram("Top Level Program")
-    base_dxf: BaseDXF = BaseDXF()
-    pi_offset: P3D = P3D(0.0, 0.0, 0.0)
-    romi_base_keys: List[Tuple[Any, ...]] = [
-        ("Circle", "BATTERY: Upper Hole (0, 1)", -35.000, 17.000, 2.300, 2.3000)
-    ]
-    master_board_dz: float = 0.0
-    master_board: MasterBoard = MasterBoard(scad_program, base_dxf,
-                                            master_board_dz, pi_offset, romi_base_keys)
-    other_pi: OtherPi = OtherPi(scad_program)
-    romi_base: RomiBase = RomiBase(scad_program, base_dxf)
-    romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)
-    romi_base.holes_slots_rectangles_write()
-    romi_motor: RomiMotor = RomiMotor(scad_program, base_dxf)
-    romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program, base_dxf)
-    east_encoder_board: EncoderBoard = EncoderBoard(scad_program, base_dxf, True)
-    east_romi_wheel_assembly: RomiWheelAssembly
-    east_romi_wheel_assembly = RomiWheelAssembly(scad_program, "East Wheel Assembly",
-                                                 romi_motor, romi_motor_holder,
-                                                 romi_magnet, east_encoder_board)
-    west_encoder_board: EncoderBoard = EncoderBoard(scad_program, base_dxf, False)
-    west_romi_wheel_assembly: RomiWheelAssembly
-    west_romi_wheel_assembly = RomiWheelAssembly(scad_program, "West Wheel Assembly",
-                                                 romi_motor, romi_motor_holder,
-                                                 romi_magnet, west_encoder_board)
-    hr2: HR2 = HR2(scad_program, romi_base, east_romi_wheel_assembly, west_romi_wheel_assembly,
-                   master_board, other_pi, pi_offset)
-    hr2 = hr2
+    hr2_robot: HR2Robot = HR2Robot(scad_program)
+    hr2_robot = hr2_robot
 
 
 # test_raspi3b():
@@ -171,6 +145,20 @@ def test_romi_motor():
     base_dxf: BaseDXF = BaseDXF()
     romi_motor: RomiMotor = RomiMotor(scad_program, base_dxf)
     romi_motor = romi_motor
+
+
+# test_spacer():
+def test_spacer():
+    """Test Spacer Class."""
+    scad_program: ScadProgram = ScadProgram("Top Level Program")
+    washers: List[Tuple[float, float, str]] = [
+        (1.0, 3.5, "Green"),
+        (0.5, 4.0, "")
+    ]
+    spacer: Spacer = Spacer(scad_program, "Test Spacer with Washers",
+                            10.0, "M2.5", bottom_washers=washers, top_washers=washers,
+                            top_height=5.0)
+    spacer = spacer
 
 
 # test_other_pi():
