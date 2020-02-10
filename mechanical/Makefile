@@ -41,14 +41,13 @@ DXF_FILES :=					\
     $(DXF_DIRECTORY)/expansion.dxf
 
 # These are the various `.png` file definitions and flags:
+PNG_CLEAN := exiftool -all=
 PNG_TOP_FLAGS := --imgsize 1024,1024 --projection ortho --camera=0,0,425,0,0,0
 PNG_TOP_THUMB_FLAGS := --imgsize 128,128 --projection ortho --camera=0,0,425,0,0,0
 PNG_ANGLE_FLAGS := --imgsize 1024,1024 --projection perspective --camera=300,-300,300,0,0,0
 PNG_ANGLE_THUMB_FLAGS := --imgsize 128,128 --projection perspective --camera=300,-300,300,0,0,0
 PNG_DIRECTORY := png
 PNG_BASE_NAMES :=				\
-    expansion					\
-    romi_base					\
     hr2_base_assembly				\
     hr2_pi_assembly				\
     hr2_master_assembly				\
@@ -93,33 +92,47 @@ ${INSTALLED_SCAD_MODELS_PY_FILES}: ${SCAD_MODELS_PY_FILES}
 # Individual targets for generating `.png` files:
 $(PNG_DIRECTORY)/expansion.png: scad_models.scad
 	openscad scad_models.scad -D 'name="expansion"' $(PNG_TOP_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/romi_base.png: scad_models.scad
 	openscad scad_models.scad -D 'name="romi_base"' $(PNG_TOP_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/hr2_base_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_base_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/hr2_pi_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_pi_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/hr2_master_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_master_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/hr2_wheel_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_wheel_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/hr2_nucleo_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_nucleo_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 
 $(PNG_DIRECTORY)/thumb_expansion.png: scad_models.scad
 	openscad scad_models.scad -D 'name="expansion"' $(PNG_TOP_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/thumb_romi_base.png: scad_models.scad
 	openscad scad_models.scad -D 'name="romi_base"' $(PNG_TOP_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/thumb_hr2_base_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_base_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/thumb_hr2_pi_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_pi_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/thumb_hr2_master_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_master_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/thumb_hr2_wheel_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_wheel_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 $(PNG_DIRECTORY)/thumb_hr2_nucleo_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_nucleo_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 
 # This runs the `scad_models` programe to generate `scad_models.scad`:
 scad_models.scad: ${INSTALLED_SCAD_MODELS_PY_FILES}

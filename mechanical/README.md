@@ -129,6 +129,57 @@ The explicit non-requirements are:
 * This platform is not expected to be operated over uneven floors.
   Going over door strips is *NOT* required.
 
+## Decisions Made so far:
+
+The current (tentative) design decisions are:
+
+* It looks like it is possible to support multiple different SBC's (Single Board Computers)
+  as long as they are basically compatible with the Raspberry Pi mounting holes and 2x20
+  male connector (i.e. RPi B+, 3A+, 3B+, and 4B.)  It is possible to take a Raspberry Pi
+  compatible board that is quite a bit larger than the typical Raspberry Pie and make it
+  fit.  The key to accomplishing this task was to abandon the standard Pololu shaft encoder
+  PCB's in favor of one that is wider along the Y axis, but shorter in the Z axis.  Given
+  how trivial the encoder PCB is, this is a workable solution. This allows one edge of the
+  RPi compatible SBC to extend underneath one of the drive motors.
+
+* The ST Microelectronics Nucleo-144 development boards have been selected as the basic
+  microcontroller of the robot.  These are extremely popular development boards that STM
+  tends to keep in stock across multiple vendors.  A few weeks ago, the entry level board
+  was at about $15, but there seems to be a run going on so the prices have crept up.
+  The reasons for selection this board are:
+  
+  * STM got beat up over and over again about moving peripherals around on their chips.
+    Eventually they figured out that they had to keep all of the peripherals mapped
+    to the same pins.  This does not mean that all chips support all peripherals, but
+    instead if the peripheral is present on a chip, it is available exactly the same pins
+    as every other pin on other boards that has the same peripheral.  As a result of
+    this design decision, all of the Nucleo144 products use the exact same PCB with
+    the only difference being the CPU chip and a label that specifies which CPU chip
+    is mounted.  That's it.  One nice feature of this strategy is that as newer chips
+    are released, they just ship a new Nucleo144 board with the new chip.  The new board
+    should be pin-for-pin compatible with the older boards.  Hopefully, the Nucelo-144
+    will be "future proof".
+
+  * The larger Nucleo-144 boards like the STM32F676ZI has 2MB of flash memory that
+    should be more that adequate for running MicroPython and Embedded ROS.
+
+  * The Nucleo-144 boards come with a small attached ST-Link debugger for software
+    development.  For space reasons, this board has to be cut off and remounted
+    elsewhere on the master board.  This *should* support software development
+    using popular IDE's (Integrated Development Environments) such as vscode and
+    Eclipse in conjunction with OpenOCD.
+
+  * The Nucleo-144 boards come with an RJ-45 connector for connecting Ethernet
+    to the SBC to allow high speed communication between the two devices.
+
+  * The Arduino IDE with the boards manager *may* allow development on the smaller
+    Nucleo-144 board such as Nucleo144-F476RG.  Presumably other larger boards can
+    be added as needed.
+
+* FPGA board selection is still up in the air.  There is a strong desire is to use
+  an off-the-shelf solution, but there are a bunch of trade-offs between board size,
+  cost, availability number of LUT's, tool chain issues, other features, etc.  Brandon
+  and Patrick are leading the charge on this front.
 
 ## Installation and Use
 
@@ -140,7 +191,7 @@ systems and Linux distributions you are on your own.
             # cd .../somwhere  # Something like `~/Downloads` should work
             git clone https://github.com/hbrobotics/hbrc_ros_robot_platform.git
 
-* Install Python Virtual Envoronments:
+* Install Python Virtual Environments:
 
   * Read about
     [Python Virtual Envionrments](https://realpython.com/python-virtual-environments-a-primer/).
@@ -161,7 +212,7 @@ systems and Linux distributions you are on your own.
 
 * Install `openscad`, `convert` (i.e. ImageMagik), and `qcad`:
 
-            sudo apt install openscad imagemagik qcad
+            sudo apt install openscad imagemagik qcad libimage-exiftool-perl
 
 * Build the `romi_base.scad` files:
 
@@ -243,12 +294,25 @@ models:
     The OpenSCAD model of the Romi Expansion Chassis:
     <Br>
     ![](png/thumb_expansion.png)
+     Assembly
 
-  * [mechanical/png/romi_base.png](png/romi_base.png):
-    The OpenSCAD model of for the Romi Chassis Base:
-    <Br>
-    ![](png/thumb_romi_base.png)
- 
+  <!-- NAME list ends here. -->
+  After you run `openscad`, use your mouse to select `[Design]`=>`[Preveiw]` and `openscad`
+  will show the resulting model.
+
+## Documentation:
+
+### Remote Documentation
+
+  * [Pololu Romi Chasis User's Guide](https://www.pololu.com/docs/0J68/all):
+    The Pololu Romi is mostly documented by the Pololu web site.  Alas, there
+    is no `.pdf` version of the file, so if Pololu ever decides to take the
+    User's Guide down, it will be *GONE*.
+
+### PNG Files
+  
+The `mechanical/png` directory is where various `.png` image files are stored.
+
 The robot is assembled in the following order:
 
   1. [`mechancal/png/hr2_base_assembly.png`](png/hr2_base_assembly.png):
@@ -360,7 +424,7 @@ The `scad_models` directory currently contains:
   that the `scad_models` directory contains a Python package.
 
 The program `pydoc NAME.py` will print out the Python doc strings for some
-documentation.
+Documentation.
 
 ### `tests`
 
