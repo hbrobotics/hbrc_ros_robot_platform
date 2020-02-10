@@ -286,31 +286,6 @@ systems and Linux distributions you are on your own.
 
 ### PNG Files
   
-The `mechanical/png` directory is where various `.png` image files are
-stored.  Right now there are images for the `romi_base` and `expansion`
-models:
-
-  * [mechanical/png/expansion.png](png/expansion.png):
-    The OpenSCAD model of the Romi Expansion Chassis:
-    <Br>
-    ![](png/thumb_expansion.png)
-     Assembly
-
-  <!-- NAME list ends here. -->
-  After you run `openscad`, use your mouse to select `[Design]`=>`[Preveiw]` and `openscad`
-  will show the resulting model.
-
-## Documentation:
-
-### Remote Documentation
-
-  * [Pololu Romi Chasis User's Guide](https://www.pololu.com/docs/0J68/all):
-    The Pololu Romi is mostly documented by the Pololu web site.  Alas, there
-    is no `.pdf` version of the file, so if Pololu ever decides to take the
-    User's Guide down, it will be *GONE*.
-
-### PNG Files
-  
 The `mechanical/png` directory is where various `.png` image files are stored.
 
 The robot is assembled in the following order:
