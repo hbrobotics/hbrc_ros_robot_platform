@@ -11,7 +11,7 @@ from scad_models.scad import (Color, Circle, CornerCube, Cylinder, If2D, Differe
                               Scad2D, Scad3D, SimplePolygon, ScadProgram, Square,
                               Translate3D, UseModule3D, Union3D, Variable2D)
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
-from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
+from math import acos, asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
 
 # DXF:
@@ -600,18 +600,30 @@ class HR2PiAssembly:
     def __init__(self, scad_program: ScadProgram, hr2_base_assembly: HR2BaseAssembly,
                  pi_offset: P3D, master_board_z: float) -> None:
         """Initialize the HR2BaseAssembly."""
-        other_pi: OtherPi = OtherPi(scad_program)
-        pi_use_module: UseModule3D = other_pi.module.use_module_get()
-        pi_union: Union3D = Union3D("Pi Union", [pi_use_module])
+        # Define some constants
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
         degrees90: float = pi / 2.0
-        rotated_pi: Rotate3D = Rotate3D("Rotated Pi", pi_union, degrees90, z_axis)
-        translated_pi: Translate3D = Translate3D("Translated Pi", rotated_pi, pi_offset)
+
+        # Create the *other_pi* and rotate and translate to the correct location:
+        other_pi: OtherPi = OtherPi(scad_program)
+        other_pi_use_module: UseModule3D = other_pi.module.use_module_get()
+        rotated_other_pi: Rotate3D = Rotate3D("Rotated Other Pi",
+                                              other_pi_use_module, degrees90, z_axis)
+        translated_other_pi: Translate3D = Translate3D("Translated Other Pi",
+                                                       rotated_other_pi, pi_offset)
+        # Create the *raspberry_pi3*:
+        raspberry_pi3: RaspberryPi3 = RaspberryPi3(scad_program)
+        raspberry_pi3_use_module: UseModule3D = raspberry_pi3.module.use_module_get()
+        rotated_raspberry_pi3: Rotate3D = Rotate3D("Rotated Raspberry Pi3",
+                                                   raspberry_pi3_use_module, degrees90, z_axis)
+        translated_raspberry_pi3: Translate3D = Translate3D("Translated Raspberry Pi3",
+                                                            rotated_raspberry_pi3, pi_offset)
 
         # Create *module*, append to *scad_program* and save into *hr2_base_assembly* (i.e. *self*):
         module: Module3D = Module3D("HR2 Pi Assembly", [
             hr2_base_assembly.module.use_module_get(),
-            translated_pi])
+            translated_other_pi,
+            translated_raspberry_pi3])
         scad_program.append(module)
         # hr2_pi_assembly: HR2PiAssembly = self
         self.module = module
@@ -651,7 +663,7 @@ class HR2Robot:
         master_board_z: float = pi_z + 8.000
 
         # Create the *nucleo144* before *master_board* so it can be passed in:
-        nucleo144_offset: P3D = P3D(pi_x + 6.5, pi_y, master_board_z + 13.00)
+        nucleo144_offset: P3D = P3D(pi_x + 6.5, pi_y - 1.0, master_board_z + 13.00)
         degrees90 = pi / 2.0
         nucleo144: Nucleo144 = Nucleo144(scad_program, -degrees90, nucleo144_offset)
 
@@ -957,7 +969,7 @@ class MasterBoard:
         # Now grab some Y coordinates:
         # Currently set *pcb_dy* equal to the area covering the 4 Raspberry Pi holes:
         pcb_north_y: float = 36.00
-        pcb_south_y: float = -46.00
+        # pcb_south_y: float = -46.00
         # pcb_dy: float = 7.00 + 58.00 + 7.00
         holder_north_y: float = base_dxf.y_locate(3.410067)
         motor_casing_north_y: float = base_dxf.y_locate(3.382512)
@@ -981,50 +993,104 @@ class MasterBoard:
         # it up with various holes:
         pcb_polygon: Polygon = Polygon("Master PCB Polygon", [], lock=False)
 
-        # *external_polygon_points* with points that will leave some room around the
-        # two motor holder.  Start in the upper right corner and move around clockwise:
-        external_polygon_points: List[P2D] = [
-            P2D(wheel_well_east_x, pcb_north_y),  # NE Corner
-            P2D(wheel_well_west_x, pcb_north_y),  # NW Corner
-            P2D(wheel_well_west_x, holder_north_y + holder_slop_dy),  # NW Well Outer Corner
-            P2D(magnet_west_x + holder_slop_dx, holder_north_y + holder_slop_dy),  # NW Well Inner
-            P2D(magnet_west_x + holder_slop_dx, holder_south_y - holder_slop_dy),  # SW Well Inner
-            P2D(wheel_well_west_x, holder_south_y - holder_slop_dy),  # SW Well Outer Corner
-            P2D(wheel_well_west_x, pcb_south_y),  # SW Corner
-            P2D(wheel_well_east_x, pcb_south_y),  # SE Corner
-            P2D(wheel_well_east_x, holder_south_y - holder_slop_dy),  # SE Well Outer Corner
-            P2D(magnet_east_x - holder_slop_dx, holder_south_y - holder_slop_dy),  # SE Well Inner
-            P2D(magnet_east_x - holder_slop_dx, holder_north_y + holder_slop_dy),  # NE Well Inner
-            P2D(wheel_well_east_x, holder_north_y + holder_slop_dy)  # NE Well Outer Corner
-        ]
+        # The outline of the master PCB is show approximately below as crude ASCII artwork.
+        # The top and bottom are arcs centered around the center of the board at Z.
+        #
+        #         ~~~~~~~~G             C~~~~~~~~
+        #        /        |             |        \
+        #       /         |             |         \
+        #      /          |             |          \
+        #     H--I        F------E------D        A--B
+        #        |                               |
+        #        |                               |
+        #        J----K                     T----U
+        #             |                     |
+        #             |                     |
+        #             +----------Z----------+
+        #             |                     |
+        #             |                     |
+        #        M----L                     S----R
+        #        |                               |
+        #        |                               |
+        #     O--N                               Q--P
+        #      \                                   /
+        #       \                                 /
+        #        \                               /
+        #         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        #
+        #
+        # The wheel well distance (|BQ| =|IP|) is 72mm.  The diameter of the board is 163mm.
+        # This numers are taken from the Romi Chasis User's Manual.  Thus we know the *radius*
+        # is |ZB|/2 =163mm/2 = 81.5mm.
+        # Also the distance of B above Z in the Y axis By = |BR|/2 = 72mm/2 = 36mm.
+        diameter: float = 163.0
+        radius: float = diameter / 2.0
+        wheel_well_dy: float = 72.0
+        half_wheel_well_dy: float = wheel_well_dy / 2.0
+
+        # We need to compute the *wheel_well_angle* (= <BZW) and the *cut_out_angle* (=CZW).
+        # The math is the same for both, so we will just walk through the <BZW computation.
+        # Using @ to be the *wheel_well_angle*, R=*radius*=|ZB|
+        #
+        # (1) By = R*sin(@)
+        # (2) sin(@) = By/R
+        # (3) @ = asin(By/R)
+        wheel_well_angle: float = asin(half_wheel_well_dy / radius)
+
+        # By trial and error, the Pi connector *cutout_dx* (=|GE|) = 60mm and the *cut_out_y*
+        # Fy (=|FZ|) is 33mm.  The same basic math yields the *cut_out_angle*
+        # (Dx=R*cos(@) => @=acos(Dx/R) ):
+        cut_out_y: float = 33.0
+        cut_out_dx: float = 60.0
+        half_cut_out_dx: float = cut_out_dx / 2.0
+        cut_out_angle: float = acos(half_cut_out_dx / radius)
+
+        # Some additional useful constants:
+        origin2d: P2D = P2D(0.0, 0.0)
+        degrees180: float = pi
+        degrees360: float = 2.0 * pi
+
+        # Create *external_polygon* and fill draw the diagram above proceed from point A
+        # through point P.  There is an arc centered on Z from to B to C and from J to K.
+        external_polygon: SimplePolygon = SimplePolygon("Master PCB External Simple Polygon",
+                                                        [], lock=False)
+        external_polygon.point_append(P2D(wheel_well_east_x, pcb_north_y))          # A
+        external_polygon.arc_append(origin2d, radius,                               # Arc
+                                    wheel_well_angle,                               # from B
+                                    cut_out_angle, 8)                               # to C.
+        external_polygon.point_append(P2D(half_cut_out_dx, cut_out_y))              # D
+        #                                                                           # E not needed
+        external_polygon.point_append(P2D(-half_cut_out_dx, cut_out_y))             # F
+        external_polygon.arc_append(origin2d, radius,                               # Arc from
+                                    degrees180 - cut_out_angle,                     # from G
+                                    degrees180 - wheel_well_angle, 8)               # to H
+        external_polygon.point_append(P2D(wheel_well_west_x, half_wheel_well_dy))   # I
+        external_polygon.point_append(P2D(wheel_well_west_x,
+                                          holder_north_y + holder_slop_dy))         # J
+        external_polygon.point_append(P2D(magnet_west_x + holder_slop_dx,
+                                          holder_north_y + holder_slop_dy))         # K
+        external_polygon.point_append(P2D(magnet_west_x + holder_slop_dx,
+                                          holder_south_y - holder_slop_dy))         # L
+        external_polygon.point_append(P2D(wheel_well_west_x,
+                                          holder_south_y - holder_slop_dy))         # M
+        external_polygon.point_append(P2D(wheel_well_west_x, -half_wheel_well_dy))  # N
+        external_polygon.arc_append(origin2d, radius,                               # Arc
+                                    degrees180 + wheel_well_angle,                  # from O
+                                    degrees360 - wheel_well_angle, 20)              # to P
+        external_polygon.point_append(P2D(wheel_well_east_x, -half_wheel_well_dy))  # Q
+        external_polygon.point_append(P2D(wheel_well_east_x,
+                                          holder_south_y - holder_slop_dy))         # R
+        external_polygon.point_append(P2D(magnet_east_x - holder_slop_dx,
+                                          holder_south_y - holder_slop_dy))         # S
+        external_polygon.point_append(P2D(magnet_east_x - holder_slop_dx,
+                                          holder_north_y + holder_slop_dy))         # T
+        external_polygon.point_append(P2D(wheel_well_east_x,
+                                          holder_north_y + holder_slop_dy))         # U
         # print(f"masterpcb well-to-well: {holder_north_y - holder_south_y - 2.0*holder_slop_dy}mm")
 
-        # Create *external_polygon* and append it to *pcb_polygon*:
-        external_polygon: SimplePolygon = SimplePolygon("Master PCB External Simple Polygon",
-                                                        external_polygon_points, lock=True)
+        # Lock up *external_polygon* and append it to *pcb_polygon*:
+        external_polygon.lock()
         pcb_polygon.append(external_polygon)
-
-        # Pi Holes are no longer needed!!!  The pi is mounted directly to the base!!!
-        # Create *pi_holes* which is a list of holes for Pi Mounting hardware holes:
-        # pi_hole_diameter: float = 2.75
-        # pi_hole_pitch_dx: float = 49.00
-        # pi_hole_pitch_dy: float = 58.00
-        # pi_offset_2d: P2D = P2D(pi_offset.x, pi_offset.y)
-        # pi_hole1: SimplePolygon = Circle("Pi Hole 1", pi_hole_diameter, 8,
-        #                                  P2D(-pi_hole_pitch_dx / 2.0, -pi_hole_pitch_dy / 2.0)
-        #                                  + pi_offset_2d)
-        # pi_hole2: Circle = Circle("Pi Hole 1", pi_hole_diameter, 8,
-        #                           P2D(pi_hole_pitch_dx / 2.0, -pi_hole_pitch_dy / 2.0)
-        #                           + pi_offset_2d)
-        # pi_hole3: Circle = Circle("Pi Hole 1", pi_hole_diameter, 8,
-        #                           P2D(-pi_hole_pitch_dx / 2.0, pi_hole_pitch_dy / 2.0)
-        #                           + pi_offset_2d)
-        # pi_hole4: Circle = Circle("Pi Hole 1", pi_hole_diameter, 8,
-        #                           P2D(pi_hole_pitch_dx / 2.0, pi_hole_pitch_dy / 2.0)
-        #                           + pi_offset_2d)
-        # pi_holes: List[SimplePolygon] = [pi_hole1, pi_hole2, pi_hole3, pi_hole4]
-        # Append *pi_holes* to *pcb_polygon*:
-        # pcb_polygon.extend(pi_holes)
 
         # Use *romi_base_keys* to build *romi_base_keys_table*:
         romi_base_keys_table: Dict[str, Tuple[Any, ...]] = {}
@@ -1105,7 +1171,7 @@ class MasterBoard:
                                                           vertical_rotate=degrees90)
             encoder_receptacles_use_modules.append(encoder_receptacle_1x3.module.use_module_get())
 
-        # *nucleo_offset* is the offset from the robot origin to the bottom center of
+        # *nucleo144_offset* is the offset from the robot origin to the bottom center of
         # the Nucleo144 board.  We use these offsets to place the various holes Nucleo144
         # mounting holes, female morpho connectors, etc.
 
@@ -1239,7 +1305,7 @@ class OtherPi(PiBoard):
         translated_other_pi_pcb: Translate3D = Translate3D("Translated Other Pi",
                                                            other_pi_pcb,
                                                            P3D(0.0, 0.0, -pcb_height))
-        green_other_pi_pcb: Scad3D = Color("Green OtherPi PCB", translated_other_pi_pcb, "Green")
+        green_other_pi_pcb: Scad3D = Color("Green OtherPi PCB", translated_other_pi_pcb, "Orange")
 
         # Create the Male 2x20 Header:
         male_2x20_header_center: P3D = P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0, 0.0)
