@@ -448,6 +448,63 @@ class EncoderBoard:
         self.module: Module3D = module
 
 
+# HCSR04:
+class HCSR04:
+    """Represents an HC-SR04 sonar module."""
+
+    # HCSR04.__init__():
+    def __init__(self, scad_program: ScadProgram) -> None:
+        """Initialize anHCSR04."""
+        # Create the PCB:
+        pcb_dy: float = 20.60
+        pcb_dx: float = 44.50
+        pcb_dz: float = 1.20
+        pcb_square: Square = Square("HCSR04 PCB", pcb_dx, pcb_dy, center=P2D(0.0, pcb_dy / 2.0))
+        extruded_pcb: LinearExtrude = LinearExtrude("Extruded HCSR04 PCB", pcb_square, pcb_dz)
+        colored_pcb: Color = Color("Colored HRCSR04", extruded_pcb, "Green")
+
+        # Create the sonar cylinders:
+        sonar_diameter: float = 16.00
+        sonar_radius: float = sonar_diameter / 2.0
+        sonar_dz: float = 12.00
+        sonar_left_x: float = pcb_dx / 2.0 - sonar_radius
+        sonar_right_x: float = -pcb_dx / 2.0 + sonar_radius
+        sonar_start_z: float = pcb_dz
+        sonar_end_z: float = sonar_start_z + sonar_dz
+        left_start: P3D = P3D(sonar_left_x, pcb_dy/2, sonar_start_z)
+        left_end: P3D = P3D(sonar_left_x, pcb_dy/2, sonar_end_z)
+        right_start: P3D = P3D(sonar_right_x, pcb_dy/2, sonar_start_z)
+        right_end: P3D = P3D(sonar_right_x, pcb_dy/2, sonar_end_z)
+        left_cylinder: Cylinder = Cylinder("Left Sonar Transducer",
+                                           sonar_diameter, left_start, left_end, 16)
+        right_cylinder: Cylinder = Cylinder("Left Sonar Transducer",
+                                            sonar_diameter, right_start, right_end, 16)
+        colored_left_cylinder: Color = Color("Colored Left Sonar Transducer",
+                                             left_cylinder, "Silver")
+        colored_right_cylinder: Color = Color("Colored Right Sonar Transducer",
+                                              right_cylinder, "Silver")
+        hcsr04_union: Union3D = Union3D("HCSR04 Union", [
+            colored_pcb,
+            colored_left_cylinder,
+            colored_right_cylinder
+        ])
+
+        # Now tilt the sonar up followed by rotating it to vertical:
+        x_axis: P3D = P3D(1.0, 0.0, 0.0)
+        degrees90: float = pi / 2.0
+        vertical_hcsr04: Rotate3D = Rotate3D("Veritcal HC-SR04", hcsr04_union, degrees90, x_axis)
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        east_facing_hcsr04: Rotate3D = Rotate3D("East Facing HC-S404",
+                                                vertical_hcsr04, degrees90, z_axis)
+
+        # Create *module*, append to *scad_program*, and save into *hcsr04* (i.e. *self*):
+        module: Module3D = Module3D("HR SR04 Sonar Module", [east_facing_hcsr04])
+        scad_program.append(module)
+        scad_program.if3d.name_match_append("sonar", module, ["HC-SR04 Sonar"])
+        # hcsr04: HCSR04 = self
+        self.module: Module3D = module
+
+
 # HR2BaseAssembly:
 class HR2BaseAssembly:
     """Represents the HR2 base with motor holders and spacers."""
@@ -1038,9 +1095,9 @@ class MasterBoard:
         wheel_well_angle: float = asin(half_wheel_well_dy / radius)
 
         # By trial and error, the Pi connector *cutout_dx* (=|GE|) = 60mm and the *cut_out_y*
-        # Fy (=|FZ|) is 33mm.  The same basic math yields the *cut_out_angle*
+        # Fy (=|FZ|) is 32.5mm.  The same basic math yields the *cut_out_angle*
         # (Dx=R*cos(@) => @=acos(Dx/R) ):
-        cut_out_y: float = 33.0
+        cut_out_y: float = 32.5
         cut_out_dx: float = 60.0
         half_cut_out_dx: float = cut_out_dx / 2.0
         cut_out_angle: float = acos(half_cut_out_dx / radius)
@@ -1263,10 +1320,64 @@ class MasterBoard:
                                                   P3D(0.0, 0.0, pcb_bottom_z))
         colored_pcb: Color = Color("Green Color", translated_pcb, "SpringGreen")
 
+        # Create some HC-SR04 sonars:
+        hcsr04: HCSR04 = HCSR04(scad_program)
+        srf02: SRF02 = SRF02(scad_program)
+        hcsr04_use_module: UseModule3D = hcsr04.module.use_module_get()
+        srf02_use_module: UseModule3D = srf02.module.use_module_get()
+        sonars: List[Scad3D] = []
+        degrees2radians: float = pi / 180.0
+        sonar_poses: List[Tuple[float, float, bool, bool]] = [
+            # (*rim_angle*, *beam_angle* (-1 => same), *on_bottom*, *is_srf02*)
+            ((90.0 - 2.4 * 22.5) * degrees2radians,
+             (90.0 - 40.0) * degrees2radians, False, True),
+            ((90.0 - 1.6 * 22.5) * degrees2radians,
+             (90.0 - 10.0) * degrees2radians, False, True),
+            # No rear center sonar:
+            ((90.0 + 1.6 * 22.5) * degrees2radians,
+             (90.0 + 10.0) * degrees2radians, False, True),
+            ((90.0 + 2.4 * 22.5) * degrees2radians,
+             (90.0 + 40.0) * degrees2radians, False, True),
+            # Front Sonars:
+            ((270.0 - 2 * 22.5) * degrees2radians, -1.0, True, False),
+            ((270.0 - 1 * 22.5) * degrees2radians, -1.0, False, False),
+            ((270.0) * degrees2radians, -1.0, True, False),
+            ((270.0 + 1 * 22.5) * degrees2radians, -1.0, False, False),
+            ((270.0 + 2 * 22.5) * degrees2radians, -1.0, True, False)]
+        x_axis: P3D = P3D(1.0, 0.0, 0.0)
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        sonars_radius: float = 70.0
+        rim_angle: float
+        beam_angle: float
+        on_bottom: bool
+        is_srf02: bool
+        for rim_angle, beam_angle, on_bottom, is_srf02 in sonar_poses:
+            if beam_angle < 0.0:
+                beam_angle = rim_angle
+            angle_text: str = f"{rim_angle * 180.0 / pi}deg:{on_bottom}"
+            sonar_z: float = pcb_top_z
+            sonar: Scad3D = srf02_use_module if is_srf02 else hcsr04_use_module
+
+            # Deal with *on_bottom* first:
+            if on_bottom:
+                sonar_z = pcb_bottom_z
+                sonar = Rotate3D(f"Bottom Sonar ({angle_text})", sonar, degrees180, x_axis)
+
+            # Now rotate the *sonar* by *beam_angle* along the *z_axis*:
+            sonar = Rotate3D(f"Rotated Sonar ({angle_text})", sonar, beam_angle, z_axis)
+
+            # Now position *sonar* to *sonar_position* along the rim and tack onto *sonars* list:
+            sonar_x: float = sonars_radius * cos(rim_angle)
+            sonar_y: float = sonars_radius * sin(rim_angle)
+            sonar_position: P3D = P3D(sonar_x, sonar_y, sonar_z)
+            sonar = Translate3D(f"Translated Sonar ({angle_text})", sonar, sonar_position)
+            sonars.append(sonar)
+
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
         module: Module3D = Module3D("Master Board Module",
                                     (encoder_receptacles_use_modules +
                                      nucleo144_spacers +
+                                     sonars +
                                      [colored_pcb,
                                       receptacle_2x20.module.use_module_get(),
                                       north_morpho_connector.module.use_module_get(),
@@ -3864,6 +3975,53 @@ class Spacer:
         colored_washer: Color = Color(f"{washer_color} {name}", translated_washer, washer_color)
         spacer_stack.append(colored_washer)
         return start_z + washer_height
+
+
+# SRF02:
+class SRF02:
+    """Represents an Devantech SRF02 sonar module."""
+
+    # HCSR04.__init__():
+    def __init__(self, scad_program: ScadProgram) -> None:
+        """Initialize anHCSR04."""
+        # Create the PCB:
+        pcb_dy: float = 24.0
+        pcb_dx: float = 22.0
+        pcb_dz: float = 1.20
+        pcb_square: Square = Square("SRF02 PCB", pcb_dx, pcb_dy, center=P2D(0.0, pcb_dy / 2.0))
+        extruded_pcb: LinearExtrude = LinearExtrude("Extruded SRF02 PCB", pcb_square, pcb_dz)
+        colored_pcb: Color = Color("Colored HRCSR04", extruded_pcb, "Green")
+
+        # Create the sonar transducer:
+        transducer_diameter: float = 16.00
+        transducer_dz: float = 12.00  # Pure guess, not in spec. sheet
+        transducer_start_z: float = pcb_dz
+        transducer_end_z: float = transducer_start_z + transducer_dz
+        transducer_start: P3D = P3D(0.0, pcb_dy/2, transducer_start_z)
+        transducer_end: P3D = P3D(0.0, pcb_dy/2, transducer_end_z)
+        transducer: Cylinder = Cylinder("Left Sonar Transducer",
+                                        transducer_diameter, transducer_start, transducer_end, 16)
+        colored_transducer: Color = Color("Colored Sonar Transducer", transducer, "Gray")
+
+        srf02_union: Union3D = Union3D("SRF02 Union", [
+            colored_pcb,
+            colored_transducer
+        ])
+
+        # Now tilt the sonar up followed by rotating it to vertical:
+        x_axis: P3D = P3D(1.0, 0.0, 0.0)
+        degrees90: float = pi / 2.0
+        vertical_srf02: Rotate3D = Rotate3D("Veritcal SRF02", srf02_union, degrees90, x_axis)
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        east_facing_srf02: Rotate3D = Rotate3D("East Facing SRF02",
+                                               vertical_srf02, degrees90, z_axis)
+
+        # Create *module*, append to *scad_program*, and save into *srf02* (i.e. *self*):
+        module: Module3D = Module3D("SRF02 Sonar Module", [east_facing_srf02])
+        scad_program.append(module)
+        scad_program.if3d.name_match_append("sonar", module, ["SRF02 Sonar"])
+        # srf02: SRF02 = self
+        self.module: Module3D = module
 
 
 def main() -> int:  # pragma: no cover

@@ -2206,7 +2206,7 @@ class Square(SimplePolygon):
             center_x: float = center.x
             center_y: float = center.y
             square_indent: str = indent
-            if center_x != 0.0 and center_y != 0.0:
+            if center_x != 0.0 or center_y != 0.0:
                 scad_lines.append(f"{square_indent}translate([{float_format(center.x)}, "
                                   f"{float_format(center_y)}])")
                 square_indent += " "

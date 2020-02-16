@@ -268,6 +268,12 @@ systems and Linux distributions you are on your own.
   * `romi_base`:
     Romi Base Polygon
 
+  * `sonar`:
+    HC-SR04 Sonar
+
+  * `sonar`:
+    SRF02 Sonar
+
   * `wheel_assembly`:
     Wheel Assembly
 
