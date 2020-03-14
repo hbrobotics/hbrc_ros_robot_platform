@@ -235,6 +235,15 @@ systems and Linux distributions you are on your own.
   * `encoder_pcb`:
     Encoder PCB
 
+  * `expansion_flat`:
+    Flat Romi Expansion Plate
+
+  * `expansion_plate`:
+    Romi Expansion Plate
+
+  * `hr2_arm_assembly`:
+    Romi Base with Arm
+
   * `hr2_base_assembly`:
     HR2 Base Assembly
 
@@ -265,14 +274,20 @@ systems and Linux distributions you are on your own.
   * `other_pi`:
     OtherPI SBC
 
+  * `other_pi_pcb`:
+    Other Pi PCB
+
+  * `raspi3`:
+    Raspberry Pi 3B+
+
+  * `raspi3_pcb`:
+    Raspberry Pi 3B+ PCB
+
   * `romi_base`:
     Romi Base Polygon
 
   * `sonar`:
     HC-SR04 Sonar
-
-  * `sonar`:
-    SRF02 Sonar
 
   * `wheel_assembly`:
     Wheel Assembly

@@ -261,6 +261,140 @@ class P2D:
         return P2D(-p2d.x, p2d.y)
 
 
+# KicadPCB:
+class KicadPcb:
+    """Represents a KiCAD PCB."""
+
+    def __init__(self, file_name: str, offset: P2D) -> None:
+        """Bind to a .kicad_pcb file."""
+        # Read in *file_name* and split into *lines*:
+        kicad_pcb_file: IO[Any]
+        lines: List[str]
+        with open(file_name, "r") as kicad_pcb_file:
+            kicad_pcb_text: str = kicad_pcb_file.read()
+            lines = kicad_pcb_text.split('\n')
+            print(f"KicadPcb.__init__('{file_name}') read in {len(lines)} lines")
+
+        # Save values into *kicad_pcb* (i.e. *self*):
+        # kicad_pcb: KicadPcb = self
+        self.cut_lines_insert_index: int = -1
+        self.file_name: str = file_name
+        self.lines: List[str] = lines
+        self.offset: P2D = offset
+
+    def edge_cut_append(self, point1: P2D, point2: P2D) -> None:
+        """Append an edge cut."""
+        # Grab some values from self:
+        kicad_pcb: KicadPcb = self
+        cut_lines_insert_index: int = kicad_pcb.cut_lines_insert_index
+        lines: List[str] = kicad_pcb.lines
+        offset: P2D = kicad_pcb.offset
+
+        # Make sure we know where to insert cut lines:
+        if cut_lines_insert_index < 0:
+            line: str
+            index: int
+            net_class_default_found: bool = False
+            for index, line in enumerate(lines):
+                # print(f"[{index}]:'{line}'")
+                if line.startswith("  (net_class Default"):
+                    net_class_default_found = True
+                if net_class_default_found and line.startswith("  )"):
+                    cut_lines_insert_index = index + 2
+                    kicad_pcb.cut_lines_insert_index = cut_lines_insert_index
+
+        # Create the *cut_line_text* into *lines*:
+        cut_line_text: str = ("  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
+                              "(layer Edge.Cuts) (width 0.05))").format(offset.x + point1.x,
+                                                                        offset.y - point1.y,
+                                                                        offset.x + point2.x,
+                                                                        offset.y - point2.y)
+        lines.insert(cut_lines_insert_index, cut_line_text)
+
+    def edge_cuts_remove(self) -> None:
+        """Remove the edge cuts."""
+        # Grab some values from *kicad_pcb* (i.e. *self*):
+        kicad_pcb: KicadPcb = self
+        lines: List[str] = kicad_pcb.lines
+        new_lines: List[str] = []
+        line: str
+        for line in lines:
+            if line.find("(layer Edge.Cuts)") < 0:
+                # Not an edge cut line, copy it over:
+                new_lines.append(line)
+
+        # Save *new_lines* back into *kicad*:
+        kicad_pcb.lines = new_lines
+
+    def mounting_holes_update(self, holes_table: Dict[str, Tuple[P2D, float]]) -> None:
+        """Update the mounting hole position."""
+        # Grab some values from *kicad_pcb*:
+        kicad_pcb: KicadPcb = self
+        lines: List[str] = kicad_pcb.lines
+        offset: P2D = kicad_pcb.offset
+
+        line_number: int
+        line: str
+        at_line_number: int
+        label_line_number: int
+        label_prefix: str = "    (fp_text reference "
+        label_prefix_size: int = len(label_prefix)
+
+        in_mounting_hole: bool = False
+        for line_index, line in enumerate(lines):
+            if line.startswith("  (module MountingHole:MountingHole_"):
+                # Beginning of mounting hole:
+                in_mounting_hole = True
+                at_line_index = -1
+                label_line_index = -1
+            elif line.startswith("  )") and in_mounting_hole:
+                # We have reached the end:
+                if at_line_index < 0 or label_line_index < 0:
+                    print(f"Incomplete hole: at:{at_line_index} "
+                          f"label:{label_line_index}")  # pragma: no cover
+                else:
+                    # Grab the hole label from label_line:
+                    label_line: str = lines[label_line_index]
+                    at_index: int = label_line.find(" (at ")
+                    label: str = label_line[label_prefix_size:at_index]
+                    # print(f"Hole Label: {label}")
+
+                    # Look up the *hole* from *holes_table* and stuff location back into *lines*
+                    # at *at_index*:
+                    if label in holes_table:
+                        hole: P2D
+                        diameter: float
+                        hole, diameter = holes_table[label]
+                        at_text: str = "    (at {0:.6f} {1:0.6f})".format(offset.x + hole.x,
+                                                                          offset.y - hole.y)
+                        lines[at_line_index] = at_text
+                    else:
+                        print(f"No hole named '{label}'")  # pragma: no cover
+
+                # Reset all of the values:
+                in_mounting_hole = False
+                at_line_index = -1
+                label_line_index = -1
+            elif in_mounting_hole:
+                if line.startswith("    (at "):
+                    at_line_index = line_index
+                elif line.startswith("    (fp_text reference "):
+                    label_line_index = line_index
+
+    def save(self):
+        """Save contents back file."""
+        # Grab some values from *kicad_pcb* (i.e. *self*):
+        kicad_pcb: KicadPcb = self
+        file_name: str = kicad_pcb.file_name
+        lines: List[str] = kicad_pcb.lines
+
+        # Write *kicad_lines* out to *kicad_file_name*:
+        kicad_pcb_text: str = '\n'.join(lines) + '\n'
+        kicad_pcb_file: IO[Any]
+        with open(file_name, "w") as kicad_pcb_file:
+            kicad_pcb_file.write(kicad_pcb_text)
+
+
 # Scad:
 class Scad:
     """Base class that an OpenSCAD object, transform, etc.
@@ -460,7 +594,7 @@ class Scad:
             *csv_file* (*IO*[*Any*]): An open file to write to:
 
         """
-        # Outut a header first:
+        # Output a header first:
         float_format: Callable[[float], str] = Scad.float_format
         csv_file.write("Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count\n")
         key: Tuple[Any, ...]
@@ -1454,6 +1588,19 @@ class SimplePolygon(Scad2D):
         y_center: float = (y_maximum + y_minimum) / 2.0
         key: Tuple[Any, ...] = ("SimplePolygon", name, x_center, y_center, dx, dy, 0.0)
         return key
+
+    # SimplePolygon.kicad_edge_cuts():
+    def kicad_edge_cuts_append(self, kicad_pcb: "KicadPcb") -> None:
+        """Insert a simple Polygon into a KiCAD PCB at an offset."""
+        # Grab some values from *simple_polygon*:
+        simple_polygon: SimplePolygon = self
+        points: List[P2D] = simple_polygon.points
+        points_size: int = len(points)
+        point_index: int
+        point1: P2D
+        for index, point1 in enumerate(points):
+            point2: P2D = points[(index + 1) % points_size]
+            kicad_pcb.edge_cut_append(point1, point2)
 
     # SimplePolygon.lock():
     def lock(self) -> None:

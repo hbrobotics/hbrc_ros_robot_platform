@@ -37,8 +37,13 @@ ALL_COVER_FILES :=				\
 # These are the various `.dxf` directories and files:
 DXF_DIRECTORY := dxf
 DXF_FILES :=					\
-    $(DXF_DIRECTORY)/romi_base.dxf		\
-    $(DXF_DIRECTORY)/expansion.dxf
+    $(DXF_DIRECTORY)/encoder_pcb.dxf		\
+    $(DXF_DIRECTORY)/expansion_flat.dxf		\
+    $(DXF_DIRECTORY)/master_pcb.dxf		\
+    $(DXF_DIRECTORY)/nucleo144_pcb.dxf		\
+    $(DXF_DIRECTORY)/other_pi_pcb.dxf		\
+    $(DXF_DIRECTORY)/raspi3_pcb.dxf		\
+    $(DXF_DIRECTORY)/romi_base.dxf
 
 # These are the various `.png` file definitions and flags:
 PNG_CLEAN := exiftool -all=
@@ -133,6 +138,21 @@ $(PNG_DIRECTORY)/thumb_hr2_wheel_assembly.png: scad_models.scad
 $(PNG_DIRECTORY)/thumb_hr2_nucleo_assembly.png: scad_models.scad
 	openscad scad_models.scad -D 'name="hr2_nucleo_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
 	$(PNG_CLEAN) $@
+
+$(DXF_DIRECTORY)/encoder_pcb.dxf: scad_models.scad
+	openscad -o $@ -mm -D 'name="encoder_pcb"' scad_models.scad
+$(DXF_DIRECTORY)/expansion_flat.dxf: scad_models.scad
+	openscad -o $@ -mm -D 'name="expansion_flat"' scad_models.scad
+$(DXF_DIRECTORY)/master_pcb.dxf: scad_models.scad
+	openscad -o $@ -mm -D 'name="master_pcb"' scad_models.scad
+$(DXF_DIRECTORY)/nucleo144_pcb.dxf: scad_models.scad
+	openscad -o $@ -mm -D 'name="nucleo144_pcb"' scad_models.scad
+$(DXF_DIRECTORY)/other_pi_pcb.dxf: scad_models.scad
+	openscad -o $@ -mm -D 'name="other_pi_pcb"' scad_models.scad
+$(DXF_DIRECTORY)/raspi3_pcb.dxf: scad_models.scad
+	openscad -o $@ -mm -D 'name="raspi3_pcb"' scad_models.scad
+$(DXF_DIRECTORY)/romi_base.dxf: scad_models.scad
+	openscad -o $@ -mm -D 'name="romi_base"' scad_models.scad
 
 # This runs the `scad_models` programe to generate `scad_models.scad`:
 scad_models.scad: ${INSTALLED_SCAD_MODELS_PY_FILES}
