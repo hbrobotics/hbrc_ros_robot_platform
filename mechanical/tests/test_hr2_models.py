@@ -23,9 +23,9 @@
 # SOFTWARE.
 
 from math import cos, pi, sin
-from scad_models.scad_models import (BaseDXF, HR2Robot, OtherPi,
-                                     RaspberryPi3, RectangularConnector,
-                                     RomiExpansionPlate, RomiMotor, Spacer)
+from scad_models.hr2_models import (BaseDXF, HR2Robot, OtherPi,
+                                    RaspberryPi3, RectangularConnector,
+                                    RomiExpansionPlate, RomiMotor, Spacer)
 from scad_models.scad import (Color, CornerCube, Difference3D, LinearExtrude, Module3D,
                               P2D, P3D, Polygon, Scad3D, ScadProgram, Square)
 from typing import Any, IO, List, Tuple

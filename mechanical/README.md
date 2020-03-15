@@ -214,18 +214,17 @@ systems and Linux distributions you are on your own.
 
             sudo apt install openscad imagemagik qcad libimage-exiftool-perl
 
-* Build the `romi_base.scad` files:
+* Build the `hr2_models.scad` file:
 
             make
-            scad_models
 
 * Run `openscad` and run "[Design]=>[Preview]":
 
-  There is one `scad_models.scad` file from which all of the various
+  There is one `hr2_models.scad` file from which all of the various
   models are derived.  To select a particular model to show use the
   OpenSCAD `-D` option as follows:
 
-            openscad scad_models.scad -D 'name="NAME"'
+            openscad hr2_models.scad -D 'name="NAME"'
 
   where NAME is one of:  <!-- NAME list starts here. -->
 
@@ -419,7 +418,7 @@ The `scad_models` directory currently contains:
 * `scad.py`: This is a library of Python code that is used to generate
   an OpenSCAD `.scad` file.
 
-* `scad_models.py`: This is the Python code that builds all of the
+* `hr2_models.py`: This is the Python code that builds all of the
   OpensCAD models using the `scad.py` liberary.
 
 * `__init__.py`: This is the file that is required by Pythong to indicated
@@ -430,11 +429,11 @@ Documentation.
 
 ### `tests`
 
-The `tests` directory contains the Python Unit tests:
+The `tests` directory currently contains the Python Unit tests:
 
 * `test_scad.py`: The unit tests for the `scad.py` library.
 
-* `test_scad_models.py`: A unit tests for the `scad_models.py` code.
+* `test_hr2_models.py`: A unit tests for the `scad_models.py` code.
 
 ## Miscellaneious:
 
@@ -456,8 +455,8 @@ There a a bunch of miscellaneous files in the `mechanical` directory:
 
   * Running the Python files through `mypy`, `flake8`, and `pydocstyle`.
   * Installing the `scad_modules` package in the Python virtual environment.
-  * Runs the `scad_models` program from the Python virtual environment to
-    generate `scad_models.scad`.
+  * Runs the `hr2_models.py` program from the Python virtual environment to
+    generate `hr2_models.scad`.
   * Generates various `.dxf` and `.png` files.
 
 * `test`: Runs the Python unit test suites and outputs any code lines

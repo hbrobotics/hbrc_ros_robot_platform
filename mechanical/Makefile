@@ -7,7 +7,7 @@ VIRTUAL_ENV_SCAD_MODELS_DIRECTORY := $(VIRTUAL_ENV)/lib/$(PYTHON_VERSION)/site-p
 SCAD_MODELS_BASE_PY_FILES :=			\
     __init__.py					\
     scad.py					\
-    scad_models.py
+    hr2_models.py
 SCAD_MODELS_DIRECTORY := scad_models
 SCAD_MODELS_PY_FILES := ${SCAD_MODELS_BASE_PY_FILES:%=$(SCAD_MODELS_DIRECTORY)/%}
 INSTALLED_SCAD_MODELS_PY_FILES := 						\
@@ -18,7 +18,7 @@ SCAD_MODELS_COVER_FILES := ${SCAD_MODELS_PY_FILES:%=%,cover}
 # The `tests` directory is where all of the Python unit tests live:
 TESTS_DIRECTORY := tests
 TESTS_PY_FILES :=				\
-    $(TESTS_DIRECTORY)/test_scad_models.py	\
+    $(TESTS_DIRECTORY)/test_hr2_models.py	\
     $(TESTS_DIRECTORY)/test_scad.py
 TESTS_PYL_FILES := ${TESTS_PY_FILES:%.py=%.pyl}
 TESTS_COVER_FILES := ${TESTS_PY_FILES:%=%,cover}
@@ -65,7 +65,7 @@ PNG_FILES :=						\
 # These are the generated `.scad` files that should be removed for the `clean` target:
 SCAD_FILES :=					\
     rectangular_connector.scad			\
-    scad_models.scad
+    hr2_models.scad
 
 # These are the directories that are entirely removed for the `clean` target:
 CLEAN_DIRECTORIES :=				\
@@ -95,68 +95,68 @@ ${INSTALLED_SCAD_MODELS_PY_FILES}: ${SCAD_MODELS_PY_FILES}
 	pip install .
 
 # Individual targets for generating `.png` files:
-$(PNG_DIRECTORY)/expansion.png: scad_models.scad
-	openscad scad_models.scad -D 'name="expansion"' $(PNG_TOP_FLAGS) -o $@
+$(PNG_DIRECTORY)/expansion.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="expansion"' $(PNG_TOP_FLAGS) -o $@
 	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/romi_base.png: scad_models.scad
-	openscad scad_models.scad -D 'name="romi_base"' $(PNG_TOP_FLAGS) -o $@
+$(PNG_DIRECTORY)/romi_base.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="romi_base"' $(PNG_TOP_FLAGS) -o $@
 	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/hr2_base_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_base_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+$(PNG_DIRECTORY)/hr2_base_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_base_assembly"' $(PNG_ANGLE_FLAGS) -o $@
 	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/hr2_pi_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_pi_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+$(PNG_DIRECTORY)/hr2_pi_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_pi_assembly"' $(PNG_ANGLE_FLAGS) -o $@
 	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/hr2_master_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_master_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+$(PNG_DIRECTORY)/hr2_master_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_master_assembly"' $(PNG_ANGLE_FLAGS) -o $@
 	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/hr2_wheel_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_wheel_assembly"' $(PNG_ANGLE_FLAGS) -o $@
+$(PNG_DIRECTORY)/hr2_wheel_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_wheel_assembly"' $(PNG_ANGLE_FLAGS) -o $@
 	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/hr2_nucleo_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_nucleo_assembly"' $(PNG_ANGLE_FLAGS) -o $@
-	$(PNG_CLEAN) $@
-
-$(PNG_DIRECTORY)/thumb_expansion.png: scad_models.scad
-	openscad scad_models.scad -D 'name="expansion"' $(PNG_TOP_THUMB_FLAGS) -o $@
-	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/thumb_romi_base.png: scad_models.scad
-	openscad scad_models.scad -D 'name="romi_base"' $(PNG_TOP_THUMB_FLAGS) -o $@
-	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/thumb_hr2_base_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_base_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
-	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/thumb_hr2_pi_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_pi_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
-	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/thumb_hr2_master_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_master_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
-	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/thumb_hr2_wheel_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_wheel_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
-	$(PNG_CLEAN) $@
-$(PNG_DIRECTORY)/thumb_hr2_nucleo_assembly.png: scad_models.scad
-	openscad scad_models.scad -D 'name="hr2_nucleo_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+$(PNG_DIRECTORY)/hr2_nucleo_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_nucleo_assembly"' $(PNG_ANGLE_FLAGS) -o $@
 	$(PNG_CLEAN) $@
 
-$(DXF_DIRECTORY)/encoder_pcb.dxf: scad_models.scad
-	openscad -o $@ -mm -D 'name="encoder_pcb"' scad_models.scad
-$(DXF_DIRECTORY)/expansion_flat.dxf: scad_models.scad
-	openscad -o $@ -mm -D 'name="expansion_flat"' scad_models.scad
-$(DXF_DIRECTORY)/master_pcb.dxf: scad_models.scad
-	openscad -o $@ -mm -D 'name="master_pcb"' scad_models.scad
-$(DXF_DIRECTORY)/nucleo144_pcb.dxf: scad_models.scad
-	openscad -o $@ -mm -D 'name="nucleo144_pcb"' scad_models.scad
-$(DXF_DIRECTORY)/other_pi_pcb.dxf: scad_models.scad
-	openscad -o $@ -mm -D 'name="other_pi_pcb"' scad_models.scad
-$(DXF_DIRECTORY)/raspi3_pcb.dxf: scad_models.scad
-	openscad -o $@ -mm -D 'name="raspi3_pcb"' scad_models.scad
-$(DXF_DIRECTORY)/romi_base.dxf: scad_models.scad
-	openscad -o $@ -mm -D 'name="romi_base"' scad_models.scad
+$(PNG_DIRECTORY)/thumb_expansion.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="expansion"' $(PNG_TOP_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
+$(PNG_DIRECTORY)/thumb_romi_base.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="romi_base"' $(PNG_TOP_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
+$(PNG_DIRECTORY)/thumb_hr2_base_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_base_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
+$(PNG_DIRECTORY)/thumb_hr2_pi_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_pi_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
+$(PNG_DIRECTORY)/thumb_hr2_master_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_master_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
+$(PNG_DIRECTORY)/thumb_hr2_wheel_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_wheel_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
+$(PNG_DIRECTORY)/thumb_hr2_nucleo_assembly.png: hr2_models.scad
+	openscad hr2_models.scad -D 'name="hr2_nucleo_assembly"' $(PNG_ANGLE_THUMB_FLAGS) -o $@
+	$(PNG_CLEAN) $@
 
-# This runs the `scad_models` programe to generate `scad_models.scad`:
-scad_models.scad: ${INSTALLED_SCAD_MODELS_PY_FILES}
-	scad_models
+$(DXF_DIRECTORY)/encoder_pcb.dxf: hr2_models.scad
+	openscad -o $@ -mm -D 'name="encoder_pcb"' hr2_models.scad
+$(DXF_DIRECTORY)/expansion_flat.dxf: hr2_models.scad
+	openscad -o $@ -mm -D 'name="expansion_flat"' hr2_models.scad
+$(DXF_DIRECTORY)/master_pcb.dxf: hr2_models.scad
+	openscad -o $@ -mm -D 'name="master_pcb"' hr2_models.scad
+$(DXF_DIRECTORY)/nucleo144_pcb.dxf: hr2_models.scad
+	openscad -o $@ -mm -D 'name="nucleo144_pcb"' hr2_models.scad
+$(DXF_DIRECTORY)/other_pi_pcb.dxf: hr2_models.scad
+	openscad -o $@ -mm -D 'name="other_pi_pcb"' hr2_models.scad
+$(DXF_DIRECTORY)/raspi3_pcb.dxf: hr2_models.scad
+	openscad -o $@ -mm -D 'name="raspi3_pcb"' hr2_models.scad
+$(DXF_DIRECTORY)/romi_base.dxf: hr2_models.scad
+	openscad -o $@ -mm -D 'name="romi_base"' hr2_models.scad
+
+# This runs the `hr2_models.py` program to generate `hr2_models.scad`:
+hr2_models.scad: ${INSTALLED_SCAD_MODELS_PY_FILES}
+	python $(SCAD_MODELS_DIRECTORY)/hr2_models.py
 
 # Construct the `README.html` for local reading:
 README.html: README.md

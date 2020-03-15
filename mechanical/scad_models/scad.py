@@ -273,7 +273,7 @@ class KicadPcb:
         with open(file_name, "r") as kicad_pcb_file:
             kicad_pcb_text: str = kicad_pcb_file.read()
             lines = kicad_pcb_text.split('\n')
-            print(f"KicadPcb.__init__('{file_name}') read in {len(lines)} lines")
+            # print(f"KicadPcb.__init__('{file_name}') read in {len(lines)} lines")
 
         # Save values into *kicad_pcb* (i.e. *self*):
         # kicad_pcb: KicadPcb = self
