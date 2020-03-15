@@ -666,13 +666,17 @@ class HR2NucleoAssembly:
 
     # HR2NucleoAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, hr2_wheel_assembly: "HR2WheelAssembly",
-                 nucleo144: "Nucleo144") -> None:
+                 stlink: "STLink", nucleo144: "Nucleo144", master_board_z: float) -> None:
         """Initialize the HR2NucleoAssembly."""
         # Create *module*, append to *scad_program* and save into *hr2_nucleo_assembly*
         # (i.e. *self*):
+        stlink_use_module: UseModule3D = stlink.module.use_module_get()
+        translated_stlink: Translate3D = Translate3D("Translated STLink", stlink_use_module,
+                                                     P3D(0.0, -48.0, master_board_z - 8.00))
         module: Module3D = Module3D("HR2 Nucleo Assembly", [
             hr2_wheel_assembly.module.use_module_get(),
-            nucleo144.module.use_module_get()
+            nucleo144.module.use_module_get(),
+            translated_stlink,
         ])
         scad_program.append(module)
         # hr2_master_assembly: HR2MasterAssembly = self
@@ -777,9 +781,12 @@ class HR2Robot:
         hr2_wheel_assembly: HR2WheelAssembly = HR2WheelAssembly(scad_program,
                                                                 hr2_master_assembly, base_dxf)
 
+        stlink: STLink = STLink(scad_program)
         hr2_nucleo_assembly: HR2NucleoAssembly = HR2NucleoAssembly(scad_program,
                                                                    hr2_wheel_assembly,
-                                                                   nucleo144)
+                                                                   stlink,
+                                                                   nucleo144,
+                                                                   master_board_z)
         hr2_arm_assembly: HR2ArmAssembly = HR2ArmAssembly(scad_program, hr2_nucleo_assembly,
                                                           romi_expansion_plate, arm_z)
         hr2_arm_assembly = hr2_arm_assembly
@@ -842,7 +849,7 @@ class Nucleo144:
             return mil * 0.0254
 
         # Misc. constants:
-        morpho_pin_columns: int = 36
+        morpho_pin_columns: int = 35
         morpho_pin_rows: int = 2
         degrees90: float = pi / 2.0
         mount_hole_diameter: float = 3.20
@@ -919,29 +926,8 @@ class Nucleo144:
         # There are 2 ground pin pairs at the bottom of each morpho connector:
         ground_south_y: float = cn12_morpho_pin1_y - float(cn12_morpho_y_pins) * mil(100)
 
-        # morpho_pins_dy: float = float(morpho_pin_columns - 1) * 2.54
-        # ground_pins_dy: float = 2.54
-        # pcb_dy: float = 12.70 + ground_pins_dy + morpho_pins_dy + 6.24  # == 110.38
-        # self.pcb_dy: float = pcb_dy
-        # ethernet_south_y: float = -pcb_dy / 2.0 - 2.50
-        # ethernet_north_y: float = -pcb_dy / 2.0 + 13.00
-        # ground_south_y: float = -pcb_dy / 2.0 + 12.70
-        # morpho_south_y: float = ground_south_y + 2.54
-        # morpho_center_y: float = morpho_south_y + morpho_pins_dy / 2.0
-        # zio9_10_pin_south_y: float = ground_south_y + 20.32
-        # zio7_pin_south_y: float = zio9_10_pin_south_y + (17 - 1) * 2.54 + 1.5 * 2.54
-        # zio8_pin_south_y: float = zio9_10_pin_south_y + (17 - 1) * 2.54
-        # zio7_center_y: float = zio7_pin_south_y + ((10 - 1) * 2.54) / 2.0
-        # zio8_center_y: float = zio8_pin_south_y + ((8 - 1) * 2.54) / 2.0
-        # zio9_center_y: float = zio9_10_pin_south_y + ((15 - 1) * 2.54) / 2.0
-        # zio10_center_y: float = zio9_10_pin_south_y + ((17 - 1) * 2.54) / 2.0
-        # mount_hole_south_y: float = ground_south_y + 16.51
-        # mount_hole_north_east_y: float = pcb_dy / 2.0 - 3.70
-        # mount_hole_north_west_y: float = mount_hole_north_east_y + 1.27  # Guess! Not in Mech dwg!
-        # mount_hole_center_y: float = mount_hole_north_east_y - 50.80
-
         # Z Cordinates:
-        pcb_dz: float = 1.00
+        pcb_dz: float = 1.60  # Calipers
         ethernet_top_z: float = pcb_dz + 6.50
         ethernet_bottom_z: float = -2.50
         self.ethernet_bottom_z: float = ethernet_bottom_z
@@ -1648,18 +1634,6 @@ class OtherPi(PiBoard):
         # Compute *other_pi_pcb_polygon* from *other_pi* (i.e. *self*):
         other_pi: OtherPi = self
         other_pi_pcb_polygon: Polygon = other_pi.pcb_polygon_get()
-        other_pi_pcb_polygon_module: Module2D = Module2D("Other Pi PCB", [other_pi_pcb_polygon])
-        scad_program.append(other_pi_pcb_polygon_module)
-        scad_program.if2d.name_match_append("other_pi_pcb", other_pi_pcb_polygon_module,
-                                            ["Other Pi PCB"])
-
-        # No construct *green_other_pi_pcb* from *other_pi_polygon*:
-        pcb_height: float = 0.990
-        other_pi_pcb: LinearExtrude = LinearExtrude("OtherPi PCB", other_pi_pcb_polygon, pcb_height)
-        translated_other_pi_pcb: Translate3D = Translate3D("Translated Other Pi",
-                                                           other_pi_pcb,
-                                                           P3D(0.0, 0.0, -pcb_height))
-        green_other_pi_pcb: Scad3D = Color("Green OtherPi PCB", translated_other_pi_pcb, "Orange")
 
         # Create the Male 2x20 Header:
         male_2x20_header_center: P3D = P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0, 0.0)
@@ -1674,6 +1648,7 @@ class OtherPi(PiBoard):
                                                 pi_header_insulation_height, 2.54,
                                                 pi_header_pin_height,
                                                 center=male_2x20_header_center,
+                                                pcb_polygon=other_pi_pcb_polygon,
                                                 insulation_color="DarkBlue")
 
         connectors: List[Scad3D] = []
@@ -1733,8 +1708,26 @@ class OtherPi(PiBoard):
                                 "Black"))
         self.connectors: List[Scad3D] = connectors
 
+        # Now that we are done with *connectors* we can lock *other_pi_pcb_polygon*:
+        other_pi_pcb_polygon.lock()
+        other_pi_pcb_polygon_module: Module2D = Module2D("Other Pi PCB", [other_pi_pcb_polygon])
+        scad_program.append(other_pi_pcb_polygon_module)
+        scad_program.if2d.name_match_append("other_pi_pcb", other_pi_pcb_polygon_module,
+                                            ["Other Pi PCB"])
+
+        # No construct *green_other_pi_pcb* from *other_pi_polygon*:
+        pcb_height: float = 0.990
+        other_pi_pcb: LinearExtrude = LinearExtrude("OtherPi PCB", other_pi_pcb_polygon, pcb_height)
+        translated_other_pi_pcb: Translate3D = Translate3D("Translated Other Pi",
+                                                           other_pi_pcb,
+                                                           P3D(0.0, 0.0, -pcb_height))
+        orange_other_pi_pcb: Scad3D = Color("Green OtherPi PCB", translated_other_pi_pcb, "Orange")
+
         other_pi_union: Union3D = Union3D("Other Pi Union",
-                                          [green_other_pi_pcb] + connectors)
+                                          [orange_other_pi_pcb] + connectors)
+
+        # Make the origin of the other pi be the same as a regular RaspBerry Pi with regards
+        # to the mounting holes and 2x20 connector:
         translate_other_pi: Scad3D = Translate3D("Translate Other Pi",
                                                  other_pi_union,
                                                  P3D(-(3.5 + 58/2.0),
@@ -1779,8 +1772,7 @@ class OtherPi(PiBoard):
         pcb_polygon: Polygon = Polygon("OtherPi PCB Poylgon", [pcb_outline], lock=False)
         pcb_polygon.extend([upper_left_hole, upper_right_hole, lower_left_hole, lower_right_hole])
 
-        # Lock *pcb_polygon* and return it:
-        pcb_polygon.lock()
+        # Return *pcb_polygon* in an unlocked state:
         return pcb_polygon
 
 
@@ -1794,39 +1786,30 @@ class RaspberryPi3(PiBoard):
         # Create the R
         raspi3b: RaspberryPi3 = self
         raspi3b_pcb_polygon: Polygon = raspi3b.pcb_polygon_get()
-        raspi3b_pcb_polygon_module: Module2D = Module2D("RasPi3B_PCB_Polygon_Module",
-                                                        [raspi3b_pcb_polygon])
-        scad_program.if2d.name_match_append("raspi3_pcb", raspi3b_pcb_polygon_module,
-                                            ["Raspberry Pi 3B+ PCB"])
-        scad_program.append(raspi3b_pcb_polygon_module)
-
-        # Construct the green PCB:
-        raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
-        translated_raspi3b_pcb: Translate3D = Translate3D("Translated Rasp3B PCB",
-                                                          raspi3b_pcb,
-                                                          P3D(0.0, 0.0, -1.0))
-        raspi3b_green_pcb: Color = Color("Green Rasp3B PCB", translated_raspi3b_pcb, "Green")
 
         connectors: List[Scad3D] = []
         mating_length: float = 5.840
         male_pin_connector2x20: RectangularConnector
         male_pin_connector2x20 = RectangularConnector(scad_program,
-                                                      "A", 2, 20, mating_length, 2.54, 2.00)
+                                                      "A", 2, 20, mating_length, 2.54, 2.00,
+                                                      center=P3D((57.90 + 7.10) / 2.0,
+                                                                 52.50, 0.0),
+                                                      pcb_polygon=raspi3b_pcb_polygon)
         male_pin_connector2x2: RectangularConnector
         male_pin_connector2x2 = RectangularConnector(scad_program,
-                                                     "B", 2, 2, mating_length, 2.54, 2.00)
+                                                     "B", 2, 2, mating_length, 2.54, 2.00,
+                                                     center=P3D((58.918 + 64.087) / 2.0,
+                                                                (44.005 + 48.727) / 2.0, 0.0),
+                                                     pcb_polygon=raspi3b_pcb_polygon)
         male_pin_connector2x1: RectangularConnector
         male_pin_connector2x1 = RectangularConnector(scad_program,
-                                                     "C", 2, 1, mating_length, 2.54, 2.00)
-        connectors.append(Translate3D("Translate 2x20 Connector",
-                                      male_pin_connector2x20.module.use_module_get(),
-                                      P3D((57.90 + 7.10) / 2.0, 52.50, 0.0)))
-        connectors.append(Translate3D("Tanslate 2x2 Connector",
-                                      male_pin_connector2x2.module.use_module_get(),
-                                      P3D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0, 0.0)))
-        connectors.append(Translate3D("Translate 2x1 Connector",
-                                      male_pin_connector2x1.module.use_module_get(),
-                                      P3D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0, 0.0)))
+                                                     "C", 2, 1, mating_length, 2.54, 2.00,
+                                                     center=P3D((58.90 + 64.10) / 2.0,
+                                                                (38.91 + 41.11) / 2.0, 0.0),
+                                                     pcb_polygon=raspi3b_pcb_polygon)
+        connectors.append(male_pin_connector2x20.module.use_module_get())
+        connectors.append(male_pin_connector2x2.module.use_module_get())
+        connectors.append(male_pin_connector2x1.module.use_module_get())
         connectors.append(Color("Silver RJ45 Connector",
                                 CornerCube("RJ45 Connecttor",
                                            P3D(65.650, 2.495, 0.000),
@@ -1863,6 +1846,20 @@ class RaspberryPi3(PiBoard):
                                            P3D(5.45, 39.20, 5.50)),
                                 "Black"))
         self.connectors: List[Scad3D] = connectors
+
+        # Construct the green PCB:
+        raspi3b_pcb_polygon.lock()
+        raspi3b_pcb: Scad3D = LinearExtrude("Rasp3B PCB", raspi3b_pcb_polygon, height=1.0)
+        translated_raspi3b_pcb: Translate3D = Translate3D("Translated Rasp3B PCB",
+                                                          raspi3b_pcb,
+                                                          P3D(0.0, 0.0, -1.0))
+        raspi3b_green_pcb: Color = Color("Green Rasp3B PCB", translated_raspi3b_pcb, "Green")
+
+        raspi3b_pcb_polygon_module: Module2D = Module2D("RasPi3B_PCB_Polygon_Module",
+                                                        [raspi3b_pcb_polygon])
+        scad_program.if2d.name_match_append("raspi3_pcb", raspi3b_pcb_polygon_module,
+                                            ["Raspberry Pi 3B+ PCB"])
+        scad_program.append(raspi3b_pcb_polygon_module)
 
         # Construct the final *raspi3b_union:
         raspi3b_union: Union3D = Union3D("Rasp3B Model", connectors + [raspi3b_green_pcb])
@@ -1906,7 +1903,8 @@ class RaspberryPi3(PiBoard):
                                                        lower_left_hole,
                                                        lower_right_hole,
                                                        upper_left_hole,
-                                                       upper_right_hole])
+                                                       upper_right_hole],
+                                       lock=False)
         return pcb_polygon
 
 
@@ -4367,6 +4365,124 @@ class Spacer:
         colored_washer: Color = Color(f"{washer_color} {name}", translated_washer, washer_color)
         spacer_stack.append(colored_washer)
         return start_z + washer_height
+
+
+# STLink:
+class STLink:
+    """Represents the STLink portion of a Nucleo144."""
+
+    def __init__(self, scad_program: ScadProgram) -> None:
+        """Initialize the STLink object."""
+        # The mechanical drawing in the Nucleo144 User Manual does not give very much dimensional
+        # information.  So much of the numbers below are measured with calipers:
+        # stlink: STLink = self
+        nucleo_main_bottom_y: float = 0
+        cn2_pin2_y: float = nucleo_main_bottom_y + 12.70 + 114.30
+        south_y: float = cn2_pin2_y - 18.22
+        north_y1: float = cn2_pin2_y + 2.54 + 3.80  # .1inch spacing between pins
+        north_y2: float = nucleo_main_bottom_y + 133.34
+        assert abs(north_y1 - north_y2) < .001, f"north_y1(={north_y1}) ~= north_y2(={north_y2})"
+        pcb_dy: float = abs(north_y2 - south_y)
+        pcb_dx: float = 70.0
+        pcb_bottom_z: float = 0.0
+        pcb_dz: float = 1.60  # Calipers
+        pcb_top_z: float = pcb_bottom_z + pcb_dz
+
+        # Create the exterior of the  PCB
+        pcb_square: Square = Square("STLink Exterior Outline ",
+                                    pcb_dx, pcb_dy, center=P2D(0.0, 0.0))
+        stlink_polygon: Polygon = Polygon("STLink PCB Polygon", [pcb_square], lock=False)
+
+        # Create all of the connectors:
+        degrees90: float = pi / 2.0
+        cn2_pin1_x = -pcb_dx / 2.0 + 3.25  # Calipers
+        cn2_pin1_y = pcb_dy / 2.0 - 3.80  # Assume .1in spacing  (pin 1 on top)
+        cn6_pin1_x = cn2_pin1_x + 5.00  # Calipers (pretty accurate)
+        cn6_pin1_y = cn2_pin1_y - 2 * 2.54  # Pin 1 on on top
+        jp2_pin1_x = cn2_pin1_x  # Visual inspection
+        jp2_pin1_y = cn6_pin1_y - 5 * 2.54  # Visual inspection (pin 1 on bottom)
+        cn4_pin1_x = cn2_pin1_x + 15.00  # Calipers (pretty accurate)
+        cn4_pin1_y = cn2_pin1_y  # Visual inspection (pin 1 on top)
+        cn5_pin1_x = cn4_pin1_x  # Visual inspecition
+        cn5_pin1_y = jp2_pin1_y  # Visual inspection (pin 1 on bottom)
+        jp1_pin1_x = -(2.54 / 2.0)  # It is pretty clear that it is centered along Y axis
+        jp1_pin1_y = cn2_pin1_y  # Visual inspection
+        cn3_pin1_x = -cn2_pin1_x
+        cn3_pin1_y = cn2_pin1_y  # Visual inspection (pin 1 on top)
+        print(f"jp1_pin1_x={jp1_pin1_x}")
+
+        # Create the *connectors* list:
+        cn2_connector: RectangularConnector
+        cn2_connector = RectangularConnector(scad_program, "CN2 GND Connector",
+                                             1, 2, 2.54, 2.54, 5.84,
+                                             center=P3D(cn2_pin1_x,
+                                                        cn2_pin1_y - 2.54 / 2.54, pcb_top_z),
+                                             pcb_polygon=stlink_polygon,
+                                             vertical_rotate=-degrees90)  # Pin 1 on top
+        cn6_connector: RectangularConnector
+        cn6_connector = RectangularConnector(scad_program, "CN6 SWD Connector",
+                                             1, 6, 2.54, 2.54, 5.84,
+                                             center=P3D(cn6_pin1_x,
+                                                        cn6_pin1_y - (5 * 2.54) / 2.0, pcb_top_z),
+                                             pcb_polygon=stlink_polygon,
+                                             vertical_rotate=-degrees90)  # Pin 1 on top
+        jp2_connector: RectangularConnector
+        jp2_connector = RectangularConnector(scad_program, "JP2 Connector",
+                                             1, 2, 2.54, 2.54, 5.84,
+                                             center=P3D(jp2_pin1_x,
+                                                        jp2_pin1_y + 2.54 / 2.0, pcb_top_z),
+                                             pcb_polygon=stlink_polygon,
+                                             vertical_rotate=degrees90)  # Pin 1 on bottom
+        cn4_connector: RectangularConnector
+        cn4_connector = RectangularConnector(scad_program, "CN4 Nucleo STLink Connector",
+                                             1, 4, 2.54, 2.54, 5.84,
+                                             center=P3D(cn4_pin1_x,
+                                                        cn4_pin1_y - (3 * 2.54) / 2.0, pcb_top_z),
+                                             pcb_polygon=stlink_polygon,
+                                             vertical_rotate=-degrees90)  # Pin 1 on top
+        cn5_connector: RectangularConnector
+        cn5_connector = RectangularConnector(scad_program, "CN5 TX RX Connector",
+                                             1, 2, 2.54, 2.54, 5.84,
+                                             center=P3D(cn5_pin1_x,
+                                                        cn5_pin1_y + 2.54 / 2.0, pcb_top_z),
+                                             pcb_polygon=stlink_polygon,
+                                             vertical_rotate=-degrees90)  # Pin 1 on top
+        jp1_connector: RectangularConnector
+        jp1_connector = RectangularConnector(scad_program, "JP1 Connector",
+                                             1, 2, 2.54, 2.54, 5.84,
+                                             center=P3D(jp1_pin1_x + 2.54 / 2.0,
+                                                        jp1_pin1_y, pcb_top_z),
+                                             pcb_polygon=stlink_polygon)  # Pin1 to left
+
+        cn3_connector: RectangularConnector
+        cn3_connector = RectangularConnector(scad_program, "CN3 GND Connector",
+                                             1, 2, 2.54, 2.54, 5.84,
+                                             center=P3D(cn3_pin1_x,
+                                                        cn3_pin1_y - 2.54 / 2.54, pcb_top_z),
+                                             pcb_polygon=stlink_polygon,
+                                             vertical_rotate=-degrees90)  # Pin 1 on top
+        connectors: List[Scad3D] = [
+            cn2_connector.module.use_module_get(),
+            cn6_connector.module.use_module_get(),
+            jp2_connector.module.use_module_get(),
+            cn4_connector.module.use_module_get(),
+            cn5_connector.module.use_module_get(),
+            jp1_connector.module.use_module_get(),
+            cn3_connector.module.use_module_get(),
+        ]
+        connectors = connectors
+
+        # Lockup *stlink_polygon* make it viewable in OpenScad:
+        stlink_polygon_module: Module2D = Module2D("STLink PCB Module", [stlink_polygon])
+        scad_program.if2d.name_match_append("stlink_pcb", stlink_polygon_module, ["STLInk PCB"])
+        scad_program.append(stlink_polygon_module)
+
+        extruded_pcb: LinearExtrude = LinearExtrude("Extruded STLink PCB", pcb_square, pcb_dz)
+        colored_pcb: Scad3D = Color("While STLink PCB", extruded_pcb, "White")
+        module: Module3D = Module3D("STLink", [colored_pcb] + connectors)
+        scad_program.append(module)
+        scad_program.if3d.name_match_append("stlink", module, ["STLink"])
+        self.module: Module3D = module
 
 
 # SRF02:

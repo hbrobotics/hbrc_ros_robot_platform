@@ -289,6 +289,12 @@ systems and Linux distributions you are on your own.
   * `sonar`:
     HC-SR04 Sonar
 
+  * `stlink`:
+    STLink
+
+  * `stlink_pcb`:
+    STLInk PCB
+
   * `wheel_assembly`:
     Wheel Assembly
 
