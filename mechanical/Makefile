@@ -43,7 +43,8 @@ DXF_FILES :=					\
     $(DXF_DIRECTORY)/nucleo144_pcb.dxf		\
     $(DXF_DIRECTORY)/other_pi_pcb.dxf		\
     $(DXF_DIRECTORY)/raspi3_pcb.dxf		\
-    $(DXF_DIRECTORY)/romi_base.dxf
+    $(DXF_DIRECTORY)/romi_base.dxf		\
+    $(DXF_DIRECTORY)/stlink_pcb.dxf
 
 # These are the various `.png` file definitions and flags:
 PNG_CLEAN := exiftool -all=
@@ -153,6 +154,8 @@ $(DXF_DIRECTORY)/raspi3_pcb.dxf: hr2_models.scad
 	openscad -o $@ -mm -D 'name="raspi3_pcb"' hr2_models.scad
 $(DXF_DIRECTORY)/romi_base.dxf: hr2_models.scad
 	openscad -o $@ -mm -D 'name="romi_base"' hr2_models.scad
+$(DXF_DIRECTORY)/stlink_pcb.dxf: hr2_models.scad
+	openscad -o $@ -mm -D 'name="stlink_pcb"' hr2_models.scad
 
 # This runs the `hr2_models.py` program to generate `hr2_models.scad`:
 hr2_models.scad: ${INSTALLED_SCAD_MODELS_PY_FILES}
