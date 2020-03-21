@@ -4,6 +4,20 @@ The "nominal" base for the HR<Sup>2</Sup> is the
 [Pololu Romi Chasis](https://www.pololu.com/category/202/romi-chassis-and-accessories).
 However, other bases can be considered.
 
+## Software Installation
+
+The needed software is `openscad` and `make`:
+
+        sudo apt install build-essential openscad imagemagik qcad libimage-exiftool-perl
+
+Arm the Python virtual envrionment:
+
+        workon hr2
+
+Run `make`:
+
+        make  # This builds everything stuffs them into the virtual environment
+
 ## Mechanical Requirements:
 
 The section below is a wish list of "requirements" for this HR2.
@@ -181,42 +195,7 @@ The current (tentative) design decisions are:
   cost, availability number of LUT's, tool chain issues, other features, etc.  Brandon
   and Patrick are leading the charge on this front.
 
-## Installation and Use
-
-The instructions below for Ubuntu based distributions.  For all other operating
-systems and Linux distributions you are on your own.
-
-* Download clone the repository:
-
-            # cd .../somwhere  # Something like `~/Downloads` should work
-            git clone https://github.com/hbrobotics/hbrc_ros_robot_platform.git
-
-* Install Python Virtual Environments:
-
-  * Read about
-    [Python Virtual Envionrments](https://realpython.com/python-virtual-environments-a-primer/).
-    The URL is `https://realpython.com/python-virtual-environments-a-primer/`.  The
-    important stuff is at the end of tutoral document.  Make sure you edit your
-    `~/.bashrc` file as directed in the tutoral.
-
-  * Setup a Python Virtual Environment:
-
-            mkvirtualenv -a .../somewhere -p python3.6 hr2
-            workon hr2
-
-* Install the required Python development tools:
-
-            cd romi_model
-            pip install -r develop.rec
-
-
-* Install `openscad`, `convert` (i.e. ImageMagik), and `qcad`:
-
-            sudo apt install openscad imagemagik qcad libimage-exiftool-perl
-
-* Build the `hr2_models.scad` file:
-
-            make
+## Viewing the Models:
 
 * Run `openscad` and run "[Design]=>[Preview]":
 
