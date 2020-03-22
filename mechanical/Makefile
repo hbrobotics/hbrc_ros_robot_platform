@@ -47,7 +47,8 @@ DXF_FILES :=					\
     $(DXF_DIRECTORY)/stlink_pcb.dxf
 
 # These are the various `.png` file definitions and flags:
-PNG_CLEAN := exiftool -all=
+# PNG_CLEAN := # exiftool -all=
+PNG_CLEAN := echo
 PNG_TOP_FLAGS := --imgsize 1024,1024 --projection ortho --camera=0,0,425,0,0,0
 PNG_TOP_THUMB_FLAGS := --imgsize 128,128 --projection ortho --camera=0,0,425,0,0,0
 PNG_ANGLE_FLAGS := --imgsize 1024,1024 --projection perspective --camera=300,-300,300,0,0,0

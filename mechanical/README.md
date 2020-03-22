@@ -6,21 +6,20 @@ However, other bases can be considered.
 
 ## Software Installation
 
-The needed software is `openscad` and `make`:
+Do the following:
 
-        sudo apt install build-essential openscad imagemagik qcad libimage-exiftool-perl
+     cd .../hbrc_ros_robot_platform/mechanical  # Move to the `mechanical` directory.
+     ./install_me.sh  # Run the reentrant installation script; prompts for root password
+     workon hr2  # Enable the `hr2` python virtual environment.
 
-Arm the Python virtual envrionment:
+To build everything and view it:
 
-        workon hr2
-
-Run `make`:
-
-        make  # This builds everything stuffs them into the virtual environment
+     make
+     openscad hr2_models.scad -D 'name="hr2_arm_assembly"'
 
 ## Mechanical Requirements:
 
-The section below is a wish list of "requirements" for this HR2.
+The section below is a wish list of mechanical "requirements" for the HR2.
 Not all of these requirements are expected to be met.
 
 ### Base Requirements
@@ -28,7 +27,7 @@ Not all of these requirements are expected to be met.
 The base requirements are:
 
 * Use a COTS (Commercial Off The Shelf) platform.
-* Differential Drive with relatively large wheel diameter.
+* Differential Drive with a relatively large wheel diameter.
   * A maximum forward speed of 30cm/sec.  10 cm/sec. is acceptable.
 * Over 1000 ticks per revolution odometry.
 * Front and rear ball castors with low rolling friction.
@@ -42,22 +41,18 @@ The base requirements are:
 
 ### Sensor Requirements
 
-The sensor requirements are:
+The sensor goals are:
 
 * Bottom reflectance sensors for edge detection and/or line detection.
   Pololu QTR/QTRX/QTRLX sensors are acceptable.
 * Time of flight edge sensors.  SparcFun SEN-12787 will work.
 * Sonars: SR04's sensors from China are inexpensive (and not of the
-  highest quality).  5 Sonars in front and back with 22.5 degree angular spacing.
-  The sonars can be alternated to mounted on top and on bottom of the
-  same PCB to save space.  There is an mechanical interference issue with
-  the forward
+  highest quality).  5 Sonars in front and back with 22.5 degree angular spacing
+  and 4 in the rear.  The sonars can be alternated to mounted on top and on bottom
+  of the same PCB to save space.  There is an mechanical interference issue with
+  the forward sonar and the arm.
 * Bump Sensor: An inexpensive front and rear bump sensor is desired.
   It can be extremely simple.
-* 3D Camera: The Microsoft Azure Kinect is the nominal one.  It needs
-  to be replaceable as better cameras come along.  USB3 interface is
-  acceptable.  This is heavy sensor, so managing center of mass is
-  very important.
 * E-Stop Button: It is nice to have an E-stop button that is readily
   available, when the robot code goes bad.  The E-stop would disable
   the motor drivers.
@@ -66,16 +61,19 @@ The sensor requirements are:
   YLIDAR X2 ($69), RPLidar A1Mi ($99).
 * Cameras:
   * It would be nice to have an optional forward facing camera
-    for object detection, etc.  The 3D camera might do this as well.
+    for object detection, etc.
   * It would be nice to have an optional upward facing camera
     for fiducial navigation.
+  * It may be possible use one camera and a servo to be able to
+    do both.
 * Microphone: It would be nice to be able to talk to the robot.
   * A directional microphone would be cool so that the robot can
     turn towards a speaker.
+* Speaker: It would be nice if the robot could talk back.
 
 ### Actuator Requirements:
 	
-The actuator requirements are:
+The actuator goals are:
 
 * Gripper Arm: An optional arm with gripper is desirable:
   * The Pololu Romi Arm is acceptable.  It is not required to mount it
@@ -83,7 +81,7 @@ The actuator requirements are:
     center of mass is important.
   * Non-Gripper Arms: It would be fun if there is a "arm" on each side so
     that the robot can wave its "arms".  There are no grippers on these
-    side arms.
+    side arms.  This goal is not looking too good right now.
 
 ### Indicator Requirements:
 
@@ -101,8 +99,6 @@ The indicator requirements are:
   * If placed immediately below the 3D camera it can be programmed
     to be a mouth that can smile,  frown, smirk, etc.
   * If a standard size is selected, it can play video clips. (Woo Hoo!)
-* Speaker: It would be nice if the robot could play sounds.  Stereo
-    is not required.
     
 ### Miscellaneous Requirements:	
 
@@ -133,15 +129,14 @@ The robot skin requirements are:
 * A skin is optional, but very desirable.
 * Humans like anthropomorphic robots because they are more "fun".
 * Having a clear skin so people can see inside is very desirable.
-  * Being able to print a paper inside to put inside the clear skin
-    to "cloth" the robot would be cool.  This is strictly optional.
+  * Being able to print a paper skin would be neath.
 
 ### Non-requirements:
 
 The explicit non-requirements are:
 
 * This platform is not expected to be operated over uneven floors.
-  Going over door strips is *NOT* required.
+  Even going over door strips is *NOT* required.g
 
 ## Decisions Made so far:
 
@@ -175,7 +170,7 @@ The current (tentative) design decisions are:
     will be "future proof".
 
   * The larger Nucleo-144 boards like the STM32F676ZI has 2MB of flash memory that
-    should be more that adequate for running MicroPython and Embedded ROS.
+    should be more that adequate for running MicroPython and Micro ROS.
 
   * The Nucleo-144 boards come with a small attached ST-Link debugger for software
     development.  For space reasons, this board has to be cut off and remounted
@@ -190,10 +185,8 @@ The current (tentative) design decisions are:
     Nucleo-144 board such as Nucleo144-F476RG.  Presumably other larger boards can
     be added as needed.
 
-* FPGA board selection is still up in the air.  There is a strong desire is to use
-  an off-the-shelf solution, but there are a bunch of trade-offs between board size,
-  cost, availability number of LUT's, tool chain issues, other features, etc.  Brandon
-  and Patrick are leading the charge on this front.
+* FPGA Strategy.  The current strategy is that any FPGA's will be adapted to the
+  robot through the NUCLEO-144 ZIO connectors.
 
 ## Viewing the Models:
 
