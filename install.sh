@@ -3,11 +3,12 @@
 # Shell scripts are notorously difficult to read and debug.
 # To aid in reading/debugging this script, there are deliberately plenty of comments.
 
-# For debugging, please turn on the debugging flags below:
-set -x           # Trace execution.
-set -e           # Exit immediately on error result.
-set -o pipefail  # Fail if any commands in a pipeline fail.
-set -u           # Treat unset variables as an error.
+# Normally, for debugging, please turn on the debugging flags below:
+# set -x           # Trace execution.
+# set -e           # Exit immediately on error result.
+# set -o pipefail  # Fail if any commands in a pipeline fail.
+# set -u           # Treat unset variables as an error.
+# However when it comes to the python virtiual enivronment wrapper disable all of them:
 
 # Some commonly used macros:
 SUDO="sudo -H"
@@ -63,7 +64,7 @@ PYTHON_PATH=`which python`
 PYTHON3_PATH=`which python3`
 PYTHON_REALPATH=`realpath $PYTHON_PATH`
 PYTHON3_REALPATH=`realpath $PYTHON3_PATH`
-if [ "$PYTHON_REALPATH" -ne "$PYTHON3_REALPATH" ]
+if [ "$PYTHON_REALPATH" != "$PYTHON3_REALPATH" ]
 then
     echo "Forcing Python3 to be the default Python ..."
     sudo update-alternatives --install /usr/bin/python python $PYTHON3_REALPATH 2
@@ -79,10 +80,6 @@ then
 else
     echo "pip3 previously installed"
 fi
-
-# There is a bug in the virtualenvwrapper.sh where it will choke if ZSH_VERSION
-# is not empty:
-export ZSH_VERSION=""
 
 # Install Python virtual environments:
 if [ ! -n `which virtualenvwrapper.sh` ]
@@ -206,17 +203,22 @@ else
     echo "source .../virtualenvwrapper.sh already in $BASHRC"
 fi
 
-# Now slurp in all of the values so we can use them to set up some virtual environments:
-source $BASHRC
+# The virtualenvwrapper.sh script does not work with debugging, so disable debugging here:
+set +x           # Trace execution.
+set +e           # Exit immediately on error result.
+set +o pipefail  # Fail if any commands in a pipeline fail.
+set +u           # Treat unset variables as an error.
+
+# Ideally, we would nice to source ~/.bashrc here, but it doesn't get the job done...
+# So, instead, we duplicate the effort here:
 export VIRTUALENVWRAPER_PYTHON=`which python3`
 export WORKON_HOME=$WORKON_HOME
 export PROJECT_HOME=$PROJECT_HOME
-XXXX=`which virtualenvwrapper.sh`
-source "$XXXX"
-# mkvirtualenv --help
-echo "================================================================"
+export VIRTUALENVWRAPER_WORKON_CD=1
+source `which virtualenvwrapper.sh`
 
 # Set up virtual environments:
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 if [ ! -d $WORKON_HOME/hr2 ]
 then
     echo "Create hr2 python virtual environment"
@@ -224,6 +226,7 @@ then
 else
     echo "hr2 python virtual environment already exists"
 fi
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 if [ ! -d $WORKON_HOME/bom_manager ]
 then
     echo "Create hr2 python virtual environment"
@@ -231,20 +234,27 @@ then
 else
     echo "bom_manager python virtual environment already exists"
 fi
+echo "................................................................"
 if [ ! -d $WORKON_HOME/kicube32 ]
 then
     echo "Create kicube32 python virtual environment"
-    $MKVIRTUALENV -a $WORKON_HOME/kicube32 kicube32
+    $MKVIRTUALENV -a $PROJECT_HOME/kicube32 kicube32
 else
     echo "kicube32 python virtual environment already exists"
 fi
 
 # Install kipart into hr2 environment:
+echo "================="
 echo "Installing kipart into virtual environments"
-(workon hr2; if -z `which kipart` ; then pip install $WORKON_HOME/kipart ; fi ; deactivate)
-(workon kipart; if -z `which kipart` ; the pip install . ; fi ; deactivate)
+(workon kicube32; if [ -z `which kipart` ]; then pip install kipart ; fi ; deactivate)
+echo "================="
+(workon hr2; if [ -z `which kipart` ] ; then pip install kipart ; fi ; deactivate)
+echo "================="
 
 # Install kicube32 into hr2 environment:
-echo "Installing kipart into virtual environments"
-(workon hr2; if -z `which kicube32` ; then pip install . ; fi ; deactivate)
-(workon kicube; if -z `which kicube32` ; then pip install $WORONHOME/kicube32 ; fi ; deactivate)
+echo "################"
+echo "Installing kicube32 into virtual environments"
+# (workon kicube32; if [ -z `which kicube32` ] ; then pip install . ; fi ; deactivate)
+echo "################"
+# (workon hr2; if [ -z `which kicube32` ]; then pip install $PROJECT_HOME/kicube32 ; fi ; deactivate)
+echo "################"
