@@ -32,18 +32,22 @@ fi
 if [ ! -d $PROJECT_HOME/bom_manager ]
 then
     echo "Cloning bom_manager repository into $PROJECT_HOME ."
-    (cd $PROJECT_HOME ; git clone https://github.com/waynegramlich/bom_manager.git)
+    echo PROJECT_HOME=$PROJECT_HOME
+    (cd $PROJECT_HOME ; pwd ;git clone https://github.com/waynegramlich/bom_manager.git)
 else
-    echo "bom_manager previously cloned into $PROJECT_HOME ."
+    echo "Making sure that bom_manager is up to date ..."
+    (cd $PROJECT_HOME/bom_manager ; git pull)
 fi
 
 # Clone kicube32:
 if [ ! -e $PROJECT_HOME/kicube32 ]
 then
+    echo PROJECT_HOME=$PROJECT_HOME
     echo "Cloning kicube32 repository into $PROJECT_HOME ."
-    (cd $PROJECT_HOME ; git clone https://github.com/waynegramlich/kicube32.git)
+    (cd $PROJECT_HOME ; pwd ; git clone https://github.com/waynegramlich/kicube32.git)
 else
-    echo "kicube32 previously cloned into $PROJECT_HOME ." 
+    echo "Making sure that kicube32 is up to date ..."
+    (cd $PROJECT_HOME/kicube32 ; git pull)
 fi
 
 # The virtual wrapper script breaks under debugging, so turn everything off:
@@ -52,20 +56,24 @@ set +e           # Exit immediately on error result.
 set +o pipefail  # Fail if any commands in a pipeline fail.
 set +u           # Treat unset variables as an error.
 
+# Install bom_manager into hr2 env
+
+
 # Install kipart into hr2 environment:
 echo "Installing kipart into hr2 virtual environment."
-(workon hr2;
- if -z `which kipart` ;
+(workon hr2
+ if [ -z `which kipart` ]
  then
-     pip install $WORKON_HOME/kipart ;
- fi ;
+     pip3 install kipart
+ fi
  deactivate)
 
 # Install kicube32 into hr2 environment:
 echo "Installing kicube32 into hr2 virtual environment."
-(workon hr2;
- if -z `which kicube32` ;
- then pip install $WORKON_HOME/kicube32 ;
- fi ;
+(workon hr2
+ if [ -z `which kicube32` ]
+ then
+     ( cd $PROJECT_HOME/kicube32 ; pip3 install . )
+ fi
  deactivate)
 

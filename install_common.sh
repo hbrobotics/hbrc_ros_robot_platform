@@ -20,7 +20,7 @@ WORKON_HOME="$HOME/.virtualenvs"
 MKVIRTUALENV="mkvirtualenv -p 3.6" 
 
 # Capture the PROJECTS_HOME directory root:
-PROJECT_HOME=`(cd .. ; pwd)`
+PROJECT_HOME=`pwd | sed s,/hbrc_ros_robot_platform.*,,g`
 
 # Inform the user that packages are being installed and 
 echo "Installing additional packages.  You may be prompted for your root password ..."
@@ -103,7 +103,7 @@ fi
 
 
 # Append "export VIRTUALENVWRAPER_PYTHON=/user/bin/python3" to ~/.bashrc .
-if [ -z `grep -q VIRTUALENVWRAPPER_PYTHON $BASHRC` ]
+if [ -z "`grep -q VIRTUALENVWRAPPER_PYTHON $BASHRC`" ]
 then
     echo "Add VIRTUALENVWRAPPER_PYTHON to $BASHRC ..."
     echo "export VIRTUALENVWRAPPER_PYTHON=`which python3`" >> $BASHRC
@@ -112,7 +112,7 @@ else
 fi
 
 # Append "export WORKON_HOME=$HOME/.virtualenvs" to ~/.bashrc .
-if [ -z `grep -q WORKON_HOME $BASHRC` ]
+if [ -z "`grep -q WORKON_HOME $BASHRC`" ]
 then
     echo "Add WORKON_HOME to $BASHRC ..."
     echo "export WORKON_HOME=$WORKON_HOME" >> $BASHRC
@@ -121,7 +121,7 @@ else
 fi
 
 # Append "export PROJECT_HOME=... " to ~/.bashrc .
-if [ -z `grep PROJECT_HOME $BASHRC` ]
+if [ -z "`grep PROJECT_HOME $BASHRC`" ]
 then
     echo "Add PROJECT_HOME to $BASHRC ..."
     echo "export PROJECT_HOME=$PROJECT_HOME" >> $BASHRC
@@ -130,7 +130,7 @@ else
 fi
 
 # Append "export VIRTUALENVWRAPER_WORKON_CD=1" to ~/.bashrc .
-if [ -z `grep VIRTUALENVWRAPER_WORKON_CD $BASHRC` ]
+if [ -z "`grep VIRTUALENVWRAPER_WORKON_CD $BASHRC`" ]
 then
     echo "Add VIRTUALENVWRAPER_WORKON_CD to $BASHRC ..."
     echo "export VIRTUALENVWRAPER_WORKON_CD=1" >> $BASHRC
@@ -140,7 +140,7 @@ fi
 
 # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc .
 VIRTUALENVWRAPPER=`which virtualenvwrapper.sh`
-if [ -z `grep $VIRTUALENVWRAPPER $BASHRC` ]
+if [ -z "`grep $VIRTUALENVWRAPPER $BASHRC`" ]
 then
     echo "Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
     echo "source `which virtualenvwrapper.sh`" >> $BASHRC
