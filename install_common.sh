@@ -68,7 +68,7 @@ PYTHON_PATH=`which python`
 PYTHON3_PATH=`which python3`
 PYTHON_REALPATH=`realpath $PYTHON_PATH`
 PYTHON3_REALPATH=`realpath $PYTHON3_PATH`
-if [ "$PYTHON_REALPATH" -ne "$PYTHON3_REALPATH" ]
+if [ "$PYTHON_REALPATH" != "$PYTHON3_REALPATH" ]
 then
     echo "Forcing Python3 to be the default Python ..."
     sudo update-alternatives --install /usr/bin/python python $PYTHON3_REALPATH 2
@@ -86,7 +86,7 @@ else
 fi
 
 # Globally install Python virtual environments:
-if [ ! -n `which virtualenvwrapper.sh` ]
+if [ -z `which virtualenvwrapper.sh` ]
 then
     echo "Globally Installing Python virtual environments ..."
     $SUDO $PIP_INSTALL virtualenvwrapper
@@ -103,8 +103,7 @@ fi
 
 
 # Append "export VIRTUALENVWRAPER_PYTHON=/user/bin/python3" to ~/.bashrc .
-PATTERN=`grep VIRTUALENVWRAPPER_PYTHON $BASHRC`
-if [ -z "$PATTERN" ]
+if [ -z `grep -q VIRTUALENVWRAPPER_PYTHON $BASHRC` ]
 then
     echo "Add VIRTUALENVWRAPPER_PYTHON to $BASHRC ..."
     echo "export VIRTUALENVWRAPPER_PYTHON=`which python3`" >> $BASHRC
@@ -113,8 +112,7 @@ else
 fi
 
 # Append "export WORKON_HOME=$HOME/.virtualenvs" to ~/.bashrc .
-PATTERN=`grep WORKON_HOME $BASHRC`
-if [ -z "$PATTERN" ]
+if [ -z `grep -q WORKON_HOME $BASHRC` ]
 then
     echo "Add WORKON_HOME to $BASHRC ..."
     echo "export WORKON_HOME=$WORKON_HOME" >> $BASHRC
@@ -123,8 +121,7 @@ else
 fi
 
 # Append "export PROJECT_HOME=... " to ~/.bashrc .
-PATTERN=`grep PROJECT_HOME $BASHRC`
-if [ -z "$PATTERN" ]
+if [ -z `grep PROJECT_HOME $BASHRC` ]
 then
     echo "Add PROJECT_HOME to $BASHRC ..."
     echo "export PROJECT_HOME=$PROJECT_HOME" >> $BASHRC
@@ -133,8 +130,7 @@ else
 fi
 
 # Append "export VIRTUALENVWRAPER_WORKON_CD=1" to ~/.bashrc .
-PATTERN=`grep VIRTUALENVWRAPER_WORKON_CD $BASHRC`
-if [ -z "$PATTERN" ]
+if [ -z `grep VIRTUALENVWRAPER_WORKON_CD $BASHRC` ]
 then
     echo "Add VIRTUALENVWRAPER_WORKON_CD to $BASHRC ..."
     echo "export VIRTUALENVWRAPER_WORKON_CD=1" >> $BASHRC
@@ -144,8 +140,7 @@ fi
 
 # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc .
 VIRTUALENVWRAPPER=`which virtualenvwrapper.sh`
-PATTERN=`grep $VIRTUALENVWRAPPER $BASHRC`
-if [ -z "$PATTERN" ]
+if [ -z `grep $VIRTUALENVWRAPPER $BASHRC` ]
 then
     echo "Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
     echo "source `which virtualenvwrapper.sh`" >> $BASHRC
@@ -153,21 +148,20 @@ else
     echo "source .../virtualenvwrapper.sh already in $BASHRC ."
 fi
 
-# Now slurp in all of the values so we can use them to set up some virtual environments:
-source $BASHRC
-# export VIRTUALENVWRAPER_PYTHON=`which python3`
-# export WORKON_HOME=$WORKON_HOME
-# export PROJECT_HOME=$PROJECT_HOME
-# export VIRTUALENVWRAPER_WORKON_CD=1
-# source `which virtualenvwrapper.sh`
-
-echo "================================================================"
-
 # The virtual wrapper script breaks under debugging, so turn all debugging off.
 set +x           # Trace execution.
 set +e           # Exit immediately on error result.
 set +o pipefail  # Fail if any commands in a pipeline fail.
 set +u           # Treat unset variables as an error.
+
+# For some weird reason, doing a "source $BASHRC" does not properly get
+# the virtual environment wrapper variables set properly.  So, instead
+# we set them all manually below:
+export VIRTUALENVWRAPER_PYTHON=`which python3`
+export WORKON_HOME=$WORKON_HOME
+export PROJECT_HOME=$PROJECT_HOME
+export VIRTUALENVWRAPER_WORKON_CD=1
+source `which virtualenvwrapper.sh`
 
 # Create the "hr2" Python virtual environment:
 if [ ! -d $WORKON_HOME/hr2 ]
