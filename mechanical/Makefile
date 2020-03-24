@@ -76,12 +76,13 @@ CLEAN_DIRECTORIES :=				\
     scad_models/__pycache__			\
     tests/__pycache__
 
-.PHONY: all clean test dxf_files
-
+.PHONY: all clean everything test dxf_files
 
 # This is the top level target that builds everything.  It uses sub-targets to
 # force things to be built in the "correct* order:
 all: ${DXF_FILES} ${PNG_FILES} README.html
+
+everything: all
 
 # This is the target the generates the `.dxf` files from the OpenSCAD files:
 ${DXF_FILES}: ${INSTALLED_SCAD_MODELS_PY_FILES}
