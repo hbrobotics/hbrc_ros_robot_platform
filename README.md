@@ -40,8 +40,8 @@ Not all traffic on the group is going to be interesting to everybody else.
 To help out with filtering please put one of the following prefixes at the
 front of the each subject line:
 
-* `ALL:" A message of interest to everybody.
-* `INST:" A message concerning software installation.
+* `ALL:` A message of interest to everybody.
+* `INST:` A message concerning software installation.
 * `ME:` A message to people interested in the HR2 Mechanical Engineering 
   (i.e. solid modeling.)
 * `EE:` A message to people interested in the HR2 Electrical Engineering
@@ -193,11 +193,11 @@ The software goals are:
   * The FPGA compliation stack needs to run on the SBC and the development
     processor.
 
-## Educational Classes:
+## Education
 
 This section is more of a place holder for now...
 
-The list of possible classes for HR2 platform are:
+A partial list of possible educational classes for HR2 platform are:
 
 * Low level robot peripheral drivers.
   * C/C++
