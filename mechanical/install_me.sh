@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Update the repository:
-echo "Updating repository ..."
-git pull
+# Perform all of the common stuff first:
+../install_common.sh
 
-# Update everything else:
+# Update all of the mechanical stuff next:
 ./install_me_main.sh

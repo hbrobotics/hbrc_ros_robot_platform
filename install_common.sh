@@ -22,9 +22,25 @@ MKVIRTUALENV="mkvirtualenv -p 3.6"
 # Capture the PROJECTS_HOME directory root:
 PROJECT_HOME=`pwd | sed s,/hbrc_ros_robot_platform.*,,g`
 
+# Ensure that the repository is up to date:
+# https://stackoverflow.com/questions/3258243/check-if-pull-needed-in-git
+# Not the first answer, but a little ways down:
+git fetch
+LOCAL_HEAD=`git rev-parse HEAD`
+REMOTE_HEAD=`git rev-parse @{u}`
+# echo LOCAL_HEAD=$LOCAL_HEAD
+# echo REMOTE_HEAD=$REMOTE_HEAD
+if [ $LOCAL_HEAD != $REMOTE_HEAD ]
+then
+    echo "**************** Updating out-of-date hbrc_ros_robot_platform repository ..."
+    git pull
+else
+    echo "hbrc_ros_robot_platform repository is up-to-date."
+fi
+
 # Inform the user that packages are being installed and 
-echo "**************** Installing additional packages."
-echo "**************** You may be prompted for your root password ..."
+echo "Installing additional packages."
+echo "TO INSTALL PACKAGES, YOU MAY BE PROMPTED FOR YOUR ROOT PASSWORD..."
 
 # Make sure we have the build-essential package installed.
 if [ -z `which make` ]

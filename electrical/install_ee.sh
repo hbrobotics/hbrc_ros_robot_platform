@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Update the repository:
-echo "**************** Updating repository ..."
-git pull
+# Perform the common operations:
+../install_common.sh
 
-# Update everything else:
+# Update the rest of the electrical stuff:
 ./install_ee_main.sh
