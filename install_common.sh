@@ -104,7 +104,7 @@ fi
 
 
 # Append "export VIRTUALENVWRAPER_PYTHON=/user/bin/python3" to ~/.bashrc .
-if [ -z "`grep -q VIRTUALENVWRAPER_PYTHON $BASHRC`" ]
+if [ -z "`grep VIRTUALENVWRAPER_PYTHON $BASHRC`" ]
 then
     echo "**************** Add VIRTUALENVWRAPER_PYTHON to $BASHRC ..."
     echo "export VIRTUALENVWRAPER_PYTHON=`which python3`" >> $BASHRC
@@ -113,7 +113,7 @@ else
 fi
 
 # Append "export WORKON_HOME=$HOME/.virtualenvs" to ~/.bashrc .
-if [ -z "`grep -q WORKON_HOME $BASHRC`" ]
+if [ -z "`grep WORKON_HOME $BASHRC`" ]
 then
     echo "**************** Add WORKON_HOME to $BASHRC ..."
     echo "export WORKON_HOME=$WORKON_HOME" >> $BASHRC
@@ -140,11 +140,11 @@ else
 fi
 
 # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc .
-VIRTUALENVWRAPPER=`which virtualenvwrapper.sh`
+VIRTUALENVWRAPPER_SH=`which virtualenvwrapper.sh`
 if [ -z "`grep virtualenvwrapper.sh $BASHRC`" ]
 then
     echo "**************** Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
-    echo "source `which virtualenvwrapper.sh`" >> $BASHRC
+    echo "source $VIRTUALENVWRAPPER_SH" >> $BASHRC
 else
     echo "source .../virtualenvwrapper.sh already in $BASHRC ."
 fi
