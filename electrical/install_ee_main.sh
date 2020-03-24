@@ -15,7 +15,7 @@
 # Install kicad:
 if [ -z `which kicad` ]
 then
-    echo "Installing kicad electronic computer aided design package ..."
+    echo "**************** Installing KiCad package ..."
     echo "Add KiCad to your package repository database:"
     $SUDO add-apt-repository --yes ppa:js-reynaud/kicad-5.1
     echo "Update your package repository database:"
@@ -31,7 +31,7 @@ fi
 # Clone bom_manager:
 if [ ! -d $PROJECT_HOME/bom_manager ]
 then
-    echo "Cloning bom_manager repository into $PROJECT_HOME ."
+    echo "**************** Cloning bom_manager repository into $PROJECT_HOME ."
     echo PROJECT_HOME=$PROJECT_HOME
     (cd $PROJECT_HOME ; pwd ;git clone https://github.com/waynegramlich/bom_manager.git)
 else
@@ -43,7 +43,7 @@ fi
 if [ ! -e $PROJECT_HOME/kicube32 ]
 then
     echo PROJECT_HOME=$PROJECT_HOME
-    echo "Cloning kicube32 repository into $PROJECT_HOME ."
+    echo "**************** Cloning kicube32 repository into $PROJECT_HOME ."
     (cd $PROJECT_HOME ; pwd ; git clone https://github.com/waynegramlich/kicube32.git)
 else
     echo "Making sure that kicube32 is up to date ..."
@@ -60,11 +60,13 @@ set +u           # Treat unset variables as an error.
 
 
 # Install kipart into hr2 environment:
-echo "Installing kipart into hr2 virtual environment."
 (workon hr2
  if [ -z `which kipart` ]
  then
-     pip3 install kipart
+    echo "**************** Installing kipart into hr2 virtual environment..."
+    pip3 install kipart
+ else
+    echo "kipart previously installed into hr2 virtual environment."
  fi
  deactivate)
 
@@ -73,7 +75,11 @@ echo "Installing kicube32 into hr2 virtual environment."
 (workon hr2
  if [ -z `which kicube32` ]
  then
+     echo "**************** Installing kicube32 into hr2 virtual environment..."
      ( cd $PROJECT_HOME/kicube32 ; pip3 install . )
+ else
+     echo "kicube32 prevously installed into hr2 virtual environment..."
+     
  fi
  deactivate)
 

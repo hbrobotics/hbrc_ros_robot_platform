@@ -23,12 +23,13 @@ MKVIRTUALENV="mkvirtualenv -p 3.6"
 PROJECT_HOME=`pwd | sed s,/hbrc_ros_robot_platform.*,,g`
 
 # Inform the user that packages are being installed and 
-echo "Installing additional packages.  You may be prompted for your root password ..."
+echo "**************** Installing additional packages."
+echo "**************** You may be prompted for your root password ..."
 
 # Make sure we have the build-essential package installed.
 if [ -z `which make` ]
 then
-    echo "Installing build-essential package ..."
+    echo "**************** Installing build-essential package ..."
     $APT_INSTALL build-essential
 else
     echo "build-essential previously installed"
@@ -37,7 +38,7 @@ fi
 # Make sure we have git version management system installed.
 if [ -z `which git` ]
 then
-    echo "Installing git version management system."
+    echo "**************** Installing git version management system."
     $APT_INSTALL git
 else
     echo "git version management system previously installed."
@@ -46,7 +47,7 @@ fi
 # Make sure we have vim editor installed.
 if [ -z `which vim` ]
 then
-    echo "Installing vim editor ..."
+    echo "**************** Installing vim editor ..."
     $APT_INSTALL vim
 else
     echo "vim editor previously installed"
@@ -55,7 +56,7 @@ fi
 # Make sure we have emacs editor installed.
 if [ -z `which emacs` ]
 then
-    echo "Installing emacs editor ..."
+    echo "**************** Installing emacs editor ..."
     $APT_INSTALL emacs
 else
     echo "emacs editor previously installed"
@@ -70,7 +71,7 @@ PYTHON_REALPATH=`realpath $PYTHON_PATH`
 PYTHON3_REALPATH=`realpath $PYTHON3_PATH`
 if [ "$PYTHON_REALPATH" != "$PYTHON3_REALPATH" ]
 then
-    echo "Forcing Python3 to be the default Python ..."
+    echo "**************** Forcing Python3 to be the default Python ..."
     sudo update-alternatives --install /usr/bin/python python $PYTHON3_REALPATH 2
 else
     echo "Python3 is already the default Python."
@@ -79,7 +80,7 @@ fi
 # Install python3_pip3:
 if [ -z `which pip3` ]
 then
-    echo "Installing Python pip3"
+    echo "**************** Installing Python pip3"
     $APT_INSTALL python3-pip
 else
     echo "Python pip3 previously installed."
@@ -88,7 +89,7 @@ fi
 # Globally install Python virtual environments:
 if [ -z `which virtualenvwrapper.sh` ]
 then
-    echo "Globally Installing Python virtual environments ..."
+    echo "**************** Globally Installing Python virtual environments ..."
     $SUDO $PIP_INSTALL virtualenvwrapper
 else
     echo "Python virtual environments previously installed"
@@ -103,27 +104,27 @@ fi
 
 
 # Append "export VIRTUALENVWRAPER_PYTHON=/user/bin/python3" to ~/.bashrc .
-if [ -z "`grep -q VIRTUALENVWRAPPER_PYTHON $BASHRC`" ]
+if [ -z "`grep -q VIRTUALENVWRAPER_PYTHON $BASHRC`" ]
 then
-    echo "Add VIRTUALENVWRAPPER_PYTHON to $BASHRC ..."
-    echo "export VIRTUALENVWRAPPER_PYTHON=`which python3`" >> $BASHRC
+    echo "**************** Add VIRTUALENVWRAPER_PYTHON to $BASHRC ..."
+    echo "export VIRTUALENVWRAPER_PYTHON=`which python3`" >> $BASHRC
 else
-    echo "VIRTUALENVWRAPPER_PYTHON already in $BASHRC ."
+    echo "VIRTUALENVWRAPER_PYTHON already in $BASHRC ."
 fi
 
 # Append "export WORKON_HOME=$HOME/.virtualenvs" to ~/.bashrc .
 if [ -z "`grep -q WORKON_HOME $BASHRC`" ]
 then
-    echo "Add WORKON_HOME to $BASHRC ..."
+    echo "**************** Add WORKON_HOME to $BASHRC ..."
     echo "export WORKON_HOME=$WORKON_HOME" >> $BASHRC
 else
     echo "WORKON_HOME is already in $BASHRC ."
 fi
 
-# Append "export PROJECT_HOME=... " to ~/.bashrc .
+# Append "**************** export PROJECT_HOME=... " to ~/.bashrc .
 if [ -z "`grep PROJECT_HOME $BASHRC`" ]
 then
-    echo "Add PROJECT_HOME to $BASHRC ..."
+    echo "**************** Add PROJECT_HOME to $BASHRC ..."
     echo "export PROJECT_HOME=$PROJECT_HOME" >> $BASHRC
 else
     echo "PROJECT_HOME is already in $BASHRC ."
@@ -132,7 +133,7 @@ fi
 # Append "export VIRTUALENVWRAPER_WORKON_CD=1" to ~/.bashrc .
 if [ -z "`grep VIRTUALENVWRAPER_WORKON_CD $BASHRC`" ]
 then
-    echo "Add VIRTUALENVWRAPER_WORKON_CD to $BASHRC ..."
+    echo "**************** Add VIRTUALENVWRAPER_WORKON_CD to $BASHRC ..."
     echo "export VIRTUALENVWRAPER_WORKON_CD=1" >> $BASHRC
 else
     echo "VIRTUALENVWRAPER_WORKON_CD already in $BASHRC ."
@@ -140,9 +141,9 @@ fi
 
 # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc .
 VIRTUALENVWRAPPER=`which virtualenvwrapper.sh`
-if [ -z "`grep $VIRTUALENVWRAPPER $BASHRC`" ]
+if [ -z "`grep virtualenvwrapper.sh $BASHRC`" ]
 then
-    echo "Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
+    echo "**************** Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
     echo "source `which virtualenvwrapper.sh`" >> $BASHRC
 else
     echo "source .../virtualenvwrapper.sh already in $BASHRC ."
@@ -166,7 +167,7 @@ source `which virtualenvwrapper.sh`
 # Create the "hr2" Python virtual environment:
 if [ ! -d $WORKON_HOME/hr2 ]
 then
-    echo "Create hr2 python virtual environment ..."
+    echo "**************** Create hr2 python virtual environment ..."
     $MKVIRTUALENV -a $PROJECT_HOME/hbrc_ros_robot_platform hr2
 else
     echo "hr2 Python virtual environment already exists."

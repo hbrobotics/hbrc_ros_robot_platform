@@ -17,7 +17,7 @@ if [ -z "`which openscad`" ]
 then
     # While there is no standard openscad package for 18.04 or 18.10, there is one for 19.10.
     # We side step the issue by just grabbing openscad directly from the openscad repository.
-    echo "Installing openscad package ..."
+    echo "**************** Installing openscad package ..."
     $APT_ADD_REPOSITORY ppa:openscad/releases
     $APT_UPDATE
     $APT_INSTALL openscad
@@ -28,7 +28,7 @@ fi
 # Make sure markdown to HTML convert is installed:
 if [ -z "`which markdown`" ]
 then
-    echo "Installing markdown to HTML converter ..."
+    echo "**************** Installing markdown to HTML converter ..."
     $APT_INSTALL markdown
 else
     echo "markdown to HTML converter previously installed."
@@ -37,7 +37,7 @@ fi
 # Install qcad:
 if [ -z "`which qcad`" ]
 then
-    echo "Installing qcad package ..."
+    echo "**************** Installing qcad package ..."
     $APT_ADD_REPOSITORY ppa:alex-p/qcad
     $APT_UPDATE
     $APT_INSTALL qcad
@@ -63,7 +63,7 @@ fi
 # Install Python flake8 code style checker:
 if [ -z "`which flake8`" ]
 then
-    echo "Installing Python flake8 code style checker ..."
+    echo "**************** Installing Python flake8 code style checker ..."
     (workon hr2; $PIP_INSTALL flake8 ; deactivate)
 else
     echo "Python flake8 code style checker previously installed."
@@ -72,7 +72,7 @@ fi
 # Install Python pydocstyle documentation style checker:
 if [ -z "`which pydocstyle`" ]
 then
-    echo "Installing Python pydocstyle documentation style checker ..."
+    echo "**************** Installing Python pydocstyle documentation style checker ..."
     (workon hr2; $PIP_INSTALL pydocstyle ; deactivate)
 else
     echo "Python pydocstyle documentation style checker previously installed."
