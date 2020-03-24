@@ -4,13 +4,13 @@
 # To aid in reading/debugging this script, there are deliberately plenty of comments.
 
 # Make sure all of the common stuff has already been done:
-source ../install_common.sh
+../install_common.sh
 
 # For debugging, please turn on the debugging flags below:
-set -x           # Trace execution.
-set -e           # Exit immediately on error result.
-set -o pipefail  # Fail if any commands in a pipeline fail.
-set -u           # Treat unset variables as an error.
+# set -x           # Trace execution.
+# set -e           # Exit immediately on error result.
+# set -o pipefail  # Fail if any commands in a pipeline fail.
+# set -u           # Treat unset variables as an error.
 
 # Install kicad:
 if [ -z `which kicad` ]
@@ -77,3 +77,7 @@ echo "Installing kicube32 into hr2 virtual environment."
  fi
  deactivate)
 
+# Remind people to update their virtual environments:
+echo "Please type 'source ~/.bashrc' to enable python virtual environments."
+echo "Next type 'workon hr2' to enter the 'hr2' virtual environment."
+echo "To exit the hr2 python virtual environment, type 'deactivate'."

@@ -5,4 +5,4 @@ echo "Updating repository ..."
 git pull
 
 # Update everything else:
-source install_ee_main.sh
+./install_ee_main.sh

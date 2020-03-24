@@ -4,10 +4,10 @@
 # To aid in reading/debugging this script, there are deliberately plenty of comments.
 
 # For debugging, please turn on the debugging flags below:
-set -x           # Trace execution.
-set -e           # Exit immediately on error result.
-set -o pipefail  # Fail if any commands in a pipeline fail.
-set -u           # Treat unset variables as an error.
+# set -x           # Trace execution.
+# set -e           # Exit immediately on error result.
+# set -o pipefail  # Fail if any commands in a pipeline fail.
+# set -u           # Treat unset variables as an error.
 
 # Some commonly used macros:
 SUDO="sudo -H"
