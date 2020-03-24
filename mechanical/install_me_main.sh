@@ -3,8 +3,19 @@
 # Shell scripts are notorously difficult to read and debug.
 # To aid in reading/debugging this script, there are deliberately plenty of comments.
 
+# Let user know install_me_main.sh is running:
+echo "**************** Starting body of install_me_main.sh ..."
+
 # Make sure all of the common stuff has already been done:
-../install_common.sh
+# Capture the PROJECTS_HOME directory root:
+PROJECT_HOME=`pwd | sed s,/hbrc_ros_robot_platform.*,,g`
+HR2_HOME=$PROJECT_HOME/hbrc_ros_robot_platform
+
+# Set up the enviroment variables:
+source $HR2_HOME/install_start.sh
+
+# Install the common stuff:
+(cd $HR2_HOME ; ./install_common.sh)
 
 # For debugging, please turn on the debugging flags below:
 # set -x           # Trace execution.

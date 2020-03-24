@@ -9,34 +9,8 @@
 # set -o pipefail  # Fail if any commands in a pipeline fail.
 # set -u           # Treat unset variables as an error.
 
-# Some commonly used macros:
-SUDO="sudo -H"
-APT_ADD_REPOSITORY="sudo add-apt-repository --yes"
-APT_INSTALL="$SUDO apt install --yes"
-APT_UPDATE="$SUDO apt update"
-BASHRC="$HOME/.bashrc"
-PIP_INSTALL="pip3 install"
-WORKON_HOME="$HOME/.virtualenvs"
-MKVIRTUALENV="mkvirtualenv -p 3.6" 
-
-# Capture the PROJECTS_HOME directory root:
-PROJECT_HOME=`pwd | sed s,/hbrc_ros_robot_platform.*,,g`
-
-# Ensure that the repository is up to date:
-# https://stackoverflow.com/questions/3258243/check-if-pull-needed-in-git
-# Not the first answer, but a little ways down:
-git fetch
-LOCAL_HEAD=`git rev-parse HEAD`
-REMOTE_HEAD=`git rev-parse @{u}`
-# echo LOCAL_HEAD=$LOCAL_HEAD
-# echo REMOTE_HEAD=$REMOTE_HEAD
-if [ $LOCAL_HEAD != $REMOTE_HEAD ]
-then
-    echo "**************** Updating out-of-date hbrc_ros_robot_platform repository ..."
-    git pull
-else
-    echo "hbrc_ros_robot_platform repository is up-to-date."
-fi
+# Set up the macros needed for everything else.
+source install_start.sh
 
 # Inform the user that packages are being installed and 
 echo "Installing additional packages."
