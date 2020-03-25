@@ -133,7 +133,7 @@ The electrical issues are worked out in greater detail in the
 
 Some brief comments on the electrical aspects are:
 
-* The design is to be done using KiCad, since KiadD is 100% free.
+* The design is to be done using KiCad, since KiCad is 100% free.
 * It would be nice to be able to use a simple two layer PCB.
 * It would be nice to be able to take power from a USB Power pack.
 * It would be nice to support daughter boards for FPGA's.
