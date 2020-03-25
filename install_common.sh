@@ -131,6 +131,13 @@ fi
 
 # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc .
 VIRTUALENVWRAPPER_SH=`which virtualenvwrapper.sh`
+if [ -z "$VIRTUALENVWRAPPER_SH" ]
+then
+    echo "???????????????? VIRTUALENVWRAPPER_SH is empty"
+else
+    source $VIRTUALENVWRAPPER_SH
+fi
+
 if [ -z "`grep virtualenvwrapper.sh $BASHRC`" ]
 then
     echo "**************** Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
@@ -152,7 +159,7 @@ export VIRTUALENVWRAPER_PYTHON=`which python3`
 export WORKON_HOME=$WORKON_HOME
 export PROJECT_HOME=$PROJECT_HOME
 export VIRTUALENVWRAPER_WORKON_CD=1
-source `which virtualenvwrapper.sh`
+source $VIRTUALENVWRAPPER_SH
 
 # Create the "hr2" Python virtual environment:
 if [ ! -d $WORKON_HOME/hr2 ]

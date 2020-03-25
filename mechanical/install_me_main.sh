@@ -14,6 +14,15 @@ HR2_HOME=$PROJECT_HOME/hbrc_ros_robot_platform
 # Set up the enviroment variables:
 source $HR2_HOME/install_start.sh
 
+# The virtual envirionment stuff is brittle, so we have to source the file directly:
+# Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc .
+VIRTUALENVWRAPPER_SH=`which virtualenvwrapper.sh`
+if [ -z "$VIRTUALENVWRAPPER_SH" ]
+then
+    echo "???????????????? VIRTUALENVWRAPPER_SH is empty"
+else
+    source $VIRTUALENVWRAPPER_SH
+fi
 # Install the common stuff:
 (cd $HR2_HOME ; ./install_common.sh)
 
