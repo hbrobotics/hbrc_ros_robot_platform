@@ -1,7 +1,9 @@
 # HBRC ROS Robot Platform
 
 The HBRC ROS Robot platform (ie. HR<Sup>2</Sup> or just plain HR2) is a
-pedagogical robotic platform developed for teaching various robotics skills.
+pedagogical robotic platform for teaching various robotics skills.
+
+![HR2 Robot](mechanical/png/hr2_nucleo_assembly.png)
 
 This top level document is broken into the following sections below:
 
@@ -53,7 +55,7 @@ front of the each subject line:
 * `MSC:` A miscellaneous message that does not really fit any of the above
   protocols.
 
-That should be enough group structure for starters.
+That should be enough group mailing list structure for starters.
 
 ## Goals/Requirements
 

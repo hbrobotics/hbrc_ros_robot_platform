@@ -3397,7 +3397,7 @@ class RomiExpansionPlate:
     """Represents a Romi Expansion Plate."""
 
     # RomiExpansion.__init__():
-    def __init__(self, scad_program: ScadProgram):
+    def __init__(self, scad_program: ScadProgram) -> None:
         """Initialize RomiExpansion and append to ScadProgram."""
         self.expansion_dxf: ExpansionDXF = ExpansionDXF()
         romi_expansion_plate: RomiExpansionPlate = self

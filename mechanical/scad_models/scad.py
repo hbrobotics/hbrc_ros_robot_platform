@@ -166,7 +166,7 @@ class P2D:
     """Represents a point in 2 demensions."""
 
     # P2D.__init__():
-    def __init__(self, x: float, y: float):
+    def __init__(self, x: float, y: float) -> None:
         """Initialize a P2D."""
         # Load *x* and *y* into *p2d* (i.e. *self*):
         # p2d: P2D = self

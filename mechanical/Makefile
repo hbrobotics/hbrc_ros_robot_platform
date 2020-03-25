@@ -202,7 +202,7 @@ test: all
 # Pattern rule for running `mypy`, `flake8`, and `pydocstyle` over a `.py` Python file.
 # The `.pyl` suffix is used to remember that the linting has occured:
 %.pyl: %.py
-	mypy --no-color-output       $<
+	mypy                         $<
 	flake8 --max-line-length=100 $<
 	pydocstyle                   $<
 	touch $@
