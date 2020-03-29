@@ -531,12 +531,117 @@ the `DL:` prefix on the subject line explaining the issue so it can be resolved.
 
 ### Workflow
 
-There are two github strategies for managing a repo:
+Workflow is a generic term for how modifications are made to this project.
 
-* Fork & Pull Model
-* Shared Repository Model
+Examples of such modifications are.
+
+* Modifying the mechanical models,
+* Modifying electrical design and associated printed circuit board designs,
+* Modifying the software,
+* Fixing documentation errors,
+* Developing educational course materials, Etc.
+
+Some terminology here.  We are going to use the pronoun "you" to mean "you the
+person doing project development" in the description below.
+
+#### Workflow Introduction
+
+There are two common workflows supported by GitHub.com:
+
+* Shared Repository Workflow:
+  This is the simplest model where there is one common shared parent repository stored
+  at GitHub.com and you have local cloned copy of the shared parent repository stored
+  locally on your development machine.  You develop and test your changes on your local
+  machine.  When you decide your changes are "ready", you "push" the changes back up to
+  the shared parent repository on GitHub.com.  Over time, you and other developers
+  "pull" the accumulated changes stored in the parent repository down into your
+  respective local repositories to stay up to date.  This workflow is extremely
+  common and has been supported by many version control systems for literally for decades.
+
+* Fork and Pull Request Workflow:
+  In this model, the common parent repository is the same as the shared repository
+  workflow immediately above.  However, there now you need two repositories to do
+  development.  The first repository is the same local repository on your local machine
+  as before.  In addition to your local repository, you also have your own semi-private
+  repository stored on GitHub.com that is used for staging purposes.  This staging repository
+  is goes by a less descriptive name called a "fork repository".  Your fork repository
+  is "connected" to the shared parent repository.  Since there are multiple developers,
+  there multiple "forks" of the same shared parent directory on GitHub.com, where each
+  is stored in a different user account to keep them separate from one another.
+
+  The workflow is that you make modifications to your local repository and "push"
+  them up to your staging "fork" repository.  Next, you generate something called
+  a "pull request".  (Frankly, the term "pull request" is miss-named, it should be
+  called a "merge request".  It is too late to change the terminology now, so we
+  will stick with the lest descriptive term of "pull request".)  The details of how
+  to generate a "pull request" are discussed  little be further below.  The "pull request"
+  generates an E-mail that is sent to one or more reviewers.   The reviewer looks at your
+  changes using the GitHub.com GUI (Graphical User Interface.)  If the reviewer likes
+  the changes, they are immediately accepted and merged from your fork repository to
+  the shared master repository.  If any reviewer has some issues, an E-mail dialog ensure
+  where the reviewer says things like "I really like this!", "This won't work because ...",
+  "Fix this tiny issue", "What about doing it this way...", and an occasional
+  "No way because..."  As a result of some of the review comments, you may need to make
+  additional changes and push them up to the fork repository.  When the pull-request
+  E-mail exchange dialog dies down and all of your changes have been pushed up to your
+  fork repository, the reviewer accepts the changes and merges them into the
+  shared parent repository.  The "Fork and Pull Request Workflow" is shown immediately
+  below using some crude ASCII art:
+
+                [Shared Parent]<---------------[Simi-Private Fork]   GitHub.Com
+                       |                                ^
+                       |                                |         =============
+                       v                                |
+                       +--------->[Private Local]------>+         Local Machine
+                        
+                         Fork and Pull Request Workflow
+			   
+The key advantage of the Fork and Pull Request work flow is that you do not need
+permission from anybody to start making your changes.  You start your changes locally
+and ask for permission only after you think they are ready.  When the reviewer
+agrees, your changes are merged in.
+
+It should come as no surprise to you that this project is using the fork and pull
+request workflow.
+
+#### Workflow Mechanics
+
+If you have followed the download and install instructions above, you have a
+local copy of the `hbrc_ros_robot_platform` repository as a sub directory under
+your REPOS directory.  What you do not have is a staging fork repository *AND*
+you have not configure `git` to do an asymmetric pull and push.  The instructions
+below will remedy these issues.
+
+Most of the tools you need to do the Fork and Pull Request workflow are already mostly
+in place.  The primary tools are `git` and a program called `hub` which is a command
+line interface to the GitHub.Com functionality.  We will do as much of the set up using
+a command line tools as possible because the command line tools tend not to change as
+fast as the web interface changes.  (If you are already comfortable the GitHub.Com web
+interface, you probably skip some of the steps below and use the web interface instead.)
+
+The first step is to create your own personal account on GitHub.Com.  This is done
+visiting the main [GitHub.Com web page](https://github.com/) web page.  You need to
+specify a unique "Username" (all lower case with no spaces or punctuation is recommended),
+an "Email" address, and a "Password".  There will be a message sent your E-mail address
+that you must respond to finish the account creation.  The "Username" is your GitHub.Com
+account name and will be needed further below.
+
+Now that you have a 
+
+Now we can get into the mechanics of this work flow.
 
 
+* Create GitHub account.
+* Add GITHUB_USERNAME to ~/.bashrc
+* Set up ssh keys.
+* git config --global user.name "Your Name"
+* git config --global user.email "YourEmail@WhereEver"
+
+Write:
+
+* fork-create:
+* fork-push:
+* fork-pull-request:
 
 https://stackoverflow.com/questions/14821583/pull-request-without-forking
 
@@ -579,4 +684,6 @@ Concept:
   * Have them install ssh keys so they do not have to keep typing in user/password.
   * All modifications are done in a ***PRIVATE*** branch because rebasing is the *default*.
   * Run pip install git-pull-request should (somehow) figure out how to user your account.
-  
+
+* Asymetric push and pull:
+   https://stackoverflow.com/questions/2916845/different-default-remote-tracking-branch-for-git-pull-and-git-push
