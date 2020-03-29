@@ -578,5 +578,5 @@ Concept:
   * Have them create a github.com account.
   * Have them install ssh keys so they do not have to keep typing in user/password.
   * All modifications are done in a ***PRIVATE*** branch because rebasing is the *default*.
-  * Run pip install git-pull-request should (somehow) figure out how to user your account
+  * Run pip install git-pull-request should (somehow) figure out how to use your account.
   
