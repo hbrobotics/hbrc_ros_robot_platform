@@ -170,3 +170,69 @@ else
     echo "hr2 Python virtual environment already exists."
 fi
 
+# Install `hub` program for interfacing with GitHub.Com:
+if [ -z `which hub` ]
+then
+    echo "**************** Installing hub program to interface with GitHub.Com ..."
+    sudo snap install hub --classic
+else
+    echo "hub program was previously installed."
+fi
+
+# Make sure that `upstream` remote exists:
+if [ `git remote -v | grep -c upstream` == "0" ]
+then
+    echo "**************** Installing upstream remote for get ..."
+    git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform
+    git remote set-head upstream master
+else
+    echo "Remote named upstream exists for get."
+fi
+
+# Make sure that no pushing to upstream is occurs:
+if [ `git remote -v | grep -c no-pushing-to_upstream-remote-is_allowed` == "0" ]
+then
+    echo "**************** Ensuring that nothing can be pushed to upstream remote ..."
+    git remote set-url --push upstream no-pushing-to-upstream-remote-is-allowed
+    # Next we want to set the `upstream` head to default to `master`:
+    echo "here 1"
+    git remote set-head upstream master
+else
+    echo "Nothing can be pushed to upstream remote."
+fi
+
+# Make sure that the master branch disallows commits to the master branch.
+PRE_COMMIT=.git/hooks/pre-commit
+if [ ! -x $PRE_COMMIT ]
+then
+    echo "**************** Ensure that commits can not be performed on the master branch ..."
+    # This is a more that a little kludgy:
+    echo '#!/bin/sh' > $PRE_COMMIT
+    echo 'branch="$(git rev-parse --abbrev-ref HEAD)"' >> $PRE_COMMIT
+    echo 'if [ "$branch" = "master" ]; then' >> $PRE_COMMIT
+    echo '    echo "You can not  commit directly to master branch"' >> $PRE_COMMIT
+    echo '    exit 1' >> $PRE_COMMIT
+    echo 'fi' >> $PRE_COMMIT
+    chmod +x $PRE_COMMIT
+else
+    echo "Commits can not be performed on the master branch."
+fi
+
+# Create the remote fork:
+REMOTE_FORK_CREATED=.remote_fork_created
+if [ -n "$GITHUB_ACCOUNT_NAME" ]
+then
+    if [ ! -f $REMOTE_FORK_CREATED ]
+    then
+	echo "**************** Creating forked project repository fork on GigHub.Com ..."
+	hub fork --remote-name github --org $GITHUB_ACCOUNT_NAME
+        touch $REMOTE_FORK_CREATED
+        git remote set-url upstream no-pulling-from-github-remote-is-allowed
+    else
+	echo "Forked project repository already created on GitHub.Com."
+    fi
+else
+    echo '!!!!!!!!!!!!!!!! No fork project repository until GITHUB_ACCOUT_NAME specfied in ~/.bshrc'
+    echo '!!!!!!!!!!!!!!!! Example: export GITHUB_ACCOUNT_NAME=...  # Replace ... with account name'
+    echo '!!!!!!!!!!!!!!!! Follow by typing source ~/.bashrc'
+fi

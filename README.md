@@ -475,7 +475,7 @@ There are 3 broad steps:
         # Now "clone" the `hbrc_ros_robot_platform` repository using `git`:
         # This will probably prompt for your root password...
         # Type in your root password if when asked..
-        git clone https://github.com/hbrobotics/hbrc_ros_robot_platform.git
+        git clone -o upstream https://github.com/hbrobotics/hbrc_ros_robot_platform.git
         # Change the current working directory to the root of the cloned repository
         cd hbrc_ros_robot_platform
     
@@ -643,12 +643,11 @@ Write:
 * fork-push:
 * fork-pull-request:
 
-https://stackoverflow.com/questions/14821583/pull-request-without-forking
+* https://stackoverflow.com/questions/14821583/pull-request-without-forking
 
+    You still need that one-liner:
 
-You still need that one-liner:
-
-    hub fork; git push -u $GIT_USER HEAD; hub pull-request
+        hub fork; git push -u $GIT_USER HEAD; hub pull-request
 
 https://andrewlock.net/creating-github-pull-requests-from-the-command-line-with-hub/
 
@@ -663,7 +662,7 @@ Reasonable description of what is going on:
 Githubs documentation about forking a repo:
     https://help.github.com/en/github/getting-started-with-github/fork-a-repo
 
-An alternative to the hub CLI command:
+An alternative to the hub CLI command (documentation is weak and I could not get it to work.)
     https://medium.com/mergify/managing-your-github-pull-request-from-the-command-line-89cb6af0a7fa
 
 git clone -o upstream URL
@@ -687,3 +686,69 @@ Concept:
 
 * Asymetric push and pull:
    https://stackoverflow.com/questions/2916845/different-default-remote-tracking-branch-for-git-pull-and-git-push
+
+* `git remote add --help`:
+  provides useful information.
+
+  * `git remote add [options...] REMOTE_NAME REMOTE_URL`:
+    * -t BRANCHNAME : track only BRANCHNAME  ; can be specified multiple times for multiple branches
+    * -m MASTERNAME : symbol-ref to refs/remotes/MASTERNAME/HEAD  (see set-head command)
+  * `git remote set-head REMOTE_NAME --auto|--delete BRANCH`:
+  * `git set-url ...`:
+    * Appears to default to modifying the fetch behavior.  Specify --push
+    * `git set-url --push REMOTE_NAME REMOTE_URL`: Sets push behavior
+    * `git set-url        REMOTE_NAME REMOTE_URL`: Sets fetch behavior
+    Note that REMOTE_URL must be the same for both push and fetch behavior.
+  * `git remote set-head REMOTE_NAME DEFAULT_BRANCH : Makes it so you do not have to
+    always specify the branch name:
+
+  It looks like we want to say:
+
+        # This creates a new remote named `upstream` that is tracking the
+	# github.com:hbrobotics/hbrc_ros_robot_platform repository using the "git"
+	# protocol, (which is basically ssh).  This can be done with the orginal
+	# -o option in the origin git clone:
+        git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform
+        
+	# Next we want to disallow pushes to the `upstream` remote:
+	#    https://stackoverflow.com/questions/7556155/git-set-up-a-fetch-only-remote
+	git remote set-url --push upstream no-pushing-to-upstream-url-is-allowed
+        
+        # Next we want to set the `upstream` head to default to master:
+	git remote set-head upstream master
+
+        # git remote -v should list
+	# upstream git@github.com:hbrobotics/hbrc_ros_robot_platform (fetch)a
+        # upstream no-pushing-to-upstream-url-is-allowed (push)
+	
+
+  https://stackoverflow.com/questions/40462111/git-prevent-commits-in-master-branch
+  Next, to configure master branch to disallow commits, create `file .git/hooks/pre-commit`
+  with following content:
+  
+
+	#!/bin/sh
+
+        branch="$(git rev-parse --abbrev-ref HEAD)"
+
+        if [ "$branch" = "master" ]; then
+           echo "You can't commit directly to master branch"
+           exit 1
+        fi
+
+   Do a chmod +x of the file to make it executable.
+
+   Now figure out how to create the staging remote.  The hub(1) command wants the
+   staging remote named to be `github` or `origin`.
+
+        # Create a staging remote:
+        git remote add upstream git@github.com:$GITHUB_ACCOUNT_NAME/hbrc_ros_robot_platform
+
+   We need to figure out how to do the `hub fork` once:
+
+        hub fork --remote-name github --org $GITHUB_ACCOUNT_NAME
+
+        hub fork; git push -u $GIT_USER HEAD; hub pull-request
+
+
+
