@@ -475,7 +475,11 @@ There are 3 broad steps:
         # Now "clone" the `hbrc_ros_robot_platform` repository using `git`:
         # This will probably prompt for your root password...
         # Type in your root password if when asked..
+<<<<<<< Updated upstream
         git clone -o upstream https://github.com/hbrobotics/hbrc_ros_robot_platform.git
+=======
+	git clone -o upstream git@github.com:hbrobotics/hbrc_ros_robot_platform.git
+>>>>>>> Stashed changes
         # Change the current working directory to the root of the cloned repository
         cd hbrc_ros_robot_platform
     
@@ -749,6 +753,3 @@ Concept:
         hub fork --remote-name github --org $GITHUB_ACCOUNT_NAME
 
         hub fork; git push -u $GIT_USER HEAD; hub pull-request
-
-
-

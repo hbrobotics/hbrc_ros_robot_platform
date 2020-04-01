@@ -183,8 +183,13 @@ fi
 if [ `git remote -v | grep -c upstream` == "0" ]
 then
     echo "**************** Installing upstream remote for get ..."
+<<<<<<< Updated upstream
     git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform
     git remote set-head upstream master
+=======
+    git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform.git
+    git remote set-head upstream -a
+>>>>>>> Stashed changes
 else
     echo "Remote named upstream exists for get."
 fi
