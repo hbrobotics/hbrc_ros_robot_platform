@@ -12,7 +12,7 @@ APT_INSTALL="$SUDO apt install --yes"
 APT_UPDATE="$SUDO apt update"
 BASHRC="$HOME/.bashrc"
 PIP_INSTALL="pip3 install"
-WORKON_HOME="$HOME/.virtualenvs"
+WORKON_HOME="$HOM/.virtualenvs"
 MKVIRTUALENV="mkvirtualenv -p 3.6" 
 
 # Capture the PROJECTS_HOME directory root:

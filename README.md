@@ -719,7 +719,8 @@ Concept:
 	git remote set-url --push upstream no-pushing-to-upstream-url-is-allowed
         
         # Next we want to set the `upstream` head to default to master:
-	git remote set-head upstream master
+	git remote set-head upstream master  # Does not seem to work but... the line below does
+	git branch --set-upstream-to=upstream/master master
 
         # git remote -v should list
 	# upstream git@github.com:hbrobotics/hbrc_ros_robot_platform (fetch)a
