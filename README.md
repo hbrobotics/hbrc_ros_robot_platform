@@ -754,3 +754,10 @@ Concept:
         hub fork --remote-name github --org $GITHUB_ACCOUNT_NAME
 
         hub fork; git push -u $GIT_USER HEAD; hub pull-request
+
+### Random
+
+
+;; Make emacs notice when buffers change due to switching branches:
+(global-auto-revert-mode 1)
+
