@@ -4,7 +4,7 @@
 # To aid in reading/debugging this script, there are deliberately plenty of comments.
 
 # For debugging, please turn on the debugging flags below:
-set -x           # Trace execution.
+# set -x           # Trace execution.
 # set -e           # Exit immediately on error result.
 # set -o pipefail  # Fail if any commands in a pipeline fail.
 # set -u           # Treat unset variables as an error.
@@ -191,7 +191,7 @@ else
 fi
 
 # Make sure that no pushing to upstream is occurs:
-if [ `git remote -v | grep -c no-pushing-to_upstream-remote-is_allowed` == "0" ]
+if [ `git remote -v | grep -c no-pushing-to-upstream-remote-is-allowed` == "0" ]
 then
     echo "**************** Ensuring that nothing can be pushed to upstream remote ..."
     git remote set-url --push upstream no-pushing-to-upstream-remote-is-allowed
@@ -219,20 +219,25 @@ else
     echo "Commits can not be performed on the master branch."
 fi
 
+set -x
 # Create the remote fork:
-REMOTE_FORK_CREATED=.remote_fork_created
 if [ -n "$GITHUB_ACCOUNT_NAME" ]
 then
-    if [ ! -f $REMOTE_FORK_CREATED ]
+    echo H1
+    if [ -n `git remote -v | grep staging` ]
     then
-	echo "**************** Creating forked project repository fork on GigHub.Com ..."
-	hub fork --remote-name github --org $GITHUB_ACCOUNT_NAME
+	echo H2
+	echo "**************** Creating a remote staging repository fork on GigHub.Com ..."
+	hub fork --remote-name staging --org $GITHUB_ACCOUNT_NAME
+	git remote add staging git@github.com:$GITHUB_ACCOUNT_NAME/hbrc_ros_robot_platform.git
         touch $REMOTE_FORK_CREATED
-        git remote set-url upstream no-pulling-from-github-remote-is-allowed
+        git remote set-url staging no-pulling-from-staging-remote-is-allowed
     else
+	echo H3
 	echo "Forked project repository already created on GitHub.Com."
     fi
 else
+    echo H4
     echo '!!!!!!!!!!!!!!!! No fork project repository until GITHUB_ACCOUT_NAME specfied in ~/.bshrc'
     echo '!!!!!!!!!!!!!!!! Example: export GITHUB_ACCOUNT_NAME=...  # Replace ... with account name'
     echo '!!!!!!!!!!!!!!!! Follow by typing source ~/.bashrc'
