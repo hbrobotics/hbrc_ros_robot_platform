@@ -4,7 +4,7 @@
 #
 # MIT License
 #
-# Copyright 2020 Home Brew Robotics Club
+# Copyright 2019-2020 Home Brew Robotics Club
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this
 # software and associated documentation files (the "Software"), to deal in the Software
@@ -391,6 +391,10 @@ class KicadPcb:
         kicad_pcb: KicadPcb = self
         file_name: str = kicad_pcb.file_name
         lines: List[str] = kicad_pcb.lines
+
+        # Delete blank lines from the end of the file:
+        while len(lines) > 0 and lines[-1] == "":
+            del lines[-1]
 
         # Write *kicad_lines* out to *kicad_file_name*:
         kicad_pcb_text: str = '\n'.join(lines) + '\n'
