@@ -1,4 +1,11 @@
-"""scad_test: Unit tests for the SCAD module."""
+# This file is licensed using the "MIT License" below:
+#
+# ##################################################################################################
+#
+# MIT License
+#
+# Copyright 2019, 2020 Home Brew Robotics Club
+#
 
 # Copyright (c) 2019 Wayne C. Gramlich (Wayne@Gramlich.Net)
 #
@@ -21,8 +28,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+#
+# ##################################################################################################
 # <----------------------------------------100 Characters----------------------------------------> #
+
+"""scad_test: Unit tests for the SCAD module."""
 
 import io
 from math import pi, sqrt

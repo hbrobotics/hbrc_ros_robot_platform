@@ -1,3 +1,26 @@
+<!--
+MIT License
+
+Copyright 2020 Home Brew Robotics Club
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be included in all copies
+or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
 # HBRC ROS Robot Platform
 
 The HBRC ROS Robot platform (ie. HR<Sup>2</Sup> or just plain HR2) is a
@@ -463,23 +486,14 @@ directory name you picked for `REPOS` in the directions below:
 There are 3 broad steps:
 
 1. The first step is to clone the `hbrc_ros_robot_platform` repository.
-   There are two ways of doing this -- a direct clone form `github.com` or an
-   indirect clone from `github.com`.  Beginners should do the direct clone
-   instuctions immediately below and `github.com` experts should modify the
-   instructions below for the indirect clone.  Let's get going:
+   Let's get going:
 
         cd .../REPOS   # Change the current working directory to REPOS
         # We need to get `git` installed.
         # If `git` is already installed, skip the install below:
-        sudo apt get install git
+        sudo apt get install git  # You may be asked for you user password:
         # Now "clone" the `hbrc_ros_robot_platform` repository using `git`:
-        # This will probably prompt for your root password...
-        # Type in your root password if when asked..
-<<<<<<< Updated upstream
-        git clone -o upstream https://github.com/hbrobotics/hbrc_ros_robot_platform.git
-=======
 	git clone -o upstream git@github.com:hbrobotics/hbrc_ros_robot_platform.git
->>>>>>> Stashed changes
         # Change the current working directory to the root of the cloned repository
         cd hbrc_ros_robot_platform
     
@@ -499,9 +513,11 @@ There are 3 broad steps:
           `./electrical/install_ee.sh  # Install the electrical portion of this project.`
 
    * `install_all.sh`:
-     This script just installs everything.
+     This script just installs everything, but takes the longest.
 
           `./install.sh  # Install everything.`
+
+   Please run one of the scripts.  It will download a bunch of stuff.
      
 3. There are a bunch of `Makefile`'s sprinkled through out the various
    sub directories in the project.  The `make` program can recursively visit each
@@ -560,7 +576,7 @@ There are two common workflows supported by GitHub.com:
   the shared parent repository on GitHub.com.  Over time, you and other developers
   "pull" the accumulated changes stored in the parent repository down into your
   respective local repositories to stay up to date.  This workflow is extremely
-  common and has been supported by many version control systems for literally for decades.
+  common and has been supported by many version control systems for literally decades.
 
 * Fork and Pull Request Workflow:
   In this model, the common parent repository is the same as the shared repository
@@ -577,7 +593,7 @@ There are two common workflows supported by GitHub.com:
   them up to your staging "fork" repository.  Next, you generate something called
   a "pull request".  (Frankly, the term "pull request" is miss-named, it should be
   called a "merge request".  It is too late to change the terminology now, so we
-  will stick with the lest descriptive term of "pull request".)  The details of how
+  will stick with the less descriptive term of "pull request".)  The details of how
   to generate a "pull request" are discussed  little be further below.  The "pull request"
   generates an E-mail that is sent to one or more reviewers.   The reviewer looks at your
   changes using the GitHub.com GUI (Graphical User Interface.)  If the reviewer likes
@@ -594,7 +610,7 @@ There are two common workflows supported by GitHub.com:
 
                 [Shared Parent]<---------------[Simi-Private Fork]   GitHub.Com
                        |                                ^
-                       |                                |         =============
+                ====== | ============================== | =====================
                        v                                |
                        +--------->[Private Local]------>+         Local Machine
                         
@@ -621,19 +637,31 @@ in place.  The primary tools are `git` and a program called `hub` which is a com
 line interface to the GitHub.Com functionality.  We will do as much of the set up using
 a command line tools as possible because the command line tools tend not to change as
 fast as the web interface changes.  (If you are already comfortable the GitHub.Com web
-interface, you probably skip some of the steps below and use the web interface instead.)
+interface, you can probably skip some of the steps below and use the web interface instead.)
 
-The first step is to create your own personal account on GitHub.Com.  This is done
-visiting the main [GitHub.Com web page](https://github.com/) web page.  You need to
-specify a unique "Username" (all lower case with no spaces or punctuation is recommended),
-an "Email" address, and a "Password".  There will be a message sent your E-mail address
-that you must respond to finish the account creation.  The "Username" is your GitHub.Com
-account name and will be needed further below.
+There are a still a few manual steps to do:
 
-TO DO:
-* Create GitHub account.
-* Add GITHUB_USERNAME to ~/.bashrc
-* Set up ssh keys.
+1. The first step is to create your own personal account on GitHub.Com.  This is done
+   visiting the main [GitHub.Com web page](https://github.com/) web page.  You need to
+   specify a unique "Username" (all lower case with no spaces or punctuation is recommended),
+   an "Email" address, and a "Password".  There will be a message sent your E-mail address
+   that you must respond to with a response E-mail to finish the account creation.  The
+   "Username" is your GitHub.Com account name and will be needed further below.  Do not
+   log out of GitHub.Com yet.
+
+2. In order to avoid having to type in a password all the time, we need to set up your
+   computer to use an SSH key to talk to your GitHub.Com account.  The install scripts
+   have ensured that an SSH key has been generated.  The public key is stored at
+   `~/.ssh/id_rsa.pub`.  There is a
+   [GitHub.Com SSH Key Installation](https://help.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account) web page that will guide you through the GitHub.Com
+   web interface to install your public SSH key.  It is a little tedium for now, but will avoid
+   much password prompting annoyance in the future.  If we are lucky, you should not need
+   to deal with the GitHub.Com web interface any more.  Now you can disconnect from GitHub.Com.
+
+3. Add GITHUB_USERNAME to ~/.bashrc
+
+4. Configure `git`.
+
 * git config --global user.name "Your Name"
 * git config --global user.email "YourEmail@WhereEver"
 
