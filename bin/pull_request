@@ -11,7 +11,7 @@ then
     git diff --name-only HEAD
 else
     echo "Pushing branch $CURRENT_BRANCH to remote staging repository."
-    git push -u stagin
+    git push -u staging
     echo "Generating a pull-request.  Please enter some text into the editor for the pull request."
     echo "It is acceptable to copy the first line from the commit line."
     echo "Remember to save the file before exiting."
