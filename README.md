@@ -613,7 +613,7 @@ request workflow.
 If you have followed the download and install instructions above, you have a
 local copy of the `hbrc_ros_robot_platform` repository as a sub directory under
 your REPOS directory.  What you do not have is a staging fork repository *AND*
-you have not configure `git` to do an asymmetric pull and push.  The instructions
+you have not configured `git` to do an asymmetric pull and push.  The instructions
 below will remedy these issues.
 
 Most of the tools you need to do the Fork and Pull Request workflow are already mostly
@@ -630,11 +630,7 @@ an "Email" address, and a "Password".  There will be a message sent your E-mail 
 that you must respond to finish the account creation.  The "Username" is your GitHub.Com
 account name and will be needed further below.
 
-Now that you have a 
-
-Now we can get into the mechanics of this work flow.
-
-
+TO DO:
 * Create GitHub account.
 * Add GITHUB_USERNAME to ~/.bashrc
 * Set up ssh keys.
@@ -653,23 +649,23 @@ Write:
 
         hub fork; git push -u $GIT_USER HEAD; hub pull-request
 
-https://andrewlock.net/creating-github-pull-requests-from-the-command-line-with-hub/
+* https://andrewlock.net/creating-github-pull-requests-from-the-command-line-with-hub/
 
-https://scotch.io/tutorials/exploring-the-new-github-cli
+* https://scotch.io/tutorials/exploring-the-new-github-cli
 
-https://stackoverflow.com/questions/9257533/what-is-the-difference-between-origin-and-upstream-on-github
+* https://stackoverflow.com/questions/9257533/what-is-the-difference-between-origin-and-upstream-on-github
 
 
-Reasonable description of what is going on:
+* Reasonable description of what is going on:
     https://www.bogotobogo.com/DevOps/SCM/Git/GitHub_Fork_Clone_Origin_Upstream.php
 
-Githubs documentation about forking a repo:
+* Githubs documentation about forking a repo:
     https://help.github.com/en/github/getting-started-with-github/fork-a-repo
 
-An alternative to the hub CLI command (documentation is weak and I could not get it to work.)
+* An alternative to the hub CLI command (documentation is weak and I could not get it to work.)
     https://medium.com/mergify/managing-your-github-pull-request-from-the-command-line-89cb6af0a7fa
 
-git clone -o upstream URL
+* git clone -o upstream URL
 
 Concept:
 
@@ -757,7 +753,6 @@ Concept:
 
 ### Random
 
-
-;; Make emacs notice when buffers change due to switching branches:
-(global-auto-revert-mode 1)
+        ;;; Make emacs notice when buffers change due to switching branches:
+        (global-auto-revert-mode 1)
 
