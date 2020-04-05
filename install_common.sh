@@ -1,5 +1,32 @@
 #!/bin/bash
 
+# This file is licensed using the "MIT License" below:
+#
+####################################################################################################
+#
+# MIT License
+#
+# Copyright 2020 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+####################################################################################################
+
 # Shell scripts are notorously difficult to read and debug.
 # To aid in reading/debugging this script, there are deliberately plenty of comments.
 
@@ -9,8 +36,11 @@
 # set -o pipefail  # Fail if any commands in a pipeline fail.
 # set -u           # Treat unset variables as an error.
 
-# Set up the macros needed for everything else.
+# Set up the common install shell variables and define `update_repository` shell function.
 source install_start.sh
+
+# Make sure that the master branch is up to date.
+update_repository $HR2_HOME
 
 # Inform the user that packages are being installed and 
 echo "Installing additional packages."
@@ -235,6 +265,18 @@ then
     chmod +x $PRE_COMMIT
 else
     echo "Commits can not be performed on the master branch."
+fi
+
+# Make sure we have an sshkey:
+SSH_KEY_FILE=$HOME/.ssh/id_rsa_xxx
+if [ -f "$SSH_KEY_FILE" ]
+then
+    echo "Secure shell encrption key previously generated."
+else
+    # Since, we don't want any prompting from `ssh-keygen`, see the URL below:
+    # https://stackoverflow.com/questions/43235179/how-to-execute-ssh-keygen-without-prompt/45031320
+    echo "**************** Creating an secure shell encription key ..."
+    ssh-keygen -q -t rsa -N '' -f $SSH_KEY_FILE 2>/dev/null <<< y >/dev/null
 fi
 
 # Create the remote fork:
