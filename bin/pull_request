@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Figure if there are any uncommitted files:
+UNCOMMITTED_FILES=`git diff --name-only HEAD`
+echo "UNCOMMITTED_FILES=$UNCOMMITTED_FILES"
+CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+echo "CURRENT_BRANCH=$CURRENT_BRANCH"
+if [ -n "$UNCOMMITTED_FILES" ]
+then
+    echo "You need to commit the following uncommitted files for the $CURRENT_BRANCH branch."
+    git diff --name-only HEAD
+else
+    echo "Pushing branch $CURRENT_BRANCH to remote staging repository."
+    git push -u stagin
+    echo "Generating a pull-request.  Please enter some text into the editor for the pull request."
+    echo "It is acceptable to copy the first line from the commit line."
+    echo "Remember to save the file before exiting."
+    git log --pretty=oneline --abbrev-commit | head -1
+    hub pull-request
+    echo "Pull request generated."
+fi

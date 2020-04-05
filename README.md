@@ -624,7 +624,7 @@ agrees, your changes are merged in.
 It should come as no surprise to you that this project is using the fork and pull
 request workflow.
 
-#### Workflow Mechanics
+#### Workflow Setup
 
 If you have followed the download and install instructions above, you have a
 local copy of the `hbrc_ros_robot_platform` repository as a sub directory under
@@ -658,129 +658,96 @@ There are a still a few manual steps to do:
    much password prompting annoyance in the future.  If we are lucky, you should not need
    to deal with the GitHub.Com web interface any more.  Now you can disconnect from GitHub.Com.
 
-3. Add GITHUB_USERNAME to ~/.bashrc
+3. Add GITHUB_ACCOUNT_NAME variable definition to your `~/.bashrc` file.  This is typically
+   done a the end of the file by adding a line that looks like:
 
-4. Configure `git`.
+      GITHUB_ACCOUNT_NAME=whatever_you_typed_in_in_the_previous_step
+      source ~/.bashrc  # Do no forget this step.
 
-* git config --global user.name "Your Name"
-* git config --global user.email "YourEmail@WhereEver"
+4. Specify your `user.name` and `user.email` values for `git`.  If you have previoulsy
+   done this, there is no need to do it again.  The two commands are:
 
-Write:
+     git config --global user.name "Your Name"
+     git config --global user.email "YourEmail@WhereEver"
 
-* fork-create:
-* fork-push:
-* fork-pull-request:
+5. Please rerun one of the installation scripts `install_all.sh`, `electrical/install_ee.sh`
+   of `mechanica/install_me.sh`.  They will create your remote fork repository on GitHub.com
+   and create git remote link named `staging` that points to it.  (Run `git remote -v` to see
+   it.)
 
-* https://stackoverflow.com/questions/14821583/pull-request-without-forking
+That pretty much wraps up the additional steps need to enable the "Fork and pull-request"
+workflow.  Next, it is time to try it out.
 
-    You still need that one-liner:
+#### Workflow Usage
 
-        hub fork; git push -u $GIT_USER HEAD; hub pull-request
+The `git` program does a great deal of stuff and it is outside the scope of this
+document to attempt to cover it all.  Instead, we will explain just enough to get started.
 
-* https://andrewlock.net/creating-github-pull-requests-from-the-command-line-with-hub/
+If you have followed the steps above, you have a repository named `hbrc_ros_robot_platform`
+sitting on you local machine.
 
-* https://scotch.io/tutorials/exploring-the-new-github-cli
+* An `upstream` remote descriptor that points to the shared project repository.
+* A `staging` remote descriptor that points to the simi-private forked directory
+  that is used for staging purposes.
+* A `master` branch which has be set up so that it only accepts updates from the
+  `upstream` remote.
 
-* https://stackoverflow.com/questions/9257533/what-is-the-difference-between-origin-and-upstream-on-github
+The first thing to understand is that you should never to development on the `master`
+branch.  We have tried to make it difficult for you to screw up `master`, but somebody
+who really wants to can screw it up anyhow.
 
+The second thing to understand is that all development takes place in one or more
+side branches, called development branches.  The way to create a new branch is by
 
-* Reasonable description of what is going on:
-    https://www.bogotobogo.com/DevOps/SCM/Git/GitHub_Fork_Clone_Origin_Upstream.php
+     git checkout -b NEW_BRANCH_NAME master
 
-* Githubs documentation about forking a repo:
-    https://help.github.com/en/github/getting-started-with-github/fork-a-repo
+where you supply a new and hopefully descriptive name for the new development branch.
+After this command, the new branch will be active.  Now you can modify things to your
+hearts content.  You can check the files in as many times as you want.  You can perform
+as many commits as you want on the branch.
 
-* An alternative to the hub CLI command (documentation is weak and I could not get it to work.)
-    https://medium.com/mergify/managing-your-github-pull-request-from-the-command-line-89cb6af0a7fa
+When you think you changes are ready to be merged into the project you initialiate
+a pull-request.  This is done by the command:
 
-* git clone -o upstream URL
+     pull_request
 
-Concept:
+This command is in the repository `bin` directory.  This will push your commit up
+to the staging repository and generate a pull request.  You will have add a comment
+into the pull request via an editor that will pop up.
 
-* We start with a clone of the repository, but we name it upstream rather than origin.
+That is basically it.
 
-     git clone -o upstream https://....
-     git remote add upstream git://github.com/diaspora/diaspora.git
+#### Coding Style
 
-* We install everything including git-pull-request
+The vast majority of the code is written in Python, C, and some Shell scripts.
 
-     pip install git-pull-request
+* Python:
+  Python 3 only.  All of the code is pushed through `mypy` (with type-hinting),
+  `flake8` to catch coding issues, and `pydocstyle` to catch documentation issues.
+  In general, the pretty standard coding style for Python is used.  One quirk is that
+  Wayne Gramlich hates the `self` variable and usually assigns it to a more descriptive
+  variable name.  Other than that, it is pretty standard.
 
-* When it is time for the user to do their first pull request:
-  * Have them create a github.com account.
-  * Have them install ssh keys so they do not have to keep typing in user/password.
-  * All modifications are done in a ***PRIVATE*** branch because rebasing is the *default*.
-  * Run pip install git-pull-request should (somehow) figure out how to user your account.
+* C:
+  Pretty standard C coding style is used.  There are 4 spaces for each indentation level.
+  The "then" clause of an if statement always has {...}, no exceptions.
 
-* Asymetric push and pull:
-   https://stackoverflow.com/questions/2916845/different-default-remote-tracking-branch-for-git-pull-and-git-push
+* Shell:
+  Shell scripts are tedious to write and debug and still tend to be fragile.
+  Lot's of comments are used.
 
-* `git remote add --help`:
-  provides useful information.
+All documentation is written in [markdown](https://daringfireball.net/projects/markdown/).
+Speaking of document, it is treated just like code in that it has bugs in it as well
+(miss-spelled words, bad grammar, unclear desciptions, etc.)  The documentation is fixed
+the same way that code is fixed, using the standard workflow.
 
-  * `git remote add [options...] REMOTE_NAME REMOTE_URL`:
-    * -t BRANCHNAME : track only BRANCHNAME  ; can be specified multiple times for multiple branches
-    * -m MASTERNAME : symbol-ref to refs/remotes/MASTERNAME/HEAD  (see set-head command)
-  * `git remote set-head REMOTE_NAME --auto|--delete BRANCH`:
-  * `git set-url ...`:
-    * Appears to default to modifying the fetch behavior.  Specify --push
-    * `git set-url --push REMOTE_NAME REMOTE_URL`: Sets push behavior
-    * `git set-url        REMOTE_NAME REMOTE_URL`: Sets fetch behavior
-    Note that REMOTE_URL must be the same for both push and fetch behavior.
-  * `git remote set-head REMOTE_NAME DEFAULT_BRANCH : Makes it so you do not have to
-    always specify the branch name:
+Eventually we will use the Github issue tracker to track both code and documentation issues.
+For now, the group mailing list will be used instead.
 
-  It looks like we want to say:
-
-        # This creates a new remote named `upstream` that is tracking the
-	# github.com:hbrobotics/hbrc_ros_robot_platform repository using the "git"
-	# protocol, (which is basically ssh).  This can be done with the orginal
-	# -o option in the origin git clone:
-        git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform
-        
-	# Next we want to disallow pushes to the `upstream` remote:
-	#    https://stackoverflow.com/questions/7556155/git-set-up-a-fetch-only-remote
-	git remote set-url --push upstream no-pushing-to-upstream-url-is-allowed
-        
-        # Next we want to set the `upstream` head to default to master:
-	git remote set-head upstream master  # Does not seem to work but... the line below does
-	git branch --set-upstream-to=upstream/master master
-
-        # git remote -v should list
-	# upstream git@github.com:hbrobotics/hbrc_ros_robot_platform (fetch)a
-        # upstream no-pushing-to-upstream-url-is-allowed (push)
-	
-
-  https://stackoverflow.com/questions/40462111/git-prevent-commits-in-master-branch
-  Next, to configure master branch to disallow commits, create `file .git/hooks/pre-commit`
-  with following content:
-  
-
-	#!/bin/sh
-
-        branch="$(git rev-parse --abbrev-ref HEAD)"
-
-        if [ "$branch" = "master" ]; then
-           echo "You can't commit directly to master branch"
-           exit 1
-        fi
-
-   Do a chmod +x of the file to make it executable.
-
-   Now figure out how to create the staging remote.  The hub(1) command wants the
-   staging remote named to be `github` or `origin`.
-
-        # Create a staging remote:
-        git remote add upstream git@github.com:$GITHUB_ACCOUNT_NAME/hbrc_ros_robot_platform
-
-   We need to figure out how to do the `hub fork` once:
-
-        hub fork --remote-name github --org $GITHUB_ACCOUNT_NAME
-
-        hub fork; git push -u $GIT_USER HEAD; hub pull-request
-
-### Random
+<!-- Random
 
         ;;; Make emacs notice when buffers change due to switching branches:
         (global-auto-revert-mode 1)
+
+-->
 

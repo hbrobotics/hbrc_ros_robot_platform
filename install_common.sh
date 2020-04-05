@@ -175,6 +175,18 @@ else
     echo "source .../virtualenvwrapper.sh already in $BASHRC ."
 fi
 
+# Make sure that the $PROJECT_HOME/bin directory is in the $PATH in $BASHRC:
+HR2_HOME_BIN=`grep export $BASHRC | grep PATH | grep $HR2_HOME/bin`
+#echo "HR2_HOME_BIN=$HR2_HOME_BIN"
+if [ -z "$HR2_HOME_BIN" ]
+then 
+    echo "**************** Adding $HR2_HOME/bin to PATH in $BASHRC ..."
+    echo "export PATH=\$PATH:$HR2_HOME/bin" >> $BASHRC
+    echo "!!!!!!!!!!!!!!!! Be sure to do a 'source ~/.bashrc to update your PATH.'"
+else
+    echo "$HR2_HOME/bin was previously added to PATH in $BASHRC." 
+fi
+
 # The virtual wrapper script breaks under debugging, so turn all debugging off.
 set +x           # Trace execution.
 set +e           # Exit immediately on error result.
@@ -268,14 +280,14 @@ else
 fi
 
 # Make sure we have an sshkey:
-SSH_KEY_FILE=$HOME/.ssh/id_rsa_xxx
+SSH_KEY_FILE=$HOME/.ssh/id_rsa
 if [ -f "$SSH_KEY_FILE" ]
 then
-    echo "Secure shell encrption key previously generated."
+    echo "Secure shell encryption key previously generated."
 else
     # Since, we don't want any prompting from `ssh-keygen`, see the URL below:
     # https://stackoverflow.com/questions/43235179/how-to-execute-ssh-keygen-without-prompt/45031320
-    echo "**************** Creating an secure shell encription key ..."
+    echo "**************** Creating an secure shell encyption key ..."
     ssh-keygen -q -t rsa -N '' -f $SSH_KEY_FILE 2>/dev/null <<< y >/dev/null
 fi
 
@@ -283,18 +295,15 @@ fi
 if [ -n "$GITHUB_ACCOUNT_NAME" ]
 then
     # We have a GitHub.Com account name:
-    echo H1
+    # echo "We have a GitHub.Com account name $GITHUB_ACCOUNT_NAME ."
     if [ -z "`git remote -v | grep staging`" ]
     then
-	echo H2
 	echo "**************** Creating a remote staging repository fork on GigHub.Com ..."
 	echo "You may be prompted password to the GitHub.Com account named $GITHUB_ACCOUNT_NAME..."
 	hub fork --remote-name staging --org $GITHUB_ACCOUNT_NAME
 	git remote add staging git@github.com:$GITHUB_ACCOUNT_NAME/hbrc_ros_robot_platform.git
-        touch $REMOTE_FORK_CREATED
     else
-	echo H3
-	echo "Forked project repository already created on GitHub.Com."
+	echo "A project fork for staging was previously created on GitHub.Com."
     fi
 else
     echo H4
