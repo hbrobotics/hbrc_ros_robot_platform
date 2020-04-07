@@ -176,13 +176,21 @@ else
 fi
 
 # Make sure that the $PROJECT_HOME/bin directory is in the $PATH in $BASHRC:
-HR2_HOME_BIN=`grep export $BASHRC | grep PATH | grep $HR2_HOME/bin`
+#echo "HR2_HOME=$HR2_HOME"
+HR2_HOME_BIN="$HR2_HOME/bin"
 #echo "HR2_HOME_BIN=$HR2_HOME_BIN"
-if [ -z "$HR2_HOME_BIN" ]
+HR2_HOME_BIN_IN_BASHRC=`grep $HR2_HOME_BIN $BASHRC`
+#echo "HR2_HOME_BIN_IN_BSHRC=$HR2_HOME_BIN_IN_BSHRC"
+if [ -z  "$HR2_HOME_BIN_IN_BSHRC" ]
 then 
     echo "**************** Adding $HR2_HOME/bin to PATH in $BASHRC ..."
-    echo "export PATH=\$PATH:$HR2_HOME/bin" >> $BASHRC
-    echo "!!!!!!!!!!!!!!!! Be sure to do a 'source ~/.bashrc to update your PATH.'"
+    echo '# Only add $BASHRC to PATH once:' >> $BASHRC
+    echo 'case ":$PATH:" in' >> $BASHRC
+    echo "  *:$HR2_HOME_BIN:*) ;; # Already in path, do nothing " >> $BASHRC
+    echo "  *) export PATH=\$PATH:$HR2_HOME_BIN ;; # Not in path, append it" >> $BASHRC
+    echo "esac" >> $BASHRC
+    echo "" >> $BASHRC
+    echo "!!!!!!!!!!!!!!!! Be sure to do a 'source ~/.bashrc after this to update your PATH.'"
 else
     echo "$HR2_HOME/bin was previously added to PATH in $BASHRC." 
 fi
