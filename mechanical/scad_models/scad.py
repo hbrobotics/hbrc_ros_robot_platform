@@ -748,7 +748,7 @@ class ScadProgram:
         scads.append(scad)
 
     # ScadProgram.read_me_update():
-    def read_me_update(self, read_me_text: str) -> str:
+    def read_me_update(self, read_me_text: str) -> Tuple[str, List[str]]:
         """Update the README.md file with acceptable selecton names."""
         # Grab some values from *scad_program* (i.e. *self*):
         scad_program: ScadProgram = self
@@ -781,20 +781,33 @@ class ScadProgram:
 
         # Construct *new_middle_lines*:
         new_middle_lines: List[str] = []
+        scad_comment_lines: List[str] = [
+            "////////////////////////////////////////////////////////////////",
+            "//",
+            "// The following openscad command line options are supported:",
+            "//"
+        ]
         named_mark_down: Tuple[str, ...]
         for named_mark_down in all_named_mark_downs:
             name: str = named_mark_down[0]
             new_middle_lines.append("")
             new_middle_lines.append(f"  * `{name}`:")
+            scad_comment_lines.append(f"// -D 'name=\"{name}\"'")
             mark_down_line: str
             for mark_down_line in named_mark_down[1:]:
                 new_middle_lines.append(f"    {mark_down_line}")
+                scad_comment_lines.append(f"//    {mark_down_line}")
+            scad_comment_lines.append("//")
+
         new_middle_lines.append("")
+        scad_comment_lines.append("//")
+        scad_comment_lines.append(
+            "////////////////////////////////////////////////////////////////")
 
         # Consturct *new_read_me_text* from *new_lines* and return it:
         new_lines: List[str] = before_lines + new_middle_lines + after_lines
         new_read_me_text: str = '\n'.join(new_lines)
-        return new_read_me_text
+        return new_read_me_text, scad_comment_lines
 
     # ScadProgram.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
