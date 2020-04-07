@@ -221,7 +221,8 @@ The current (tentative) design decisions are:
 
             openscad hr2_models.scad -D 'name="NAME"'
 
-  where NAME is one of:  <!-- NAME list starts here. -->
+  where NAME is one of:
+  <!-- NAME list starts here. -->
 
   * `encoder_board`:
     Encoder Board
