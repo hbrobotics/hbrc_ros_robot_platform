@@ -125,6 +125,15 @@ else
     echo "Python pydocstyle documentation style checker previously installed."
 fi
 
+# Install pytest testing system:
+if [ -z "`which pytest`" ]
+then
+    echo "**************** Installing Python testing system ..."
+    (workon hr2; $PIP_INSTALL pytest ; deactivate)
+else
+    echo "Python testing system previously installed."
+fi
+
 # Remind people to update their virtual environments:
 echo "Please type 'source ~/.bashrc' to enable python virtual environments."
 echo "Next type 'workon hr2' to enter the 'hr2' virtual environment."

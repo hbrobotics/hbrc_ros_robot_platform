@@ -491,9 +491,9 @@ There are 3 broad steps:
         cd .../REPOS   # Change the current working directory to REPOS
         # We need to get `git` installed.
         # If `git` is already installed, skip the install below:
-        sudo apt get install git  # You may be asked for you user password:
+        sudo apt install git --yes # You may be asked for you user password:
         # Now "clone" the `hbrc_ros_robot_platform` repository using `git`:
-	git clone -o upstream git@github.com:hbrobotics/hbrc_ros_robot_platform.git
+	git clone -o upstream https://github.com/hbrobotics/hbrc_ros_robot_platform.git
         # Change the current working directory to the root of the cloned repository
         cd hbrc_ros_robot_platform
     
