@@ -4714,7 +4714,7 @@ def main() -> int:  # pragma: no cover
     if read_me_text != updated_read_me_text:
         with open("README.md", "w") as read_me_file:
             read_me_file.write(updated_read_me_text)
-    print(f"scad_comment_lines={scad_comment_lines}")
+    # print(f"scad_comment_lines={scad_comment_lines}")
 
     # Generate `hr2_models.scad`:
     scad_lines: List[str] = []
