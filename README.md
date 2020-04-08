@@ -416,8 +416,11 @@ The basic steps involved are:
       This can take a while.
 
    F. Type [Enter] when [Press Return to close this window...] shows up.
+      If your virtual machine reboots you can skip the next step.
 
-   G. Now run the following commands:
+   G. (Optional) If for some reason the virtual guest extensions do not properly
+      install.  The following commands provide and alternative way of
+      getting them installed.  Now run the following commands:
 
       * `sudo mkdir -p /tmp/cdrom`
       * `sudo mount /dev/cdrom /tmp/cdrom`
@@ -517,9 +520,14 @@ There are 3 broad steps:
 
           `./install.sh  # Install everything.`
 
-   Please run one of the scripts.  It will download a bunch of stuff.
+   Please run one of the three scripts mentioned above.  It will download a bunch of stuff.
      
-3. There are a bunch of `Makefile`'s sprinkled through out the various
+3. This is important.  You need to activate your Python Virtual environtment.
+   This is done as follows:
+
+          `workon hr2   # Activate the hr2 Python virtual environment`
+
+4. There are a bunch of `Makefile`'s sprinkled through out the various
    sub directories in the project.  The `make` program can recursively visit each
    of these `Makefile`'s and do any additonal needed steps.  There are two `make`
    targets in all `Makefile`'s:
@@ -530,7 +538,7 @@ There are 3 broad steps:
      that are rarely needed -- create images, `dxf` files, etc.  This target
      is triggered by typing `make everything`.
 
-4. There are two things left to do:
+5. There are two things left to do:
 
    A. Enable your python virtual environment:
 
@@ -704,7 +712,8 @@ side branches, called development branches.  The way to create a new branch is b
 where you supply a new and hopefully descriptive name for the new development branch.
 After this command, the new branch will be active.  Now you can modify things to your
 hearts content.  You can check the files in as many times as you want.  You can perform
-as many commits as you want on the branch.
+as many commits as you want on the branch.  Please put descriptive comments in the
+commit logs.
 
 When you think you changes are ready to be merged into the project you initialiate
 a pull-request.  This is done by the command:
@@ -748,6 +757,9 @@ For now, the group mailing list will be used instead.
 
         ;;; Make emacs notice when buffers change due to switching branches:
         (global-auto-revert-mode 1)
+
+
+
 
 -->
 

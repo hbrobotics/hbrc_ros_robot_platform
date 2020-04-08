@@ -1042,7 +1042,10 @@ def test_scad_program() -> None:
     initial_read_me_text: str = '\n'.join(read_me_lines)
 
     # Now produce *updated_read_me_text* from *initial_read_me_text*:
-    updated_read_me_text: str = scad_program.read_me_update(initial_read_me_text)
+
+    updated_read_me_text: str
+    scad_comment_lines: List[str]
+    udated_read_me_text, scad_comment_lines = scad_program.read_me_update(initial_read_me_text)
 
     # Verify that we get the right output back:
     updated_read_me_lines: List[str] = updated_read_me_text.split('\n')
@@ -1059,7 +1062,8 @@ def test_scad_program() -> None:
     assert updated_read_me_lines[9] == "", "[9]!"
 
     # Now generate *final_read_me_text* and verify that it exactly matches *updated_read_me_text*:
-    final_read_me_text: str = scad_program.read_me_update(updated_read_me_text)
+    final_read_me_text: str
+    final_read_me_text, scad_comment_lines = scad_program.read_me_update(updated_read_me_text)
     assert final_read_me_text == updated_read_me_text
 
 
