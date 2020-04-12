@@ -758,8 +758,59 @@ For now, the group mailing list will be used instead.
         ;;; Make emacs notice when buffers change due to switching branches:
         (global-auto-revert-mode 1)
 
+#### Stm32CubeIDE
+
+* Downloand `en.st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh.zip`from STM website.
+* `mkdir /tmp/cube`
+* `unzip -d /tmp/cube en.st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh.zip`
+* Unpacks into `st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh`
+* Set execute bit `chmod +x st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh`
+* Execute `/tmp/cube/st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh`
+  * It prompts for sudo password.  Not clear what it does under sudo.
+* Unpacks a bunch of stuff into the `/opt/st/stme2cubeide_1.3.0_stm32` directory.
+* Execute `/opt/st/stm32cubeide_1.3.0_stm32/stm32cube`
+
+#### Removing big binary blobs:
+
+We are trying to delete: `stm32cube_download/stm32cube.tar.bz2.0{0,1,2,3,4,5,6,7,8}` from
+the repository.  It looks like `bfg` is the recommended program for doing the deletion.
+Make sure that the files have been `git delete`'ed and pushd up to GitHub.Com.
+Rename the current repo from `kicube32` to `kicbube32_delete_me`.  Hopefully we will
+not be using the repo any longer...
+
+Some URL'S:
+
+* [BFG](https://rtyley.github.io/bfg-repo-cleaner/)
+* [BFG Example](https://github.com/IBM/BluePic/wiki/Using-BFG-Repo-Cleaner-tool-to-remove-sensitive-files-from-your-git-repo)
+* [Another BFG Example](https://medium.com/@prankulgarg/want-to-remove-large-files-blobs-from-git-history-permanently-4723e72a84e1)
 
 
+     # Download the repository to be modified:
+     cd /tmp
+     time git clone --mirror git@github.com:waynegramlich/kicube32.git
+     # Generates a file called `/tmp/kicube32.git`.
+
+     # Make a backup:
+     time tar xvf /tmp/kicube32.git.tar kicube32.git.tar
+
+     # Download `bfg`:
+     # `wget https://repo1.maven.org/maven2/com/madgag/bfg/1.13.0/bfg-1.13.0.jar -O /tmp/bfg.jar`
+
+     # Make sure we have java installed:
+     which java
+
+     # Run `bfg`:
+     time java -jar bfg.jar --delete-files stm32cube.tar.bz2.0{0,1,2,3,4,5,6,7,8} /tmp/kicube32.git
+
+     # Do final cleaunp:
+     cd /tmp/kicube32.git
+     time git reflog expire --expire=now --all && git gc --prune=now --aggressive
+
+     # See how you did:
+     du -sh *
+
+     # Add a remeote back in:
+     git remote add upstream git@github.com:waynegramlich/kicube32.git
+     git push --force upstream master
 
 -->
-
