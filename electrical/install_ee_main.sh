@@ -87,7 +87,7 @@ else
 fi
 
 # Clone kicube32:
-if [ ! -e $PROJECT_HOME/kicube32 ]
+if [ ! -d $PROJECT_HOME/kicube32 ]
 then
     echo PROJECT_HOME=$PROJECT_HOME
     echo "**************** Cloning kicube32 repository into $PROJECT_HOME ."
@@ -123,7 +123,7 @@ echo "Installing kicube32 into hr2 virtual environment."
  if [ -z `which kicube32` ]
  then
      echo "**************** Installing kicube32 into hr2 virtual environment..."
-     ( cd $PROJECT_HOME/kicube32 ; pip3 install . )
+     $PIP_INSTALL $PROJECT_HOME/kicube32
  else
      echo "kicube32 prevously installed into hr2 virtual environment..."
      
