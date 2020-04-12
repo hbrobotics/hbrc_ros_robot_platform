@@ -1,3 +1,26 @@
+<!--
+MIT License
+
+Copyright 2020 Home Brew Robotics Club
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be included in all copies
+or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
 # HBRC ROS Robot Platform
 
 The HBRC ROS Robot platform (ie. HR<Sup>2</Sup> or just plain HR2) is a
@@ -393,8 +416,11 @@ The basic steps involved are:
       This can take a while.
 
    F. Type [Enter] when [Press Return to close this window...] shows up.
+      If your virtual machine reboots you can skip the next step.
 
-   G. Now run the following commands:
+   G. (Optional) If for some reason the virtual guest extensions do not properly
+      install.  The following commands provide and alternative way of
+      getting them installed.  Now run the following commands:
 
       * `sudo mkdir -p /tmp/cdrom`
       * `sudo mount /dev/cdrom /tmp/cdrom`
@@ -463,19 +489,14 @@ directory name you picked for `REPOS` in the directions below:
 There are 3 broad steps:
 
 1. The first step is to clone the `hbrc_ros_robot_platform` repository.
-   There are two ways of doing this -- a direct clone form `github.com` or an
-   indirect clone from `github.com`.  Beginners should do the direct clone
-   instuctions immediately below and `github.com` experts should modify the
-   instructions below for the indirect clone.  Let's get going:
+   Let's get going:
 
         cd .../REPOS   # Change the current working directory to REPOS
         # We need to get `git` installed.
         # If `git` is already installed, skip the install below:
-        sudo apt get install git
+        sudo apt install git --yes # You may be asked for you user password:
         # Now "clone" the `hbrc_ros_robot_platform` repository using `git`:
-        # This will probably prompt for your root password...
-        # Type in your root password if when asked..
-        git clone https://github.com/hbrobotics/hbrc_ros_robot_platform.git
+	git clone -o upstream https://github.com/hbrobotics/hbrc_ros_robot_platform.git
         # Change the current working directory to the root of the cloned repository
         cd hbrc_ros_robot_platform
     
@@ -495,11 +516,18 @@ There are 3 broad steps:
           `./electrical/install_ee.sh  # Install the electrical portion of this project.`
 
    * `install_all.sh`:
-     This script just installs everything.
+     This script just installs everything, but takes the longest.
 
           `./install.sh  # Install everything.`
+
+   Please run one of the three scripts mentioned above.  It will download a bunch of stuff.
      
-3. There are a bunch of `Makefile`'s sprinkled through out the various
+3. This is important.  You need to activate your Python Virtual environtment.
+   This is done as follows:
+
+          `workon hr2   # Activate the hr2 Python virtual environment`
+
+4. There are a bunch of `Makefile`'s sprinkled through out the various
    sub directories in the project.  The `make` program can recursively visit each
    of these `Makefile`'s and do any additonal needed steps.  There are two `make`
    targets in all `Makefile`'s:
@@ -510,7 +538,7 @@ There are 3 broad steps:
      that are rarely needed -- create images, `dxf` files, etc.  This target
      is triggered by typing `make everything`.
 
-4. There are two things left to do:
+5. There are two things left to do:
 
    A. Enable your python virtual environment:
 
@@ -556,7 +584,7 @@ There are two common workflows supported by GitHub.com:
   the shared parent repository on GitHub.com.  Over time, you and other developers
   "pull" the accumulated changes stored in the parent repository down into your
   respective local repositories to stay up to date.  This workflow is extremely
-  common and has been supported by many version control systems for literally for decades.
+  common and has been supported by many version control systems for literally decades.
 
 * Fork and Pull Request Workflow:
   In this model, the common parent repository is the same as the shared repository
@@ -573,7 +601,7 @@ There are two common workflows supported by GitHub.com:
   them up to your staging "fork" repository.  Next, you generate something called
   a "pull request".  (Frankly, the term "pull request" is miss-named, it should be
   called a "merge request".  It is too late to change the terminology now, so we
-  will stick with the lest descriptive term of "pull request".)  The details of how
+  will stick with the less descriptive term of "pull request".)  The details of how
   to generate a "pull request" are discussed  little be further below.  The "pull request"
   generates an E-mail that is sent to one or more reviewers.   The reviewer looks at your
   changes using the GitHub.com GUI (Graphical User Interface.)  If the reviewer likes
@@ -590,7 +618,7 @@ There are two common workflows supported by GitHub.com:
 
                 [Shared Parent]<---------------[Simi-Private Fork]   GitHub.Com
                        |                                ^
-                       |                                |         =============
+                ====== | ============================== | =====================
                        v                                |
                        +--------->[Private Local]------>+         Local Machine
                         
@@ -604,12 +632,12 @@ agrees, your changes are merged in.
 It should come as no surprise to you that this project is using the fork and pull
 request workflow.
 
-#### Workflow Mechanics
+#### Workflow Setup
 
 If you have followed the download and install instructions above, you have a
 local copy of the `hbrc_ros_robot_platform` repository as a sub directory under
 your REPOS directory.  What you do not have is a staging fork repository *AND*
-you have not configure `git` to do an asymmetric pull and push.  The instructions
+you have not configured `git` to do an asymmetric pull and push.  The instructions
 below will remedy these issues.
 
 Most of the tools you need to do the Fork and Pull Request workflow are already mostly
@@ -617,111 +645,172 @@ in place.  The primary tools are `git` and a program called `hub` which is a com
 line interface to the GitHub.Com functionality.  We will do as much of the set up using
 a command line tools as possible because the command line tools tend not to change as
 fast as the web interface changes.  (If you are already comfortable the GitHub.Com web
-interface, you probably skip some of the steps below and use the web interface instead.)
+interface, you can probably skip some of the steps below and use the web interface instead.)
 
-The first step is to create your own personal account on GitHub.Com.  This is done
-visiting the main [GitHub.Com web page](https://github.com/) web page.  You need to
-specify a unique "Username" (all lower case with no spaces or punctuation is recommended),
-an "Email" address, and a "Password".  There will be a message sent your E-mail address
-that you must respond to finish the account creation.  The "Username" is your GitHub.Com
-account name and will be needed further below.
+There are a still a few manual steps to do:
 
-Now that you have a 
+1. The first step is to create your own personal account on GitHub.Com.  This is done
+   visiting the main [GitHub.Com web page](https://github.com/) web page.  You need to
+   specify a unique "Username" (all lower case with no spaces or punctuation is recommended),
+   an "Email" address, and a "Password".  There will be a message sent your E-mail address
+   that you must respond to with a response E-mail to finish the account creation.  The
+   "Username" is your GitHub.Com account name and will be needed further below.  Do not
+   log out of GitHub.Com yet.
 
-Now we can get into the mechanics of this work flow.
+2. In order to avoid having to type in a password all the time, we need to set up your
+   computer to use an SSH key to talk to your GitHub.Com account.  The install scripts
+   have ensured that an SSH key has been generated.  The public key is stored at
+   `~/.ssh/id_rsa.pub`.  There is a
+   [GitHub.Com SSH Key Installation](https://help.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account) web page that will guide you through the GitHub.Com
+   web interface to install your public SSH key.  It is a little tedium for now, but will avoid
+   much password prompting annoyance in the future.  If we are lucky, you should not need
+   to deal with the GitHub.Com web interface any more.  Now you can disconnect from GitHub.Com.
+
+3. Add GITHUB_ACCOUNT_NAME variable definition to your `~/.bashrc` file.  This is typically
+   done a the end of the file by adding a line that looks like:
+
+      GITHUB_ACCOUNT_NAME=whatever_you_typed_in_in_the_previous_step
+      source ~/.bashrc  # Do no forget this step.
+
+4. Specify your `user.name` and `user.email` values for `git`.  If you have previoulsy
+   done this, there is no need to do it again.  The two commands are:
+
+     git config --global user.name "Your Name"
+     git config --global user.email "YourEmail@WhereEver"
+
+5. Please rerun one of the installation scripts `install_all.sh`, `electrical/install_ee.sh`
+   of `mechanica/install_me.sh`.  They will create your remote fork repository on GitHub.com
+   and create git remote link named `staging` that points to it.  (Run `git remote -v` to see
+   it.)
+
+That pretty much wraps up the additional steps need to enable the "Fork and pull-request"
+workflow.  Next, it is time to try it out.
+
+#### Workflow Usage
+
+The `git` program does a great deal of stuff and it is outside the scope of this
+document to attempt to cover it all.  Instead, we will explain just enough to get started.
+
+If you have followed the steps above, you have a repository named `hbrc_ros_robot_platform`
+sitting on you local machine.
+
+* An `upstream` remote descriptor that points to the shared project repository.
+* A `staging` remote descriptor that points to the simi-private forked directory
+  that is used for staging purposes.
+* A `master` branch which has be set up so that it only accepts updates from the
+  `upstream` remote.
+
+The first thing to understand is that you should never to development on the `master`
+branch.  We have tried to make it difficult for you to screw up `master`, but somebody
+who really wants to can screw it up anyhow.
+
+The second thing to understand is that all development takes place in one or more
+side branches, called development branches.  The way to create a new branch is by
+
+     git checkout -b NEW_BRANCH_NAME master
+
+where you supply a new and hopefully descriptive name for the new development branch.
+After this command, the new branch will be active.  Now you can modify things to your
+hearts content.  You can check the files in as many times as you want.  You can perform
+as many commits as you want on the branch.  Please put descriptive comments in the
+commit logs.
+
+When you think you changes are ready to be merged into the project you initialiate
+a pull-request.  This is done by the command:
+
+     pull_request
+
+This command is in the repository `bin` directory.  This will push your commit up
+to the staging repository and generate a pull request.  You will have add a comment
+into the pull request via an editor that will pop up.
+
+That is basically it.
+
+#### Coding Style
+
+The vast majority of the code is written in Python, C, and some Shell scripts.
+
+* Python:
+  Python 3 only.  All of the code is pushed through `mypy` (with type-hinting),
+  `flake8` to catch coding issues, and `pydocstyle` to catch documentation issues.
+  In general, the pretty standard coding style for Python is used.  One quirk is that
+  Wayne Gramlich hates the `self` variable and usually assigns it to a more descriptive
+  variable name.  Other than that, it is pretty standard.
+
+* C:
+  Pretty standard C coding style is used.  There are 4 spaces for each indentation level.
+  The "then" clause of an if statement always has {...}, no exceptions.
+
+* Shell:
+  Shell scripts are tedious to write and debug and still tend to be fragile.
+  Lot's of comments are used.
+
+All documentation is written in [markdown](https://daringfireball.net/projects/markdown/).
+Speaking of document, it is treated just like code in that it has bugs in it as well
+(miss-spelled words, bad grammar, unclear desciptions, etc.)  The documentation is fixed
+the same way that code is fixed, using the standard workflow.
+
+Eventually we will use the Github issue tracker to track both code and documentation issues.
+For now, the group mailing list will be used instead.
+
+<!-- Random
+
+        ;;; Make emacs notice when buffers change due to switching branches:
+        (global-auto-revert-mode 1)
+
+#### Stm32CubeIDE
+
+* Downloand `en.st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh.zip`from STM website.
+* `mkdir /tmp/cube`
+* `unzip -d /tmp/cube en.st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh.zip`
+* Unpacks into `st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh`
+* Set execute bit `chmod +x st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh`
+* Execute `/tmp/cube/st-stm32cubeide_1.3.0_5720_20200220_1053_amd64.deb_bundle.sh`
+  * It prompts for sudo password.  Not clear what it does under sudo.
+* Unpacks a bunch of stuff into the `/opt/st/stme2cubeide_1.3.0_stm32` directory.
+* Execute `/opt/st/stm32cubeide_1.3.0_stm32/stm32cube`
+
+#### Removing big binary blobs:
+
+We are trying to delete: `stm32cube_download/stm32cube.tar.bz2.0{0,1,2,3,4,5,6,7,8}` from
+the repository.  It looks like `bfg` is the recommended program for doing the deletion.
+Make sure that the files have been `git delete`'ed and pushd up to GitHub.Com.
+Rename the current repo from `kicube32` to `kicbube32_delete_me`.  Hopefully we will
+not be using the repo any longer...
+
+Some URL'S:
+
+* [BFG](https://rtyley.github.io/bfg-repo-cleaner/)
+* [BFG Example](https://github.com/IBM/BluePic/wiki/Using-BFG-Repo-Cleaner-tool-to-remove-sensitive-files-from-your-git-repo)
+* [Another BFG Example](https://medium.com/@prankulgarg/want-to-remove-large-files-blobs-from-git-history-permanently-4723e72a84e1)
 
 
-* Create GitHub account.
-* Add GITHUB_USERNAME to ~/.bashrc
-* Set up ssh keys.
-* git config --global user.name "Your Name"
-* git config --global user.email "YourEmail@WhereEver"
+     # Download the repository to be modified:
+     cd /tmp
+     time git clone --mirror git@github.com:waynegramlich/kicube32.git
+     # Generates a file called `/tmp/kicube32.git`.
 
-Write:
+     # Make a backup:
+     time tar xvf /tmp/kicube32.git.tar kicube32.git.tar
 
-* fork-create:
-* fork-push:
-* fork-pull-request:
+     # Download `bfg`:
+     # `wget https://repo1.maven.org/maven2/com/madgag/bfg/1.13.0/bfg-1.13.0.jar -O /tmp/bfg.jar`
 
-https://stackoverflow.com/questions/14821583/pull-request-without-forking
+     # Make sure we have java installed:
+     which java
 
+     # Run `bfg`:
+     time java -jar bfg.jar --delete-files stm32cube.tar.bz2.0{0,1,2,3,4,5,6,7,8} /tmp/kicube32.git
 
-You still need that one-liner:
+     # Do final cleaunp:
+     cd /tmp/kicube32.git
+     time git reflog expire --expire=now --all && git gc --prune=now --aggressive
 
-    hub fork; git push -u $GIT_USER HEAD; hub pull-request
+     # See how you did:
+     du -sh *
 
-https://andrewlock.net/creating-github-pull-requests-from-the-command-line-with-hub/
+     # Add a remeote back in:
+     git remote add upstream git@github.com:waynegramlich/kicube32.git
+     git push --force upstream master
 
-https://scotch.io/tutorials/exploring-the-new-github-cli
-
-https://stackoverflow.com/questions/9257533/what-is-the-difference-between-origin-and-upstream-on-github
-
-
-Reasonable description of what is going on:
-    https://www.bogotobogo.com/DevOps/SCM/Git/GitHub_Fork_Clone_Origin_Upstream.php
-
-Githubs documentation about forking a repo:
-    https://help.github.com/en/github/getting-started-with-github/fork-a-repo
-
-An alternative to the hub CLI command:
-    https://medium.com/mergify/managing-your-github-pull-request-from-the-command-line-89cb6af0a7fa
-
-git clone -o upstream URL
-
-Concept:
-
-* We start with a clone of the repository, but we name it upstream rather than origin.
-
-     git clone -o upstream https://....
-     git remote add upstream git://github.com/diaspora/diaspora.git
-
-* We install everything including git-pull-request
-
-     pip install git-pull-request
-
-* When it is time for the user to do their first pull request:
-  * Have them create a github.com account.
-  * Have them install ssh keys so they do not have to keep typing in user/password.
-  * All modifications are done in a ***PRIVATE*** branch because rebasing is the *default*.
-  * Run pip install git-pull-request should (somehow) figure out how to user your account.
-
-* Asymetric push and pull:
-   https://stackoverflow.com/questions/2916845/different-default-remote-tracking-branch-for-git-pull-and-git-push
-
-* `git remote add --help`:
-  provides useful information.
-
-  * `git remote add [options...] REMOTE_NAME REMOTE_URL`:
-    * -t BRANCHNAME : track only BRANCHNAME  ; can be specified multiple times for multiple branches
-    * -m MASTERNAME : symbol-ref to refs/remotes/MASTERNAME/HEAD  (see set-head command)
-  * `git remote set-head REMOTE_NAME --auto|--delete BRANCH`:
-  * `git set-url ...`:
-    * Appears to default to modifying the fetch behavior.  Specify --push
-    * `git set-url --push REMOTE_NAME REMOTE_URL`: Sets push behavior
-    * `git set-url        REMOTE_NAME REMOTE_URL`: Sets fetch behavior
-    Note that REMOTE_URL must be the same for both push and fetch behavior.
-  * `git remote set-head REMOTE_NAME DEFAULT_BRANCH : Makes it so you do not have to
-    always specify the branch name:
-
-  It looks like we want to say:
-
-        # This creates a new remote named `upstream` that is tracking the
-	# github.com:hbrobotics/hbrc_ros_robot_platform repository using the "git"
-	# protocol, (which is basically ssh).
-        git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform
-        
-	# Next we want to disallow pushes to the `upstream` remote:
-	#    https://stackoverflow.com/questions/7556155/git-set-up-a-fetch-only-remote
-	git remote set-url --push upstream no-pushing-to-upstream-url-is-allowed
-        
-        # Next we want to set the `upstream` head to default to master:
-	git remote -set-head upstream master
-
-        # git remote -v should list
-	# upstream git@github.com:hbrobotics/hbrc_ros_robot_platform (fetch)a
-        # upstream no-pushing-to-upstream-url-is-allowed (push)
-	
-
-  Next configure disallow local commits:
-     https://stackoverflow.com/questions/40462111/git-prevent-commits-in-master-branch
-	
+-->

@@ -1,3 +1,31 @@
+# This file is licensed using the "MIT License" below:
+#
+# ##################################################################################################
+#
+# MIT License
+#
+# Copyright 2019-2020 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+# ##################################################################################################
+# <======================================= 100 characters =======================================> #
+
 """SCAD.
 
 # Introduction
@@ -26,30 +54,6 @@ The basic class tree is:
       * Translate3D: Relocates a SCAD3 object to a different location.
       * Union3D: A Union of Scad3D objects.
 """
-
-# MIT License
-#
-# Copyright (c) 2019 Wayne C. Gramlich (Wayne@Gramlich.Net)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# <----------------------------------------100 Characters----------------------------------------> #
 
 # Import stuff from other libraries:
 from math import acos, ceil, cos, degrees, pi, sin, sqrt
@@ -387,6 +391,10 @@ class KicadPcb:
         kicad_pcb: KicadPcb = self
         file_name: str = kicad_pcb.file_name
         lines: List[str] = kicad_pcb.lines
+
+        # Delete blank lines from the end of the file:
+        while len(lines) > 0 and lines[-1] == "":
+            del lines[-1]
 
         # Write *kicad_lines* out to *kicad_file_name*:
         kicad_pcb_text: str = '\n'.join(lines) + '\n'
@@ -740,7 +748,7 @@ class ScadProgram:
         scads.append(scad)
 
     # ScadProgram.read_me_update():
-    def read_me_update(self, read_me_text: str) -> str:
+    def read_me_update(self, read_me_text: str) -> Tuple[str, List[str]]:
         """Update the README.md file with acceptable selecton names."""
         # Grab some values from *scad_program* (i.e. *self*):
         scad_program: ScadProgram = self
@@ -773,20 +781,33 @@ class ScadProgram:
 
         # Construct *new_middle_lines*:
         new_middle_lines: List[str] = []
+        scad_comment_lines: List[str] = [
+            "////////////////////////////////////////////////////////////////",
+            "//",
+            "// The following openscad command line options are supported:",
+            "//"
+        ]
         named_mark_down: Tuple[str, ...]
         for named_mark_down in all_named_mark_downs:
             name: str = named_mark_down[0]
             new_middle_lines.append("")
             new_middle_lines.append(f"  * `{name}`:")
+            scad_comment_lines.append(f"// -D 'name=\"{name}\"'")
             mark_down_line: str
             for mark_down_line in named_mark_down[1:]:
                 new_middle_lines.append(f"    {mark_down_line}")
+                scad_comment_lines.append(f"//    {mark_down_line}")
+            scad_comment_lines.append("//")
+
         new_middle_lines.append("")
+        scad_comment_lines.append("//")
+        scad_comment_lines.append(
+            "////////////////////////////////////////////////////////////////")
 
         # Consturct *new_read_me_text* from *new_lines* and return it:
         new_lines: List[str] = before_lines + new_middle_lines + after_lines
         new_read_me_text: str = '\n'.join(new_lines)
-        return new_read_me_text
+        return new_read_me_text, scad_comment_lines
 
     # ScadProgram.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:

@@ -1,5 +1,30 @@
-# <--------------------------------------- 100 characters ---------------------------------------> #
-
+# This file is licensed using the "MIT License" below:
+#
+# ##################################################################################################
+#
+# MIT License
+#
+# Copyright 2019, 2020 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+# ##################################################################################################
+# <======================================= 100 characters =======================================> #
 """Code genarates an OpenSCAD model for HR2 (HBRC ROS Robot)."""
 
 from scad_models.scad import (Color, Circle, CornerCube, Cylinder, If2D, Difference2D, KicadPcb,
@@ -4650,7 +4675,7 @@ def main() -> int:  # pragma: no cover
     #     openscad -D 'name="VALID_NAME"' hr2_models.scad
     #
     # The list of *VALID_NAME*'s can be found near the bottom of `README.md`.
-    scad_program.append(Variable2D("Name", "name", '"hr_robot"'))
+    scad_program.append(Variable2D("Name", "name", '"hr2_arm_assembly"'))
 
     # romi_base: RomiBase = RomiBase(scad_program, base_dxf)
     # romi_base.holes_slots_rectangles_write()
@@ -4675,27 +4700,32 @@ def main() -> int:  # pragma: no cover
     #                master_board, other_pi, pi_offset)
     # hr2 = hr2
 
-    hr2_robot: HR2Robot = HR2Robot(scad_program)
-    hr2_robot = hr2_robot
-
-    # Generate `hr2_models.scad`:
-    scad_lines: List[str] = []
-    scad_program.scad_lines_append(scad_lines, "")
-    scad_lines.append("")
-    scad_text: str = '\n'.join(scad_lines)
-    scad_file: IO[Any]
-    with open("hr2_models.scad", "w") as scad_file:
-        scad_file.write(scad_text)
-
     # Update the `README.md` file:
     read_me_text: str = ""
     read_me_file: IO[Any]
     with open("README.md") as read_me_file:
         read_me_text = read_me_file.read()
-    updated_read_me_text: str = scad_program.read_me_update(read_me_text)
+    hr2_robot: HR2Robot = HR2Robot(scad_program)
+    hr2_robot = hr2_robot
+
+    scad_comment_lines: List[str]
+    updated_read_me_text: str
+    updated_read_me_text, scad_comment_lines = scad_program.read_me_update(read_me_text)
     if read_me_text != updated_read_me_text:
         with open("README.md", "w") as read_me_file:
             read_me_file.write(updated_read_me_text)
+    # print(f"scad_comment_lines={scad_comment_lines}")
+
+    # Generate `hr2_models.scad`:
+    scad_lines: List[str] = []
+    scad_program.scad_lines_append(scad_lines, "")
+    # Funky slice syntax for inserting a list in the middle of another list:
+    scad_lines[2:2] = scad_comment_lines
+    scad_lines.append("")
+    scad_text: str = '\n'.join(scad_lines)
+    scad_file: IO[Any]
+    with open("hr2_models.scad", "w") as scad_file:
+        scad_file.write(scad_text)
 
     return 0
 

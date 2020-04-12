@@ -1,8 +1,10 @@
-"""test_romi_mode: Unit tests for the Romi stuff."""
-
-# Copyright (c) 2019 Wayne C. Gramlich (Wayne@Gramlich.Net)
+# This file is licensed using the "MIT License" below:
+#
+# ##################################################################################################
 #
 # MIT License
+#
+# Copyright 2019, 2020 Home Brew Robotics Club
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +23,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
+# ##################################################################################################
+# <======================================= 100 characters =======================================> #
 
+"""test_romi_mode: Unit tests for the Romi stuff."""
 from math import cos, pi, sin
 from scad_models.hr2_models import (BaseDXF, HR2Robot, OtherPi,
                                     RaspberryPi3, RectangularConnector,
