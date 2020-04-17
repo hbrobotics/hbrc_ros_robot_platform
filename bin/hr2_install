@@ -48,7 +48,6 @@ set -x           # Trace execution.
 set -e           # Exit immediately on error result.
 set -o pipefail  # Fail if any commands in a pipeline fail.
 set -u           # Treat unset variables as an error.
-echo "AAAAA"
 
 # The `set -u` option causes problems when you are trying to detect whether a variable is defined
 # or not.  If you try to directly access the an undefined variable, the `set +u` will correctly
@@ -149,14 +148,13 @@ echo "BIN_DIRECTORY=$BIN_DIRECTORY"
 HR2_DIRECTORY="$( realpath $BIN_DIRECTORY/.. )"
 REPOSITORIES_DIRECTORY="$( realpath $HR2_DIRECTORY/.. )"
 # echo "HR2_DIRECTORY=$HR2_DIRECTORY"
-# echo "REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY"
+echo "REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY"
 
 
 # Pass 1 focuses on making sure that the master branch is up to date:
 # Always cd to $HR2_DIRECTORY.
 cd $HR2_DIRECTORY
 
-echo "AA"
 if [ -z "$PASS2" ]
 then
     # Pass1:
@@ -248,7 +246,6 @@ fi
 # Now we should be running the very most up-to-date version of this script file.
 echo "................................................................"
 echo "We are doing Pass2"
-echo "BB"
 
 # For debugging only:
 echo "EE=$EE"
@@ -285,7 +282,6 @@ else
     echo "**************** Creating an secure shell encryption key ..."
     ssh-keygen -q -t rsa -N '' -f $SSH_KEY_FILE 2>/dev/null <<< y >/dev/null
 fi
-echo "CC"
 
 # For the `wf` option, ensure that GITHUB_ACCOUNT_NAME is defined; otherwise immediately stop:
 if [ -n "$WF" ] &&  [ -z "${GITHUB_ACCOUNT_NAME+EXISTS}" ]
@@ -380,8 +376,6 @@ else
     echo "The Ubuntu emacs package editor of emacs editor previously installed"
 fi
 
-echo "DD"
-
 # Do the first batch of Python configuration up front.  The second batch involves setting up
 # the actual Python virtual environment and using it, that must be done at the end.
 if [ -n "$PYTHON_NEEDED" ]
@@ -410,35 +404,23 @@ then
 	echo "Ubuntu python3-pip package previously installed."
     fi
 
-    echo "FF"
     # Globally install Python virtual environments.  This is installation only, we do not use
     # them until much later on.  These means that we can leave debugging commands turned on for now.
-    VIRTUAL_ENV_WRAPPER_SH=`which virtualenvwrapper.sh`
-    echo "GG"
-    echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
-    echo "HH"
-    if [ -z "$VIRTUAL_ENV_WRAPPER_SH" ]
+    if [ -z "`which virtualenvwrapper.sh`" ]
     then
 	echo "**************** Globally Installing Python virtual environments ..."
-	echo "II"
 	$SUDO $PIP_INSTALL virtualenvwrapper
-	echo "JJ"
 	VIRTUAL_ENV_WRAPPER_SH=`which virtualenvwrapper.sh`
-	echo "KK"
 	echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
-	echo "LL"
 	if [ -z "$VIRTUAL_ENV_WRAPPER_SH" ]
 	then
 	    echo "For some reason virtualenvwrapper.sh was not installed."
 	    echo "There is no way to recover from this.  The script is stopping now."
 	    exit 1
 	fi
-	echo "MM"
     else
-	echo "NN"
 	echo "Python virtual environments previously installed"
     fi
-    echo "OO"
 
     # Modify ~/.bashrc to support virtual environments by appending the following to ~/.bashrc :
     #        export VIRTUALENVWRAPER_PYTHON=/usr/bin/python3
@@ -692,7 +674,7 @@ if [ -n "$EE$SW" ]
 then
     # Determine if we need to download the stm32cubeide repository:
     STM32_CUBE_IDE_DIRECTORY=$REPOSITORIES_DIRECTORY/stm32cubeide_1.3.0
-    if [ ! -d $STM32_CUBE_IDE_DIRECTORY]
+    if [ ! -d $STM32_CUBE_IDE_DIRECTORY ]
     then
 	echo "**************** Installing Stm32CubeIDE repository to $STM32_CUBE_IDE_DIRECTORY ..."
 	echo "This can take a very long time (15-30 minutes) ..."
@@ -729,8 +711,7 @@ fi
 # Install the Python stuff for both ME and EE:
 if [ -n "$PYTHON_NEEDED" ]
 then
-    VIRTUALENVWRAPPER_SH=`which virtualenvwrapper.sh`
-    if [ -z "VIRTUALENVWRAPPER_SH" ]
+    if [ -z "`which virtualenvwrapper.sh`" ]
     then
 	echo "For some reasons virtualenvwrapper.sh did not get installed.  This is bad."
 	echo "It is sufficiently bad that this script can not continue.  Stopping script now."
@@ -744,7 +725,7 @@ then
     set +u           # Treat unset variables as an error.
 
     # We should have a hot Python virtual environment:
-    source $VIRTUALENVWRAPPER_SH
+    source "`which virtualenvwrapper.sh`"
     echo "here 1"
 
 
@@ -753,7 +734,7 @@ then
     if [ ! -d $WORKON_HOME/hr2 ]
     then
 	echo "**************** Create hr2 python virtual environment ..."
-	$MKVIRTUALENV -a $HR2_DIRECTORY/hbrc_ros_robot_platform hr2
+	$MKVIRTUALENV -a $HR2_DIRECTORY hr2
     else
 	echo "hr2 Python virtual environment already exists."
     fi
@@ -830,7 +811,7 @@ then
 	 if [ -z `which kicube32` ]
 	 then
 	     echo "**************** Installing kicube32 into hr2 virtual environment..."
-	     $PIP_INSTALL $PROJECT_HOME/kicube32
+	     $PIP_INSTALL $REPOSITORIES_DIRECTORY/kicube32
 	 else
 	     echo "kicube32 prevously installed into hr2 virtual environment..."
 	 fi
