@@ -525,15 +525,15 @@ PRE_PUSH=.git/hooks/pre-push
 if [ ! -x $PRE_PUSH ]
 then
     echo '**************** Disallow pushes to remote repository named upstream ...' > $PRE_PUSH
-    echo '#!/bin/bash' >> $PRE_PUSH
-    echo '# Prevent pushes to remote repository named upstream.' >> $PRE_PUSH
-    echo '# Incoming shell arguments $1=remote_name $2=remote_url' >> $PRE_PUSH
-    echo 'if [ "$1" == "upstream" ] ;' >> $PRE_PUSH
-    echo 'then'  >> $PRE_PUSH
-    echo '    echo "git push to remote repository named upstream is disallowed."' >> $PRE_PUSH
-    echo '    echo "Please do development in another git branch."' >> $PRE_PUSH
-    echo '    exit 1' >> $PRE_PUSH
-    echo 'fi' >> $PRE_PUSH
+    echo '#!/bin/bash'                                                              >> $PRE_PUSH
+    echo '# Prevent pushes to remote repository named upstream.'                    >> $PRE_PUSH
+    echo '# Incoming shell arguments $1=remote_name $2=remote_url'                  >> $PRE_PUSH
+    echo 'if [ "$1" == "upstream" ] ;'                                              >> $PRE_PUSH
+    echo 'then'                                                                     >> $PRE_PUSH
+    echo '    echo "git push to remote repository named upstream is disallowed."'   >> $PRE_PUSH
+    echo '    echo "Please do development in another git branch."'                  >> $PRE_PUSH
+    echo '    exit 1'                                                               >> $PRE_PUSH
+    echo 'fi'                                                                       >> $PRE_PUSH
     chmod +x $PRE_PUSH
 else
     echo "Pushes to remote repository named upstream have been previously disabled."
@@ -545,12 +545,13 @@ if [ ! -x $PRE_COMMIT ]
 then
     echo "**************** Ensure that commits can not be performed on the master branch ..."
     # This is a more that a little kludgy:
-    echo '#!/bin/sh' > $PRE_COMMIT
-    echo 'branch="$(git rev-parse --abbrev-ref HEAD)"' >> $PRE_COMMIT
-    echo 'if [ "$branch" = "master" ]; then' >> $PRE_COMMIT
-    echo '    echo "You can not  commit directly to master branch"' >> $PRE_COMMIT
-    echo '    exit 1' >> $PRE_COMMIT
-    echo 'fi' >> $PRE_COMMIT
+    echo '#!/bin/sh'                                                > $PRE_COMMIT
+    echo 'branch="$(git rev-parse --abbrev-ref HEAD)"'              >> $PRE_COMMIT
+    echo 'if [ "$branch" == "master" ]'                             >> $PRE_COMMIT
+    echo 'then'                                                     >> $PRE_COMMIT
+    echo '    echo "You can not commit directly to master branch"'  >> $PRE_COMMIT
+    echo '    exit 1'                                               >> $PRE_COMMIT
+    echo 'fi'                                                       >> $PRE_COMMIT
     chmod +x $PRE_COMMIT
 else
     echo "Commits can not be performed on the master branch."
@@ -827,4 +828,4 @@ fi
 
 # Remind the user to activate the `hr2` virtual environment:
 echo 'Please type `workon hr2` to activate your python virtual environment.'
-echo "Please note that you are on the branch named master ."
+echo "Please note that you are on the branch named master for the $HR2_DIRECOTRY repository."
