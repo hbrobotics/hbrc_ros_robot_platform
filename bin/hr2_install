@@ -1,0 +1,858 @@
+#!/bin/bash
+
+# This file is licensed using the "MIT License" below:
+#
+####################################################################################################
+#
+# MIT License
+#
+# Copyright 2020 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+####################################################################################################
+
+# Shell scripts are notoriously difficult to read and debug.
+# To aid in reading/debugging this script, there are deliberately plenty of comments.
+# Speak of comments, the pronouns "we" and "you" are used liberally.
+# The "we" pronoun refers to the people who develop/maintain this file
+# and the pronoun "you" to refers to you, the reader(s) of this code.
+
+# As an overview, this is one shell script that is executed twice.  The first time it
+# just ensures that git is installed, we are on the master branch and forces the master
+# branch to be updated.  Updating the master branch may update this file, so we recursively
+# call this shell script again to ensure that we have the most up-to-date version of this
+# script.  You really should not notice that there are two shells running instead of just one.
+
+# In general, turning on debugging flags helps to debug shell scripts.  The four flags
+# below are really helpful.  That being said, it should be mentioned that the Python
+# Virtual Environments Wrapper breaks if these flags are set.  So, right before we actually
+# try to use any python virtual environments stuff, we turn need to turn these flags off.
+# This causes all of the python stuff to be pushed as far back as possible in this script.
+set -x           # Trace execution.
+set -e           # Exit immediately on error result.
+set -o pipefail  # Fail if any commands in a pipeline fail.
+set -u           # Treat unset variables as an error.
+echo "AAAAA"
+
+# The `set -u` option causes problems when you are trying to detect whether a variable is defined
+# or not.  If you try to directly access the an undefined variable, the `set +u` will correctly
+# generate a failure.  The solution to this problem is a very obscure corner of bash called
+# "Parameter Expansion".  The syntax `${VARIABLE_NAME+WORD}` will either return value of
+# `VARIABLE_NAME` (i.e. `"$VARIABLE_NAME"`) or WORD (i.e. `"WORD"`) depending upon whether
+# `VARIABLE_NAME` is set or not.  This is strange stuff.  The follow code snippet shows what
+# happens:
+#
+#     #!/bin/bash
+#     set -u
+#     if [ -z "${FOO+EXISTS}" ]
+#     then
+#         echo FOO does not EXIST
+#     else
+#         echo FOO EXISTS
+#     fi
+#
+#     if [ -z "${HOME+EXISTS}" ]
+#     then
+#         echo HOME does not EXIST
+#     else
+#         echo HOME EXISTS
+#     fi
+#
+# When the code is executed, the following comes out:
+#     
+#     FOO does not EXIST
+#     HOME EXISTS
+#
+# So now you know what that strange bash syntax is being used for.  By the way, the "+EXISTS"
+# could be "+ANYTHING", but "+EXISTS" seems more descriptive.
+
+# Set all of the install flags to the empty string.  Set to "yes" to enable.
+# The following test will do the logical OR of given flags `if [ -n "$EE$ME" ]`.
+# It is basically the same as `if [ -n "$EE" ] || [ -n "ME" ]`, but little shorter:
+EE="" # Electrical Engineering
+ME="" # Mechanical Engineering
+SW=""    # Software
+WF=""    # Workflow
+PASS2="" # Secret flag to enter the recursive portion of this shell script
+
+# Process the arguments specified by the user:
+if [ "$#" == "0" ]
+then
+    # No arguments produces an overview:
+    echo "Usage: install [ all | ee | me | sw | wf ]*"
+    echo "where:"
+    echo "all    Installs everything (this takes a while)"
+    echo "ee     Installs all of the software needed for electrical engineering"
+    echo "me     Installs all of the software needed for mechancial engineering"
+    echo "sw     Installs all of the software needed for software development"
+    echo "wf     Installs the develop workflow stuff (a personal Git.Hub account is required.)"
+    # pass2      Skips the first phase of the installation script
+else
+    # Iterate over each `flag` from the command line:
+    for flag in "$@"
+    do
+	#echo "flag=$flag"
+	case "$flag" in
+	    all ) EE="yes"
+		  ME="yes"
+		  SW="yes"
+		  WF="yes"
+		  ;;
+	    ee ) EE="yes"
+		 ;;
+	    me ) ME="yes"
+		 ;;
+	    sw ) SW="yes"
+		 ;;
+	    wf ) WF="yes"
+		 ;;
+	    pass2 ) PASS2="yes"
+		    ;;
+	    *) echo "$flag is not allowed.  Only all, ee, me, sw, and wf are allowed."
+	       exit 1
+	       ;;
+	esac
+    done
+    # For debugging only:
+    echo "EE=$EE"
+    echo "ME=$ME"
+    echo "SW=$SW"
+    echo "WF=$WF"
+    echo "PASS2=$PASS2"
+fi
+
+# Defining the various critical directories gets duplicated for both pass 1 and pass 2.
+#
+# Find the directory that contains this shell script.  For reference see:
+#    https://stackoverflow.com/questions/59895/how-to-get-the-source-directory-of-a-bash-script-from-within-the-script-itself
+# We are using the single line solution rather than the multi-line version (which is overkill.)
+BIN_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo "BIN_DIRECTORY=$BIN_DIRECTORY"
+
+# Define the two parent directories:
+HR2_DIRECTORY="$( realpath $BIN_DIRECTORY/.. )"
+REPOSITORIES_DIRECTORY="$( realpath $HR2_DIRECTORY/.. )"
+# echo "HR2_DIRECTORY=$HR2_DIRECTORY"
+echo "REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY"
+
+
+# Pass 1 focuses on making sure that the master branch is up to date:
+# Always cd to $HR2_DIRECTORY.
+cd $HR2_DIRECTORY
+
+echo "AA"
+if [ -z "$PASS2" ]
+then
+    # Pass1:
+    echo "Pass 1"
+
+    # Make sure that `git` exists:
+    if [ -z `which git` ]
+    then
+	echo 'The `git` program does not appear to be installed.  This should not happen!'
+        echo 'Please run the command `sudo apt install git` to ensure `git` is installed.'
+	echo "Stopping for now."
+	exit 0
+    fi
+    
+    # Switch over to the master branch:
+    #    (Get git current branch name)[https://coderwall.com/p/kdycoq/get-git-current-branch-name]:
+    CURRENT_BRANCH=`echo $(git rev-parse --abbrev-ref HEAD)`
+    if [ "$CURRENT_BRANCH" != "master" ]
+    then
+        # Figure out whether there are uncommitted files; BTW (`2>/dev/null` suppresses errors):"
+	UNCOMMITTED_FILES=`( cd $HR2_DIRECTORY ; echo $(git diff --name-only HEAD 2>/dev/null) )`
+	echo "UNCOMMITTED_FILES=$UNCOMMITTED_FILES"
+        if [ -n "$UNCOMMITTED_FILES" ]
+	then
+	    echo "This script requires that the $HR2_DIRECTORY repository be on the master"
+	    echo "branch instead of the $CURRENT_BRANCH as it currently is.  This is"
+	    echo "because we need to ensure that the master branch is completely up to date."
+	    echo "The repository at $HR2_DIRECTORY is currently on branch $CURRENT_BRANCH and".
+            echo "and this script can not continue until the uncommitted files on $CURRENT_BRANCH"
+	    echo "are either checked in and committed or they are saved into a temporary the"
+            echo "stash with `git stash push`. If you do use the `git stash push` option,"
+	    echo "please do not forget to restore the files with `git stash pop` later on."
+	    echo "Until the files on the $CURRENT_BRANCH branch are cleaned up, this script"
+	    echo "can not continue.  This script is stopping now."
+	    exit 1
+	fi
+	
+        # It should be safe to switch over the master branch:
+	git checkout master
+
+	# Verify that we made it over:
+	CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+        if [ "$CURRENT_BRANCH" != "master" ]
+	then
+	    echo "For some weird reason, we are still on branch $CURRENT_BRANCH when"
+	    echo "we should be on the master branch.  This script is stopping for now."
+	    exit 1
+	fi
+    fi
+
+    # We are on the master branch.
+    echo "Now on the master branch."
+
+    # Now figure out what the remotes are called.  When the repository is first cloned
+    # it shows up with a remote named `origin`.  Later on we rename the remote to `upstream`.
+    # It does not matter which it is, we just need to figure it out:
+    UPSTREAM_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream) )`
+    ORIGIN_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep origin) )`
+    ACTUAL_REMOTE=$UPSTREAM_REMOTE
+    if [ -z "$ACTUAL_REMOTE" ]
+    then
+	ACTUAL_REMOTE="$ORIGIN_REMOTE"
+	if [ -z "$ACTUAL_REMOTE" ]
+	then
+	    echo "For some weird reason we can not find either the upstream or origin"
+	    echo "remote.  Run `git remote` to get a list of remotes.  For now, this"
+	    echo "this script can not continue.  This script is stopping now."
+	    exit 1
+	fi
+    fi
+
+    # Now we know that the HR2_DIRECTORY is on the master branch and has an ACTUAL_REMOTE.
+    # Finally, we can update the master branch.  In theory, the master branch can not be
+    # modified, so the `git pull` should alwasy succeed with now merges:
+    git pull $ACTUAL_REMOTE master
+    echo "$HR2_DIRECTORY master branch has been updated."
+	
+    # Now this file may have been updated as a result of the `git pull`, so we recursively
+    # call the this script:
+    echo "Starting pass2"
+    $BIN_DIRECTORY/hr2_install $@ pass2  # The "secret" pass2 argument forces us to do paas 2:
+
+    # We should be done when the recursive script returns.
+    echo "Requested installation should be complete."
+    exit 0
+fi
+
+# Pass2 gets rolling here:
+# Now we should be running the very most up-to-date version of this script file.
+echo "................................................................"
+echo "We are doing Pass2"
+echo "BB"
+
+# For debugging only:
+echo "EE=$EE"
+echo "ME=$ME"
+echo "SW=$SW"
+echo "WF=$WF"
+echo "PASS2=$PASS2"
+
+# Set up some convenience variables:
+SOURCE_BASHRC=""  # Set later on if we need to remind use to `source ~/.bashrc`
+PYTHON_NEEDED="$EE$ME$SW"
+
+# Make absolutely certain we are in the $HR2_DIRECTORY
+cd $HR2_DIRECTORY
+
+# Make sure that HOME is defined because we really need it:
+if [ -z "${HOME+EXISTS}" ]
+then
+    echo 'Weird!!  HOME is not defined!!  Things are really messed up.  Stopping right now!!!!'
+    exit 1
+else
+    echo "HOME is defined."
+fi
+
+# Make sure we have an sshkey just in case somebody needs it to set up a personal GitHub.Com
+# account in the following step:
+SSH_KEY_FILE=$HOME/.ssh/id_rsa
+if [ -f "$SSH_KEY_FILE" ]
+then
+    echo "Secure shell encryption key previously generated."
+else
+    # Since, we don't want any prompting from `ssh-keygen`, see the URL below:
+    # https://stackoverflow.com/questions/43235179/how-to-execute-ssh-keygen-without-prompt/45031320
+    echo "**************** Creating an secure shell encryption key ..."
+    ssh-keygen -q -t rsa -N '' -f $SSH_KEY_FILE 2>/dev/null <<< y >/dev/null
+fi
+echo "CC"
+
+# For the `wf` option, ensure that GITHUB_ACCOUNT_NAME is defined; otherwise immediately stop:
+if [ -n "$WF" ] &&  [ -z "${GITHUB_ACCOUNT_NAME+EXISTS}" ]
+then
+    echo "When the wf (or all) option is specified, you must have previously created a personal"
+    echo "GitHub.Com account.  Furthermore, you need to install your copy your public SSH key"
+    echo "up to your GitHub.Com account.  We have already ensured that the file $SSH_KEY_FILE"
+    echo "is already present.  Please visit and URL immediately below to finish the task:"
+    echo ""
+    echo "https://help.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh"
+    echo ""
+    echo "After that you need to define the GITHUB_ACCOUNT_NAME environment variable by adding"
+    echo "a line near the end of your ~/.bashrc that file that looks like:"
+    echo ""
+    echo '    export GITHUB_ACCOUNT_NAME="..."'
+    echo ""
+    echo "where ... is your personal GitHub.Com account name."
+    echo ""
+    echo "Finally, please type:"
+    echo ""
+    echo "    source ~/.bashrc"
+    echo ""
+    echo "to force the bash shell to pick up the GITHUB_ACCOUNT_NAME environment variable."
+    echo "After all of that you can rerun the this command again."
+    echo "We will stop now so you can do the steps immediately above."
+    exit 1
+fi
+
+echo "CC"
+
+# Define some commonly used commands
+SUDO="sudo -H"
+APT_ADD_REPOSITORY="$SUDO add-apt-repository --yes"
+APT_INSTALL="$SUDO apt install --yes"
+APT_UPDATE="$SUDO apt update"
+PIP_INSTALL="pip3 install"
+
+# Define a couple more directories/files:
+BASHRC="$HOME/.bashrc"
+WORKON_HOME="$HOME/.virtualenvs"
+
+# We inform the user that `sudo` is used to install stuff:
+echo "The sudo command is used to allow installation of system software."
+echo 'The vast majority of this software is installed via `sudo atp install ...`'
+echo '`sudo dpkg -i ...`  Some packages like ROS and KiCAD are installed from'
+echo "Personal Package Archives (typically called PPA's).  These packages get"
+echo "regularly updated by the system.  The next statement to be executed is"
+echo ""
+echo "   sudo -H echo sudo enabled"
+echo ""
+echo "After you type in your password, this will essentially enable sudo for the rest"
+echo "of the installation.  If you want to stop, type Ctrl-C instead of your password:"
+$SUDO echo sudo enabled
+
+# Below is the stuff we always want to be sure is installed.
+
+# Make sure we have the Ubuntu build-essential package installed (mostly to get make).
+if [ -z `which make` ]
+then
+    echo "**************** Installing Ubuntu build-essential package ..."
+    $APT_INSTALL build-essential
+else
+    echo "Ubuntu build-essential package previously installed."
+fi
+
+# Make sure we have Ubuntu git package installed for version control management.
+if [ -z `which git` ]
+then
+    # Frankly, we should never execute this, since we test for git earlier in the script,
+    # but just in case, it never hurts to be certain...
+    echo "**************** Installing Ubuntu git package for version control management ..."
+    $APT_INSTALL git
+else
+    echo "Ubuntu git package for version control management previously installed."
+fi
+
+# Make sure we have Ubunutu vim package for vim the editor installed.
+if [ -z `which vim` ]
+then
+    echo "**************** Installing Ubuntu vim package for the vim editor ..."
+    $APT_INSTALL vim
+else
+    echo "Ubuntu vim package for the vim editor previously installed"
+fi
+
+# Make sure we have Ubuntu emacs package for the emacs editor installed.
+if [ -z `which emacs` ]
+then
+    echo "**************** Installing ubuntu emacs package for the emacs editor ..."
+    $APT_INSTALL emacs
+else
+    echo "The Ubuntu emacs package editor of emacs editor previously installed"
+fi
+
+echo "DD"
+
+# Do the first batch of Python configuration up front.  The second batch involves setting up
+# the actual Python virtual environment and using it, that must be done at the end.
+if [ -n "$PYTHON_NEEDED" ]
+then
+    # Force Python3 to be the default Python.  Python2 is the default Python until
+    # Ubuntu 20.04 gets released.  We compute PYTHON_REALPATH and PYTHON3_REALPATH
+    # and if they are not equal, we force an update.
+    PYTHON_PATH=`which python`
+    PYTHON3_PATH=`which python3`
+    PYTHON_REALPATH=`realpath $PYTHON_PATH`
+    PYTHON3_REALPATH=`realpath $PYTHON3_PATH`
+    if [ "$PYTHON_REALPATH" != "$PYTHON3_REALPATH" ]
+    then
+	echo "**************** Forcing Python3 to be the default Python ..."
+	sudo update-alternatives --install /usr/bin/python python $PYTHON3_REALPATH 2
+    else
+	echo "Python3 is already the default Python."
+    fi
+
+    # Install Ubuntu python3_pip3 package:
+    if [ -z `which pip3` ]
+    then
+	echo "**************** Installing Ubuntu python3-pip package ..."
+	$APT_INSTALL python3-pip
+    else
+	echo "Ubuntu python3-pip package previously installed."
+    fi
+
+    echo "FF"
+    # Globally install Python virtual environments.  This is installation only, we do not use
+    # them until much later on.  These means that we can leave debugging commands turned on for now.
+<<<<<<< HEAD
+    VIRTUAL_ENV_WRAPPER_SH=`which virtualenvwrapper.sh`
+    echo "GG"
+    echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
+    echo "HH"
+    if [ -z "$VIRTUAL_ENV_WRAPPER_SH" ]
+=======
+    if [ -z "`which virtualenvwrapper.sh`" ]
+>>>>>>> 1cf8cf7f17c396b0ed8064a322aeab7cce888356
+    then
+	echo "**************** Globally Installing Python virtual environments ..."
+	echo "II"
+	$SUDO $PIP_INSTALL virtualenvwrapper
+	echo "JJ"
+	VIRTUAL_ENV_WRAPPER_SH=`which virtualenvwrapper.sh`
+<<<<<<< HEAD
+	echo "KK"
+	echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
+	echo "LL"
+=======
+	echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
+>>>>>>> 1cf8cf7f17c396b0ed8064a322aeab7cce888356
+	if [ -z "$VIRTUAL_ENV_WRAPPER_SH" ]
+	then
+	    echo "For some reason virtualenvwrapper.sh was not installed."
+	    echo "There is no way to recover from this.  The script is stopping now."
+	    exit 1
+	fi
+	echo "MM"
+    else
+	echo "NN"
+	echo "Python virtual environments previously installed"
+    fi
+    echo "OO"
+
+    # Modify ~/.bashrc to support virtual environments by appending the following to ~/.bashrc :
+    #        export VIRTUALENVWRAPER_PYTHON=/usr/bin/python3
+    #        export WORKON_HOME=$HOME/.virtualenvs
+    #        export REPOSITORIES_DIRECTORY=...  # Root projects directory
+    #        export VIRTUALENVWRAPER_WORKON_CD=1
+    #        source /usr/local/bin/virtualenvwrapper.sh
+
+    # Append "export VIRTUALENVWRAPER_PYTHON=/user/bin/python3" to ~/.bashrc .
+    if [ -z "`grep VIRTUALENVWRAPER_PYTHON $BASHRC`" ]
+    then
+	echo "**************** Add VIRTUALENVWRAPER_PYTHON to $BASHRC ..."
+	echo "export VIRTUALENVWRAPER_PYTHON=`which python3`" >> $BASHRC
+    else
+	echo "VIRTUALENVWRAPER_PYTHON already in $BASHRC ."
+    fi
+
+    # Also ensure that it is locally defined:
+    if [ -z "VIRTUALENVWRAPER_PYTHON" ]
+    then
+	VIRTUALENVWRAPER_PYTHON=`which python3`
+    fi
+
+    # Append "export WORKON_HOME=$HOME/.virtualenvs" to ~/.bashrc .
+    if [ -z "`grep WORKON_HOME $BASHRC`" ]
+    then
+	echo "**************** Add WORKON_HOME to $BASHRC ..."
+	echo "export WORKON_HOME=$WORKON_HOME" >> $BASHRC
+    else
+	echo "WORKON_HOME is already in $BASHRC ."
+    fi
+
+    # Append "**************** export REPOSITORIES_DIRECTORY=... " to ~/.bashrc .
+    if [ -z "`grep REPOSITORIES_DIRECTORY $BASHRC`" ]
+    then
+	echo "**************** Add REPOSITORIES_DIRECTORY to $BASHRC ..."
+	echo "export REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY" >> $BASHRC
+    else
+	echo "REPOSITORIES_DIRECTORY is already in $BASHRC ."
+    fi
+
+    # Append "export VIRTUALENVWRAPER_WORKON_CD=1" to ~/.bashrc .
+    if [ -z "`grep VIRTUALENVWRAPER_WORKON_CD $BASHRC`" ]
+    then
+	echo "**************** Add VIRTUALENVWRAPER_WORKON_CD to $BASHRC ..."
+	echo "export VIRTUALENVWRAPER_WORKON_CD=1" >> $BASHRC
+    else
+	echo "VIRTUALENVWRAPER_WORKON_CD already in $BASHRC ."
+    fi
+
+    # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc :
+    if [ -z "`grep virtualenvwrapper.sh $BASHRC`" ]
+    then
+	echo "**************** Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
+	echo "source $VIRTUAL_ENV_WRAPPER_SH" >> $BASHRC
+    else
+	echo "source $VIRTUAL_ENV_WRAPPER_SH already in $BASHRC ."
+    fi
+
+    # Remember to ask the user to `source ~/.bashrc`:
+    SOURCE_BASHRC="yes"
+fi
+
+# Make sure that the $BIN_DIRECTORY is added to the the $PATH in $BASHRC:
+echo "BIN_DIRECTORY=$BIN_DIRECTORY"
+if [ -z `grep $BIN_DIRECTORY $BASHRC` ]
+then 
+    echo "**************** Adding $HR2_DIRECTORY/bin to PATH in $BASHRC ..."
+    echo "# Only add $BIN_DIRECTORY to PATH once:" >> $BASHRC
+    echo 'case ":$PATH:" in' >> $BASHRC
+    echo "  *:$BIN_DIRECTORY:*) ;; # Already in path, do nothing " >> $BASHRC
+    echo "  *) export PATH=\$PATH:$BIN_DIRECTORY ;; # Not in path, append it" >> $BASHRC
+    echo "esac" >> $BASHRC
+    echo "" >> $BASHRC
+    SOURCE_BASHRC="yes"
+else
+    echo "$BIN_DIRECTORY was previously added to PATH in $BASHRC." 
+fi
+
+# Make sure that `upstream` remote exists:
+if [ -z `git remote | grep upstream` == "" ]
+then
+    echo "**************** Installing git remote named upstream for $HR2_DIRECTORY ..."
+    git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform
+    # For some reason this code seems not to work:
+    #  git remote set-head upstream -a  # This should work, but seems not to for some reason but...
+    #git branch --set-upstream-to=upstream/master master  # Seems to get the job done
+    git branch --set-upstream-to=upstream/master master  # Seems to get the job done
+else
+    echo "git remote named upstream was previously installed."
+fi
+
+# Remote any `origin` upstream:
+if [ -n "`git remote | grep origin`" ]
+then
+    echo "**************** Removing git remote named origin for $HR2_DIRECTORY ..."
+    git remote remove origin
+else
+    echo "git remote name origin was previously removed."
+fi
+
+# Make sure that no pushing to upstream can occur:
+PRE_PUSH=.git/hooks/pre-push
+if [ ! -x $PRE_PUSH ]
+then
+    echo '**************** Disallow pushes to remote repository named upstream ...' > $PRE_PUSH
+    echo '#!/bin/bash'                                                              >> $PRE_PUSH
+    echo '# Prevent pushes to remote repository named upstream.'                    >> $PRE_PUSH
+    echo '# Incoming shell arguments $1=remote_name $2=remote_url'                  >> $PRE_PUSH
+    echo 'if [ "$1" == "upstream" ] ;'                                              >> $PRE_PUSH
+    echo 'then'                                                                     >> $PRE_PUSH
+    echo '    echo "git push to remote repository named upstream is disallowed."'   >> $PRE_PUSH
+    echo '    echo "Please do development in another git branch."'                  >> $PRE_PUSH
+    echo '    exit 1'                                                               >> $PRE_PUSH
+    echo 'fi'                                                                       >> $PRE_PUSH
+    chmod +x $PRE_PUSH
+else
+    echo "Pushes to remote repository named upstream have been previously disabled."
+fi
+
+# Make sure that the master branch disallows commits to the master branch.
+PRE_COMMIT=.git/hooks/pre-commit
+if [ ! -x $PRE_COMMIT ]
+then
+    echo "**************** Ensure that commits can not be performed on the master branch ..."
+    # This is a more that a little kludgy:
+    echo '#!/bin/sh'                                                > $PRE_COMMIT
+    echo 'branch="$(git rev-parse --abbrev-ref HEAD)"'              >> $PRE_COMMIT
+    echo 'if [ "$branch" = "master" ]'                              >> $PRE_COMMIT
+    echo 'then'                                                     >> $PRE_COMMIT
+    echo '    echo "You can not commit directly to master branch"'  >> $PRE_COMMIT
+    echo '    exit 1'                                               >> $PRE_COMMIT
+    echo 'fi'                                                       >> $PRE_COMMIT
+    chmod +x $PRE_COMMIT
+else
+    echo "Commits can not be performed on the master branch."
+fi
+
+# Install `hub` program for interfacing with GitHub.Com:
+if [ -z `which hub` ]
+then
+    echo "**************** Installing hub program to interface with GitHub.Com ..."
+    if [ -z `which snap` ]
+    then
+	echo "The snap command is not installed.  This should not happen.  Given that it"
+	echo "has happened, this script will immediately stop."
+	exit 1
+    fi
+    $SUDO snap install hub --classic
+else
+    echo "hub program was previously installed."
+fi
+
+# Create the staging remote:
+if [ -n "$WF" ]
+then
+    # We have a GitHub.Com account name:
+    # echo "We have a GitHub.Com account name $GITHUB_ACCOUNT_NAME ."
+    if [ -z "`git remote | grep staging`" ]
+    then
+	echo "**************** Creating a remote staging repository fork on GigHub.Com ..."
+	echo "You may be prompted password to the GitHub.Com account named $GITHUB_ACCOUNT_NAME..."
+	hub fork --remote-name staging --org $GITHUB_ACCOUNT_NAME
+	git remote add staging git@github.com:$GITHUB_ACCOUNT_NAME/hbrc_ros_robot_platform.git
+    else
+	echo "A project fork for staging was previously created on GitHub.Com."
+    fi
+fi
+
+# Make sure markdown to HTML converter is installed:
+if [ -z "`which markdown`" ]
+then
+    echo "**************** Installing markdown to HTML converter ..."
+    $APT_INSTALL markdown
+else
+    echo "markdown to HTML converter previously installed."
+fi
+
+# Install mechanical engineering tools:
+if [ -n "$ME" ]
+then
+   # Make sure we have openscad installed:
+   if [ -z "`which openscad`" ]
+   then
+       # While there is no standard openscad package for 18.04 or 18.10, there is one for 19.10.
+       # We side step the issue by just grabbing openscad directly from the openscad repository.
+       echo "**************** Installing openscad package ..."
+       $APT_ADD_REPOSITORY ppa:openscad/releases
+       $APT_UPDATE
+       $APT_INSTALL openscad
+   else
+       echo "openscad previously installed."
+   fi
+    
+   # Make sure that qcad is installed:
+   if [ -z "`which qcad`" ]
+   then
+       echo "**************** Installing qcad package ..."
+       $APT_ADD_REPOSITORY ppa:alex-p/qcad
+       $APT_UPDATE
+       $APT_INSTALL qcad
+   else
+       echo "qcad previously installed"
+   fi
+fi
+
+# Install Electrical Engineering tools:
+if [ -n "$EE" ]
+then
+    # Install kicad:
+    if [ -z `which kicad` ]
+    then
+	echo "**************** Installing KiCad package ..."
+	echo "Add KiCad to your package repository database:"
+	$SUDO add-apt-repository --yes ppa:js-reynaud/kicad-5.1
+	echo "Update your package repository database:"
+	$APT_UPDATE
+	echo "Install kicad. This over a gigabyte of code/libraires to download ..."
+	$APT_INSTALL --install-recommends kicad
+	echo "Install KiCad demo projects:"
+	$APT_INSTALL kicad-demo
+    else
+	echo "Kicad previously installed"
+    fi
+
+    # Clone bom_manager:
+    if [ ! -d $REPOSITORIES_DIRECTORY/bom_manager ]
+    then
+	echo "**************** Cloning bom_manager repository into $REPOSITORIES_DIRECTORY ."
+	echo REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY
+	(cd $REPOSITORIES_DIRECTORY ; git clone https://github.com/waynegramlich/bom_manager.git)
+    else
+	echo "Making sure that bom_manager is up to date ..."
+	( cd $REPOSITORIES_DIRECTORY/bom_manager ; git pull )
+    fi
+
+    # Clone kicube32:
+    if [ ! -d $REPOSITORIES_DIRECTORY/kicube32 ]
+    then
+	echo REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY
+	echo "**************** Cloning kicube32 repository into $REPOSITORIES_DIRECTORY ."
+	( cd $REPOSITORIES_DIRECTORY ; git clone https://github.com/waynegramlich/kicube32.git )
+    else
+	echo "Making sure that kicube32 is up to date ..."
+	( cd $REPOSITORIES_DIRECTORY/kicube32 ; git pull )
+    fi
+fi
+
+# See if we need to install the Stm32CubeIde:
+if [ -n "$EE$SW" ]
+then
+    # Determine if we need to download the stm32cubeide repository:
+    STM32_CUBE_IDE_DIRECTORY=$REPOSITORIES_DIRECTORY/stm32cubeide_1.3.0
+    if [ ! -d $STM32_CUBE_IDE_DIRECTORY ]
+    then
+	echo "**************** Installing Stm32CubeIDE repository to $STM32_CUBE_IDE_DIRECTORY ..."
+	echo "This can take a very long time (15-30 minutes) ..."
+        ( cd $REPOSITORIES_DIRECTORY ; \
+	  git clone https://github.com/waynegramlich/stm32cubeide_1.3.0.git )
+	echo "$STM32_CUBE_IDE_DIRECTORY Repository FINALLY downloaded."
+    else
+	echo "Stm32CubeIDE 1.3.0 has been previously downloaded."
+    fi
+    
+    # See whether or not we need to run the installation script:
+    STM32_CUBE_IDE_EXECUTABLE=/opt/st/stm32cubeide_1.3.0/stm32cubeide
+    if [ ! -x $STM32_CUBE_IDE_EXECUTABLE ]
+    then
+	echo "**************** Executing the Stm32CubeIDE Installation scripts ..."
+	echo "Some license agreements will show up for you to click through ..."
+	( cd $STM32_CUBE_IDE_DIRECTORY ; ./install.sh )
+    else
+	echo "Stm32CubeIDE Installation scripts previously executed."
+    fi
+
+    # See whether the link from the HR2 bin directory has been installed:
+    STM32_CUBE_IDE_LINK=$BIN_DIRECTORY/stm32cubeide
+    if [ ! -L $STM32_CUBE_IDE_LINK ]
+    then
+	echo "**************** Installing a symbolic link to Stm32CubeIDE executable."
+	rm -f $STM32_CUBE_IDE_LINK
+	ln -s $STM32_CUBE_IDE_EXECUTABLE $STM32_CUBE_IDE_LINK
+    else
+	echo "Symbolic link to Stm32CubeIDE executable previously installed."
+    fi
+fi
+
+# Install the Python stuff for both ME and EE:
+if [ -n "$PYTHON_NEEDED" ]
+then
+    if [ -z "`which virtualenvwrapper.sh`" ]
+    then
+	echo "For some reasons virtualenvwrapper.sh did not get installed.  This is bad."
+	echo "It is sufficiently bad that this script can not continue.  Stopping script now."
+        exit 1
+    fi
+
+    # The virtual wrapper script breaks under debugging, so turn all debugging is now turned off.
+    set +x           # Trace execution.
+    set +e           # Exit immediately on error result.
+    set +o pipefail  # Fail if any commands in a pipeline fail.
+    set +u           # Treat unset variables as an error.
+
+    # We should have a hot Python virtual environment:
+    source "`which virtualenvwrapper.sh`"
+    echo "here 1"
+
+
+    # Now ensure that the hr2 pythong virtual environment exists:
+    MKVIRTUALENV="mkvirtualenv -p 3.6" 
+    if [ ! -d $WORKON_HOME/hr2 ]
+    then
+	echo "**************** Create hr2 python virtual environment ..."
+	$MKVIRTUALENV -a $HR2_DIRECTORY hr2
+    else
+	echo "hr2 Python virtual environment already exists."
+    fi
+
+    # For some weird reason, doing a "source $BASHRC" does not properly get
+    # the virtual environment wrapper variables set properly.  So, instead
+    # we set them all manually below:
+    export VIRTUALENVWRAPER_PYTHON=`which python3`
+    export WORKON_HOME=$WORKON_HOME
+    export REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY
+    export VIRTUALENVWRAPER_WORKON_CD=1
+
+    # Install Python mypi static type checker:
+    if [ -z "`which mypy`" ]
+    then
+	echo "Installing Python mypy static type checker ..."
+	(workon hr2; $PIP_INSTALL mypy ; deactivate)
+    else
+	echo "Python mypy static type checker previously installed."
+    fi
+
+    # Install Python flake8 code style checker:
+    if [ -z "`which flake8`" ]
+    then
+	echo "**************** Installing Python flake8 code style checker ..."
+	(workon hr2; $PIP_INSTALL flake8 ; deactivate)
+    else
+	echo "Python flake8 code style checker previously installed."
+    fi
+
+    # Install Python pydocstyle documentation style checker:
+    if [ -z "`which pydocstyle`" ]
+    then
+	echo "**************** Installing Python pydocstyle documentation style checker ..."
+	(workon hr2; $PIP_INSTALL pydocstyle ; deactivate)
+    else
+	echo "Python pydocstyle documentation style checker previously installed."
+    fi
+
+    # Install pytest testing system:
+    if [ -z "`which pytest`" ]
+    then
+	echo "**************** Installing Python testing system ..."
+	( workon hr2; $PIP_INSTALL pytest ; deactivate )
+    else
+	echo "Python testing system previously installed."
+    fi
+
+    # Install kipart, kicube32, bom_manager:
+    if [ -n "$EE" ]
+    then
+	# Install kipart into hr2 environment:
+        echo "here 2"
+	(echo "here 3"
+	 workon hr2
+	 echo "here 4"
+	 if [ -z `which kipart` ]
+	 then
+	     echo "here 5"
+	     echo "**************** Installing kipart into hr2 virtual environment..."
+	     pip3 install kipart
+	     echo "here 6"
+	 else
+	     echo "here 7"
+	     echo "kipart previously installed into hr2 virtual environment."
+	 fi
+	 echo "here 8"
+	 deactivate)
+	echo "here 9"
+
+	# Install kicube32 into hr2 environment:
+	echo "Installing kicube32 into hr2 virtual environment."
+	(workon hr2
+	 if [ -z `which kicube32` ]
+	 then
+	     echo "**************** Installing kicube32 into hr2 virtual environment..."
+	     $PIP_INSTALL $REPOSITORIES_DIRECTORY/kicube32
+	 else
+	     echo "kicube32 prevously installed into hr2 virtual environment..."
+	 fi
+	 deactivate)
+
+	# For now do not bother with bom_manager.
+    fi
+fi
+
+# Remind the user to update their environment:
+if [ -n "SOURCE_BASHRC" ]
+then
+    echo '!!!!!!!!!!!!!!!! Please type `source ~/.bashrc` after this to update your environment.'
+fi
+
+# Remind the user to activate the `hr2` virtual environment:
+echo 'Please type `workon hr2` to activate your python virtual environment.'
+echo "Please note that you are on the branch named master for the $HR2_DIRECOTRY repository."
