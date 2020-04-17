@@ -48,7 +48,6 @@ set -x           # Trace execution.
 set -e           # Exit immediately on error result.
 set -o pipefail  # Fail if any commands in a pipeline fail.
 set -u           # Treat unset variables as an error.
-echo "AAAAA"
 
 # The `set -u` option causes problems when you are trying to detect whether a variable is defined
 # or not.  If you try to directly access the an undefined variable, the `set +u` will correctly
@@ -156,7 +155,6 @@ echo "REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY"
 # Always cd to $HR2_DIRECTORY.
 cd $HR2_DIRECTORY
 
-echo "AA"
 if [ -z "$PASS2" ]
 then
     # Pass1:
@@ -248,7 +246,6 @@ fi
 # Now we should be running the very most up-to-date version of this script file.
 echo "................................................................"
 echo "We are doing Pass2"
-echo "BB"
 
 # For debugging only:
 echo "EE=$EE"
@@ -285,7 +282,6 @@ else
     echo "**************** Creating an secure shell encryption key ..."
     ssh-keygen -q -t rsa -N '' -f $SSH_KEY_FILE 2>/dev/null <<< y >/dev/null
 fi
-echo "CC"
 
 # For the `wf` option, ensure that GITHUB_ACCOUNT_NAME is defined; otherwise immediately stop:
 if [ -n "$WF" ] &&  [ -z "${GITHUB_ACCOUNT_NAME+EXISTS}" ]
@@ -380,8 +376,6 @@ else
     echo "The Ubuntu emacs package editor of emacs editor previously installed"
 fi
 
-echo "DD"
-
 # Do the first batch of Python configuration up front.  The second batch involves setting up
 # the actual Python virtual environment and using it, that must be done at the end.
 if [ -n "$PYTHON_NEEDED" ]
@@ -410,43 +404,21 @@ then
 	echo "Ubuntu python3-pip package previously installed."
     fi
 
-    echo "FF"
     # Globally install Python virtual environments.  This is installation only, we do not use
     # them until much later on.  These means that we can leave debugging commands turned on for now.
-<<<<<<< HEAD
-    VIRTUAL_ENV_WRAPPER_SH=`which virtualenvwrapper.sh`
-    echo "GG"
-    echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
-    echo "HH"
-    if [ -z "$VIRTUAL_ENV_WRAPPER_SH" ]
-=======
     if [ -z "`which virtualenvwrapper.sh`" ]
->>>>>>> 1cf8cf7f17c396b0ed8064a322aeab7cce888356
     then
 	echo "**************** Globally Installing Python virtual environments ..."
-	echo "II"
 	$SUDO $PIP_INSTALL virtualenvwrapper
-	echo "JJ"
-	VIRTUAL_ENV_WRAPPER_SH=`which virtualenvwrapper.sh`
-<<<<<<< HEAD
-	echo "KK"
-	echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
-	echo "LL"
-=======
-	echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
->>>>>>> 1cf8cf7f17c396b0ed8064a322aeab7cce888356
-	if [ -z "$VIRTUAL_ENV_WRAPPER_SH" ]
+	if [ -z "`which virtualenvwrapper.sh`" ]
 	then
 	    echo "For some reason virtualenvwrapper.sh was not installed."
 	    echo "There is no way to recover from this.  The script is stopping now."
 	    exit 1
 	fi
-	echo "MM"
     else
-	echo "NN"
 	echo "Python virtual environments previously installed"
     fi
-    echo "OO"
 
     # Modify ~/.bashrc to support virtual environments by appending the following to ~/.bashrc :
     #        export VIRTUALENVWRAPER_PYTHON=/usr/bin/python3
@@ -498,12 +470,12 @@ then
     fi
 
     # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc :
-    if [ -z "`grep virtualenvwrapper.sh $BASHRC`" ]
+    if [ -z "`which virtualenvwrapper.sh $BASHRC`" ]
     then
 	echo "**************** Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
-	echo "source $VIRTUAL_ENV_WRAPPER_SH" >> $BASHRC
+	echo "source `which virtualenvwrapper.sh`" >> $BASHRC
     else
-	echo "source $VIRTUAL_ENV_WRAPPER_SH already in $BASHRC ."
+	echo "source `which virtualenvwrapper.sh` is already in $BASHRC ."
     fi
 
     # Remember to ask the user to `source ~/.bashrc`:
