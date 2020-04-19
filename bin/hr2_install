@@ -393,7 +393,7 @@ then
     if [ ! -x "$OPT_STM32_CUBE_IDE_EXECUTABLE" ]
     then
 	# The executable has not been installed.
-        TMP_STM32_CUBE_IDE_SH="/tmp/stm32cubeide.sh" ]
+        TMP_STM32_CUBE_IDE_SH="/tmp/stm32cubeide.sh"
 	if [ ! -x "$TMP_STM32_CUBE_IDE_SH" ]
 	then
 	    echo "Running \`$STM32_CUBE_IDE_DIRECTORY/install.sh\` ..."
