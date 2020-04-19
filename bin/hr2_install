@@ -84,8 +84,9 @@ set -u           # Treat unset variables as an error.
 # Set all of the install flags to the empty string.  Set to "yes" to enable.
 # The following test will do the logical OR of given flags `if [ -n "$EE$ME" ]`.
 # It is basically the same as `if [ -n "$EE" ] || [ -n "ME" ]`, but little shorter:
-EE="" # Electrical Engineering
-ME="" # Mechanical Engineering
+DEV="    # Development
+EE=""    # Electrical Engineering
+ME=""    # Mechanical Engineering
 SW=""    # Software
 WF=""    # Workflow
 PASS2="" # Secret flag to enter the recursive portion of this shell script
