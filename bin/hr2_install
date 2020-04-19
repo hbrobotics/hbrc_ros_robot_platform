@@ -94,13 +94,14 @@ PASS2="" # Secret flag to enter the recursive portion of this shell script
 if [ "$#" == "0" ]
 then
     # No arguments produces an overview:
-    echo "Usage: install [ all | ee | me | sw | wf ]*"
+    echo "Usage: install [ all | most | dev | ee | me | sw ]*"
     echo "where:"
-    echo "all    Installs everything (this takes a while)"
+    echo "all    Installs everything"
+    echo "most   Installs everything but dev"
+    echo "dev    Installs the development workflow stuff (a personal Git.Hub account is required.)"
     echo "ee     Installs all of the software needed for electrical engineering"
-    echo "me     Installs all of the software needed for mechancial engineering"
+    echo "me     Installs all of the software needed for mechanical engineering"
     echo "sw     Installs all of the software needed for software development"
-    echo "wf     Installs the develop workflow stuff (a personal Git.Hub account is required.)"
     # pass2      Skips the first phase of the installation script
 else
     # Iterate over each `flag` from the command line:
@@ -111,28 +112,32 @@ else
 	    all ) EE="yes"
 		  ME="yes"
 		  SW="yes"
-		  WF="yes"
+		  DEV="yes"
 		  ;;
+	    most ) EE="yes"
+		   ME="yes"
+		   SW="yes"
+		   ;;
+	    dev ) DEV="yes"
+		 ;;
 	    ee ) EE="yes"
 		 ;;
 	    me ) ME="yes"
 		 ;;
 	    sw ) SW="yes"
 		 ;;
-	    wf ) WF="yes"
-		 ;;
 	    pass2 ) PASS2="yes"
 		    ;;
-	    *) echo "$flag is not allowed.  Only all, ee, me, sw, and wf are allowed."
+	    *) echo "$flag is not allowed.  Only all, most, dev, ee, me, and sw are allowed."
 	       exit 1
 	       ;;
 	esac
     done
     # For debugging only:
+    echo "DEV=$DEV"
     echo "EE=$EE"
     echo "ME=$ME"
     echo "SW=$SW"
-    echo "WF=$WF"
     echo "PASS2=$PASS2"
 fi
 
@@ -152,19 +157,19 @@ echo "REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY"
 
 
 # Pass 1 focuses on making sure that the master branch is up to date:
-# Always cd to $HR2_DIRECTORY.
+# Always `cd` to `$HR2_DIRECTORY`.
 cd $HR2_DIRECTORY
 
 if [ -z "$PASS2" ]
 then
     # Pass1:
-    echo "Pass 1"
+    #echo "Pass 1"
 
     # Make sure that `git` exists:
     if [ -z `which git` ]
     then
-	echo 'The `git` program does not appear to be installed.  This should not happen!'
-        echo 'Please run the command `sudo apt install git` to ensure `git` is installed.'
+	echo "The \`git\` program does not appear to be installed.  This should not happen!"
+        echo "Please run the command \`sudo apt install git\` to ensure \`git\` is installed."
 	echo "Stopping for now."
 	exit 0
     fi
@@ -210,7 +215,7 @@ then
 
     # Now figure out what the remotes are called.  When the repository is first cloned
     # it shows up with a remote named `origin`.  Later on we rename the remote to `upstream`.
-    # It does not matter which it is, we just need to figure it out:
+    # It does not matter which of the two it is, we just need to figure it out:
     UPSTREAM_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream) )`
     ORIGIN_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep origin) )`
     ACTUAL_REMOTE=$UPSTREAM_REMOTE
@@ -219,25 +224,27 @@ then
 	ACTUAL_REMOTE="$ORIGIN_REMOTE"
 	if [ -z "$ACTUAL_REMOTE" ]
 	then
-	    echo "For some weird reason we can not find either the upstream or origin"
-	    echo "remote.  Run `git remote` to get a list of remotes.  For now, this"
-	    echo "this script can not continue.  This script is stopping now."
+	    echo "For some weird reason we can not find a remote repository named either"
+	    echo "upstream or origin.  Run `git remote -v` to get a list of remotes."
+	    echo "For now,this script can not continue and is immediately stopping!"
 	    exit 1
 	fi
     fi
 
     # Now we know that the HR2_DIRECTORY is on the master branch and has an ACTUAL_REMOTE.
     # Finally, we can update the master branch.  In theory, the master branch can not be
-    # modified, so the `git pull` should alwasy succeed with now merges:
+    # modified locally because we install a pre-commit hook later on to disallow commits
+    # to the master branch.  This means that `git pull` should always succeed without
+    # requiring any merge:
     git pull $ACTUAL_REMOTE master
     echo "$HR2_DIRECTORY master branch has been updated."
 	
     # Now this file may have been updated as a result of the `git pull`, so we recursively
-    # call the this script:
+    # call the this script (which may have been updated):
     echo "Starting pass2"
     $BIN_DIRECTORY/hr2_install $@ pass2  # The "secret" pass2 argument forces us to do paas 2:
 
-    # We should be done when the recursive script returns.
+    # We have now returned from the recursive call and can wrap things up.
     echo "Requested installation should be complete."
     exit 0
 fi
@@ -248,29 +255,31 @@ echo "................................................................"
 echo "We are doing Pass2"
 
 # For debugging only:
+echo "DEV=$DEV"
 echo "EE=$EE"
 echo "ME=$ME"
 echo "SW=$SW"
-echo "WF=$WF"
 echo "PASS2=$PASS2"
 
 # Set up some convenience variables:
-SOURCE_BASHRC=""  # Set later on if we need to remind use to `source ~/.bashrc`
+# Set `SOURCE_BASHRC` later on to remind the user to type `source ~/.bashrc`:
+SOURCE_BASHRC=""
+# `PYTHON_NEEDED` is a flag that is not empty if python is needed.
 PYTHON_NEEDED="$EE$ME$SW"
 
-# Make absolutely certain we are in the $HR2_DIRECTORY
+# Make absolutely certain we are in the `$HR2_DIRECTORY`:
 cd $HR2_DIRECTORY
 
-# Make sure that HOME is defined because we really need it:
+# Make sure that the HOME environment variable is defined because we really need it:
 if [ -z "${HOME+EXISTS}" ]
 then
-    echo 'Weird!!  HOME is not defined!!  Things are really messed up.  Stopping right now!!!!'
+    echo "Weird!!  \`HOME\` is not defined!!  Things are really messed up.  Stopping right now!!!!"
     exit 1
 else
     echo "HOME is defined."
 fi
 
-# Make sure we have an sshkey just in case somebody needs it to set up a personal GitHub.Com
+# Make sure we have an SSH key just in case somebody needs it to set up a personal GitHub.Com
 # account in the following step:
 SSH_KEY_FILE=$HOME/.ssh/id_rsa
 if [ -f "$SSH_KEY_FILE" ]
@@ -283,20 +292,22 @@ else
     ssh-keygen -q -t rsa -N '' -f $SSH_KEY_FILE 2>/dev/null <<< y >/dev/null
 fi
 
-# For the `wf` option, ensure that GITHUB_ACCOUNT_NAME is defined; otherwise immediately stop:
-if [ -n "$WF" ] &&  [ -z "${GITHUB_ACCOUNT_NAME+EXISTS}" ]
+# For the `dev` option, ensure that `GITHUB_ACCOUNT_NAME` is defined; otherwise immediately stop:
+if [ -n "$DEV" ] &&  [ -z "${GITHUB_ACCOUNT_NAME+EXISTS}" ]
 then
-    echo "When the wf (or all) option is specified, you must have previously created a personal"
-    echo "GitHub.Com account.  Furthermore, you need to install your copy your public SSH key"
-    echo "up to your GitHub.Com account.  We have already ensured that the file $SSH_KEY_FILE"
-    echo "is already present.  Please visit and URL immediately below to finish the task:"
+    echo "When the \`dev\` (or \`all\`) option is specified, you must have previously created"
+    echo "a personal GitHub.Com account.  Furthermore, you need to install your copy your public"
+    echo "SSH key up to your GitHub.Com account.  This script has already ensured that the file"
+    echo "\`$SSH_KEY_FILE\` has been filled with your public SSH key.  Please visit and URL"
+    echo "immediately below to finish the task of copying your public SSH key up to GitHub.Com:"
     echo ""
     echo "https://help.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh"
     echo ""
-    echo "After that you need to define the GITHUB_ACCOUNT_NAME environment variable by adding"
-    echo "a line near the end of your ~/.bashrc that file that looks like:"
+    echo "After you have installed your public SSH key into your GitHub.Com account, next you need"
+    echo "to define the \`GITHUB_ACCOUNT_NAME\` environment variable by adding a line near the end"
+    echo "of your \`~/.bashrc\` that file that looks like:"
     echo ""
-    echo '    export GITHUB_ACCOUNT_NAME="..."'
+    echo "    export GITHUB_ACCOUNT_NAME=\"...\""
     echo ""
     echo "where ... is your personal GitHub.Com account name."
     echo ""
@@ -304,13 +315,15 @@ then
     echo ""
     echo "    source ~/.bashrc"
     echo ""
-    echo "to force the bash shell to pick up the GITHUB_ACCOUNT_NAME environment variable."
+    echo "to force the bash shell to pick up the \`GITHUB_ACCOUNT_NAME\` environment variable."
+    echo "You can verify that it 'took' by typing:"
+    echo ""
+    echo "    echo \$GITHUB_ACCOUNT_NAME"
+    echo ""
     echo "After all of that you can rerun the this command again."
-    echo "We will stop now so you can do the steps immediately above."
+    echo "Stopping now so you can do the steps immediately above."
     exit 1
 fi
-
-echo "CC"
 
 # Define some commonly used commands
 SUDO="sudo -H"
@@ -323,18 +336,99 @@ PIP_INSTALL="pip3 install"
 BASHRC="$HOME/.bashrc"
 WORKON_HOME="$HOME/.virtualenvs"
 
-# We inform the user that `sudo` is used to install stuff:
-echo "The sudo command is used to allow installation of system software."
-echo 'The vast majority of this software is installed via `sudo atp install ...`'
-echo '`sudo dpkg -i ...`  Some packages like ROS and KiCAD are installed from'
+# See if we need to install the Stm32CubeIde:
+STM32_CUBE_IDE_DIRECTORY=$REPOSITORIES_DIRECTORY/stm32cubeide_1.3.0
+STM32_CUBE_IDE_INSTALL_SH=$STM32_CUBE_IDE_DIRECTORY/install.sh
+TMP_STM32_CUBE_IDE_SH=/tmp/stm32cubeide.sh
+if [ -n "$EE$SW" ]
+then
+    # Determine if we need to download the `stm32cubeide` repository:
+    if [ ! -d $STM32_CUBE_IDE_DIRECTORY ]
+    then
+	# Warn about the long download time, `sudo`, and license agreements."
+	echo "**************** Installing Stm32CubeIDE repository to $STM32_CUBE_IDE_DIRECTORY ..."
+	echo "This can take a very long time (15-30 minutes) ..."
+        ( cd $REPOSITORIES_DIRECTORY ; \
+	  git clone https://github.com/waynegramlich/stm32cubeide_1.3.0.git )
+	echo "\`$STM32_CUBE_IDE_DIRECTORY\` repository is FINALLY downloaded."
+        echo "Executing \`$STM32_CUBE_IDE_DIRECTORY\` pre-install script."
+	( cd $STM32_CUBE_IDE_DIRECTORY ; ./install.sh )
+    else
+	echo "Stm32CubeIDE 1.3.0 has been previously downloaded."
+    fi
+fi
+
+# Tell the user that `sudo` is about to be used to install stuff:
+# Warn the user about the possible upcoming sudo password prompt:
+echo ""
+echo "The \`sudo\` command is used to allow installation of system software."
+echo "The vast majority of this software is installed via \`sudo atp install ...\`"
+echo "\`sudo dpkg -i ...\`  Some packages like ROS and KiCAD are installed from"
 echo "Personal Package Archives (typically called PPA's).  These packages get"
-echo "regularly updated by the system.  The next statement to be executed is"
+echo "regularly updated by the system.  The \`sudo\` command is also needed to"
+echo "install the PPA's.  At this point `sudo` is going to be triggered and it will"
+echo "prompt you for your user password to perform these system installs."
 echo ""
-echo "   sudo -H echo sudo enabled"
+$SUDO echo "Enable `sudo`..."
 echo ""
-echo "After you type in your password, this will essentially enable sudo for the rest"
-echo "of the installation.  If you want to stop, type Ctrl-C instead of your password:"
-$SUDO echo sudo enabled
+echo "Unless your network download link is really slow, \`sudo\` will probably not bother you"
+echo "for a password again.  If it does, just type it in again."
+echo ""
+
+# Finish the installation of the `stm32cubeide` software:
+if [ -n "$EE$SW" ] && [ ! -x "STM32_CUBE_IDE_EXECUTABLE" ]
+then
+    # Just to be sure, we need to verify that STM32_CUBE_IDE_DIRECTORY actually exists.
+    # It really should, since we should have downloaded that repository a little bit earlier.
+    if [ ! -d "$STM32_CUBE_IDE_DIRECTORY" ]
+    then
+	echo "This is weird.  The \`$STM32_CUBE_IDE_DIRECTORY/\` should have been previously"
+	echo "downloaded.  Stopping the script now."
+	exit 1
+    fi
+
+    # See whether or not we need to run the installation script:
+    if [ ! -x $STM32_CUBE_IDE_EXECUTABLE ]
+    then
+	# The executable has not been installed.
+        TMP_STM32_CUBE_IDE_SH="/tmp/stm32cubeide.sh" ]
+	if [ ! -x "$TMP_STM32_CUBE_IDE_SH" ]
+	then
+	    echo "Running \`$STM32_CUBE_IDE_DIRECTORY/install.sh\` ..."
+	    ( cd "$STM32_CUBE_IDE_DIRECTORY" ; ./install.sh )
+	    if [ ! -x "$TMP_STM32_CUBE_IDE_SH" ]
+	    then
+		echo "This is weird.  The file \`$TMP_STM32_CUBE_IDE_SH\` should now exist"
+		echo "and it does not.  Stopping the script now."
+	    fi
+	fi
+
+	# Now execute the `$TMP_STM32_CUBE_IDE_SH`.  This should do the license prompts and
+	# install everything:
+	$TMP_STM32_CUBE_IDE_SH
+
+	# Verify that the executable got installed:
+	if [ ! -x $STM32_CUBE_IDE_EXECUTABLE ]
+	then
+	    echo "This is weird the executable \`$STM32_CUBE_IDE_EXECUTABLE\` should now exist"
+	    echo "and it does not.  Stopping the script now."
+	    exit 1
+	fi
+    else
+	echo "Stm32CubeIDE Installation scripts previously executed."
+    fi
+
+    # See whether the link from the $HR2_DIRECTORY/bin directory has been installed:
+    STM32_CUBE_IDE_LINK=$BIN_DIRECTORY/stm32cubeide
+    if [ ! -L $STM32_CUBE_IDE_LINK ]
+    then
+	echo "**************** Installing a symbolic link to Stm32CubeIDE executable."
+	rm -f $STM32_CUBE_IDE_LINK
+	ln -s $STM32_CUBE_IDE_EXECUTABLE $STM32_CUBE_IDE_LINK
+    else
+	echo "Symbolic link to Stm32CubeIDE executable previously installed."
+    fi
+fi
 
 # Below is the stuff we always want to be sure is installed.
 
@@ -358,7 +452,7 @@ else
     echo "Ubuntu git package for version control management previously installed."
 fi
 
-# Make sure we have Ubunutu vim package for vim the editor installed.
+# Make sure we have Ubuntu vim package for vim the editor installed.
 if [ -z `which vim` ]
 then
     echo "**************** Installing Ubuntu vim package for the vim editor ..."
@@ -428,6 +522,7 @@ then
     #        export REPOSITORIES_DIRECTORY=...  # Root projects directory
     #        export VIRTUALENVWRAPER_WORKON_CD=1
     #        source /usr/local/bin/virtualenvwrapper.sh
+    # Again, this is just setup, the actual virtual environment has not been created yet.
 
     # Append "export VIRTUALENVWRAPER_PYTHON=/user/bin/python3" to ~/.bashrc .
     if [ -z "`grep VIRTUALENVWRAPER_PYTHON $BASHRC`" ]
@@ -439,37 +534,40 @@ then
     fi
 
     # Also ensure that it is locally defined:
-    if [ -z "VIRTUALENVWRAPER_PYTHON" ]
-    then
-	VIRTUALENVWRAPER_PYTHON=`which python3`
-    fi
+    export VIRTUALENVWRAPER_PYTHON=`which python3`
 
     # Append "export WORKON_HOME=$HOME/.virtualenvs" to ~/.bashrc .
     if [ -z "`grep WORKON_HOME $BASHRC`" ]
     then
-	echo "**************** Add WORKON_HOME to $BASHRC ..."
+	echo "**************** Add WORKON_HOME to \`$BASHRC\` ..."
 	echo "export WORKON_HOME=$WORKON_HOME" >> $BASHRC
     else
-	echo "WORKON_HOME is already in $BASHRC ."
+	echo "WORKON_HOME is already in \`$BASHRC\` ."
     fi
+    # Also ensure that it is locally defined:
+    export WORKON_HOME="$WORKON_HOME"
 
-    # Append "**************** export REPOSITORIES_DIRECTORY=... " to ~/.bashrc .
+    # Append "**************** export REPOSITORIES_DIRECTORY=... " to `~/.bashrc` .
     if [ -z "`grep REPOSITORIES_DIRECTORY $BASHRC`" ]
     then
-	echo "**************** Add REPOSITORIES_DIRECTORY to $BASHRC ..."
+	echo "**************** Add REPOSITORIES_DIRECTORY to \`$BASHRC\` ..."
 	echo "export REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY" >> $BASHRC
     else
-	echo "REPOSITORIES_DIRECTORY is already in $BASHRC ."
+	echo "REPOSITORIES_DIRECTORY is already in \`$BASHRC\` ."
     fi
+    # Also ensure it is defined locally:
+    export REPOSITORIES_DIRECTORY="$REPOSITORIES_DIRECTORY"
 
-    # Append "export VIRTUALENVWRAPER_WORKON_CD=1" to ~/.bashrc .
+    # Append "export VIRTUALENVWRAPER_WORKON_CD=1" to `~/.bashrc`.
     if [ -z "`grep VIRTUALENVWRAPER_WORKON_CD $BASHRC`" ]
     then
-	echo "**************** Add VIRTUALENVWRAPER_WORKON_CD to $BASHRC ..."
+	echo "**************** Add VIRTUALENVWRAPER_WORKON_CD to \`$BASHRC\` ..."
 	echo "export VIRTUALENVWRAPER_WORKON_CD=1" >> $BASHRC
     else
-	echo "VIRTUALENVWRAPER_WORKON_CD already in $BASHRC ."
+	echo "VIRTUALENVWRAPER_WORKON_CD already in \`$BASHRC\` ."
     fi
+    # Also ensure it is defined locally:
+    export VIRTUALENVWRAPER_WORKON_CD=1
 
     # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc :
     if [ -z "`grep virtualenvwrapper.sh $BASHRC`" ]
@@ -490,7 +588,7 @@ if [ -z `grep $BIN_DIRECTORY $BASHRC` ]
 then 
     echo "**************** Adding $HR2_DIRECTORY/bin to PATH in $BASHRC ..."
     echo "# Only add $BIN_DIRECTORY to PATH once:" >> $BASHRC
-    echo 'case ":$PATH:" in' >> $BASHRC
+    echo "case \":$PATH:\" in'" >> $BASHRC
     echo "  *:$BIN_DIRECTORY:*) ;; # Already in path, do nothing " >> $BASHRC
     echo "  *) export PATH=\$PATH:$BIN_DIRECTORY ;; # Not in path, append it" >> $BASHRC
     echo "esac" >> $BASHRC
@@ -513,7 +611,7 @@ else
     echo "git remote named upstream was previously installed."
 fi
 
-# Remote any `origin` upstream:
+# Remove any `origin` upstream:
 if [ -n "`git remote | grep origin`" ]
 then
     echo "**************** Removing git remote named origin for $HR2_DIRECTORY ..."
@@ -526,16 +624,16 @@ fi
 PRE_PUSH=.git/hooks/pre-push
 if [ ! -x $PRE_PUSH ]
 then
-    echo '**************** Disallow pushes to remote repository named upstream ...' > $PRE_PUSH
-    echo '#!/bin/bash'                                                              >> $PRE_PUSH
-    echo '# Prevent pushes to remote repository named upstream.'                    >> $PRE_PUSH
-    echo '# Incoming shell arguments $1=remote_name $2=remote_url'                  >> $PRE_PUSH
-    echo 'if [ "$1" == "upstream" ] ;'                                              >> $PRE_PUSH
-    echo 'then'                                                                     >> $PRE_PUSH
-    echo '    echo "git push to remote repository named upstream is disallowed."'   >> $PRE_PUSH
-    echo '    echo "Please do development in another git branch."'                  >> $PRE_PUSH
-    echo '    exit 1'                                                               >> $PRE_PUSH
-    echo 'fi'                                                                       >> $PRE_PUSH
+    echo "**************** Disallow pushes to remote repository named upstream ..." >  $PRE_PUSH
+    echo "#!/bin/bash"                                                              >> $PRE_PUSH
+    echo "# Prevent pushes to remote repository named upstream."                    >> $PRE_PUSH
+    echo "# Incoming shell arguments $1=remote_name $2=remote_url"                  >> $PRE_PUSH
+    echo "if [ \"$1\" == \"upstream\" ] ;"                                          >> $PRE_PUSH
+    echo "then"                                                                     >> $PRE_PUSH
+    echo "    echo \"git push to remote repository named upstream is disallowed.\"" >> $PRE_PUSH
+    echo "    echo \"Please do development in another git branch.\""                >> $PRE_PUSH
+    echo "    exit 1"                                                               >> $PRE_PUSH
+    echo "fi"                                                                       >> $PRE_PUSH
     chmod +x $PRE_PUSH
 else
     echo "Pushes to remote repository named upstream have been previously disabled."
@@ -546,14 +644,13 @@ PRE_COMMIT=.git/hooks/pre-commit
 if [ ! -x $PRE_COMMIT ]
 then
     echo "**************** Ensure that commits can not be performed on the master branch ..."
-    # This is a more that a little kludgy:
-    echo '#!/bin/sh'                                                > $PRE_COMMIT
-    echo 'branch="$(git rev-parse --abbrev-ref HEAD)"'              >> $PRE_COMMIT
-    echo 'if [ "$branch" == "master" ]'                             >> $PRE_COMMIT
-    echo 'then'                                                     >> $PRE_COMMIT
-    echo '    echo "You can not commit directly to master branch"'  >> $PRE_COMMIT
-    echo '    exit 1'                                               >> $PRE_COMMIT
-    echo 'fi'                                                       >> $PRE_COMMIT
+    echo "#!/bin/sh"                                                 >  $PRE_COMMIT
+    echo "branch=\"$(git rev-parse --abbrev-ref HEAD)\""             >> $PRE_COMMIT
+    echo "if [ \"$branch\" == \"master\" ]"                          >> $PRE_COMMIT
+    echo "then"                                                      >> $PRE_COMMIT
+    echo "    echo \"You can not commit directly to master branch\"" >> $PRE_COMMIT
+    echo "    exit 1"                                                >> $PRE_COMMIT
+    echo "fi"                                                        >> $PRE_COMMIT
     chmod +x $PRE_COMMIT
 else
     echo "Commits can not be performed on the master branch."
@@ -575,7 +672,7 @@ else
 fi
 
 # Create the staging remote:
-if [ -n "$WF" ]
+if [ -n "$DEV" ]
 then
     # We have a GitHub.Com account name:
     # echo "We have a GitHub.Com account name $GITHUB_ACCOUNT_NAME ."
@@ -669,48 +766,10 @@ then
     fi
 fi
 
-# See if we need to install the Stm32CubeIde:
-if [ -n "$EE$SW" ]
-then
-    # Determine if we need to download the stm32cubeide repository:
-    STM32_CUBE_IDE_DIRECTORY=$REPOSITORIES_DIRECTORY/stm32cubeide_1.3.0
-    if [ ! -d $STM32_CUBE_IDE_DIRECTORY ]
-    then
-	echo "**************** Installing Stm32CubeIDE repository to $STM32_CUBE_IDE_DIRECTORY ..."
-	echo "This can take a very long time (15-30 minutes) ..."
-        ( cd $REPOSITORIES_DIRECTORY ; \
-	  git clone https://github.com/waynegramlich/stm32cubeide_1.3.0.git )
-	echo "$STM32_CUBE_IDE_DIRECTORY Repository FINALLY downloaded."
-    else
-	echo "Stm32CubeIDE 1.3.0 has been previously downloaded."
-    fi
-    
-    # See whether or not we need to run the installation script:
-    STM32_CUBE_IDE_EXECUTABLE=/opt/st/stm32cubeide_1.3.0/stm32cubeide
-    if [ ! -x $STM32_CUBE_IDE_EXECUTABLE ]
-    then
-	echo "**************** Executing the Stm32CubeIDE Installation scripts ..."
-	echo "Some license agreements will show up for you to click through ..."
-	( cd $STM32_CUBE_IDE_DIRECTORY ; ./install.sh )
-    else
-	echo "Stm32CubeIDE Installation scripts previously executed."
-    fi
-
-    # See whether the link from the HR2 bin directory has been installed:
-    STM32_CUBE_IDE_LINK=$BIN_DIRECTORY/stm32cubeide
-    if [ ! -L $STM32_CUBE_IDE_LINK ]
-    then
-	echo "**************** Installing a symbolic link to Stm32CubeIDE executable."
-	rm -f $STM32_CUBE_IDE_LINK
-	ln -s $STM32_CUBE_IDE_EXECUTABLE $STM32_CUBE_IDE_LINK
-    else
-	echo "Symbolic link to Stm32CubeIDE executable previously installed."
-    fi
-fi
-
 # Install the Python stuff for both ME and EE:
 if [ -n "$PYTHON_NEEDED" ]
 then
+    echo "here 1"
     if [ -z "`which virtualenvwrapper.sh`" ]
     then
 	echo "For some reasons virtualenvwrapper.sh did not get installed.  This is bad."
@@ -719,20 +778,22 @@ then
     fi
 
     # The virtual wrapper script breaks under debugging, so turn all debugging is now turned off.
+    echo "here 2"
     set +x           # Trace execution.
     set +e           # Exit immediately on error result.
     set +o pipefail  # Fail if any commands in a pipeline fail.
     set +u           # Treat unset variables as an error.
 
     # We should have a hot Python virtual environment:
+    echo "here 3"
     source "`which virtualenvwrapper.sh`"
-    echo "here 1"
-
 
     # Now ensure that the hr2 pythong virtual environment exists:
     MKVIRTUALENV="mkvirtualenv -p 3.6" 
+    echo "here 4"
     if [ ! -d $WORKON_HOME/hr2 ]
     then
+    echo "here 5"
 	echo "**************** Create hr2 python virtual environment ..."
 	$MKVIRTUALENV -a $HR2_DIRECTORY hr2
     else
@@ -742,6 +803,7 @@ then
     # For some weird reason, doing a "source $BASHRC" does not properly get
     # the virtual environment wrapper variables set properly.  So, instead
     # we set them all manually below:
+    echo "here 6"
     export VIRTUALENVWRAPER_PYTHON=`which python3`
     export WORKON_HOME=$WORKON_HOME
     export REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY
@@ -750,6 +812,7 @@ then
     # Install Python mypi static type checker:
     if [ -z "`which mypy`" ]
     then
+        echo "here 7"
 	echo "Installing Python mypy static type checker ..."
 	(workon hr2; $PIP_INSTALL mypy ; deactivate)
     else
@@ -759,6 +822,7 @@ then
     # Install Python flake8 code style checker:
     if [ -z "`which flake8`" ]
     then
+        echo "here 8"
 	echo "**************** Installing Python flake8 code style checker ..."
 	(workon hr2; $PIP_INSTALL flake8 ; deactivate)
     else
@@ -768,6 +832,7 @@ then
     # Install Python pydocstyle documentation style checker:
     if [ -z "`which pydocstyle`" ]
     then
+        echo "here 9"
 	echo "**************** Installing Python pydocstyle documentation style checker ..."
 	(workon hr2; $PIP_INSTALL pydocstyle ; deactivate)
     else
@@ -777,6 +842,7 @@ then
     # Install pytest testing system:
     if [ -z "`which pytest`" ]
     then
+        echo "here 10"
 	echo "**************** Installing Python testing system ..."
 	( workon hr2; $PIP_INSTALL pytest ; deactivate )
     else
@@ -784,26 +850,26 @@ then
     fi
 
     # Install kipart, kicube32, bom_manager:
+    echo "here 10"
     if [ -n "$EE" ]
     then
 	# Install kipart into hr2 environment:
-        echo "here 2"
-	(echo "here 3"
-	 workon hr2
-	 echo "here 4"
+        echo "here 11"
+	(workon hr2
+	 echo "here 12"
 	 if [ -z `which kipart` ]
 	 then
-	     echo "here 5"
+	     echo "here 13"
 	     echo "**************** Installing kipart into hr2 virtual environment..."
 	     pip3 install kipart
-	     echo "here 6"
+	     echo "here 14"
 	 else
-	     echo "here 7"
+	     echo "here 15"
 	     echo "kipart previously installed into hr2 virtual environment."
 	 fi
-	 echo "here 8"
+	 echo "here 16"
 	 deactivate)
-	echo "here 9"
+	echo "here 17"
 
 	# Install kicube32 into hr2 environment:
 	echo "Installing kicube32 into hr2 virtual environment."
@@ -813,20 +879,25 @@ then
 	     echo "**************** Installing kicube32 into hr2 virtual environment..."
 	     $PIP_INSTALL $REPOSITORIES_DIRECTORY/kicube32
 	 else
-	     echo "kicube32 prevously installed into hr2 virtual environment..."
+	     echo "kicube32 previously installed into hr2 virtual environment..."
 	 fi
 	 deactivate)
 
-	# For now do not bother with bom_manager.
+	# For now do not bother with `bom_manager`.
     fi
 fi
 
-# Remind the user to update their environment:
+# Remind the user that they are on the `master` branch:
+echo "Please note that you are on the branch named \`master\` for the $HR2_DIRECTORY repository."
+
+# Remind the user to update their top-level `bash` environment:
 if [ -n "SOURCE_BASHRC" ]
 then
-    echo '!!!!!!!!!!!!!!!! Please type `source ~/.bashrc` after this to update your environment.'
+    echo "Please type \`source ~/.bashrc\` after this to update your environment."
 fi
 
-# Remind the user to activate the `hr2` virtual environment:
-echo 'Please type `workon hr2` to activate your python virtual environment.'
-echo "Please note that you are on the branch named master for the $HR2_DIRECOTRY repository."
+# Remind the user to activate the `hr2` python virtual environment:
+if [ -n "$PYTHON_NEEDED" ]
+then
+    echo "Please type \`workon hr2\` to activate your Python virtual environment."
+fi
