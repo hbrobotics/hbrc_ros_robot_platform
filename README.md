@@ -813,4 +813,7 @@ Some URL'S:
      git remote add upstream git@github.com:waynegramlich/kicube32.git
      git push --force upstream master
 
+;;; Make emacs notice when buffers change due to switching branches:
+(global-auto-revert-mode 1)
+
 -->
