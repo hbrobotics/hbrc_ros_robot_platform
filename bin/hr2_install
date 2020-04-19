@@ -793,8 +793,7 @@ PRE_COMMIT=.git/hooks/pre-commit
 if [ ! -x $PRE_COMMIT ]
 then
     echo "**************** Ensure that commits can not be performed on the master branch ..."
-    # This is a more that a little kludgy:
-    echo "#!/bin/sh"                                                 >  $PRE_COMMIT
+    echo "#!/bin/bash"                                               >  $PRE_COMMIT
     echo "branch=\"$(git rev-parse --abbrev-ref HEAD)\""             >> $PRE_COMMIT
     echo "if [ \"$branch\" == \"master\" ]"                          >> $PRE_COMMIT
     echo "then"                                                      >> $PRE_COMMIT
