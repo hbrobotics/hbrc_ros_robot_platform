@@ -169,80 +169,45 @@ then
     if [ -z `which git` ]
     then
 	echo "The \`git\` program does not appear to be installed.  This should not happen!"
-        echo "Please run the command \`sudo apt install git\` to ensure \`git\` is installed."
+        echo "Please run the command \`sudo\` apt install git\` to ensure \`git\` is installed."
 	echo "Stopping for now."
-	exit 0
+	exit 1
     fi
     
-    # Switch over to the master branch:
-    #    (Get git current branch name)[https://coderwall.com/p/kdycoq/get-git-current-branch-name]:
-    CURRENT_BRANCH=`echo $(git rev-parse --abbrev-ref HEAD)`
-    if [ "$CURRENT_BRANCH" != "master" ]
-    then
-        # Figure out whether there are uncommitted files; BTW (`2>/dev/null` suppresses errors):"
-	UNCOMMITTED_FILES=`( cd $HR2_DIRECTORY ; echo $(git diff --name-only HEAD 2>/dev/null) )`
-	echo "UNCOMMITTED_FILES=$UNCOMMITTED_FILES"
-        if [ -n "$UNCOMMITTED_FILES" ]
-	then
-	    echo "This script requires that the $HR2_DIRECTORY repository be on the master"
-	    echo "branch instead of the $CURRENT_BRANCH as it currently is.  This is"
-	    echo "because we need to ensure that the master branch is completely up to date."
-	    echo "The repository at $HR2_DIRECTORY is currently on branch $CURRENT_BRANCH and".
-            echo "and this script can not continue until the uncommitted files on $CURRENT_BRANCH"
-	    echo "are either checked in and committed or they are saved into a temporary the"
-            echo "stash with `git stash push`. If you do use the `git stash push` option,"
-	    echo "please do not forget to restore the files with `git stash pop` later on."
-	    echo "Until the files on the $CURRENT_BRANCH branch are cleaned up, this script"
-	    echo "can not continue.  This script is stopping now."
-	    exit 1
-	fi
-	
-        # It should be safe to switch over the master branch:
-	git checkout master
-
-	# Verify that we made it over:
-	CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
-        if [ "$CURRENT_BRANCH" != "master" ]
-	then
-	    echo "For some weird reason, we are still on branch $CURRENT_BRANCH when"
-	    echo "we should be on the master branch.  This script is stopping for now."
-	    exit 1
-	fi
-    fi
-
-    # We are on the master branch.
-    echo "Now on the master branch."
-
-    # Now figure out what the remotes are called.  When the repository is first cloned
-    # it shows up with a remote named `origin`.  Later on we rename the remote to `upstream`.
-    # It does not matter which of the two it is, we just need to figure it out:
+    # Now figure out what the remotes to use.  When the repository is first cloned
+    # it shows up with a remote named `origin`.  Whenever the user gets around to doing an
+    # `hr_install dev`, remote is switched over to `upstream`.  We just need to figure which
+    # one it is.
     UPSTREAM_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream) )`
     ORIGIN_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep origin) )`
-    ACTUAL_REMOTE=$UPSTREAM_REMOTE
-    if [ -z "$ACTUAL_REMOTE" ]
+    if [ -n "$UPSTREAM_REMOTE" ]
+    then
+	ACTUAL_REMOTE="$UPSTREAM_REMOTE"
+    elif [ -n "$ORIGIN_REMOTE" ]
     then
 	ACTUAL_REMOTE="$ORIGIN_REMOTE"
-	if [ -z "$ACTUAL_REMOTE" ]
-	then
-	    echo "For some weird reason we can not find a remote repository named either"
-	    echo "upstream or origin.  Run `git remote -v` to get a list of remotes."
-	    echo "For now,this script can not continue and is immediately stopping!"
-	    exit 1
-	fi
+    else
+	echo "For some weird reason we can not find a remote repository named either"
+	echo "\`upstream\` or \`origin\`.  Run \`git remote -v\` to get a list of remotes."
+	echo "For now, this script can not continue and is immediately stopping."
+	exit 2
     fi
 
-    # Now we know that the HR2_DIRECTORY is on the master branch and has an ACTUAL_REMOTE.
-    # Finally, we can update the master branch.  In theory, the master branch can not be
-    # modified locally because we install a pre-commit hook later on to disallow commits
-    # to the master branch.  This means that `git pull` should always succeed without
-    # requiring any merge:
-    git pull $ACTUAL_REMOTE master
-    echo "$HR2_DIRECTORY master branch has been updated."
+    # In theory, there the local copy of the `master` branch is locked down and can not
+    # be branched because we install a pre-commit hook to disallow commits to the `master`
+    # branch (see further below.)   This means that a `git pull` should always succeed.
+    if [ ! git pull $ACTUAL_REMOTE master ]
+    then
+	echo "For some reason the update of the \`master\` branch of the \`HR2_DIRECTORY\` failed."
+	echo "This error can not be recovered from from.  This script is immediately stopping."
+	exit 3
+    fi
 	
     # Now this file may have been updated as a result of the `git pull`, so we recursively
     # call the this script (which may have been updated):
     echo "Starting pass2"
-    $BIN_DIRECTORY/hr2_install $@ pass2  # The "secret" pass2 argument forces us to do paas 2:
+    # The "secret" pass2 argument forces us to do the second pass:
+    $BIN_DIRECTORY/hr2_install $@ pass2
 
     # We have now returned from the recursive call and can wrap things up.
     echo "Requested installation should be complete."
@@ -266,9 +231,6 @@ echo "PASS2=$PASS2"
 SOURCE_BASHRC=""
 # `PYTHON_NEEDED` is a flag that is not empty if python is needed.
 PYTHON_NEEDED="$EE$ME$SW"
-
-# Make absolutely certain we are in the `$HR2_DIRECTORY`:
-cd $HR2_DIRECTORY
 
 # Make sure that the HOME environment variable is defined because we really need it:
 if [ -z "${HOME+EXISTS}" ]
@@ -352,7 +314,7 @@ then
 	  git clone https://github.com/waynegramlich/stm32cubeide_1.3.0.git )
 	echo "\`$STM32_CUBE_IDE_DIRECTORY\` repository is FINALLY downloaded."
         echo "Executing \`$STM32_CUBE_IDE_DIRECTORY\` pre-install script."
-	( cd $STM32_CUBE_IDE_DIRECTORY ; ./install.sh )
+	( cd $STM32_CUBE_IDE_DIRECTORY ; $SUDO ./install.sh )
     else
 	echo "Stm32CubeIDE 1.3.0 has been previously downloaded."
     fi
@@ -362,14 +324,14 @@ fi
 # Warn the user about the possible upcoming sudo password prompt:
 echo ""
 echo "The \`sudo\` command is used to allow installation of system software."
-echo "The vast majority of this software is installed via \`sudo atp install ...\`"
-echo "\`sudo dpkg -i ...\`  Some packages like ROS and KiCAD are installed from"
+echo "The vast majority of this software is installed via \`sudo\` atp install ...\`"
+echo "\`sudo\` dpkg -i ...\`  Some packages like ROS and KiCAD are installed from"
 echo "Personal Package Archives (typically called PPA's).  These packages get"
 echo "regularly updated by the system.  The \`sudo\` command is also needed to"
-echo "install the PPA's.  At this point `sudo` is going to be triggered and it will"
+echo "install the PPA's.  At this point \`sudo\` is going to be triggered and it will"
 echo "prompt you for your user password to perform these system installs."
 echo ""
-$SUDO echo "Enable `sudo`..."
+$SUDO echo "Enable \`sudo\`..."
 echo ""
 echo "Unless your network download link is really slow, \`sudo\` will probably not bother you"
 echo "for a password again.  If it does, just type it in again."
@@ -407,7 +369,8 @@ then
 
 	# Now execute the `$TMP_STM32_CUBE_IDE_SH`.  This should do the license prompts and
 	# install everything:
-	$TMP_STM32_CUBE_IDE_SH
+	echo "Executing \`$SUDO $TMP_STM32_CUBE_IDE_SH\` ..."
+	$SUDO $TMP_STM32_CUBE_IDE_SH
 
 	# Verify that the executable got installed:
 	if [ ! -x "$OPT_STM32_CUBE_IDE_EXECUTABLE" ]
