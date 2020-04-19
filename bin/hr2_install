@@ -390,7 +390,7 @@ then
     fi
 
     # See whether or not we need to run the installation script:
-    if [ ! -x "$STM32_CUBE_IDE_EXECUTABLE" ]
+    if [ ! -x "$OPT_STM32_CUBE_IDE_EXECUTABLE" ]
     then
 	# The executable has not been installed.
         TMP_STM32_CUBE_IDE_SH="/tmp/stm32cubeide.sh" ]
