@@ -376,7 +376,9 @@ echo "for a password again.  If it does, just type it in again."
 echo ""
 
 # Finish the installation of the `stm32cubeide` software:
-if [ -n "$EE$SW" ] && [ ! -x "STM32_CUBE_IDE_EXECUTABLE" ]
+OPT_STM32_CUBE_IDE_DIRECTORY="/opt/st/stm32cubeide_1.3.0"
+OPT_STM32_CUBE_IDE_EXECUTABLE="$OPT_STM32_CUBE_IDE_DIRECTORY/stm32cubeide"
+if [ -n "$EE$SW" ] && [ ! -x "$OPT_STM32_CUBE_IDE_EXECUTABLE" ]
 then
     # Just to be sure, we need to verify that STM32_CUBE_IDE_DIRECTORY actually exists.
     # It really should, since we should have downloaded that repository a little bit earlier.
@@ -388,7 +390,7 @@ then
     fi
 
     # See whether or not we need to run the installation script:
-    if [ ! -x $STM32_CUBE_IDE_EXECUTABLE ]
+    if [ ! -x "$STM32_CUBE_IDE_EXECUTABLE" ]
     then
 	# The executable has not been installed.
         TMP_STM32_CUBE_IDE_SH="/tmp/stm32cubeide.sh" ]
@@ -408,9 +410,9 @@ then
 	$TMP_STM32_CUBE_IDE_SH
 
 	# Verify that the executable got installed:
-	if [ ! -x $STM32_CUBE_IDE_EXECUTABLE ]
+	if [ ! -x "$OPT_STM32_CUBE_IDE_EXECUTABLE" ]
 	then
-	    echo "This is weird the executable \`$STM32_CUBE_IDE_EXECUTABLE\` should now exist"
+	    echo "This is weird the executable \`$OPT_STM32_CUBE_IDE_EXECUTABLE\` should now exist"
 	    echo "and it does not.  Stopping the script now."
 	    exit 1
 	fi
@@ -424,7 +426,7 @@ then
     then
 	echo "**************** Installing a symbolic link to Stm32CubeIDE executable."
 	rm -f $STM32_CUBE_IDE_LINK
-	ln -s $STM32_CUBE_IDE_EXECUTABLE $STM32_CUBE_IDE_LINK
+	ln -s $OPT_STM32_CUBE_IDE_EXECUTABLE $STM32_CUBE_IDE_LINK
     else
 	echo "Symbolic link to Stm32CubeIDE executable previously installed."
     fi
