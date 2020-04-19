@@ -813,6 +813,13 @@ Some URL'S:
      git remote add upstream git@github.com:waynegramlich/kicube32.git
      git push --force upstream master
 
+    * https://stackoverflow.com/questions/6335717/can-git-tell-me-if-a-merge-will-conflict-without-actually-merging
+
+        git merge --no-commit branch2
+        # check the return code here
+        git merge --abort
+
+
 ;;; Make emacs notice when buffers change due to switching branches:
 (global-auto-revert-mode 1)
 
