@@ -504,9 +504,7 @@ then
     then
 	echo "**************** Globally Installing Python virtual environments ..."
 	$SUDO $PIP_INSTALL virtualenvwrapper
-	VIRTUAL_ENV_WRAPPER_SH=`which virtualenvwrapper.sh`
-	echo "VIRTUAL_ENV_WRAPPER_SH=$VIRTUAL_ENV_WRAPPER_SH="
-	if [ -z "$VIRTUAL_ENV_WRAPPER_SH" ]
+	if [ -z "`which virtualenvwrapper.sh`" ]
 	then
 	    echo "For some reason virtualenvwrapper.sh was not installed."
 	    echo "There is no way to recover from this.  The script is stopping now."
@@ -570,12 +568,12 @@ then
     export VIRTUALENVWRAPER_WORKON_CD=1
 
     # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc :
-    if [ -z "`grep virtualenvwrapper.sh $BASHRC`" ]
+    if [ -z "`which virtualenvwrapper.sh $BASHRC`" ]
     then
 	echo "**************** Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
-	echo "source $VIRTUAL_ENV_WRAPPER_SH" >> $BASHRC
+	echo "source `which virtualenvwrapper.sh`" >> $BASHRC
     else
-	echo "source $VIRTUAL_ENV_WRAPPER_SH already in $BASHRC ."
+	echo "source `which virtualenvwrapper.sh` is already in $BASHRC ."
     fi
 
     # Remember to ask the user to `source ~/.bashrc`:
@@ -644,6 +642,7 @@ PRE_COMMIT=.git/hooks/pre-commit
 if [ ! -x $PRE_COMMIT ]
 then
     echo "**************** Ensure that commits can not be performed on the master branch ..."
+    # This is a more that a little kludgy:
     echo "#!/bin/sh"                                                 >  $PRE_COMMIT
     echo "branch=\"$(git rev-parse --abbrev-ref HEAD)\""             >> $PRE_COMMIT
     echo "if [ \"$branch\" == \"master\" ]"                          >> $PRE_COMMIT
