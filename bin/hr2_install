@@ -44,10 +44,10 @@
 # Virtual Environments Wrapper breaks if these flags are set.  So, right before we actually
 # try to use any python virtual environments stuff, we turn need to turn these flags off.
 # This causes all of the python stuff to be pushed as far back as possible in this script.
-#set -x           # Trace execution.
-#set -e           # Exit immediately on error result.
-#set -o pipefail  # Fail if any commands in a pipeline fail.
-#set -u           # Treat unset variables as an error.
+set -x           # Trace execution.
+set -e           # Exit immediately on error result.
+set -o pipefail  # Fail if any commands in a pipeline fail.
+set -u           # Treat unset variables as an error.
 
 # The `set -u` option causes problems when you are trying to detect whether a variable is defined
 # or not.  If you try to directly access the an undefined variable, the `set +u` will correctly
@@ -127,6 +127,8 @@ else
 		 ;;
 	    sw ) SW="yes"
 		 ;;
+            none )
+		;;
 	    pass2 ) PASS2="yes"
 		    ;;
 	    *) echo "$flag is not allowed.  Only all, most, dev, ee, me, and sw are allowed."
