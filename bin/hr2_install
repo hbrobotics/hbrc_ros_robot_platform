@@ -94,8 +94,10 @@ PASS2=""  # Secret flag to enter the recursive portion of this shell script
 # Define commands common to both passes:
 GIT_PULL="git pull --ff"
 
+# Check for git config --global user/email
+
 # Process the arguments specified by the user:
-if [ "$#" == "0" ]
+if [ "$#" = "0" ]
 then
     # No arguments produces an overview:
     echo "Usage: install [ all | most | dev | ee | me | sw ]*"
@@ -187,10 +189,10 @@ then
 	#debug: echo "REPOSITORY_DIRECTORY=$REPOSITORY_DIRECTORY"
 	ERROR_MESSAGE='Update of repository for "$REPOSITORY_DIRECTORY" will not happen.'
 	# CWD means Current Working Directory:
-	CWD=`pwd`
+	CWD="$(pwd)"
 
 	# Step 2: Ensure that we have `git` is installed:
-	WHICH_GIT=`which git`
+	WHICH_GIT="$(which git)"
 	#debug: echo "WHICH_GIT=$WHICH_GIT"
 	if [ -z "$WHICH_GIT" ]
 	then
@@ -213,7 +215,7 @@ then
         echo "Step 3"
 	cd "$REPOSITORY_DIRECTORY"
 	# The `2>/dev/null` suppresses error messages:
-	REPOSITORY_ROOT=`git rev-parse --show-toplevel 2>/dev/null`
+	REPOSITORY_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
 	#debug: echo "REPOSITORY_ROOT=$REPOSITORY_ROOT"
 	if [ -z "$REPOSITORY_ROOT" ]
 	then
@@ -230,9 +232,9 @@ then
 	# `set -o pipefail` option enabled and the code below avoids problems with `grep` not
 	# finding anything.
         echo "Step 4"
-	UPSTREAM_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream) )`
-	ORIGIN_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep origin) )`
-	STAGING_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep staging) )`
+	UPSTREAM_REMOTE="$( ( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream ) ) )"
+	ORIGIN_REMOTE="$(   ( cd $HR2_DIRECTORY ; echo $(git remote | grep origin   ) ) )"
+	STAGING_REMOTE="$(  ( cd $HR2_DIRECTORY ; echo $(git remote | grep staging  ) ) )"
 	echo "ORIGIN_REMOTE=$ORIGIN_REMOTE"
 	echo "UPSTREAM_REMOTE=$UPSTREAM_REMOTE"
 	if [ -n "$UPSTREAM_REMOTE" ]
@@ -261,7 +263,7 @@ then
 	# We feed the output of `git branch` through `sed` to strip off the first two
 	# characters and search for `master`:
         echo "Step 5"
-	MASTER_BRANCH=`git branch | sed "s,^..,,g" | grep master`
+	MASTER_BRANCH="$(git branch | sed 's,^..,,g' | grep master)"
 	#debug: echo "MASTER_BRANCH=$MASTER_BRANCH"
 	if [ -z "$MASTER_BRANCH" ]
 	then
@@ -278,10 +280,10 @@ then
 	# For reference:
 	#   https://stackoverflow.com/questions/6245570/how-to-get-the-current-branch-name-in-git
 	# explained how to get the CURRENT_BRANCH name.  It is obscure:
-	CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+	CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 	#debug: echo "CURRENT_BRANCH=$CURRENT_BRANCH"
 	# Likewise getting the UNCOMMITTED_FILES is pretty obscure as well:
-	UNCOMMITTED_FILES=`git diff --name-only HEAD`
+	UNCOMMITTED_FILES="$(git diff --name-only HEAD)"
 	#debug: echo "UNCOMMITTED_FILES=$UNCOMMITTED_FILES"
 	echo "Step 6"
 	echo "Starting to update the master branch."
@@ -375,7 +377,7 @@ then
     }
  
     # Make sure that `git` exists:
-    if [ -z `which git` ]
+    if [ -z "$(which git)" ]
     then
 	echo "The \`git\` program does not appear to be installed.  This should not happen!"
         echo "Please run the command \`sudo\` apt install git\` to ensure \`git\` is installed."
@@ -387,8 +389,8 @@ then
     # it shows up with a remote named `origin`.  Whenever the user gets around to doing an
     # `hr_install dev`, remote is switched over to `upstream`.  We just need to figure which
     # one it is.
-    UPSTREAM_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream) )`
-    ORIGIN_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep origin) )`
+    UPSTREAM_REMOTE="$( ( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream) ) )"
+    ORIGIN_REMOTE="$(   ( cd $HR2_DIRECTORY ; echo $(git remote | grep origin  ) ) )"
     if [ -n "$UPSTREAM_REMOTE" ]
     then
 	ACTUAL_REMOTE="$UPSTREAM_REMOTE"
@@ -622,7 +624,7 @@ else
 fi
 
 # Make sure we have Ubuntu vim package for vim the editor installed.
-if [ -z `which vim` ]
+if [ -z "$(which vim)" ]
 then
     echo "**************** Installing Ubuntu vim package for the vim editor ..."
     $APT_INSTALL vim
@@ -631,7 +633,7 @@ else
 fi
 
 # Make sure we have Ubuntu emacs package for the emacs editor installed.
-if [ -z `which emacs` ]
+if [ -z "$(which emacs)" ]
 then
     echo "**************** Installing ubuntu emacs package for the emacs editor ..."
     $APT_INSTALL emacs
@@ -646,10 +648,10 @@ then
     # Force Python3 to be the default Python.  Python2 is the default Python until
     # Ubuntu 20.04 gets released.  We compute PYTHON_REALPATH and PYTHON3_REALPATH
     # and if they are not equal, we force an update.
-    PYTHON_PATH=`which python`
-    PYTHON3_PATH=`which python3`
-    PYTHON_REALPATH=`realpath $PYTHON_PATH`
-    PYTHON3_REALPATH=`realpath $PYTHON3_PATH`
+    PYTHON_PATH="$(which python)"
+    PYTHON3_PATH="$(which python3)"
+    PYTHON_REALPATH="$(realpath $PYTHON_PATH)"
+    PYTHON3_REALPATH="$(realpath $PYTHON3_PATH)"
     if [ "$PYTHON_REALPATH" != "$PYTHON3_REALPATH" ]
     then
 	echo "**************** Forcing Python3 to be the default Python ..."
@@ -659,7 +661,7 @@ then
     fi
 
     # Install Ubuntu python3_pip3 package:
-    if [ -z `which pip3` ]
+    if [ -z "#$(which pip3)" ]
     then
 	echo "**************** Installing Ubuntu python3-pip package ..."
 	$APT_INSTALL python3-pip
@@ -675,7 +677,7 @@ then
 	$SUDO $PIP_INSTALL virtualenvwrapper
 	if [ -z "`which virtualenvwrapper.sh`" ]
 	then
-	    echo "For some reason virtualenvwrapper.sh was not installed."
+	    echo "For some reason \`virtualenvwrapper.sh\` was not installed."
 	    echo "There is no way to recover from this.  The script is stopping now."
 	    exit 1
 	fi
@@ -701,7 +703,7 @@ then
     fi
 
     # Also ensure that it is locally defined:
-    export VIRTUALENVWRAPER_PYTHON=`which python3`
+    export VIRTUALENVWRAPER_PYTHON="$(which python3)"
 
     # Append "export WORKON_HOME=$HOME/.virtualenvs" to ~/.bashrc .
     if [ -z "`grep WORKON_HOME $BASHRC`" ]
@@ -751,22 +753,22 @@ fi
 
 # Make sure that the $BIN_DIRECTORY is added to the the $PATH in $BASHRC:
 echo "BIN_DIRECTORY=$BIN_DIRECTORY"
-if [ -z `grep $BIN_DIRECTORY $BASHRC` ]
+if [ -z "`grep :$BIN_DIRECTORY: $BASHRC`" ]
 then 
-    echo "**************** Adding $HR2_DIRECTORY/bin to PATH in $BASHRC ..."
+    echo "**************** Adding $HR2_DIRECTORY/bin to PATH in \`$BASHRC\` ..."
     echo "# Only add $BIN_DIRECTORY to PATH once:" >> $BASHRC
-    echo "case \":$PATH:\" in'" >> $BASHRC
+    echo "case \":$PATH:\" in" >> $BASHRC
     echo "  *:$BIN_DIRECTORY:*) ;; # Already in path, do nothing " >> $BASHRC
     echo "  *) export PATH=\$PATH:$BIN_DIRECTORY ;; # Not in path, append it" >> $BASHRC
     echo "esac" >> $BASHRC
     echo "" >> $BASHRC
     SOURCE_BASHRC="yes"
 else
-    echo "$BIN_DIRECTORY was previously added to PATH in $BASHRC." 
+    echo "$BIN_DIRECTORY was previously added to \`PATH\` in \`$BASHRC\`."
 fi
 
 # Make sure that `upstream` remote exists:
-if [ -z `git remote | grep upstream` == "" ]
+if [ "$(git remote | grep upstream)" = "" ]
 then
     echo "**************** Installing git remote named upstream for $HR2_DIRECTORY ..."
     git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform
@@ -795,7 +797,7 @@ then
     echo "#!/bin/bash"                                                              >> $PRE_PUSH
     echo "# Prevent pushes to remote repository named upstream."                    >> $PRE_PUSH
     echo "# Incoming shell arguments $1=remote_name $2=remote_url"                  >> $PRE_PUSH
-    echo "if [ \"$1\" == \"upstream\" ] ;"                                          >> $PRE_PUSH
+    echo "if [ \"$1\" = \"upstream\" ] ;"                                           >> $PRE_PUSH
     echo "then"                                                                     >> $PRE_PUSH
     echo "    echo \"git push to remote repository named upstream is disallowed.\"" >> $PRE_PUSH
     echo "    echo \"Please do development in another git branch.\""                >> $PRE_PUSH
@@ -813,21 +815,21 @@ then
     echo "**************** Ensure that commits can not be performed on the master branch ..."
     echo "#!/bin/bash"                                               >  $PRE_COMMIT
     echo "branch=\"$(git rev-parse --abbrev-ref HEAD)\""             >> $PRE_COMMIT
-    echo "if [ \"$branch\" == \"master\" ]"                          >> $PRE_COMMIT
+    echo "if [ \"\$branch\" = \"master\" ]"                          >> $PRE_COMMIT
     echo "then"                                                      >> $PRE_COMMIT
     echo "    echo \"You can not commit directly to master branch\"" >> $PRE_COMMIT
     echo "    exit 1"                                                >> $PRE_COMMIT
     echo "fi"                                                        >> $PRE_COMMIT
     chmod +x $PRE_COMMIT
 else
-    echo "Commits can not be performed on the master branch."
+    echo "Commits were previously disallowed on the master branch."
 fi
 
 # Install `hub` program for interfacing with GitHub.Com:
-if [ -z `which hub` ]
+if [ -z "$(which hub)" ]
 then
     echo "**************** Installing hub program to interface with GitHub.Com ..."
-    if [ -z `which snap` ]
+    if [ -z "$(which snap)" ]
     then
 	echo "The snap command is not installed.  This should not happen.  Given that it"
 	echo "has happened, this script will immediately stop."
@@ -895,7 +897,7 @@ fi
 if [ -n "$EE" ]
 then
     # Install kicad:
-    if [ -z `which kicad` ]
+    if [ -z "$(which kicad)" ]
     then
 	echo "**************** Installing KiCad package ..."
 	echo "Add KiCad to your package repository database:"
@@ -965,7 +967,7 @@ then
     # For some weird reason, doing a "source $BASHRC" does not properly get
     # the virtual environment wrapper variables set properly.  So, instead
     # we set them all manually below:
-    export VIRTUALENVWRAPER_PYTHON=`which python3`
+    export VIRTUALENVWRAPER_PYTHON="$(which python3)"
     export WORKON_HOME=$WORKON_HOME
     export REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY
     export VIRTUALENVWRAPER_WORKON_CD=1
@@ -1007,7 +1009,7 @@ then
 	    # `VIRTUAL_ENV` is enabled.
 
 	    # There is an active environment, but doe it match `ENV_NAME`?
-	    ACTUAL_ENV_NAME=`echo $VIRTUAL_ENV | sed "s,^.*/,,g"`
+	    ACTUAL_ENV_NAME="$(echo $VIRTUAL_ENV | sed "s,^.*/,,g")"
 	    if [ "$ACTUAL_ENV_NAME" != "$ENV_NAME" ]
 	    then
 		echo "Currently active Python virtual environment is" \
@@ -1047,7 +1049,7 @@ then
 fi
 
 # Remind the user to update their top-level `bash` environment:
-if [ -n "SOURCE_BASHRC" ]
+if [ -n "$SOURCE_BASHRC" ]
 then
     echo "Please type \`source ~/.bashrc\` after this to update your environment."
 fi
