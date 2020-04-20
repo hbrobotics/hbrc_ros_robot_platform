@@ -315,8 +315,11 @@ then
 	    git checkout $CURRENT_BRANCH > /dev/null 2>/dev/null # Suppess the messages
 
 	    # Step 9: Now restore the branch to the way it was:
-	    echo "Restore any previously uncommitted files."
-	    git stash pop > /dev/null  # `> /dev/null` suppresses an unneeded `git status`
+	    if [ -n "$UNCOMMITTED_FILES" ]
+	    then
+		echo "Restore any previously uncommitted files."
+		git stash pop > /dev/null  # `> /dev/null` suppresses an unneeded `git status`
+	    fi
 
 	    # We are back in CURRENT_BRANCH with any uncommitted files restored.
 	fi
