@@ -74,7 +74,7 @@ front of the each subject line:
 * `SE:` A message to people interested in the HR2 Software Engineering
   (i.e. programs, firmware, etc.)
 * `ED:` A message to people interested in the HR2 course materials.
-* `DL:` A message concerning downloading and installation.
+* `DEV:` A message concerning downloading, installation, and development.
 * `MSC:` A miscellaneous message that does not really fit any of the above
   protocols.
 
@@ -499,53 +499,41 @@ There are 3 broad steps:
 	git clone -o upstream https://github.com/hbrobotics/hbrc_ros_robot_platform.git
         # Change the current working directory to the root of the cloned repository
         cd hbrc_ros_robot_platform
+	# Set your `git` user name and `email`.  Please run the following two commands:
+        git config --global user.name "Your Name"
+        git config --global user.email "youremail@yourdomain.com"
+	# Fill in "Your Name' with your actual name and "youremail@yourdomain.com"
+        # with your actual E-mail address.
     
-2. The second step is to run one or more installation scripts.  There are currently
-   three scripts:
+2. The second step is to run one `hr2_install` script.  This is done by
 
-   * `mechancical/install_me.sh`:
-     This script resides in the `mechanical` sub-directory and will install everything
-     needed for the mechanical aspects of the project:
+     ./bin/hr2_install OPTION
 
-          ./mechanical/install_me.sh  # Install the mechanical portion of the project.
+   where `OPTION` is one or more of the following:
+   * `all`:  Installs everything
+   * `most`: Installs everything but `dev`
+   * `dev`:  Installs the development workflow (a personal Git.Hub account is required.)
+   * `ee`:   Installs all of the software needed for electrical engineering
+   * `me`:   Installs all of the software needed for mechanical engineering
+   * `sw`:   Installs all of the software needed for software development
 
-   * `electrical/install_ee.sh`:
-     This script resides in the `electrical` sub-directory and will install everything
-     needed for the mechanical aspects of the project.
+   Many people select the `most` option.
 
-          `./electrical/install_ee.sh  # Install the electrical portion of this project.`
-
-   * `install_all.sh`:
-     This script just installs everything, but takes the longest.
-
-          `./install.sh  # Install everything.`
-
-   Please run one of the three scripts mentioned above.  It will download a bunch of stuff.
+   Downloading everything takes quite a while (frequently in excess of half an hour.)
+   Sometime you will be prompted for your user password so that the system can install
+   some system software.  The `stm32cubeide` software (selected by `ee`, `me`) is
+   particularly slow.
      
-3. This is important.  You need to activate your Python Virtual environtment.
+3. After the `hr2_install` script terminates (
+   This is important.  You need to activate your Python Virtual environment.
    This is done as follows:
 
-          `workon hr2   # Activate the hr2 Python virtual environment`
+     source ~/.bashrc
+     workon hr2   # Activate the hr2 Python virtual environment
 
-4. There are a bunch of `Makefile`'s sprinkled through out the various
-   sub directories in the project.  The `make` program can recursively visit each
-   of these `Makefile`'s and do any additonal needed steps.  There are two `make`
-   targets in all `Makefile`'s:
+4. After that yo can use the `make` program to do any remaining buidling.
 
-   * `all`: This is the normal do day-to-day target that is used when you
-     simply type `make`.
-   * `everything`: This is meant to be used once since it does additional steps
-     that are rarely needed -- create images, `dxf` files, etc.  This target
-     is triggered by typing `make everything`.
-
-5. There are two things left to do:
-
-   A. Enable your python virtual environment:
-
-           source ~/.bashrc   # Prepare for python virtual environments
-           workon hr2         # Enable the hr2 virtual environment
-
-   B. Use the `make` program to recursively build `everything` by typing:
+   Use the `make` program to recursively build `everything` by typing:
 
            make everything
 
@@ -555,7 +543,7 @@ There are 3 broad steps:
 
 Installing is a notoriously fragile process and it is quite possible that
 something can go wrong.  If so, please send a message to the group list with
-the `DL:` prefix on the subject line explaining the issue so it can be resolved.
+the `DEV:` prefix on the subject line explaining the issue so it can be resolved.
 
 ### Workflow
 
