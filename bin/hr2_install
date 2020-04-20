@@ -783,7 +783,7 @@ then
     echo "#!/bin/bash"                                                              >> $PRE_PUSH
     echo "# Prevent pushes to remote repository named upstream."                    >> $PRE_PUSH
     echo "# Incoming shell arguments $1=remote_name $2=remote_url"                  >> $PRE_PUSH
-    echo "if [ \"$1\" = \"upstream\" ] || [ \"$1\" = \"origin\" ];"                 >> $PRE_PUSH
+    echo "if [ \"\$1\" = \"upstream\" ] || [ \"\$1\" = \"origin\" ];"               >> $PRE_PUSH
     echo "then"                                                                     >> $PRE_PUSH
     echo "    echo \"git push to remote repository named upstream or origin"\
 	 "is disallowed.\""                                                         >> $PRE_PUSH
@@ -827,11 +827,12 @@ else
     echo "hub program was previously installed."
 fi
 
-# Make sure the staging remote exists:
+# Do any requested development installation:
 if [ -n "$DEV" ]
 then
-    # We have a GitHub.Com account name:
+    # We would have failed earlier if `GITHUB_ACCOUNT_NAME1 was not defines.
     # echo "We have a GitHub.Com account name $GITHUB_ACCOUNT_NAME ."
+    # Make sure that we have a staging remote:
     if [ -z "$STAGING_REMOTE" ]
     then
 	echo "**************** Creating a remote staging repository fork on GigHub.Com ..."
