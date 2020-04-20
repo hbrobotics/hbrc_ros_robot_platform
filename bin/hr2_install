@@ -432,6 +432,14 @@ echo "ME=$ME"
 echo "SW=$SW"
 echo "PASS2=$PASS2"
 
+# Determine which remotes exist:
+UPSTREAM_REMOTE="$( ( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream ) ) )"
+ORIGIN_REMOTE="$(   ( cd $HR2_DIRECTORY ; echo $(git remote | grep origin   ) ) )"
+STAGING_REMOTE="$(  ( cd $HR2_DIRECTORY ; echo $(git remote | grep staging  ) ) )"
+echo "UPSTREAM_REMOTE=$UPSTREAM_REMOTE"
+echo "ORIGIN_REMOTE=$ORIGIN_REMOTE"
+echo "STAGING_REMOTE=$STAGING_REMOTE"
+
 # Set up some convenience variables:
 # Set `SOURCE_BASHRC` later on to remind the user to type `source ~/.bashrc`:
 SOURCE_BASHRC=""
@@ -767,29 +775,7 @@ else
     echo "$BIN_DIRECTORY was previously added to \`PATH\` in \`$BASHRC\`."
 fi
 
-# Make sure that `upstream` remote exists:
-if [ "$(git remote | grep upstream)" = "" ]
-then
-    echo "**************** Installing git remote named upstream for $HR2_DIRECTORY ..."
-    git remote add upstream git@github.com:hbrobotics/hbrc_ros_robot_platform
-    # For some reason this code seems not to work:
-    #  git remote set-head upstream -a  # This should work, but seems not to for some reason but...
-    #git branch --set-upstream-to=upstream/master master  # Seems to get the job done
-    git branch --set-upstream-to=upstream/master master  # Seems to get the job done
-else
-    echo "git remote named upstream was previously installed."
-fi
-
-# Remove any `origin` upstream:
-if [ -n "`git remote | grep origin`" ]
-then
-    echo "**************** Removing git remote named origin for $HR2_DIRECTORY ..."
-    git remote remove origin
-else
-    echo "git remote name origin was previously removed."
-fi
-
-# Make sure that no pushing to upstream can occur:
+# Make sure that no pushing to upstream or origin can occur:
 PRE_PUSH=.git/hooks/pre-push
 if [ ! -x $PRE_PUSH ]
 then
@@ -797,9 +783,10 @@ then
     echo "#!/bin/bash"                                                              >> $PRE_PUSH
     echo "# Prevent pushes to remote repository named upstream."                    >> $PRE_PUSH
     echo "# Incoming shell arguments $1=remote_name $2=remote_url"                  >> $PRE_PUSH
-    echo "if [ \"$1\" = \"upstream\" ] ;"                                           >> $PRE_PUSH
+    echo "if [ \"$1\" = \"upstream\" ] || [ \"$1\" = \"origin\" ];"                 >> $PRE_PUSH
     echo "then"                                                                     >> $PRE_PUSH
-    echo "    echo \"git push to remote repository named upstream is disallowed.\"" >> $PRE_PUSH
+    echo "    echo \"git push to remote repository named upstream or origin"\
+	 "is disallowed.\""                                                         >> $PRE_PUSH
     echo "    echo \"Please do development in another git branch.\""                >> $PRE_PUSH
     echo "    exit 1"                                                               >> $PRE_PUSH
     echo "fi"                                                                       >> $PRE_PUSH
@@ -840,19 +827,42 @@ else
     echo "hub program was previously installed."
 fi
 
-# Create the staging remote:
+# Make sure the staging remote exists:
 if [ -n "$DEV" ]
 then
     # We have a GitHub.Com account name:
     # echo "We have a GitHub.Com account name $GITHUB_ACCOUNT_NAME ."
-    if [ -z "`git remote | grep staging`" ]
+    if [ -z "$STAGING_REMOTE" ]
     then
 	echo "**************** Creating a remote staging repository fork on GigHub.Com ..."
 	echo "You may be prompted password to the GitHub.Com account named $GITHUB_ACCOUNT_NAME..."
-	hub fork --remote-name staging --org $GITHUB_ACCOUNT_NAME
-	git remote add staging git@github.com:$GITHUB_ACCOUNT_NAME/hbrc_ros_robot_platform.git
+	# As a side effect, the `hub fork` command creates the `staging` remote:
+	hub fork --remote-name staging --org "$GITHUB_ACCOUNT_NAME"
+        STAGING_REMOTE="staging"
     else
 	echo "A project fork for staging was previously created on GitHub.Com."
+    fi
+
+    # Make sure that `upstream` remote exists:
+    if [ -z "$UPSTREAM_REMOTE" ]
+    then
+        echo "**************** Installing \`git\` remote named \`upstream\`" \
+	     "for \`$HR2_DIRECTORY\` ..."
+	git remote add upstream "git@github.com:hbrobotics/hbrc_ros_robot_platform"
+        UPSTREAM_REMOTE="upstream"
+	# For some reason neither of these work:
+	# git remote set-head upstream -a
+	# git branch --set-upstream-to=upstream/master master
+    fi
+
+    # Remove any `origin` upstream:
+    if [ -n "$UPSTREAM_REMOTE" ] && [ -n "$ORIGIN_REMOTE" ]
+    then
+	echo "**************** Removing \`git\` remote named \`origin\` for \`$HR2_DIRECTORY\` ..."
+	git remote remove origin
+	ORIGIN_REMOTE=""
+    else
+	echo "\`git\` remote named \`origin\` was previously removed."
     fi
 fi
 
