@@ -91,6 +91,9 @@ SW=""    # Software
 WF=""    # Workflow
 PASS2=""  # Secret flag to enter the recursive portion of this shell script
 
+# Define commands common to both passes:
+GIT_PULL="git pull --ff"
+
 # Process the arguments specified by the user:
 if [ "$#" == "0" ]
 then
@@ -304,14 +307,14 @@ then
 	# to disallow commits, in theory, there can be no can be no merge conflicts:
 	echo "Step 7"
         git checkout master
-	git pull "$ACTUAL_REMOTE" master # 2>/dev/null 1>/dev/null # Suppress the output
+	$GIT_PULL "$ACTUAL_REMOTE" master # 2>/dev/null 1>/dev/null # Suppress the output
 	echo "master branch should be up to date"
 
 	# Step 8: Now we return to the original branch we started (if necessary):
 	echo "Step 8"
 	if [ "$CURRENT_BRANCH" != "master" ]
 	then
-	    echo "Switch from master branch back to $CURRENT_BRANCH branch."
+	    echo "Switch from `master` branch back to $CURRENT_BRANCH branch."
 	    git checkout $CURRENT_BRANCH > /dev/null 2>/dev/null # Suppess the messages
 
 	    # Step 9: Now restore the branch to the way it was:
@@ -905,7 +908,7 @@ then
 	(cd $REPOSITORIES_DIRECTORY ; git clone https://github.com/waynegramlich/bom_manager.git)
     else
 	echo "Making sure that bom_manager is up to date ..."
-	( cd $REPOSITORIES_DIRECTORY/bom_manager ; git pull )
+	( cd $REPOSITORIES_DIRECTORY/bom_manager ; $GIT_PULL )
     fi
 
     # Clone kicube32:
@@ -916,7 +919,7 @@ then
 	( cd $REPOSITORIES_DIRECTORY ; git clone https://github.com/waynegramlich/kicube32.git )
     else
 	echo "Making sure that kicube32 is up to date ..."
-	( cd $REPOSITORIES_DIRECTORY/kicube32 ; git pull )
+	( cd $REPOSITORIES_DIRECTORY/kicube32 ; $GIT_PULL )
     fi
 fi
 
