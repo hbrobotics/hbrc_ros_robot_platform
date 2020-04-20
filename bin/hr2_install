@@ -232,6 +232,7 @@ then
         echo "Step 4"
 	UPSTREAM_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream) )`
 	ORIGIN_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep origin) )`
+	STAGING_REMOTE=`( cd $HR2_DIRECTORY ; echo $(git remote | grep staging) )`
 	echo "ORIGIN_REMOTE=$ORIGIN_REMOTE"
 	echo "UPSTREAM_REMOTE=$UPSTREAM_REMOTE"
 	if [ -n "$UPSTREAM_REMOTE" ]
@@ -309,6 +310,15 @@ then
         git checkout master
 	$GIT_PULL "$ACTUAL_REMOTE" master # 2>/dev/null 1>/dev/null # Suppress the output
 	echo "master branch should be up to date"
+
+	# When you do a `git status` in the master branch it will complain about the
+	# staging/master branch being seriously out of date.  We solve this by pushing
+	# up to staging/master.  We do not really need a copy up there, but it does not
+	# hurt and avoids an annoying and confusing message:
+	if [ -n "$STAGING_REMOTE" ]
+	then
+	    git push -u "$STAGING_REMOTE" master
+	fi
 
 	# Step 8: Now we return to the original branch we started (if necessary):
 	echo "Step 8"
