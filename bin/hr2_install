@@ -693,7 +693,8 @@ then
 	echo "Python virtual environments previously installed"
     fi
 
-    # Modify ~/.bashrc to support virtual environments by appending the following to ~/.bashrc :
+   # Modify ~/.bashrc to support virtual environments by appending the following to ~/.bashrc :
+    #        export HR2_DIRECTORY=...
     #        export VIRTUALENVWRAPER_PYTHON=/usr/bin/python3
     #        export WORKON_HOME=$HOME/.virtualenvs
     #        export REPOSITORIES_DIRECTORY=...  # Root projects directory
@@ -701,7 +702,16 @@ then
     #        source /usr/local/bin/virtualenvwrapper.sh
     # Again, this is just setup, the actual virtual environment has not been created yet.
 
-    # Append "export VIRTUALENVWRAPER_PYTHON=/user/bin/python3" to ~/.bashrc .
+    # Append "export HR2_DIRECTORY=..." to ~/.bashrc .
+    if [ -z "`grep HR2_DIRECTORY $BASHRC`" ]
+    then
+	echo "**************** Add VIRTUALENVWRAPER_PYTHON to $BASHRC ..."
+	echo "export HR2_DIRECTORY=$HR2_DIRECTORY" >> $BASHRC
+    else
+	echo "HR2_DIRECTORY already in $BASHRC ."
+    fi
+
+    # Append "export VIRTUALENVWRAPER_PYTHON=/usr/bin/python3" to ~/.bashrc .
     if [ -z "`grep VIRTUALENVWRAPER_PYTHON $BASHRC`" ]
     then
 	echo "**************** Add VIRTUALENVWRAPER_PYTHON to $BASHRC ..."
