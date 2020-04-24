@@ -22,10 +22,7 @@ $(F767ZI_CSV): ${KIPART_IOC_CSV}
 
 $(MASTER_LIB): ${KIPART_CSVS}
 	cat ${KIPART_CSVS} > $(MASTER_CSV)
-	kipart --fill bg_fill -o $(MASTER_LIB) $(MASTER_CSV)
-
-#	sed -i -E 's/S (.*) N/S \1 f N/' $(MASTER_LIB)
-#	rm -f $(MASTER_CSV)
+	kipart --fill bg_fill --overwrite -o $(MASTER_LIB) $(MASTER_CSV)
 
 clean:
 	rm -f $(F767ZI_CSV)

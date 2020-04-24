@@ -1,4 +1,4 @@
-HCSR04;F2X4,CN,FOOT,DS,M#,FEILDS
+HCSR04;F2X4,CN,FOOT,DS,M#,FEILDS,Description
 Pin,Name,Type,Side,Unit,Style,Hidden
 1,VCC,pwr,right,1,,
 2,VCC,pwr,right,1,,
