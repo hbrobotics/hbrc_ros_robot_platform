@@ -119,3 +119,16 @@ The design rules for schematic capture are:
 * Try to keep "air wires" to a minimum.
 * Make all power and ground connections explicit.
 * Resistors use the older "3 hump" style.
+
+<!--
+Example of hooking up ST-Link to NUCLEO:
+     https://os.mbed.com/questions/7974/F401RE-Cut-off-ST-LINK/
+
+				F410RE
+St-link part(left Nucleo)	rest of Nucleo (right Nucleo)	signal
+CN4 pin 2			CN7 pin 15			SWCLK
+CN4 pin 3			CN7 pin 19			GND
+CN4 pin 4			CN7 pin 13			SWDIO
+CN4 pin 5			CN7 pin 14			NRST
+JP1 left pin			CN7 pin 12			+3V_ST_LINK
+-->
