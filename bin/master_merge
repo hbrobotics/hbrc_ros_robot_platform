@@ -1,0 +1,130 @@
+#!/bin/bash
+# This file is licensed using the "MIT License" below:
+#
+####################################################################################################
+#
+# MIT License
+#
+# Copyright 2020 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+####################################################################################################
+#<---------------------------------------- 100 Characters ---------------------------------------->#
+
+# In general, shell scripts are notoriously difficult to read and debug.
+# To aid in reading/debugging this script, there are deliberately plenty of comments.
+# Speaking of comments, the pronouns "we" and "you" are used liberally.
+# The "we" pronoun refers to the people who develop/maintain this file
+# and the pronoun "you" to refers to you, the reader of this code.
+
+# This shell script ensures that there are no uncommitted files in the current branch,
+# updates the `master` branch, and performs a merge from the `master` branch to the current
+# branch.
+
+# In general, turning on debugging flags helps to debug shell scripts.  The four flags below are
+# really helpful.  The commands are enabled when debugging by removing the comment character:
+DEBUGGING=""
+#DEBUGGING="yes"  # Add/Remove `#` at front of this line to disable/enable debugging:
+if [ -n "$DEBUGGING" ]
+then
+    set -x           # Trace execution.
+    set -e           # Exit immediately on error result.
+    set -o pipefail  # Fail if any commands in a pipeline fail.
+    set -u           # Treat unset variables as an error.
+fi
+
+# When `DEBUGGING` is non-empty, echo the current argument:
+function debug() {
+    if [ -n "$DEBUGGING" ]
+    then
+	echo "$1"
+    fi
+}
+
+# Step 1: Determine `REPOSITORY_ROOT` and fail if we are not in a repository:
+debug "Step 1"
+# The `2>/dev/null` suppresses error messages:
+if git rev-parse --show-toplevel >/dev/null 2>/dev/null
+then
+    echo "Repository found:" > /dev/null
+else
+    # Repository not found:
+    CURRENT_WORKING_DIRECTORY="$(pwd)"
+    echo "Your current working directory of \`$CURRENT_WORKING_DIRECTORY\` does not appear" \
+         "to be in a \`git\` repository."
+    exit 1
+fi
+
+# Step 2: Identify the `CURRENT_BRANCH`:
+debug "Step 2"
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+debug "CURRENT_BRANCH=$CURRENT_BRANCH"
+if [ -z "$CURRENT_BRANCH" ]
+then
+    echo "There does not appear to be a currently selected branch in the" \
+	 "\`$REPOSITORY_ROOT\` repository."
+    exit 2
+fi
+
+# Step 3: Do not attempt to merge the `master` branch to itself:
+debug "Step 3"
+if [ "$CURRENT_BRANCH" = "master" ]
+then
+    echo "Already in \`master\` branch; mergign with \`master\` is superfluous."
+    exit 3
+fi
+
+# Step 4: Find out if there are any `UNCOMMITED_FILES`:
+debug "Step 4"
+UNCOMMITTED_FILES="$(git diff --name-only HEAD)"
+debug "UNCOMMITTED_FILES=$UNCOMMITTED_FILES"
+if [ -n "$UNCOMMITTED_FILES" ]
+then
+    echo "There are 1 or more uncommited files on this branch."
+    echo "Merging with the `master` branch can not be done until they are commited."
+    exit 4
+fi
+
+# Step 5: Ensure that `repository_update` is available:
+debug "Step 5"
+if which repository_update >/dev/null
+then
+    echo "repository_update found" > /dev/null
+else    
+    echo "Can not find the \`repository_update\` script."
+    echo "Your \`\$PATH is probably not set up correctly."
+    exit 5
+fi
+# Step 6: Update the `master` branch in the repository:
+debug "Step 6"
+echo "Ensuring that the \`master\` branch is up-to-date..."
+repository_update
+
+# Step 7: Trigger the merge from `master`:
+debug "Step 7"
+echo "Starting merge of \`master\` branch into \`$CURRENT_BRANCH\` branch..."
+echo "    If there are any merge conflicts, you will either have to fix them by hand or"
+echo "    run the the \`git merge --abort\` command to terminate the merge attempt."
+echo "    The message \`Already up to date.\` means that there was nothing new to merge in:"
+git merge --ff master
+
+
+
+
+

@@ -1,0 +1,256 @@
+#!/bin/bash
+
+# This file is licensed using the "MIT License" below:
+#
+####################################################################################################
+#
+# MIT License
+#
+# Copyright 2020 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+####################################################################################################
+#<---------------------------------------- 100 Characters ---------------------------------------->#
+
+# In general, shell scripts are notoriously difficult to read and debug.
+# To aid in reading/debugging this script, there are deliberately plenty of comments.
+# Speaking of comments, the pronouns "we" and "you" are used liberally.
+# The "we" pronoun refers to the people who develop/maintain this file
+# and the pronoun "you" to refers to you, the reader of this code.
+
+# This shell script takes an optional directory as an argument and updates the master branch
+# for the contained git repository.  It does this carefully without damaging any tracked files
+# that are not yet committed.  In addition, it always leaves back on your original branch
+# and in the same current working directory.
+
+# In general, turning on debugging flags helps to debug shell scripts.  The four flags below are
+# really helpful.  The commands are enabled when debugging by removing the comment character:
+DEBUGGING=""
+#DEBUGGING="yes"  # Add/Remove `#` at front of this line to disable/enable debugging:
+if [ -n "$DEBUGGING" ]
+then
+    set -x           # Trace execution.
+    set -e           # Exit immediately on error result.
+    set -o pipefail  # Fail if any commands in a pipeline fail.
+    set -u           # Treat unset variables as an error.
+fi
+
+# When `DEBUGGING` is non-empty, echo the current argument:
+function debug() {
+    if [ -n "$DEBUGGING" ]
+    then
+	echo "$1"
+    fi
+}
+
+# Step 1: Figure out which `REPOSITORY_DIRECTORY` to try/use:
+debug "Step 1"
+CURRENT_WORKING_DIRECTORY="$(pwd)"
+REPOSITORY_DIRECTORY="$CURRENT_WORKING_DIRECTORY"
+if [ "$#" = "0" ]
+then
+    REPOSITORY_DIRECTORY="$CURRENT_WORKING_DIRECTORY"
+else
+    REPOSITORY_DIRECTORY="$1"
+fi
+debug "CURRENT_WORKING_DIRECTORY=$CURRENT_WORKING_DIRECTORY"
+debug "REPOSITORY_DIRECTORY=$REPOSITORY_DIRECTORY"
+
+# Step 2: Ensure that we have `git` is installed:
+debug "Step 2"
+ERROR_MESSAGE='Update of repository for "$REPOSITORY_DIRECTORY" will not happen.'
+WHICH_GIT="$(which git)"
+#debug: echo "WHICH_GIT=$WHICH_GIT"
+if [ -z "$WHICH_GIT" ]
+then
+    echo "!!!!!!!!!!!!!!!! \`git\` program is not installed yet."
+    echo "$ERROR_MESSAGE"
+    exit 2
+fi
+
+# Step 3: Ensure that `REPOSITORY_DIRECTORY` exists and is a directory.
+debug "Step 3"
+if [ ! -d "$REPOSITORY_DIRECTORY" ]
+then
+    echo "!!!!!!!!!!!!!!!! \`$REPOSITORY_DIRECTORY\` is not a directory."
+    echo "ERROR_MESSAGE"
+    exit 3
+fi
+
+# Step 4: Change over to `REPOSITORY_DIRECTORY` and find the `REPOSITORY_ROOT`.  From here on,
+# before returning we have to return to the original `CURRENT_WORKING_DIRECTORY` on an error.
+debug "Step 4"
+cd "$REPOSITORY_DIRECTORY"
+# The `2>/dev/null` suppresses error messages:
+REPOSITORY_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+debug "REPOSITORY_ROOT=$REPOSITORY_ROOT"
+if [ -z "$REPOSITORY_ROOT" ]
+then
+    echo "!!!!!!!!!!!!!!!! \`$REPOSITORY_DIRECTORY\` is not part of a git repository."
+    echo "$ERROR_MESSAGE"
+    cd "$CURRENT_WORKING_DIRECTORY"
+    exit 4
+fi
+
+# Step 5: Determine if with we have either an `upstream` or `origin` remote.  If the
+# repository has been freshly cloned, it will have a remote of `origin`.  If the
+# `hr2_install dev` has been specified it has been set up as `upstream`.  If neither
+# remote is present, there is no way to recover and we are done.  We may have the
+# `set -o pipefail` option enabled and the code below avoids problems with `grep` not
+# finding anything.
+debug "Step 5"
+ORIGIN_REMOTE="$(   ( cd $HR2_DIRECTORY ; echo $(git remote | grep origin   ) ) )"
+STAGING_REMOTE="$(  ( cd $HR2_DIRECTORY ; echo $(git remote | grep staging  ) ) )"
+UPSTREAM_REMOTE="$( ( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream ) ) )"
+debug "ORIGIN_REMOTE=$ORIGIN_REMOTE"
+debug "STAGING_REMOTE=$STAGING_REMOTE"
+debug "UPSTREAM_REMOTE=$UPSTREAM_REMOTE"
+if [ -n "$UPSTREAM_REMOTE" ]
+then
+    ACTUAL_REMOTE="$UPSTREAM_REMOTE"
+elif [ -n "$ORIGIN_REMOTE" ]
+then
+    ACTUAL_REMOTE="$ORIGIN_REMOTE"
+else
+    echo "!!!!!!!!!!!!!!!! There is no remote repository named \`upstream\`" \
+	 "or \'origin\' defined for repository \'$REPOSITORY_ROOT\'."
+    echo "$ERROR_MESSAGE"
+    cd "$CURRENT_WORKING_DIRECTORY"
+    exit 5
+fi
+
+# Step 6: Determine if the `MASTER_BRANCH_EXISTS`:
+debug "Step 6"
+MASTER_BRANCH_EXISTS="$(git branch --list | grep master)"
+debug "MASTER_BRANCH_EXISTS=$MASTER_BRANCH_EXISTS"
+if [ -z "$MASTER_BRANCH_EXISTS" ]
+then
+    echo "!!!!!!!!!!!!!!! There is no \`master\` branch in repository \`$REPOSITORY_ROOT\`."
+    echo "$ERROR_MESSAGE"
+    cd "$CURRENT_WORKING_DIRECTORY"
+    exit 6
+fi
+
+# Step 7: Get current branch name and a list of uncommitted files.  If we are not on the
+# `master` branch we will temporarily switch over to the `master` branch, attempt to update
+# master and return the current branch.  This is easily said, but not so easily done.
+# If we are already on the `master` branch we can avoid the hassle of switching branches:
+# For reference:
+#
+#   https://stackoverflow.com/questions/6245570/how-to-get-the-current-branch-name-in-git
+#
+# explained how to get the CURRENT_BRANCH name.  It is bit obscure:
+debug "Step 7"
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+debug "CURRENT_BRANCH=$CURRENT_BRANCH"
+# Likewise getting the UNCOMMITTED_FILES is pretty obscure as well:
+UNCOMMITTED_FILES="$(git diff --name-only HEAD)"
+debug "UNCOMMITTED_FILES=$UNCOMMITTED_FILES"
+debug "Starting to update the master branch."
+if [ "$CURRENT_BRANCH" != "master" ]
+then
+    # If we have `UNCOMMITTED_FILES` for the `CURRENT_BRANCH`, we need to
+    # temporarily "stash" them before changing over to `master` branch:
+    if [ -n "$UNCOMMITTED_FILES" ]
+    then
+	echo "Temporarily stashing uncommitted files for \`$CURRENT_BRANCH\` branch."
+	git stash > /dev/null # Suppress the messages.
+    fi
+
+    # Step 7: Temporarily switch over to `master` branch:
+    debug "Step 7"
+    debug "Temporarily switching over to \`master\` branch from \`$CURRENT_BRANCH\` branch."
+    # Suppress the messages:
+    git checkout master > /dev/null 2>/dev/null
+    # From here on out, if we encounter an error we have return back to `$CURRENT_BRANCH`
+    # **AND** unstash the uncommitted files.
+fi
+
+# Step 8: Finally perform the git pull from the `upstream` or `origin` repository into
+# the master branch.  Because the local `master` branch has been configured
+# to disallow commits, in theory, there can be no can be no merge conflicts:
+debug "Step 8"
+git pull -ff "$ACTUAL_REMOTE" master 2>/dev/null >/dev/null # Suppress the output
+debug "master branch should be up to date"
+
+# Step 9: When you do a `git status` in the `master branch` it will complain about the `master`
+# branch of the `staging` remote being seriously out of date.  We solve this by pushing up to
+# staging/master.  We do not really need a copy up there, but it does not hurt and avoids
+# an annoying and confusing message:
+debug "Step 9"
+if [ -n "$STAGING_REMOTE" ]
+then
+    git push -u "$STAGING_REMOTE" master >/dev/null 2>/dev/null
+fi
+
+# Step 10: Now we return to the original branch we started (if necessary):
+debug "Step 10"
+if [ "$CURRENT_BRANCH" != "master" ]
+then
+    debug "Switch from \`master\` branch back to \`$CURRENT_BRANCH\` branch."
+    git checkout "$CURRENT_BRANCH" > /dev/null 2>/dev/null # Suppress the messages
+
+    # Step 11: Now restore any `UNCOMMITTED_FILES` for the branch to the way it was:
+    debug "Step 11"
+    if [ -n "$UNCOMMITTED_FILES" ]
+    then
+	echo "Restoring any previously uncommitted files."
+	git stash pop > /dev/null  # `> /dev/null` suppresses an unneeded `git status`
+    fi
+
+    # We are back in `CURRENT_BRANCH` with any uncommitted files restored.
+fi
+	
+# The following code merges to the CURRENT_BRANCH, which is currently not enabled:
+#    # The following is a references (* is the one selected):
+#    #
+#    #     * https://code-maven.com/git-check-for-conflicts-before-merge
+#    #       https://stackoverflow.com/questions/501407/is-there-a-git-merge-dry-run-option
+#    #       https://stackoverflow.com/questions/964876/head-and-orig-head-in-git
+#    #
+#    # Now figure out if a merge from master will have any conflicts.
+#    # This is done by doing a `git merge --no-commit`, followed by a
+#    # `git merge -abort`.  The return code from the `--no-commit`
+#    # is used to decide whether to do the actual merge or not.
+#    # If no conlicts will occur, perform the merge to this branch:
+#    echo "Performing test merge from master branch to $CURRENT_BRANCH."
+#    if git merge --no-commit --no-ff master > /dev/null 2>/dev/null # Suppress messages
+#    then
+#	echo "Test merge shows no problems.  Undo test merge and do it for real."
+#	git merge --abort 2>/dev/null  # `2>/dev/null` suppresses "fatal: ...." message
+#	echo "Performing the actual merge from the master branch to $CURRENT_BRANCH branch."
+#	# Suppress error messages:
+#	git merge master --commit --no-ff --no-edit > /dev/null 2>/dev/null
+#    else
+#	echo "Test merge shows there will be issue merging master branch" \
+#	     " to $CURRENT_BRANCH branch."
+#	echo "Undoing the test merge."
+#	git merge --abort
+#	echo "Please add your modified files into your branch with git add."
+#	echo "When they are all added, please do a git commit."
+#	echo "Then rerun the shell script again."
+#    fi
+#fi
+
+# Step 11: We are done, so return to `CURRENT_WORKING_DIRECTORY` and return
+# with a success result (i.e. 0):
+debug "Step 11"
+cd "$CURRENT_WORKING_DIRECTORY"
+debug "Done"
+exit 0
