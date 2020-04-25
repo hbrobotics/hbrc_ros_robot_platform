@@ -1,0 +1,18 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP F767ZI;NUCLEO144
+D NUCLEO144-F767ZI
+K Nucleo144 STM32F767ZI
+F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
+$ENDCMP
+#
+#End Doc Library
+
+#
+$CMP HCSR04;F2X4
+D HC-SR04 Sonar
+K ~
+F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+#End Doc Library
