@@ -10,12 +10,20 @@ then
     echo "You need to commit the following uncommitted files for the $CURRENT_BRANCH branch."
     git diff --name-only HEAD
 else
-    echo "Pushing branch $CURRENT_BRANCH to remote staging repository."
-    git push -u staging
-    echo "Generating a pull-request.  Please enter some text into the editor for the pull request."
-    echo "It is acceptable to copy the first line from the commit line."
-    echo "Remember to save the file before exiting."
-    git log --pretty=oneline --abbrev-commit | head -1
-    hub pull-request
-    echo "Pull request generated."
+    # Make sure that you have succeeded with a `master` merge first:
+    if master_merge
+    then
+	echo "Pushing branch $CURRENT_BRANCH to remote staging repository."
+	git push -u staging
+	echo "Generating a pull-request." \
+	     "Please enter some text into the editor for the pull request."
+	echo "It is acceptable to copy the first line from the commit line."
+	echo "Remember to save the file before exiting."
+	git log --pretty=oneline --abbrev-commit | head -1
+	hub pull-request
+	echo "Pull request generated."
+    else
+	echo "The merge from the `master` branch to this branch did not go smoothly."
+	echo "Please fix things up and try again.  The pull request was not generated."
+    fi
 fi

@@ -51,6 +51,9 @@ This top level document is broken into the following sections below:
 * [Download, Installation and Workflow](#download-installation-and-workflow):
   The download, installation, and workflow portions of the project.
 
+* [Talks](#talks):
+  Various talks given about the project.
+
 ## Google Group
 
 There is a Google Groups mailing list to discuss this project at
@@ -494,35 +497,33 @@ There are 3 broad steps:
         cd .../REPOS   # Change the current working directory to REPOS
         # We need to get `git` installed.
         # If `git` is already installed, skip the install below:
-        sudo apt install git --yes # You may be asked for you user password:
+        sudo apt install git --yes # You may be asked for your user password:
         # Now "clone" the `hbrc_ros_robot_platform` repository using `git`:
-	git clone -o upstream https://github.com/hbrobotics/hbrc_ros_robot_platform.git
+	git clone https://github.com/hbrobotics/hbrc_ros_robot_platform.git
         # Change the current working directory to the root of the cloned repository
         cd hbrc_ros_robot_platform
 	# Set your `git` user name and `email`.  Please run the following two commands:
         git config --global user.name "Your Name"
         git config --global user.email "youremail@yourdomain.com"
-	# Fill in "Your Name' with your actual name and "youremail@yourdomain.com"
-        # with your actual E-mail address.
-    
+
 2. The second step is to run one `hr2_install` script.  This is done by
 
      ./bin/hr2_install OPTION
 
    where `OPTION` is one or more of the following:
-   * `all`:  Installs everything
-   * `most`: Installs everything but `dev`
+   * `all`:  Installs everything.
+   * `most`: Installs everything but `dev`.
    * `dev`:  Installs the development workflow (a personal Git.Hub account is required.)
-   * `ee`:   Installs all of the software needed for electrical engineering
-   * `me`:   Installs all of the software needed for mechanical engineering
-   * `sw`:   Installs all of the software needed for software development
+   * `ee`:   Installs all of the software needed for electrical engineering.
+   * `me`:   Installs all of the software needed for mechanical engineering.
+   * `sw`:   Installs all of the software needed for software development.
 
    Many people select the `most` option.
 
    Downloading everything takes quite a while (frequently in excess of half an hour.)
    Sometime you will be prompted for your user password so that the system can install
-   some system software.  The `stm32cubeide` software (selected by `ee`, `me`) is
-   particularly slow.
+   some system software.  The `stm32cubeide` software download (selected by `ee`, `me`)
+   is particularly slow.
      
 3. After the `hr2_install` script terminates (
    This is important.  You need to activate your Python Virtual environment.
@@ -536,10 +537,6 @@ There are 3 broad steps:
    Use the `make` program to recursively build `everything` by typing:
 
            make everything
-
-   For the first time through, we use the `everything` target:
-
-        make `everything`  # Force everything to be recursively made.
 
 Installing is a notoriously fragile process and it is quite possible that
 something can go wrong.  If so, please send a message to the group list with
@@ -576,9 +573,9 @@ There are two common workflows supported by GitHub.com:
 
 * Fork and Pull Request Workflow:
   In this model, the common parent repository is the same as the shared repository
-  workflow immediately above.  However, there now you need two repositories to do
-  development.  The first repository is the same local repository on your local machine
-  as before.  In addition to your local repository, you also have your own semi-private
+  workflow immediately above.  However, now you need two repositories to do development.
+  The first repository is the same local repository on your local machine as before.
+  In addition to your local repository, you also have your own semi-private
   repository stored on GitHub.com that is used for staging purposes.  This staging repository
   is goes by a less descriptive name called a "fork repository".  Your fork repository
   is "connected" to the shared parent repository.  Since there are multiple developers,
@@ -645,13 +642,13 @@ There are a still a few manual steps to do:
    "Username" is your GitHub.Com account name and will be needed further below.  Do not
    log out of GitHub.Com yet.
 
-2. In order to avoid having to type in a password all the time, we need to set up your
+2. In order to avoid having to type in a password all the time, you need to set up your
    computer to use an SSH key to talk to your GitHub.Com account.  The install scripts
    have ensured that an SSH key has been generated.  The public key is stored at
    `~/.ssh/id_rsa.pub`.  There is a
    [GitHub.Com SSH Key Installation](https://help.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account) web page that will guide you through the GitHub.Com
    web interface to install your public SSH key.  It is a little tedium for now, but will avoid
-   much password prompting annoyance in the future.  If we are lucky, you should not need
+   much password prompting annoyance in the future.  If you are lucky, you should not need
    to deal with the GitHub.Com web interface any more.  Now you can disconnect from GitHub.Com.
 
 3. Add GITHUB_ACCOUNT_NAME variable definition to your `~/.bashrc` file.  This is typically
@@ -660,16 +657,7 @@ There are a still a few manual steps to do:
       GITHUB_ACCOUNT_NAME=whatever_you_typed_in_in_the_previous_step
       source ~/.bashrc  # Do no forget this step.
 
-4. Specify your `user.name` and `user.email` values for `git`.  If you have previoulsy
-   done this, there is no need to do it again.  The two commands are:
-
-     git config --global user.name "Your Name"
-     git config --global user.email "YourEmail@WhereEver"
-
-5. Please rerun one of the installation scripts `install_all.sh`, `electrical/install_ee.sh`
-   of `mechanica/install_me.sh`.  They will create your remote fork repository on GitHub.com
-   and create git remote link named `staging` that points to it.  (Run `git remote -v` to see
-   it.)
+4. Please rerun the `hr_install dev` to get your development environment set uo.
 
 That pretty much wraps up the additional steps need to enable the "Fork and pull-request"
 workflow.  Next, it is time to try it out.
@@ -680,12 +668,12 @@ The `git` program does a great deal of stuff and it is outside the scope of this
 document to attempt to cover it all.  Instead, we will explain just enough to get started.
 
 If you have followed the steps above, you have a repository named `hbrc_ros_robot_platform`
-sitting on you local machine.
+sitting on you local machine.  Your local repository has the following characteristicx:
 
-* An `upstream` remote descriptor that points to the shared project repository.
-* A `staging` remote descriptor that points to the simi-private forked directory
+* It has `upstream` remote descriptor that points to the shared project repository.
+* It has `staging` remote descriptor that points to the semi-private forked directory
   that is used for staging purposes.
-* A `master` branch which has be set up so that it only accepts updates from the
+* The `master` branch which has be set up so that it only accepts updates from the
   `upstream` remote.
 
 The first thing to understand is that you should never to development on the `master`
@@ -699,20 +687,45 @@ side branches, called development branches.  The way to create a new branch is b
 
 where you supply a new and hopefully descriptive name for the new development branch.
 After this command, the new branch will be active.  Now you can modify things to your
-hearts content.  You can check the files in as many times as you want.  You can perform
-as many commits as you want on the branch.  Please put descriptive comments in the
-commit logs.
+hearts content.  You can check the files in as many times as you want using `git add ...`
+and `git commit -m "SOME MESSAGE HERE."`.  You can perform as many commits as you want
+on the branch.  Please put descriptive comments in the commit logs.
 
-When you think you changes are ready to be merged into the project you initialiate
+When you think you changes are ready to be merged into the project you initiate
 a pull-request.  This is done by the command:
 
      pull_request
 
-This command is in the repository `bin` directory.  This will push your commit up
-to the staging repository and generate a pull request.  You will have add a comment
-into the pull request via an editor that will pop up.
+This command is in the repository `bin` directory.  This will ensure that you have
+merged with the `master` branch, push your commit up to the staging repository and
+generate a pull request.  You will have add a comment into the pull request via an
+editor that will pop up.
+
+Just so you know, there is a command called `master_merge` that will ensure that
+the `master` branch is up to date with GitHub.Com and then attempt to `master` branch
+to be merged with your current branch.  This command is invoked by `pull_request`, but
+you can invoke it yourself if you just want to merge without triggering a pull request.
 
 That is basically it.
+
+The current files in the `bin` directory are:
+
+* `hr2_install`:
+  An installation script for install HR2 project software.
+
+* `master_merge`:
+  A script that ensures that the `master` branch is up to date and then attempts
+  to merge the `master` branch into your branch.
+
+* `pull_request`:
+  A script the forces a `master_merge` followed by generating a pull request for GitHub.Com.
+
+* `stm32cubeide`:
+  A symbolic link to a `stm32cubeide` program.  This is basically the Eclipse programming
+  environment that has been configured to work with the `stm32cube` software for supporting
+  STM32 micro-controllers.
+
+More scripts are likely to be added over time.
 
 #### Coding Style
 
@@ -731,15 +744,21 @@ The vast majority of the code is written in Python, C, and some Shell scripts.
 
 * Shell:
   Shell scripts are tedious to write and debug and still tend to be fragile.
-  Lot's of comments are used.
+  Lot's of comments are used.  The `set -xeuo pipeline` command is used for debugging
+  when possible.
 
 All documentation is written in [markdown](https://daringfireball.net/projects/markdown/).
-Speaking of document, it is treated just like code in that it has bugs in it as well
+Speaking of documentation, it is treated just like code in that it has bugs in it as well
 (miss-spelled words, bad grammar, unclear desciptions, etc.)  The documentation is fixed
 the same way that code is fixed, using the standard workflow.
 
 Eventually we will use the Github issue tracker to track both code and documentation issues.
 For now, the group mailing list will be used instead.
+
+## Talks
+
+Occasionally, talks are give about this project and the talk materials are organized into the 
+[talks](talks/README.md) directory.
 
 <!-- Random
 
