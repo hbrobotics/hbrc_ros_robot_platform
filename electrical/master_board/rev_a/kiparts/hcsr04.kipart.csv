@@ -1,12 +1,12 @@
-HCSR04;F2X4,CN,FOOT,DS,M#,FEILDS
+HCSR04;F2X4,CN,FOOTPRINT,https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf,HC-SR04,HC-SR04 Sonar
 Pin,Name,Type,Side,Unit,Style,Hidden
-1,VCC,pwr,right,1,,
-2,VCC,pwr,right,1,,
+1,VCC,pwr_in,right,1,,
+2,VCC,pwr_in,right,1,,
 3,TRIG,in,right,1,,
 4,TRIG,in,right,1,,
-5,ECHO,out,right,1,,
+5,ECHO,in,right,1,,
 6,ECHO,out,right,1,,
-7,GND,pwr,right,1,,
-8,GND,pwr,right,1,,
+7,GND,pwr_in,right,1,,
+8,GND,pwr_in,right,1,,
 ,,,,,,
 
