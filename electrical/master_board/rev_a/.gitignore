@@ -1,0 +1,6 @@
+.mypy_cache
+fp-info-cache*
+master_board-cache.lib
+master_board-rescue.lib
+kiparts/f767zi.kipart.csv
+kiparts/master_board.csv

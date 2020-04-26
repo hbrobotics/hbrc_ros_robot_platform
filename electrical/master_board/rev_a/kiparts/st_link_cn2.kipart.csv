@@ -1,0 +1,6 @@
+STLINKCN2;F1X2,JP,PinHeader_1x02_P2.54mm_Vertical,http://www.adam-tech.com/downloader.php?p=RS1-XX-G.pdf,RS1-02-G,ST-Link Ground Pins
+Pin,Name,Type,Side,Unit,Style,Hidden
+1,GND1,pwr_in,right,1,,
+2,GND2,pwr_in,right,1,,
+,,,,,,
+
