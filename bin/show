@@ -1,0 +1,152 @@
+#!/bin/bash
+# This file is licensed using the "MIT License" below:
+#
+####################################################################################################
+#
+# MIT License
+#
+# Copyright 2020 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+####################################################################################################
+#<---------------------------------------- 100 Characters ---------------------------------------->#
+
+# In general, shell scripts are notoriously difficult to read and debug.
+# To aid in reading/debugging this script, there are deliberately plenty of comments.
+# Speaking of comments, the pronouns "we" and "you" are used liberally.
+# The "we" pronoun refers to the people who develop/maintain this file
+# and the pronoun "you" to refers to you, the reader of this code.
+
+# This shell script basically launches programs for use in a presentation.
+
+# In general, turning on debugging flags helps to debug shell scripts.  The four flags below are
+# really helpful.  The commands are enabled when debugging by removing the comment character:
+DEBUGGING=""
+DEBUGGING="yes"  # Add/Remove `#` at front of this line to disable/enable debugging:
+if [ -n "$DEBUGGING" ]
+then
+    set -x           # Trace execution.
+    set -e           # Exit immediately on error result.
+    set -o pipefail  # Fail if any commands in a pipeline fail.
+    set -u           # Treat unset variables as an error.
+fi
+
+# When `DEBUGGING` is non-empty, echo the current argument:
+function debug() {
+    if [ -n "$DEBUGGING" ]
+    then
+	echo "$1"
+    fi
+}
+
+# Step1: Verify that `git is installed:
+debug "Step 1"
+if ! which git 1>/dev/null  # Ignore any output; we only care whether or not `git` is found.
+then
+    echo "The \`git\` program is not installed."
+    exit 1
+fi
+
+# Step 2: Fail if we are not in a `git` repository.
+debug "Step 2"
+CURRENT_WORKING_DIRECTORY=$(pwd)
+debug "CURRENT_WORKING_DIRECTORY=$CURRENT_WORKING_DIRECTORY"
+if ! git rev-parse --show-toplevel >/dev/null 2>/dev/null
+then
+    echo "Current working directory \`$CURRENT_WORKING_DIRECTORY\` is not in a \`git\` repository."
+    exit 2
+fi
+
+# Step 3: Extract `REPOSITORY_DIRECTORY` and determine if it is the `HR2_DIRECTORY`:
+debug "Step 3"
+REPOSITORY_DIRECTORY=$(git rev-parse --show-toplevel)
+debug "REPOSITORY_DIRECTORY=$REPOSITORY_DIRECTORY"
+REPOSITORY_ROOT=$(echo "$REPOSITORY_DIRECTORY" | sed "s,.*/,,g")
+debug "REPOSITORY_ROOT=$REPOSITORY_ROOT"
+if [ "$REPOSITORY_ROOT" != "hbrc_ros_robot_platform" ]
+then
+    echo "The current working directory \`$CURRENT_WORKING_DIRECTORY\`" \
+	 "is not in the \`hbrc_ros_robot_repository\`"
+    exit 3
+fi
+HR2_DIRECTORY="$REPOSITORY_DIRECTORY"
+debug "$REPOSITORY_DIRECTORY=REPOSITORY_DIRECTORY"
+
+# Step 4: Process command line arguments:
+debug "Step 4"
+if [ "$#" = "0" ]
+then
+    echo "Usage: show TAG"
+    echo "  TAG is one of:"
+    echo "    qcad: Display qcad with romi-chassis.dxf"
+    exit 0
+fi
+
+# Step 4: Dispatch on first argument.
+debug "Step 5"
+function scad() {
+    DQ='"' # DQ == Double Quote
+    FOO="name=$DQ$1$DQ" # $1 == the value to set name to
+    openscad "$HR2_DIRECTORY/mechanical/hr2_models.scad" -D $FOO
+}
+
+case "$1" in
+    hr2_arm)
+	scad "hr2_arm_assembly"
+	;;
+    hr2_base)
+	scad "hr2_base_assembly"
+	;;
+    hr2_master)
+	scad "hr2_master_assembly"
+	;;
+    hr2_nucleo)
+	scad "hr2_nucleo_assembly"
+	;;
+    hr2_wheel)
+	scad "hr2_wheel_assembly"
+	;;
+    hr2_pi)
+	scad "hr2_pi_assembly"
+	;;
+    kicad)
+	( cd $HR2_DIRECTORY/electrical/master_board/rev_a ; kicad master_board.pro )
+	;;
+    other_pi)
+	scad "other_pi"
+	;;
+    qcad)
+	# In general, `qcad` gets really confused about file paths:
+	# * This code is not really needed. Use `cd` instead:
+	#     QCAD_CONF="$HOME/.config/QCAD/QCAD3.conf"
+	#     debug "QCAD_CONF=$QCAD_CONF"
+	#     sed -i "s,Files=.*,Files=,g" "$QCAD_CONF"
+	# * It is sufficient to run the `qcad` program in the same directory as the `.dxf` file
+	#   to be able to successfully read the `.dxf` from the command line:
+	( cd $HR2_DIRECTORY/mechanical/dxf ; qcad romi-chassis.dxf )
+	;;
+    raspi3)
+	scad "raspi3"
+	;;
+    *)
+	echo "`$1` is not recognized"
+	exit 1
+	;;
+esac
+
