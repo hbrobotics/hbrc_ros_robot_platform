@@ -1,6 +1,10 @@
 *.pyl
 *.scad
 *,cover
+dxf
 .coverage
 .mypy_cache
+MT8385-PPi_Rev_A.JPG
+MT8385-PPi_Rev_A.step
+pdf/MT8385-PPi_Rev_A.pdf
 __pycache__

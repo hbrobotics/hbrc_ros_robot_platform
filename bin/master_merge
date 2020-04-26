@@ -119,12 +119,27 @@ repository_update
 # Step 7: Trigger the merge from `master`:
 debug "Step 7"
 echo "Starting merge of \`master\` branch into \`$CURRENT_BRANCH\` branch..."
-echo "    If there are any merge conflicts, you will either have to fix them by hand or"
-echo "    run the the \`git merge --abort\` command to terminate the merge attempt."
-echo "    The message \`Already up to date.\` means that there was nothing new to merge in:"
-git merge --ff master
+if git merge --ff master
+then
+    echo "The message \`Already up to date.\` means that there was nothing new to merge in:"
+    echo "Merge succeeded."
+else
+    echo "There appear to be some merge conflicts."
+    echo "You will either have to fix them by hand or run the the \`git merge --abort\`"
+    echo "command to terminate the merge attempt."
+    echo "Merge had issues"
+    exit 7
+fi
 
-
-
-
-
+# Step 8: Push `CURRENT_BRANCH` to remote `staging` repository if `staging` exists:
+debug "Step 8"
+STAGING_REMOTE=""
+for REMOTE in $(git remote)
+do
+    case "$REMOTE" in
+	staging)
+	    # We have a `staging` remote:
+	    git push -u staging "$CURRENT_BRANCH"
+	    break ;;
+    esac
+done
