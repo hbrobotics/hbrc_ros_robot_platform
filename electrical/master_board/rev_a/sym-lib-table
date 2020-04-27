@@ -1,4 +1,4 @@
 (sym_lib_table
-  (lib (name master_board)(type Legacy)(uri /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/master_board.lib)(options "")(descr "Symbols for master_board"))
+  (lib (name master_board)(type Legacy)(uri ${KIPRJMOD}/master_board.lib)(options "")(descr "Symbols for master_board"))
   (lib (name master_board-rescue)(type Legacy)(uri ${KIPRJMOD}/master_board-rescue.lib)(options "")(descr "Rescue symbols for master_board")(disabled))
 )
