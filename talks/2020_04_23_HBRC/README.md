@@ -64,10 +64,10 @@ xxx
 
 * 100% Open Architecture
 * Use a daughter board architecture
-  * Use STM Nucleo-144 Dev. Boards
+  * Use [STM Nucleo-144 Dev. Boards](../../electrical/docs/stm32_nucleo_144_manual.pdf)
   * FPGA's plug on top of Nucleo
   * More expansion (Grove/MikroBus/etc.)
-* Support more than Raspberry Pi
+* Support more than Raspberry Pi SBC
 
 ## Mechanical Issues
 
@@ -91,25 +91,22 @@ xxx
 * Base (show hr2_base)
 * +Pi (show hr2_pi)
 * +PCB (show hr2_master)
-* +Motors/Encoders (show2 hr2_wheel)
+* +Motors/Encoders (hr2_wheel)
 * +Nucleo (show hr2_nucleo)
 * +Arm (show hr2_arm)
 
 ## Micro-Controller Selection
 
 * Availabilty really matters
-* Arduino? AVR?
-* MPU architecture => Arm Cortex M
-* MPU directly mounted on board?
-* ESP32? Pins?
-* Vendor Pick => STM
-* Dev Board => Nucleo
-* 32/64/144 => 144
-* Board too big => Cut off ST-link => remount
+* AVR/MIPS/ARM/Other? Arm Cortex M
+* MPU placement On/Off PCB? Use Dev. Board
+* Cypress/Infineon/Maxim/MicroChip/NXP/ST/TI/Toshiba? STM
+* Nucleo-32/64/144? 144
+* Board too big? yes. Cut off ST-link and remount
 
 ## PCB Development
 
-* Early stages
+* Still in Early stages
 * KiCAD (show kicad)
 * STM32Cube (show )
 * KiPart
@@ -117,6 +114,14 @@ xxx
   * Rectangular board
 * Rev. B: Shipped out to PCBA house
   * Round'ish board.
+
+## Expansion
+
+* FPGA Boards (TBD)
+* [Arduino Shields](http://shieldlist.org/)
+* [Seeedstudio Grove](https://www.seeedstudio.com/grove.html)
+* [mickroBUS](https://www.mikroe.com/mikrobus)
+* Serial Bus (TBD)
 
 ## Software Issues:
 

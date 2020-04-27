@@ -12,7 +12,9 @@ MASTER_DCM := master_board.dcm
 
 KIPART_BASES := \
     hcsr04	\
-    f767zi
+    f767zi	\
+    st_link_cn2	\
+    st_link_cn3
 KIPART_CSVS := ${KIPART_BASES:%=$(KIPARTS_DIRECTORY)/%.kipart.csv}
 
 all: $(MASTER_LIB)
