@@ -1045,7 +1045,7 @@ def test_scad_program() -> None:
 
     updated_read_me_text: str
     scad_comment_lines: List[str]
-    udated_read_me_text, scad_comment_lines = scad_program.read_me_update(initial_read_me_text)
+    updated_read_me_text, scad_comment_lines = scad_program.read_me_update(initial_read_me_text)
 
     # Verify that we get the right output back:
     updated_read_me_lines: List[str] = updated_read_me_text.split('\n')

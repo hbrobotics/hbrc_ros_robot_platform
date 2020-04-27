@@ -757,7 +757,7 @@ then
     export VIRTUALENVWRAPER_WORKON_CD=1
 
     # Append "source /usr/local/bin/virtualenvwrapper.sh" to ~/.bashrc :
-    if [ -z "`which virtualenvwrapper.sh $BASHRC`" ]
+    if [ -z "`which virtualenvwrapper.sh`" ]
     then
 	echo "**************** Add 'source .../virtualenvwrapper.sh' to $BASHRC ..."
 	echo "source `which virtualenvwrapper.sh`" >> $BASHRC
