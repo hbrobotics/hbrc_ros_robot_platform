@@ -38,7 +38,7 @@
 # In general, turning on debugging flags helps to debug shell scripts.  The four flags below are
 # really helpful.  The commands are enabled when debugging by removing the comment character:
 DEBUGGING=""
-DEBUGGING="yes"  # Add/Remove `#` at front of this line to disable/enable debugging:
+#DEBUGGING="yes"  # Add/Remove `#` at front of this line to disable/enable debugging:
 if [ -n "$DEBUGGING" ]
 then
     set -x           # Trace execution.
