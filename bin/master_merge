@@ -61,6 +61,7 @@ function debug() {
 debug "Step 1"
 # The `2>/dev/null` suppresses error messages:
 if ! git rev-parse --show-toplevel >/dev/null 2>/dev/null
+then
     # Repository not found:
     CURRENT_WORKING_DIRECTORY="$(pwd)"
     echo "Your current working directory of \`$CURRENT_WORKING_DIRECTORY\` does not appear" \
