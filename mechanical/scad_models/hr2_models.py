@@ -439,7 +439,7 @@ class EncoderBoard:
 
         # Now create *encoder_pcb* and *colored_pcb*:
         extruded_pcb: LinearExtrude = LinearExtrude("Extruded Encoder PCB", pcb_polygon, pcb_height)
-        colored_pcb: Scad3D = Color("Colored Encoder PCB", extruded_pcb, "PaleGreen")
+        colored_pcb: Scad3D = Color("Colored Encoder PCB", extruded_pcb, "Fuchsia")
 
         # Create the *encoder_union* so we can do the final rotate and translate operations:
         encoder_union: Union3D = Union3D("Encoder Union", [
