@@ -60,10 +60,8 @@ function debug() {
 # Step 1: Determine `REPOSITORY_ROOT` and fail if we are not in a repository:
 debug "Step 1"
 # The `2>/dev/null` suppresses error messages:
-if git rev-parse --show-toplevel >/dev/null 2>/dev/null
+if ! git rev-parse --show-toplevel >/dev/null 2>/dev/null
 then
-    echo "Repository found:" > /dev/null
-else
     # Repository not found:
     CURRENT_WORKING_DIRECTORY="$(pwd)"
     echo "Your current working directory of \`$CURRENT_WORKING_DIRECTORY\` does not appear" \
