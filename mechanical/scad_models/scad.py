@@ -1723,6 +1723,74 @@ class SimplePolygon(Scad2D):
             print(f"<=SimplePolygon.arc_edge_corner_append()={corner_angle * 180.0 / pi}")
         return corner_angle
 
+    def corner_arc_append(external_polygon: "SimplePolygon", corner: P2D, flags: str) -> None:
+        """Append a rounded corner to the polygon."""
+        # Build *flags_table*:
+        corner_radius: float = 1.5
+        # This table a bit counter intuitive.  The angle stored is the **opposite** of
+        # the letter flag because the it needs to from the reference of the corner center:
+        degrees90: float = pi / 2.0
+        degrees180: float = degrees90 + degrees90
+        degrees270: float = degrees180 + degrees90
+        degrees360: float = degrees180 + degrees180
+        flags_table: Dict[str, Tuple[float, P2D]] = {
+            "N": (degrees270, P2D(0.0, corner_radius)),
+            "E": (degrees180, P2D(corner_radius, 0.0)),
+            "W": (0.0, P2D(-corner_radius, 0.0)),
+            "S": (degrees90, P2D(0.0, -corner_radius)),
+        }
+
+        # Do any requested *tracing*:
+        tracing: bool = False
+        # tracing = True
+        if tracing:  # pragma: no cover
+            print("===>corner_arc_append()")
+            print(f"corner:{corner}")
+            print(f"flags:'{flags}'")
+
+        # Verify that *flags* is valid:
+        assert len(flags) == 2
+        start_flag: str = flags[0]
+        end_flag: str = flags[1]
+        assert start_flag in "NEWS"
+        assert end_flag in "NEWS"
+        if tracing:  # pragma: no cover
+            print(f"start_flag:'{start_flag}'")
+            print(f"end_flag:'{end_flag}'")
+
+        # Extract the angles and offsets associated with each flag:
+        start_angle: float
+        end_angle: float
+        start_offset: P2D
+        end_offset: P2D
+        start_angle, start_offset = flags_table[start_flag]
+        end_angle, end_offset = flags_table[end_flag]
+        if tracing:  # pragma: no cover
+            print(f"start_angle:{(start_angle * 180.0 / pi):.3f}")
+            print(f"end_angle:{(end_angle * 180.0 / pi):.3f}")
+            print(f"start_offset:{start_offset}")
+            print(f"end_offset:{end_offset}")
+
+        # These are really kludgy fix-ups:
+        if start_angle - end_angle > degrees180:
+            start_angle -= degrees360
+        if end_angle - start_angle > degrees180:
+            end_angle -= degrees360
+
+        # Append the corner arc to *external_polygon*:
+        corner_center: P2D = corner + start_offset + end_offset
+        if tracing:  # pragma: no cover
+            print(f"corner_center:{corner_center}")
+
+        # This is really counter intuitive, *start_angle* and *end_angle* are swapped:
+        if tracing:  # pragma: no cover
+            print(f"end_angle={(end_angle * 180.0 / pi):.3f}")
+            print(f"start_angle={(start_angle * 180.0 / pi):.3f}")
+        external_polygon.arc_append(corner_center, corner_radius, end_angle, start_angle, 5)
+
+        if tracing:  # pragma: no cover
+            print("<===corner_arc_append()")
+
     # SimplePolygon.is_locked():
     def is_locked(self) -> bool:
         """Return whether SimplePolygon is locked or not."""
@@ -1912,6 +1980,37 @@ class SimplePolygon(Scad2D):
                     if simple_polygon.locked:
                         raise ValueError(f"'{simple_polygon.name}' is locked.")
                     polygon_points.append(point)
+
+    # SimplePolygon.rounded_arc_append():
+    def rounded_arc_append(self, label: str, flags: str, arc_center: P2D,
+                           arc_radius: float, start_angle: float, end_angle: float) -> None:
+        """Append an arc with rounded corners to the external polygon."""
+        # Extract the *start_flags* and *end_flags* from *flags*:
+        assert len(flags) == 6
+        start_flags = flags[0:3]
+        end_flags = flags[3:6]
+        corner_radius: float = 1.5
+
+        # Create *start_corner* and hang onto *start_angle*:
+        start_polygon: SimplePolygon = SimplePolygon(f"{label}, Start Corner", [], lock=False)
+        start_corner_angle: float = start_polygon.arc_edge_corner_append(arc_center, arc_radius,
+                                                                         start_angle,
+                                                                         corner_radius,
+                                                                         start_flags, 5)
+
+        # Create *end_corner* and hang onto *end_angle*:
+        end_polygon: SimplePolygon = SimplePolygon(f"{label} End Corner", [], lock=False)
+        end_corner_angle: float = end_polygon.arc_edge_corner_append(arc_center, arc_radius,
+                                                                     end_angle, corner_radius,
+                                                                     end_flags, 5)
+
+        # Now append the *start_corner*, intermediate arc, and the *end_corner* to
+        # *external_polygon* (i.e. *self*):
+        external_polygon: SimplePolygon = self
+        external_polygon.polygon_append(start_polygon)
+        external_polygon.arc_append(arc_center, arc_radius,
+                                    start_corner_angle, end_corner_angle, 8)
+        external_polygon.polygon_append(end_polygon)
 
     # SimplePolygon.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
