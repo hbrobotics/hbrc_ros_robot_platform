@@ -1073,7 +1073,7 @@ def test_simple_polygon() -> None:
     empty_polygon: SimplePolygon = SimplePolygon("Empty")
     assert f"{empty_polygon}" == "SimplePolygon('Empty', [])"
 
-    # Test both *Polygon.*__str__*() and the *Polygon*.size_get*() methods:
+    # Test both *SimplePolygon.*__str__*() and the *Polygon*.size_get*() methods:
     p11: P2D = P2D(1.0, 1.0)
     p22: P2D = P2D(2.0, 2.0)
     p33: P2D = P2D(3.0, 3.0)
@@ -1095,7 +1095,7 @@ def test_simple_polygon() -> None:
     assert f"{simple_polygon3}" == ("SimplePolygon('Three Points', "
                                     "[P2D(1.000,1.000), ..., P2D(3.000,3.000)])")
 
-    # Now test the *Polygon*.*__getitem__*() method:
+    # Now test the *Simple_Polygon*.*__getitem__*() method:
     assert f"{simple_polygon1[0]}" == "P2D(1.000,1.000)"
     assert f"{simple_polygon2[0]}" == "P2D(1.000,1.000)"
     assert f"{simple_polygon2[1]}" == "P2D(2.000,2.000)"
@@ -1113,7 +1113,7 @@ def test_simple_polygon() -> None:
         assert isinstance(index_error, IndexError)
         assert f"{index_error}" == "index of 4 is not in range 0 to 2"
 
-    # Test Polygon.arc_append() and Polygon.point_append:
+    # Test SimplePolygon.arc_append() and Polygon.point_append:
     slot: SimplePolygon = SimplePolygon("Slot")
     slot.arc_append(P2D(1.0, 0.0), 1.0, -pi/2, pi/2, 3)
     slot.point_append(P2D(0.0, 2.0))
@@ -1129,7 +1129,49 @@ def test_simple_polygon() -> None:
     assert f"{slot[6]}" == "P2D(-1.000,-1.000)"
     assert f"{slot[7]}" == "P2D(0.000,-2.000)"
 
-    # Test Polygon.points_scad_lines_append():
+    # Test SimplePolgon.append():
+    empty: SimplePolygon = SimplePolygon("empty", [])
+    one_point: P2D = P2D(1.0, 1.0)
+    two_point: P2D = P2D(2.0, 2.0)
+    three_point: P2D = P2D(3.0, 3.0)
+    four_point: P2D = P2D(4.0, 4.0)
+    one: SimplePolygon = SimplePolygon("one", [one_point])
+    two: SimplePolygon = SimplePolygon("two", [two_point])
+    target: SimplePolygon = SimplePolygon("target", [])
+    assert len(target) == 0
+    # Make sure append an empty *SimplePolygon* does not break anything:
+    target.polygon_append(empty)
+    assert len(target) == 0
+    # Append *one* and make sure it works:
+    target.polygon_append(one)
+    assert len(target) == 1
+    assert target[0] == one_point
+    # Append *one* again and make sure that it does not get append due to duplicate:
+    target.polygon_append(one)
+    assert len(target) == 1
+    assert target[0] == one_point
+    # Append *two* and make sure it works:
+    target.polygon_append(two)
+    assert len(target) == 2
+    assert target[0] == one_point
+    assert target[1] == two_point
+    # Create *three_four* and append it:
+    three_four: SimplePolygon = SimplePolygon("three_four", [three_point, four_point])
+    target.polygon_append(three_four)
+    assert len(target) == 4
+    assert target[0] == one_point
+    assert target[1] == two_point
+    assert target[2] == three_point
+    assert target[3] == four_point
+    # Now lock *target* and verify that it fails when locked:
+    target.lock()
+    try:
+        target.polygon_append(one)
+        assert False, "This should never be reached"  # pragma: no cover
+    except ValueError as value_error:
+        assert f"{value_error}" == "'target' is locked."
+
+    # Test SimplePolygon.points_scad_lines_append():
     scad_lines: List[str] = []
     start_index: int = 3
     end_index: int = slot.points_scad_lines_append(scad_lines, " ", start_index)

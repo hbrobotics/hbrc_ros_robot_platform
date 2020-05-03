@@ -80,7 +80,7 @@ CLEAN_DIRECTORIES :=				\
 
 # This is the top level target that builds everything.  It uses sub-targets to
 # force things to be built in the "correct* order:
-all: ${DXF_FILES} ${PNG_FILES} README.html
+all: ${DXF_FILES} README.html # ${PNG_FILES}
 
 everything: all
 
