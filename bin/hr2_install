@@ -939,12 +939,29 @@ then
 	$SUDO add-apt-repository --yes ppa:js-reynaud/kicad-5.1
 	echo "Update your package repository database:"
 	$APT_UPDATE
-	echo "Install kicad. This over a gigabyte of code/libraires to download ..."
+	echo "Install kicad. This over a gigabyte of code/libraries to download ..."
 	$APT_INSTALL --install-recommends kicad
 	echo "Install KiCad demo projects:"
 	$APT_INSTALL kicad-demo
     else
-	echo "Kicad previously installed"
+	echo "KiCad was previously installed."
+    fi
+
+    # Ensure that `sym-lib-table` is installed:
+    CONFIG_KICAD_DIRECTORY=$HOME/.config/kicad
+    CONFIG_KICAD_SYM_LIB_TABLE="$CONFIG_KICAD_DIRECTORY/sym-lib-table"
+    debug "CONFIG_KICAD_DIRECTORY=$CONFIG_KICAD_DIRECTORY"
+    debug "CONFIG_KICAD_SYM_LIB_TABLE=$CONFIG_KICAD_SYM_LIB_TABLE"
+    if [ ! -f "$CONFIG_KICAD_SYM_LIB_TABLE" ]
+    then
+	echo "**************** Installing symbolic link from \`$CONFIG_KICAD_DIRECTORY\`" \
+	     "to \`$LOCAL_SYM_LIB_TABLE\` ..."
+	mkdir -p "$CONFIG_KICAD_DIRECTORY"
+	LOCAL_SYM_LIB_TABLE="$HR2_DIRECTORY/electrical/sym-lib-table"
+	debug "LOCAL_SYM_LIB_TABLE=$LOCAL_SYM_LIB_TABLE"
+	ln -s "$LOCAL_SYM_LIB_TABLE" "$CONFIG_KICAD_DIRECTORY"
+    else
+	echo "\`$CONFIG_KICAD_SYM_LIB_TABLE\` was previously installed."
     fi
 
     # Clone bom_manager:
@@ -990,7 +1007,14 @@ then
     fi
     
     # We should have a hot Python virtual environment:
-    source "`which virtualenvwrapper.sh`"
+    # If we are in an active Python virtual environment, we will get some strange error
+    # messages when we source `virtualenvwrapper.sh`.  There is probably a more elegant
+    # solution, but just telling the user to ignore the error messages will work for now:
+    echo "Please ignore any extraneous error messages between here ..."
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    source "$(which virtualenvwrapper.sh)"
+    echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    echo "... and HERE.  Thank you."
 
     # Now ensure that the hr2 Python virtual environment exists:
     MKVIRTUALENV="mkvirtualenv -p 3.6" 
@@ -999,7 +1023,7 @@ then
 	echo "**************** Create hr2 python virtual environment ..."
 	$MKVIRTUALENV -a $HR2_DIRECTORY hr2
     else
-	echo "hr2 Python virtual environment already exists."
+	echo "hr2 Python virtual environment was previously created."
     fi
 
     # For some weird reason, doing a "source $BASHRC" does not properly get
@@ -1041,7 +1065,7 @@ then
 	then
 	    # `VIRTUAL_ENV` is not enabled, so we can activate one, install and deactivate:
 	    (workon "$ENV_NAME"
-	     $PIP_INSTALL "$PROGRAM_NAME_OR_DIRECTORY"
+	     $PIP_INSTALL "$PROGRAM_NAME_OR_DIRECTORY" >/dev/null
 	     deactivate)
 	else
 	    # `VIRTUAL_ENV` is enabled.
@@ -1056,7 +1080,7 @@ then
 	    fi
 	    
 	    # We can just do a simple `PIP_INSTALL`:
-	    $PIP_INSTALL "$PROGRAM_NAME_OR_DIRECTORY"
+	    $PIP_INSTALL "$PROGRAM_NAME_OR_DIRECTORY" >/dev/null
 	fi
     }
 
@@ -1089,16 +1113,21 @@ then
     fi
 fi
 
+# Put some white space between the prior diagnostic messages and the final messages;
+echo ""
+echo ""
+echo "Installation is basically complete:"
+
 # Remind the user to update their top-level `bash` environment:
 if [ -n "$SOURCE_BASHRC" ]
 then
-    echo "Please type \`source ~/.bashrc\` after this to update your environment."
+    echo "* Please type \`source ~/.bashrc\` after this to update your environment."
 fi
 
 # Remind the user to activate the `hr2` python virtual environment:
 if [ -n "$PYTHON_NEEDED" ]
 then
-    echo "Please type \`workon hr2\` to activate your Python virtual environment."
+    echo "* Please type \`workon hr2\` to activate your Python virtual environment."
 fi
 
 # Random Notes:
