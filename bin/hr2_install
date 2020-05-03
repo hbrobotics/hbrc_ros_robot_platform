@@ -1101,10 +1101,8 @@ then
     echo "Please type \`workon hr2\` to activate your Python virtual environment."
 fi
 
-<!--
-Notes:
+# Random Notes:
+# 
+# * Refactor to use `master_merge`.
+# * Add code to install `~/.config/kicad/{lib-sym-table,fp-lib-table}.`
 
-* Refactor to use `master_merge`.
-* Add code to install `~/.config/kicad/{lib-sym-table,fp-lib-table}.`
-
--->
