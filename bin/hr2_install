@@ -44,10 +44,23 @@
 # Virtual Environments Wrapper breaks if these flags are set.  So, right before we actually
 # try to use any python virtual environments stuff, we turn need to turn these flags off.
 # This causes all of the python stuff to be pushed as far back as possible in this script.
-set -x           # Trace execution.
-set -e           # Exit immediately on error result.
-set -o pipefail  # Fail if any commands in a pipeline fail.
-set -u           # Treat unset variables as an error.
+DEBUGGING=""
+#DEBUGGING="yes"  # Add/Remove `#` at front of this line to disable/enable debugging:
+if [ -n "$DEBUGGING" ]
+then
+    set -x           # Trace execution.
+    set -e           # Exit immediately on error result.
+    set -o pipefail  # Fail if any commands in a pipeline fail.
+    set -u           # Treat unset variables as an error.
+fi
+
+# When `$DEBUGGING` is non-empty, echo the 1st argument:
+function debug() {
+    if [ -n "$DEBUGGING" ]
+    then
+	echo "$1"
+    fi
+}
 
 # The `set -u` option causes problems when you are trying to detect whether a variable is defined
 # or not.  If you try to directly access the an undefined variable, the `set +u` will correctly
@@ -132,7 +145,7 @@ else
 		 ;;
 	    sw ) SW="yes"
 		 ;;
-            none )
+	    none )
 		;;
 	    pass2 ) PASS2="yes"
 		    ;;
@@ -160,8 +173,8 @@ echo "BIN_DIRECTORY=$BIN_DIRECTORY"
 # Define the two parent directories:
 HR2_DIRECTORY="$( realpath $BIN_DIRECTORY/.. )"
 REPOSITORIES_DIRECTORY="$( realpath $HR2_DIRECTORY/.. )"
-# echo "HR2_DIRECTORY=$HR2_DIRECTORY"
-echo "REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY"
+debug "HR2_DIRECTORY=$HR2_DIRECTORY"
+debug "REPOSITORIES_DIRECTORY=$REPOSITORIES_DIRECTORY"
 
 
 # Pass 1 focuses on making sure that the master branch is up to date:
@@ -184,44 +197,44 @@ then
     # Returns 0 for success and > 0 for errors:
     function repository_update() {
 	# Step 1: Extract the REPOSITORY_DIRECTORY function argument:
-        echo "Step 1"
+	debug "Step 1"
 	REPOSITORY_DIRECTORY=$1
-	#debug: echo "REPOSITORY_DIRECTORY=$REPOSITORY_DIRECTORY"
+	debug "REPOSITORY_DIRECTORY=$REPOSITORY_DIRECTORY"
 	ERROR_MESSAGE='Update of repository for "$REPOSITORY_DIRECTORY" will not happen.'
 	# CWD means Current Working Directory:
 	CWD="$(pwd)"
 
 	# Step 2: Ensure that we have `git` is installed:
 	WHICH_GIT="$(which git)"
-	#debug: echo "WHICH_GIT=$WHICH_GIT"
+	debug "WHICH_GIT=$WHICH_GIT"
 	if [ -z "$WHICH_GIT" ]
 	then
 	    echo "!!!!!!!!!!!!!!!! \`git\` program is not installed yet."
-            echo "$ERROR_MESSAGE"
+	    echo "$ERROR_MESSAGE"
 	    return 1
 	fi
 
 	# Step 2: Ensure that REPOSITORY_DIRECTORY exists and is a directory.
-        echo "Step 2"
+	debug "Step 2"
 	if [ ! -d "$REPOSITORY_DIRECTORY" ]
 	then
 	    echo "!!!!!!!!!!!!!!!! \`$REPOSITORY_DIRECTORY\` is not a directory."
-            echo "ERROR_MESSAGE"
+	    echo "$ERROR_MESSAGE"
 	    return 2
 	fi
 
 	# Step 3: Change over to REPOSITORY_DIRECTORY and find the REPOSITORY_ROOT.  From here on,
 	# before returning we have to return to the original CWD directory on an error.
-        echo "Step 3"
+	debug "Step 3"
 	cd "$REPOSITORY_DIRECTORY"
 	# The `2>/dev/null` suppresses error messages:
 	REPOSITORY_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
-	#debug: echo "REPOSITORY_ROOT=$REPOSITORY_ROOT"
+	debug "REPOSITORY_ROOT=$REPOSITORY_ROOT"
 	if [ -z "$REPOSITORY_ROOT" ]
 	then
 	    echo "!!!!!!!!!!!!!!!! \`$REPOSITORY_DIRECTORY\` is not part of a git repository."
-            echo "$ERROR_MESSAGE"
-            cd "$CWD"
+	    echo "$ERROR_MESSAGE"
+	    cd "$CWD"
 	    return 3
 	fi
 
@@ -231,7 +244,7 @@ then
 	# remote is present, there is no way to recover and we are done.  We may have the
 	# `set -o pipefail` option enabled and the code below avoids problems with `grep` not
 	# finding anything.
-        echo "Step 4"
+	debug "Step 4"
 	UPSTREAM_REMOTE="$( ( cd $HR2_DIRECTORY ; echo $(git remote | grep upstream ) ) )"
 	ORIGIN_REMOTE="$(   ( cd $HR2_DIRECTORY ; echo $(git remote | grep origin   ) ) )"
 	STAGING_REMOTE="$(  ( cd $HR2_DIRECTORY ; echo $(git remote | grep staging  ) ) )"
@@ -262,12 +275,13 @@ then
 	# The currently active branch will have an asterisk in front of it.
 	# We feed the output of `git branch` through `sed` to strip off the first two
 	# characters and search for `master`:
-        echo "Step 5"
+	debug "Step 5"
 	MASTER_BRANCH="$(git branch | sed 's,^..,,g' | grep master)"
-	#debug: echo "MASTER_BRANCH=$MASTER_BRANCH"
+	debug "MASTER_BRANCH=$MASTER_BRANCH"
 	if [ -z "$MASTER_BRANCH" ]
 	then
-	    echo "!!!!!!!!!!!!!!!! There is no \`master\` branch in repository \`$REPOSITORY_ROOT\`."
+	    echo "!!!!!!!!!!!!!!!! There is no \`master\` branch in" \
+		 "repository \`$REPOSITORY_ROOT\`."
 	    echo "$ERROR_MESSAGE"
 	    cd "$CWD"
 	    return 5
@@ -281,15 +295,15 @@ then
 	#   https://stackoverflow.com/questions/6245570/how-to-get-the-current-branch-name-in-git
 	# explained how to get the CURRENT_BRANCH name.  It is obscure:
 	CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-	#debug: echo "CURRENT_BRANCH=$CURRENT_BRANCH"
+	debug "CURRENT_BRANCH=$CURRENT_BRANCH"
 	# Likewise getting the UNCOMMITTED_FILES is pretty obscure as well:
 	UNCOMMITTED_FILES="$(git diff --name-only HEAD)"
-	#debug: echo "UNCOMMITTED_FILES=$UNCOMMITTED_FILES"
-	echo "Step 6"
+	debug "UNCOMMITTED_FILES=$UNCOMMITTED_FILES"
+	debug "Step 6"
 	echo "Starting to update the master branch."
 	if [ "$CURRENT_BRANCH" != "master" ]
 	then
-	    # Step 6: We have uncommitted files in this repository. We need to
+	    # Step 6a: We have uncommitted files in this repository. We need to
 	    # temporarily "stash" them before changing over to `master` branch:
 	    if [ -n "$UNCOMMITTED_FILES" ]
 	    then
@@ -297,9 +311,9 @@ then
 		git stash > /dev/null # Suppress the messages.
 	    fi
 
-	    # Step 7: Temporarily switch over to `master` branch:
+	    # Step 6b: Temporarily switch over to `master` branch:
 	    echo "Temporarily switching over to master branch from $CURRENT_BRANCH branch."
-            # Suppress the messages:
+	    # Suppress the messages:
 	    git checkout master > /dev/null 2>/dev/null
 	    # From here on out, if we encounter an error we have return back to `$CURRENT_BRANCH`
 	    # **AND** unstash the uncommitted files.
@@ -308,8 +322,8 @@ then
 	# Step 7: Finally perform the git pull from the upstream/orign repository into
 	# the master branch.  Because the local master branch has been configured
 	# to disallow commits, in theory, there can be no can be no merge conflicts:
-	echo "Step 7"
-        git checkout master
+	debug "Step 7"
+	git checkout master
 	$GIT_PULL "$ACTUAL_REMOTE" master # 2>/dev/null 1>/dev/null # Suppress the output
 	echo "master branch should be up to date"
 
@@ -323,7 +337,7 @@ then
 	fi
 
 	# Step 8: Now we return to the original branch we started (if necessary):
-	echo "Step 8"
+	debug "Step 8"
 	if [ "$CURRENT_BRANCH" != "master" ]
 	then
 	    echo "Switch from `master` branch back to $CURRENT_BRANCH branch."
@@ -346,7 +360,7 @@ then
 	#    #       https://stackoverflow.com/questions/501407/is-there-a-git-merge-dry-run-option
 	#    #       https://stackoverflow.com/questions/964876/head-and-orig-head-in-git
 	#    #
-        #    # Now figure out if a merge from master will have any conflicts.
+	#    # Now figure out if a merge from master will have any conflicts.
 	#    # This is done by doing a `git merge --no-commit`, followed by a
 	#    # `git merge -abort`.  The return code from the `--no-commit`
 	#    # is used to decide whether to do the actual merge or not.
@@ -372,7 +386,7 @@ then
 
 	# We are done, so return to CWD and return:
 	cd "$CWD"
-        echo "Done"
+	echo "Done"
 	return 0
     }
  
@@ -380,7 +394,7 @@ then
     if [ -z "$(which git)" ]
     then
 	echo "The \`git\` program does not appear to be installed.  This should not happen!"
-        echo "Please run the command \`sudo\` apt install git\` to ensure \`git\` is installed."
+	echo "Please run the command \`sudo\` apt install git\` to ensure \`git\` is installed."
 	echo "Stopping for now."
 	exit 1
     fi
@@ -524,10 +538,10 @@ then
 	# Warn about the long download time, `sudo`, and license agreements."
 	echo "**************** Installing Stm32CubeIDE repository to $STM32_CUBE_IDE_DIRECTORY ..."
 	echo "This can take a very long time (15-30 minutes) ..."
-        ( cd $REPOSITORIES_DIRECTORY ; \
+	( cd $REPOSITORIES_DIRECTORY ; \
 	  git clone https://github.com/waynegramlich/stm32cubeide_1.3.0.git )
 	echo "\`$STM32_CUBE_IDE_DIRECTORY\` repository is FINALLY downloaded."
-        echo "Executing \`$STM32_CUBE_IDE_DIRECTORY\` pre-install script."
+	echo "Executing \`$STM32_CUBE_IDE_DIRECTORY\` pre-install script."
 	( cd $STM32_CUBE_IDE_DIRECTORY ; $SUDO ./install.sh )
     else
 	echo "Stm32CubeIDE 1.3.0 has been previously downloaded."
@@ -569,7 +583,7 @@ then
     if [ ! -x "$OPT_STM32_CUBE_IDE_EXECUTABLE" ]
     then
 	# The executable has not been installed.
-        TMP_STM32_CUBE_IDE_SH="/tmp/stm32cubeide.sh"
+	TMP_STM32_CUBE_IDE_SH="/tmp/stm32cubeide.sh"
 	if [ ! -x "$TMP_STM32_CUBE_IDE_SH" ]
 	then
 	    echo "Running \`$STM32_CUBE_IDE_DIRECTORY/install.sh\` ..."
@@ -693,7 +707,7 @@ then
 	echo "Python virtual environments previously installed"
     fi
 
-   # Modify ~/.bashrc to support virtual environments by appending the following to ~/.bashrc :
+    # Modify ~/.bashrc to support virtual environments by appending the following to ~/.bashrc :
     #        export HR2_DIRECTORY=...
     #        export VIRTUALENVWRAPER_PYTHON=/usr/bin/python3
     #        export WORKON_HOME=$HOME/.virtualenvs
@@ -849,7 +863,7 @@ then
 	echo "You may be prompted password to the GitHub.Com account named $GITHUB_ACCOUNT_NAME..."
 	# As a side effect, the `hub fork` command creates the `staging` remote:
 	hub fork --remote-name staging --org "$GITHUB_ACCOUNT_NAME"
-        STAGING_REMOTE="staging"
+	STAGING_REMOTE="staging"
     else
 	echo "A project fork for staging was previously created on GitHub.Com."
     fi
@@ -857,10 +871,10 @@ then
     # Make sure that `upstream` remote exists:
     if [ -z "$UPSTREAM_REMOTE" ]
     then
-        echo "**************** Installing \`git\` remote named \`upstream\`" \
+	echo "**************** Installing \`git\` remote named \`upstream\`" \
 	     "for \`$HR2_DIRECTORY\` ..."
 	git remote add upstream "git@github.com:hbrobotics/hbrc_ros_robot_platform"
-        UPSTREAM_REMOTE="upstream"
+	UPSTREAM_REMOTE="upstream"
 	# For some reason neither of these work:
 	# git remote set-head upstream -a
 	# git branch --set-upstream-to=upstream/master master
@@ -963,15 +977,18 @@ then
     then
 	echo "For some reasons virtualenvwrapper.sh did not get installed.  This is bad."
 	echo "It is sufficiently bad that this script can not continue.  Stopping script now."
-        exit 1
+	exit 1
     fi
 
     # The virtual wrapper script breaks under debugging, so turn all debugging is now turned off.
-    set +x           # Trace execution.
-    set +e           # Exit immediately on error result.
-    set +o pipefail  # Fail if any commands in a pipeline fail.
-    set +u           # Treat unset variables as an error.
-
+    if [ -n "$DEBUGGING" ]
+    then
+	set +x           # Trace execution.
+	set +e           # Exit immediately on error result.
+	set +o pipefail  # Fail if any commands in a pipeline fail.
+	set +u           # Treat unset variables as an error.
+    fi
+    
     # We should have a hot Python virtual environment:
     source "`which virtualenvwrapper.sh`"
 
@@ -1012,14 +1029,14 @@ then
 	PROGRAM_NAME_OR_DIRECTORY="$2"
 
 	# Make sure there is an `ENV_DIRECTORY` exists:
-        ENV_DIRECTORY="$WORKON_HOME/$ENV_NAME"
+	ENV_DIRECTORY="$WORKON_HOME/$ENV_NAME"
 	if [ ! -d "$ENV_DIRECTORY" ]
 	then
 	    echo "\`$ENV_DIRECTORY\` does not exist."
 	    return 2
 	fi
 	
-        # Figure out if the ENV_NAME is active or not:
+	# Figure out if the ENV_NAME is active or not:
 	if [ -z "${VIRTUAL_ENV+EXISTS}" ]
 	then
 	    # `VIRTUAL_ENV` is not enabled, so we can activate one, install and deactivate:
@@ -1055,15 +1072,18 @@ then
     # Install pytest testing system:
     python_env_pip_install hr2 pytest
 
+    # Install pytest-cov testing system:
+    python_env_pip_install hr2 pytest-cov
+
     # Install kipart, kicube32, bom_manager for EE:
     if [ -n "$EE" ]
     then
 	# Install kipart into hr2 environment:
-        python_env_pip_install hr2 kipart
+	python_env_pip_install hr2 kipart
 
 	# Install kicube32 into hr2 environment:
-        KICUBE32_DIRECTORY="$REPOSITORIES_DIRECTORY/kicube32"
-        python_env_pip_install hr2 "$KICUBE32_DIRECTORY"
+	KICUBE32_DIRECTORY="$REPOSITORIES_DIRECTORY/kicube32"
+	python_env_pip_install hr2 "$KICUBE32_DIRECTORY"
 
 	# For now do not bother with `bom_manager`.
     fi
@@ -1080,3 +1100,11 @@ if [ -n "$PYTHON_NEEDED" ]
 then
     echo "Please type \`workon hr2\` to activate your Python virtual environment."
 fi
+
+<!--
+Notes:
+
+* Refactor to use `master_merge`.
+* Add code to install `~/.config/kicad/{lib-sym-table,fp-lib-table}.`
+
+-->
