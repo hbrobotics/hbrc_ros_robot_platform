@@ -1223,6 +1223,7 @@ class MasterBoard:
         degrees180: float = pi
         degrees270: float = 1.5 * pi
         degrees360: float = 2.0 * pi
+        corner_radius: float = 1.5
 
         # Create *external_polygon* and fill draw the diagram above proceed from point A
         # through point P.  There is an arc centered on Z from to B to C and from J to K.
@@ -1230,64 +1231,69 @@ class MasterBoard:
                                                         [], lock=False)
 
         external_polygon.corner_arc_append(                                         # A
-            P2D(wheel_well_east_x, pcb_north_y), "SE")
+            P2D(wheel_well_east_x, pcb_north_y), corner_radius, "SE")
 
         external_polygon.rounded_arc_append("B-to-C", "BH+EV+", origin2d, radius,   # Arc
                                             wheel_well_angle,                       # from B
-                                            cut_out_angle)                          # to C
+                                            cut_out_angle, corner_radius)           # to C
 
         external_polygon.corner_arc_append(                                         # D
-            P2D(half_cut_out_dx, cut_out_y), "NW")
+            P2D(half_cut_out_dx, cut_out_y), corner_radius, "NW")
         external_polygon.corner_arc_append(                                         # E
-            P2D(-half_cut_out_dx, cut_out_y), "EN")
+            P2D(-half_cut_out_dx, cut_out_y), corner_radius, "EN")
 
         external_polygon.rounded_arc_append("F-to-G", "BV-EH+", origin2d, radius,   # Arc
                                             degrees180 - cut_out_angle,             # from F
-                                            degrees180 - wheel_well_angle)          # to G
+                                            degrees180 - wheel_well_angle,          # to G
+                                            corner_radius)
 
         external_polygon.corner_arc_append(                                         # H
-            P2D(wheel_well_west_x, half_wheel_well_dy), "WS")
+            P2D(wheel_well_west_x, half_wheel_well_dy), corner_radius, "WS")
         external_polygon.corner_arc_append(                                         # I
-                          P2D(wheel_well_west_x,
-                              holder_north_y + holder_slop_dy), "NE")
+            P2D(wheel_well_west_x,
+                holder_north_y + holder_slop_dy), corner_radius, "NE")
         external_polygon.corner_arc_append(                                         # J
-                          P2D(magnet_west_x + holder_slop_dx,
-                              holder_north_y + holder_slop_dy), "WS")
+            P2D(magnet_west_x + holder_slop_dx,
+                holder_north_y + holder_slop_dy), corner_radius, "WS")
         external_polygon.corner_arc_append(                                         # K
-                          P2D(magnet_west_x + holder_slop_dx,
-                              holder_south_y - holder_slop_dy), "NW")
+            P2D(magnet_west_x + holder_slop_dx,
+                holder_south_y - holder_slop_dy), corner_radius, "NW")
         external_polygon.corner_arc_append(                                         # L
-                          P2D(wheel_well_west_x,
-                              holder_south_y - holder_slop_dy), "ES")
+            P2D(wheel_well_west_x,
+                holder_south_y - holder_slop_dy), corner_radius, "ES")
         external_polygon.corner_arc_append(                                         # M
-                          P2D(wheel_well_west_x, -half_wheel_well_dy), "NW")
+            P2D(wheel_well_west_x, -half_wheel_well_dy), corner_radius, "NW")
 
         external_polygon.rounded_arc_append("N-to-G", "BH-EV-", origin2d, radius,   # Arc
                                             degrees180 + wheel_well_angle,          # from N
-                                            degrees270 - arm_well_angle)            # to G
+                                            degrees270 - arm_well_angle,            # to G
+                                            corner_radius)
 
         external_polygon.corner_arc_append(                                         # P
-            P2D(-half_arm_well_dx, arm_well_y), "SE")
+            P2D(-half_arm_well_dx, arm_well_y), corner_radius, "SE")
         external_polygon.corner_arc_append(                                         # Q
-            P2D(half_arm_well_dx, arm_well_y), "WS")
+            P2D(half_arm_well_dx, arm_well_y), corner_radius, "WS")
 
         external_polygon.rounded_arc_append("R-to-S", "BV+EH-", origin2d, radius,   # Arc
                                             degrees270 + arm_well_angle,            # from R
-                                            degrees360 - wheel_well_angle)          # to S
+                                            degrees360 - wheel_well_angle,          # to S
+                                            corner_radius)
 
         external_polygon.corner_arc_append(                                         # T
-            P2D(wheel_well_east_x, -half_wheel_well_dy), "EN")
+            P2D(wheel_well_east_x, -half_wheel_well_dy), corner_radius, "EN")
         external_polygon.corner_arc_append(                                         # U
-            P2D(wheel_well_east_x, holder_south_y - holder_slop_dy), "SW")
+            P2D(wheel_well_east_x, holder_south_y - holder_slop_dy),
+            corner_radius, "SW")
         external_polygon.corner_arc_append(                                         # V
             P2D(magnet_east_x - holder_slop_dx, holder_south_y - holder_slop_dy),
-            "EN")
+            corner_radius, "EN")
         #                                                                           # W not used
         external_polygon.corner_arc_append(                                         # X
             P2D(magnet_east_x - holder_slop_dx, holder_north_y + holder_slop_dy),
-            "SE")
+            corner_radius, "SE")
         external_polygon.corner_arc_append(                                         # Y
-            P2D(wheel_well_east_x, holder_north_y + holder_slop_dy), "WN")
+            P2D(wheel_well_east_x, holder_north_y + holder_slop_dy),
+            corner_radius, "WN")
 
         # Lock up *external_polygon* and append it to *pcb_polygon*:
         external_polygon.lock()
