@@ -1161,30 +1161,30 @@ class MasterBoard:
         # The outline of the master PCB is show approximately below as crude ASCII artwork.
         # The top and bottom are arcs centered around the center of the board at Z.
         #
-        #         ~~~~~~~~G             C~~~~~~~~
+        #         ~~~~~~~~F             C~~~~~~~~
         #        /        |             |        \
         #       /         |             |         \
         #      /          |             |          \
-        #     H--I        F------E------D        A--B
+        #     G--H        E-------------D        A--B
         #        |                               |
         #        |                               |
-        #        J----K                     T----U
+        #        I----J                     X----Y
         #             |                     |
         #             |                     |
-        #             +----------Z----------+
+        #             +----------Z----------W
         #             |                     |
         #             |                     |
-        #        M----L                     S----R
+        #        L----K                     V----U
         #        |                               |
-        #        |                               |
-        #     O--N                               Q--P
-        #      \                                   /
-        #       \                                 /
-        #        \                               /
-        #         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        #        |            P-----Q            |
+        #     N--M            |     |            T--S
+        #      \              |     |              /
+        #       \             |     |             /
+        #        \            |     |            /
+        #         ~~~~~~~~~~~~O     R~~~~~~~~~~~~
         #
         #
-        # The wheel well distance (|BQ| =|IP|) is 72mm.  The diameter of the board is 163mm.
+        # The wheel well distance (|BS| =|GN|) is 72mm.  The diameter of the board is 163mm.
         # This numers are taken from the Romi Chasis User's Manual.  Thus we know the *radius*
         # is |ZB|/2 =163mm/2 = 81.5mm.
         # Also the distance of B above Z in the Y axis By = |BR|/2 = 72mm/2 = 36mm.
@@ -1192,6 +1192,9 @@ class MasterBoard:
         radius: float = diameter / 2.0
         wheel_well_dy: float = 72.0
         half_wheel_well_dy: float = wheel_well_dy / 2.0
+        arm_well_dx: float = 15.0
+        half_arm_well_dx: float = arm_well_dx / 2.0
+        arm_well_y: float = -40.0  # =Py=Qy
 
         # We need to compute the *wheel_well_angle* (= <BZW) and the *cut_out_angle* (=CZW).
         # The math is the same for both, so we will just walk through the <BZW computation.
@@ -1201,6 +1204,11 @@ class MasterBoard:
         # (2) sin(@) = By/R
         # (3) @ = asin(By/R)
         wheel_well_angle: float = asin(half_wheel_well_dy / radius)
+
+        # We need to compute the *arm_well_angle* (= <TZW)
+        # Again the math is the basically same, we just adjust the angles appropriately
+        # them correctly:
+        arm_well_angle: float = asin(half_arm_well_dx / radius)
 
         # By trial and error, the Pi connector *cutout_dx* (=|GE|) = 60mm and the *cut_out_y*
         # Fy (=|FZ|) is 32.5mm.  The same basic math yields the *cut_out_angle*
@@ -1213,44 +1221,171 @@ class MasterBoard:
         # Some additional useful constants:
         origin2d: P2D = P2D(0.0, 0.0)
         degrees180: float = pi
+        degrees270: float = 1.5 * pi
         degrees360: float = 2.0 * pi
+
+        def rounded_arc_append(external_polygon: SimplePolygon, label: str, flags: str,
+                               pcb_radius: float, start_angle: float, end_angle: float) -> None:
+            """Append an arc with rounded corners to the external polygon."""
+            # Extract the *start_flags* and *end_flags* from *flags*:
+            assert len(flags) == 6
+            start_flags = flags[0:3]
+            end_flags = flags[3:6]
+            corner_radius: float = 1.5
+
+            # Create *start_corner* and hang onto *start_angle*:
+            start_polygon: SimplePolygon = SimplePolygon(f"{label}, Start Corner", [], lock=False)
+            start_corner_angle: float = start_polygon.arc_edge_corner_append(origin2d, pcb_radius,
+                                                                             start_angle,
+                                                                             corner_radius,
+                                                                             start_flags, 5)
+
+            # Create *end_corner* and hang onto *end_angle*:
+            end_polygon: SimplePolygon = SimplePolygon(f"{label} End Corner", [], lock=False)
+            end_corner_angle: float = end_polygon.arc_edge_corner_append(origin2d, pcb_radius,
+                                                                         end_angle, corner_radius,
+                                                                         end_flags, 5)
+
+            # Now append the *start_corner*, intermediate arc, and the *end_corner* to
+            # *external_polygon:
+            external_polygon.polygon_append(start_polygon)
+            external_polygon.arc_append(origin2d, pcb_radius,
+                                        start_corner_angle, end_corner_angle, 8)
+            external_polygon.polygon_append(end_polygon)
+
+        def corner_arc_append(external_polygon: SimplePolygon, corner: P2D, flags: str) -> None:
+            """Append a rounded corner to the polygon."""
+            # Build *flags_table*:
+            corner_radius: float = 1.5
+            # This table a bit counter intuitive.  The angle stored is the **opposite** of
+            # the letter flag because the it needs to from the reference of the corner center:
+            flags_table: Dict[str, Tuple[float, P2D]] = {
+                "N": (degrees270, P2D(0.0, corner_radius)),
+                "E": (degrees180, P2D(corner_radius, 0.0)),
+                "W": (0.0, P2D(-corner_radius, 0.0)),
+                "S": (degrees90, P2D(0.0, -corner_radius)),
+            }
+
+            # Do any requested *tracing*:
+            tracing: bool = False
+            # tracing = True
+            if tracing:  # pragma: no cover
+                print("===>corner_arc_append()")
+                print(f"corner:{corner}")
+                print(f"flags:'{flags}'")
+
+            # Verify that *flags* is valid:
+            assert len(flags) == 2
+            start_flag: str = flags[0]
+            end_flag: str = flags[1]
+            assert start_flag in "NEWS"
+            assert end_flag in "NEWS"
+            if tracing:  # pragma: no cover
+                print(f"start_flag:'{start_flag}'")
+                print(f"end_flag:'{end_flag}'")
+
+            # Extract the angles and offsets associated with each flag:
+            start_angle: float
+            end_angle: float
+            start_offset: P2D
+            end_offset: P2D
+            start_angle, start_offset = flags_table[start_flag]
+            end_angle, end_offset = flags_table[end_flag]
+            if tracing:  # pragma: no cover
+                print(f"start_angle:{(start_angle * 180.0 / pi):.3f}")
+                print(f"end_angle:{(end_angle * 180.0 / pi):.3f}")
+                print(f"start_offset:{start_offset}")
+                print(f"end_offset:{end_offset}")
+
+            # These are really kludgy fix-ups:
+            if start_angle - end_angle > degrees180:
+                start_angle -= degrees360
+            if end_angle - start_angle > degrees180:
+                end_angle -= degrees360
+
+            # Append the corner arc to *external_polygon*:
+            corner_center: P2D = corner + start_offset + end_offset
+            if tracing:  # pragma: no cover
+                print(f"corner_center:{corner_center}")
+
+            # This is really counter intuitive, *start_angle* and *end_angle* are swapped:
+            if tracing:  # pragma: no cover
+                print(f"end_angle={(end_angle * 180.0 / pi):.3f}")
+                print(f"start_angle={(start_angle * 180.0 / pi):.3f}")
+            external_polygon.arc_append(corner_center, corner_radius, end_angle, start_angle, 5)
+
+            if tracing:  # pragma: no cover
+                print("<===corner_arc_append()")
 
         # Create *external_polygon* and fill draw the diagram above proceed from point A
         # through point P.  There is an arc centered on Z from to B to C and from J to K.
         external_polygon: SimplePolygon = SimplePolygon("Master PCB External Simple Polygon",
                                                         [], lock=False)
-        external_polygon.point_append(P2D(wheel_well_east_x, pcb_north_y))          # A
-        external_polygon.arc_append(origin2d, radius,                               # Arc
-                                    wheel_well_angle,                               # from B
-                                    cut_out_angle, 8)                               # to C.
-        external_polygon.point_append(P2D(half_cut_out_dx, cut_out_y))              # D
-        #                                                                           # E not needed
-        external_polygon.point_append(P2D(-half_cut_out_dx, cut_out_y))             # F
-        external_polygon.arc_append(origin2d, radius,                               # Arc from
-                                    degrees180 - cut_out_angle,                     # from G
-                                    degrees180 - wheel_well_angle, 8)               # to H
-        external_polygon.point_append(P2D(wheel_well_west_x, half_wheel_well_dy))   # I
-        external_polygon.point_append(P2D(wheel_well_west_x,
-                                          holder_north_y + holder_slop_dy))         # J
-        external_polygon.point_append(P2D(magnet_west_x + holder_slop_dx,
-                                          holder_north_y + holder_slop_dy))         # K
-        external_polygon.point_append(P2D(magnet_west_x + holder_slop_dx,
-                                          holder_south_y - holder_slop_dy))         # L
-        external_polygon.point_append(P2D(wheel_well_west_x,
-                                          holder_south_y - holder_slop_dy))         # M
-        external_polygon.point_append(P2D(wheel_well_west_x, -half_wheel_well_dy))  # N
-        external_polygon.arc_append(origin2d, radius,                               # Arc
-                                    degrees180 + wheel_well_angle,                  # from O
-                                    degrees360 - wheel_well_angle, 20)              # to P
-        external_polygon.point_append(P2D(wheel_well_east_x, -half_wheel_well_dy))  # Q
-        external_polygon.point_append(P2D(wheel_well_east_x,
-                                          holder_south_y - holder_slop_dy))         # R
-        external_polygon.point_append(P2D(magnet_east_x - holder_slop_dx,
-                                          holder_south_y - holder_slop_dy))         # S
-        external_polygon.point_append(P2D(magnet_east_x - holder_slop_dx,
-                                          holder_north_y + holder_slop_dy))         # T
-        external_polygon.point_append(P2D(wheel_well_east_x,
-                                          holder_north_y + holder_slop_dy))         # U
+
+        corner_arc_append(external_polygon,                                         # A
+                          P2D(wheel_well_east_x, pcb_north_y), "SE")
+
+        rounded_arc_append(external_polygon, "B-to-C", "BH+EV+", radius,            # Arc
+                           wheel_well_angle, cut_out_angle)                         # from B to C
+
+        corner_arc_append(external_polygon,                                         # D
+                          P2D(half_cut_out_dx, cut_out_y), "NW")
+        corner_arc_append(external_polygon,                                         # E
+                          P2D(-half_cut_out_dx, cut_out_y), "EN")
+
+        rounded_arc_append(external_polygon, "F-to-G", "BV-EH+", radius,            # Arc
+                           degrees180 - cut_out_angle,                              # from F
+                           degrees180 - wheel_well_angle)                           # to G
+
+        corner_arc_append(external_polygon,                                         # H
+                          P2D(wheel_well_west_x, half_wheel_well_dy), "WS")
+        corner_arc_append(external_polygon,                                         # I
+                          P2D(wheel_well_west_x,
+                              holder_north_y + holder_slop_dy), "NE")
+        corner_arc_append(external_polygon,                                         # J
+                          P2D(magnet_west_x + holder_slop_dx,
+                              holder_north_y + holder_slop_dy), "WS")
+        corner_arc_append(external_polygon,                                         # K
+                          P2D(magnet_west_x + holder_slop_dx,
+                              holder_south_y - holder_slop_dy), "NW")
+        corner_arc_append(external_polygon,                                         # L
+                          P2D(wheel_well_west_x,
+                              holder_south_y - holder_slop_dy), "ES")
+        corner_arc_append(external_polygon,                                         # M
+                          P2D(wheel_well_west_x, -half_wheel_well_dy), "NW")
+
+        rounded_arc_append(external_polygon, "N-to-G", "BH-EV-", radius,            # Arc
+                           degrees180 + wheel_well_angle,                           # from N
+                           degrees270 - arm_well_angle)                             # to G
+
+        corner_arc_append(external_polygon,                                         # P
+                          P2D(-half_arm_well_dx, arm_well_y), "SE")
+        corner_arc_append(external_polygon,                                         # Q
+                          P2D(half_arm_well_dx, arm_well_y), "WS")
+
+        rounded_arc_append(external_polygon, "R-to-S", "BV+EH-", radius,            # Arc
+                           degrees270 + arm_well_angle,                             # from R
+                           degrees360 - wheel_well_angle)                           # to S
+
+        corner_arc_append(external_polygon,                                         # T
+                          P2D(wheel_well_east_x, -half_wheel_well_dy), "EN")
+        corner_arc_append(external_polygon,                                         # U
+                          P2D(wheel_well_east_x,
+                              holder_south_y - holder_slop_dy), "SW")
+        corner_arc_append(external_polygon,                                         # V
+                          P2D(magnet_east_x - holder_slop_dx,
+                              holder_south_y - holder_slop_dy), "EN")
+        #                                                                           # W not used
+        # external_polygon.point_append(P2D(magnet_east_x - holder_slop_dx,
+        #                                   holder_north_y + holder_slop_dy))         # X
+        corner_arc_append(external_polygon,                                         # X
+                          P2D(magnet_east_x - holder_slop_dx,
+                              holder_north_y + holder_slop_dy), "SE")
+        # external_polygon.point_append(P2D(wheel_well_east_x,
+        #                                   holder_north_y + holder_slop_dy))         # Y
+        corner_arc_append(external_polygon,                                         # Y
+                          P2D(wheel_well_east_x,
+                              holder_north_y + holder_slop_dy), "WN")
         # print(f"masterpcb well-to-well: {holder_north_y - holder_south_y - 2.0*holder_slop_dy}mm")
 
         # Lock up *external_polygon* and append it to *pcb_polygon*:
@@ -1499,31 +1634,31 @@ class MasterBoard:
         # srf02_use_module: UseModule3D = srf02.module.use_module_get()
         sonars: List[Scad3D] = []
         degrees2radians: float = pi / 180.0
-        sonar_poses: List[Tuple[float, float, bool]] = [
-            # (*rim_angle*, *beam_angle* (-1 => same), *on_bottom*)
+        sonar_poses: List[Tuple[float, float, float, bool]] = [
+            # (*rim_angle*, *beam_angle* (negative => same), *sonar_offset*, *on_bottom*)
             ((90.0 - 2.3 * 22.5) * degrees2radians,
-             (90.0 - 1.5 * 22.5) * degrees2radians, True),
+             (90.0 - 1.5 * 22.5) * degrees2radians, 0.0, True),
             ((90.0 - 1.9 * 22.5) * degrees2radians,
-             (90.0 - 0.5 * 22.5) * degrees2radians, False),
+             (90.0 - 0.5 * 22.5) * degrees2radians, 0.0, False),
             # No rear center sonar:
             ((90.0 + 1.9 * 22.5) * degrees2radians,
-             (90.0 + 0.5 * 22.5) * degrees2radians, False),
+             (90.0 + 0.5 * 22.5) * degrees2radians, 0.0, False),
             ((90.0 + 2.3 * 22.5) * degrees2radians,
-             (90.0 + 1.5 * 22.5) * degrees2radians, True),
+             (90.0 + 1.5 * 22.5) * degrees2radians, 0.0, True),
             # Front Sonars:
-            ((270.0 - 2 * 22.5) * degrees2radians, -1.0, True),
-            ((270.0 - 1 * 22.5) * degrees2radians, -1.0, False),
-            ((270.0) * degrees2radians, -1.0, True),
-            ((270.0 + 1 * 22.5) * degrees2radians, -1.0, False),
-            ((270.0 + 2 * 22.5) * degrees2radians, -1.0, True)]
+            ((270.0 - 2 * 22.5) * degrees2radians, -1.0, 0.0, False),
+            ((270.0 - 1 * 22.5) * degrees2radians, -1.0, 0.0, True),
+            ((270.0) * degrees2radians, -1.0, 35.0, False),
+            ((270.0 + 1 * 22.5) * degrees2radians, -1.0, 0.0, True),
+            ((270.0 + 2 * 22.5) * degrees2radians, -1.0, 0.0, False)]
         x_axis: P3D = P3D(1.0, 0.0, 0.0)
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
         sonars_radius: float = 77.0
         rim_angle: float
         beam_angle: float
+        radius_offset: float
         on_bottom: bool
-        is_srf02: bool
-        for rim_angle, beam_angle, on_bottom in sonar_poses:
+        for rim_angle, beam_angle, sonar_offset, on_bottom in sonar_poses:
             if beam_angle < 0.0:
                 beam_angle = rim_angle
             angle_text: str = f"{rim_angle * 180.0 / pi}deg:{on_bottom}"
@@ -1539,8 +1674,8 @@ class MasterBoard:
             sonar = Rotate3D(f"Rotated Sonar ({angle_text})", sonar, beam_angle, z_axis)
 
             # Now position *sonar* to *sonar_position* along the rim and tack onto *sonars* list:
-            sonar_x: float = sonars_radius * cos(rim_angle)
-            sonar_y: float = sonars_radius * sin(rim_angle)
+            sonar_x: float = (sonars_radius - sonar_offset) * cos(rim_angle)
+            sonar_y: float = (sonars_radius - sonar_offset) * sin(rim_angle)
             sonar_position: P3D = P3D(sonar_x, sonar_y, sonar_z)
             sonar = Translate3D(f"Translated Sonar ({angle_text})", sonar, sonar_position)
             sonars.append(sonar)
@@ -4730,5 +4865,5 @@ def main() -> int:  # pragma: no cover
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":    # pragma: no cover
     main()

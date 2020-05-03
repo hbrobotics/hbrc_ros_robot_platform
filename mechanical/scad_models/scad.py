@@ -56,7 +56,7 @@ The basic class tree is:
 """
 
 # Import stuff from other libraries:
-from math import acos, ceil, cos, degrees, pi, sin, sqrt
+from math import acos, atan2, ceil, cos, degrees, pi, sin, sqrt
 from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple
 
 
@@ -1539,13 +1539,13 @@ class SimplePolygon(Scad2D):
         selected_points_text = join_text.join(selected_point_texts)
         return f"SimplePolygon('{name}', [{selected_points_text}])"
 
-    # SimplePolygon.arc():
+    # SimplePolygon.arc_append():
     def arc_append(self, center: P2D, radius: float, start_angle: float, end_angle: float,
                    points_count: int) -> None:
         """Append an arc of points to a Polygon.
 
         Args:
-            *origin* (*P*): The center of the arc.
+            *center* (*P*): The center of the arc.
             *radius* (*float*): The arc radius.
             *start_angle* (*float*): The starting angle for the arc.
             *end_angle* (*float*): The ending angle for the arc.
@@ -1572,6 +1572,156 @@ class SimplePolygon(Scad2D):
             y: float = center_y + radius * sin(angle)
             # print(f"[{index}]angle={degrees(angle} x={x} y={y}")
             points.append(P2D(x, y))
+
+    # SimplePolygon.arc_edge_corner_append():
+    def arc_edge_corner_append(self, center: P2D, arc_radius: float, arc_angle: float,
+                               corner_radius: float, edge_flags: str, points_count: int) -> float:
+        """Append an arc edge corner rounded CCW arc to a polygon.
+
+        Args:
+            * *arc_offset* (*P*): The center of the arc.
+            * *arc_radius* (*float*): The arc radius.
+            * *arc_angle* (*float*): The angle from *center* to corner to be rounded.
+            * *corner_radius* (*float*): The corner radius.
+            * *edge_flags* (*str*): 3 character flag string of the form "eos" where:
+              * "e" is "B" the edge connects to the Beginning of the corner CCW arc and "E"
+                when the edge connect to the end of the E of the CCW arg.
+              * "o" is the edge orientation where "V" is for a veritcal edge and "H" is for
+                a horizontal edge.
+              * "s" is "+" is if corner center is to the right/top of a vertical/horizontal edge
+                "-" if the corner center is to the left/bottom of a vertical/horizontal edge.
+            * points_count* (*int*): The number of points along the arc.
+
+            Draw an corner arc that is tangent to a larger arc and vertical/horizontal line.
+
+        Returns:
+            The corner center angle is returned.
+
+        """
+        # The following single letter variables are used for the math:
+        # * O: The large arc offset (Ox, Oy) (i.e. *center*.)
+        # * R: The large arc radius (i.e. *arc_radius*.)
+        # * S: The unrounded sharp point (Sx, Sy) that is at the intersection of the
+        #      large arc and the vertical/horizontal edge.
+        # * A: The angle (in radians) relative O to S (i.e. *arc_angle*).
+        #
+        # * r: is the corner arc radius (i.e. *corner_radius*).
+        # * C: is the center (Cx, Cy) of the corner arc circle.
+        # * B: is the beginning (Bx, By) the corner arc.
+        # * E: is the ending (Ex, Ey) of the corner arc.
+
+        # The arc offest *O* is applied at the very end.  We do all of the math with
+        # the large arc centered around the origin (0, 0).
+
+        # Do any requested *tracing*:
+        tracing: bool = False
+        # tracing = True
+        if tracing:  # pragma: no cover
+            print("=>SimplePolygon.arc_edge_corner_append()")
+            print(f"center:{center}")
+            print(f"arc_radius:{arc_radius:.3f}")
+            print(f"arc_angle:{(arc_angle * 180.0 / pi):.3f}")
+            print(f"edge_flags:'{edge_flags}'")
+            print(f"corner_radius:{corner_radius:.3f}")
+            print(f"points_count:{points_count}")
+
+        # Compute the location of S:
+        sharp_x: float = arc_radius * cos(arc_angle)
+        sharp_y: float = arc_radius * sin(arc_angle)
+        sharp: P2D = P2D(sharp_x, sharp_y)
+        if tracing:  # pragma: no cover
+            print(f"sharp: [{sharp_x:.3f}, {sharp_y:.3f}]")
+
+        # Unpack *edge_flags* into *edge_first*, *is_vertical*, *positive_offset*,
+        # and *offset_sign*:
+        assert len(edge_flags) == 3
+        side_flag: str = edge_flags[0]  # Which side of the arc the edge is on beginning/end.
+        orientation_flag: str = edge_flags[1]  # Which axis the edge is aligned with.
+        sign_flag: str = edge_flags[2]
+        assert side_flag in "BE"
+        assert orientation_flag in "HV"
+        assert sign_flag in "+-"
+        edge_first: bool = (side_flag == "B")  # *True* => edge is at beginning of CCW corner arc.
+        is_vertical: bool = (orientation_flag == "V")  # *True* => edgie is vertical
+        positive_offset: bool = (sign_flag == "+")
+        offset_sign: int = (1 if positive_offset else -1)  # Offset to center in X/Y.
+        if tracing:  # pragma: no cover
+            print(f"edge_first:{edge_first}")
+            print(f"is_vertical:{is_vertical}")
+            print(f"positive_offset:{positive_offset}")
+            print(f"offset_sign:{offset_sign}")
+
+        # Next we need to find the location of C.  From the Pathagorean theorem we know that:
+        #
+        # (1) |C|^2 = Cx^2 + Cy^2
+        #
+        # where |C| is the hypotenuse from the (0,0) to C (i.e. (Cx, Cy) .)
+        # C must be located on a circle that is offset inwards from R by the r (the
+        # corner radius.  Thus,
+        #
+        # (2) |C| = R - r
+        #
+        # Given, one of Cx or Cy the other value can be computed:
+        #
+        # (3) Cy = +/- sqrt((R - r)^2 - Cx^2)  # Sign needs to be determined
+        # (4) Cx = +/- sqrt((R - r)^2 - Cy^2)  # Sign needs to be determined
+        #
+        # Compute (*center_x*, *center_y*):
+        edge_angle: float
+        offset_radius: float = arc_radius - corner_radius
+        offset_radius_squared: float = offset_radius * offset_radius
+        center1: P2D
+        center2: P2D
+        if is_vertical:
+            # Vertical edge line: Use formula (3) above:
+            center_x: float = sharp_x + offset_sign * corner_radius
+            center_y1: float = sqrt(offset_radius_squared - center_x * center_x)
+            center_y2: float = -center_y1
+            center1 = P2D(center_x, center_y1)
+            center2 = P2D(center_x, center_y2)
+            edge_angle = pi if positive_offset else 0.0  # 180 or 0 degrees
+        else:
+            # Horizontal edge line: Use formual (4) above:
+            center_y: float = sharp_y + offset_sign * corner_radius
+            center_x1: float = sqrt(offset_radius_squared - center_y * center_y)
+            center_x2: float = -center_x1
+            center1 = P2D(center_x1, center_y)
+            center2 = P2D(center_x2, center_y)
+            edge_angle = 1.5 * pi if positive_offset else pi / 2.0  # 270 or 90 degrees
+        corner_center: P2D = (center1
+                              if sharp.distance(center1) < sharp.distance(center2)
+                              else center2)
+        if tracing:  # pragma: no cover
+            print(f"corner_center:[{corner_center}")
+            print(f"edge_angle:{(edge_angle * 180.0 / pi):.3f}")
+
+        # Now we can compute *corner_center_angle* and the associated point on the
+        # large arc circle where that line intersects the *corner_center* (i.e. (Cx, Cy) .):
+        corner_angle: float = atan2(corner_center.y, corner_center.x)
+        if tracing:  # pragma: no cover
+            print(f"corner_angle:{(corner_angle * 180.0 / pi):.3f}")
+
+        # Finally we can select *begin_angle* and *end_angle*:
+        begin_angle: float = edge_angle if edge_first else corner_angle
+        end_angle: float = corner_angle if edge_first else edge_angle
+        degrees360: float = 2.0 * pi
+        while begin_angle > degrees360:  # pragma: no cover
+            begin_angle -= degrees360
+        while end_angle < begin_angle:  # pragma: no cover
+            end_angle += degrees360
+        if tracing:  # pragma: no cover
+            print(f"begin_angle:{(begin_angle * 180.0 / pi):.3f}")
+            print(f"end_angle:{(end_angle * 180.0 / pi):.3f}")
+
+        # Append the corner arc to *polygon* (i.e. *self*):
+        polygon: SimplePolygon = self
+        polygon.arc_append(corner_center, corner_radius, begin_angle, end_angle, points_count)
+        if tracing:  # pragma: no cover
+            print(f"arc_append({corner_center}, {corner_radius:.3f}, "
+                  f"{(begin_angle * 180.0 / pi):.3f}"
+                  f"{(end_angle * 180.0 / pi):.3f}, {points_count})")
+            print(f"<=SimplePolygon.arc_edge_corner_append()={corner_angle * 180.0 / pi}")
+        return corner_angle
 
     # SimplePolygon.is_locked():
     def is_locked(self) -> bool:
@@ -1746,6 +1896,22 @@ class SimplePolygon(Scad2D):
                                   f"// {start_index + slice_start}:"
                                   f"{start_index + slice_end - 1}")
         return end_index
+
+    # SimplePolygon.polygon_append():
+    def polygon_append(self, tail_polygon: "SimplePolygon") -> None:
+        """Treat a polygon as a list of points and append them."""
+        simple_polygon: SimplePolygon = self
+        polygon_points: List[P2D] = simple_polygon.points
+        for point in tail_polygon.points:
+            if len(polygon_points) == 0:
+                polygon_points.append(point)
+            else:
+                # Do not append two points that are too close to one another:
+                last_point: P2D = polygon_points[-1]
+                if last_point.distance(point) > 0.00001:
+                    if simple_polygon.locked:
+                        raise ValueError(f"'{simple_polygon.name}' is locked.")
+                    polygon_points.append(point)
 
     # SimplePolygon.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
