@@ -269,6 +269,7 @@ class P2D:
 class KicadPcb:
     """Represents a KiCAD PCB."""
 
+    # KicadPcb.__init__():
     def __init__(self, file_name: str, offset: P2D) -> None:
         """Bind to a .kicad_pcb file."""
         # Read in *file_name* and split into *lines*:
@@ -286,8 +287,9 @@ class KicadPcb:
         self.lines: List[str] = lines
         self.offset: P2D = offset
 
-    def edge_cut_append(self, point1: P2D, point2: P2D) -> None:
-        """Append an edge cut."""
+    # KicadPcb.line_append():
+    def line_append(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
+        """Append a line cut."""
         # Grab some values from self:
         kicad_pcb: KicadPcb = self
         cut_lines_insert_index: int = kicad_pcb.cut_lines_insert_index
@@ -308,28 +310,31 @@ class KicadPcb:
                     kicad_pcb.cut_lines_insert_index = cut_lines_insert_index
 
         # Create the *cut_line_text* into *lines*:
-        cut_line_text: str = ("  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
-                              "(layer Edge.Cuts) (width 0.05))").format(offset.x + point1.x,
-                                                                        offset.y - point1.y,
-                                                                        offset.x + point2.x,
-                                                                        offset.y - point2.y)
+        cut_line_text: str = (
+            "  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
+            "(layer {4}) (width {5:1.2f}))").format(
+                offset.x + point1.x, offset.y - point1.y,
+                offset.x + point2.x, offset.y - point2.y, layer, width)
         lines.insert(cut_lines_insert_index, cut_line_text)
 
-    def edge_cuts_remove(self) -> None:
-        """Remove the edge cuts."""
+    # KicadPcb.layer_remove():
+    def layer_remove(self, layer: str) -> None:
+        """Remove the a layer."""
         # Grab some values from *kicad_pcb* (i.e. *self*):
         kicad_pcb: KicadPcb = self
         lines: List[str] = kicad_pcb.lines
         new_lines: List[str] = []
+        pattern: str = f"(layer {layer})"
         line: str
         for line in lines:
-            if line.find("(layer Edge.Cuts)") < 0:
-                # Not an edge cut line, copy it over:
+            if line.find(pattern) < 0:
+                # Not a layer we care about, copy it over:
                 new_lines.append(line)
 
         # Save *new_lines* back into *kicad*:
         kicad_pcb.lines = new_lines
 
+    # KicadPcb.mounting_holes_update():
     def mounting_holes_update(self, holes_table: Dict[str, Tuple[P2D, float]]) -> None:
         """Update the mounting hole position."""
         # Grab some values from *kicad_pcb*:
@@ -385,6 +390,18 @@ class KicadPcb:
                 elif line.startswith("    (fp_text reference "):
                     label_line_index = line_index
 
+    # KicadPcb.polygon_append():
+    def polygon_append(self, simple_polygon: "SimplePolygon", layer: str, width: float) -> None:
+        """Append a polygon to a PCB."""
+        kicad_pcb: KicadPcb = self
+        simple_polygon_size: int = len(simple_polygon)
+        index: int
+        for index in range(simple_polygon_size):
+            point1: P2D = simple_polygon[index]
+            point2: P2D = simple_polygon[(index + 1) % simple_polygon_size]
+            kicad_pcb.line_append(point1, point2, layer, width)
+
+    # KicadPcb.save():
     def save(self):
         """Save contents back file."""
         # Grab some values from *kicad_pcb* (i.e. *self*):
@@ -1846,19 +1863,6 @@ class SimplePolygon(Scad2D):
         y_center: float = (y_maximum + y_minimum) / 2.0
         key: Tuple[Any, ...] = ("SimplePolygon", name, x_center, y_center, dx, dy, 0.0)
         return key
-
-    # SimplePolygon.kicad_edge_cuts():
-    def kicad_edge_cuts_append(self, kicad_pcb: "KicadPcb") -> None:
-        """Insert a simple Polygon into a KiCAD PCB at an offset."""
-        # Grab some values from *simple_polygon*:
-        simple_polygon: SimplePolygon = self
-        points: List[P2D] = simple_polygon.points
-        points_size: int = len(points)
-        point_index: int
-        point1: P2D
-        for index, point1 in enumerate(points):
-            point2: P2D = points[(index + 1) % points_size]
-            kicad_pcb.edge_cut_append(point1, point2)
 
     # SimplePolygon.lock():
     def lock(self) -> None:

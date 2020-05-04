@@ -1299,6 +1299,79 @@ class MasterBoard:
         external_polygon.lock()
         pcb_polygon.append(external_polygon)
 
+        # The Rev. A PCB is resized to be a little bit smaller than a Bantam Labs PCB
+        # which is 4 x 5 inches.  The motor wells a present, but the the wheel wells
+        # are not.  There is no need for weird arcs or rounded corners:
+        #
+        #        G~~~~~~~~F             C~~~~~~~~B
+        #        |        |             |        |
+        #        |        |             |        |
+        #        |        |             |        |
+        #        |        E-------------D        |
+        #        |                               |
+        #        |                               |
+        #        H----I                     T----A
+        #             |                     |
+        #             |                     |
+        #             +----------Z----------+
+        #             |                     |
+        #             |                     |
+        #        K----J                     S----R
+        #        |                               |
+        #        |            N-----O            |
+        #        |            |     |            |
+        #        |            |     |            |
+        #        |            |     |            |
+        #        |            |     |            |
+        #        L------------M     P------------Q
+        #
+
+        # Some bantam constants:
+        bantam_trim: float = 3.0
+        bantam_dx: float = 5.0 * 25.4 - bantam_trim
+        bantam_dy: float = 4.0 * 25.4 - bantam_trim
+        # We need to ffset the board center down a little to have room for the ST-link board:
+        bantam_y_offset: float = -10.00
+        bantam_n: float = bantam_dy/2.0 + bantam_y_offset
+        bantam_s: float = -bantam_dy/2.0 + bantam_y_offset
+
+        # Create the *bantam_polygon* for the outside:
+        motor_dx: float = magnet_east_x - holder_slop_dx
+        holder_dy: float = holder_north_y + holder_slop_dy
+        bantam_exterior: SimplePolygon = SimplePolygon("Bantam Exterior Polygon", [], lock=False)
+        # bantam_exterior.point_append(P2D(bantam_dx/2.0, wheel_well_dy/2.0))      # A
+        bantam_exterior.point_append(P2D(bantam_dx/2.0, bantam_n))                 # B
+
+        bantam_exterior.point_append(P2D(half_cut_out_dx, bantam_n))               # C
+        bantam_exterior.point_append(P2D(half_cut_out_dx, cut_out_y))              # D
+        bantam_exterior.point_append(P2D(-half_cut_out_dx, cut_out_y))             # E
+        bantam_exterior.point_append(P2D(-half_cut_out_dx, bantam_n))              # F
+
+        bantam_exterior.point_append(P2D(-bantam_dx/2.0, bantam_n))                # G
+
+        bantam_exterior.point_append(P2D(-bantam_dx/2.0, holder_dy))               # H
+        bantam_exterior.point_append(P2D(-motor_dx, holder_dy))                    # I
+        bantam_exterior.point_append(P2D(-motor_dx, -holder_dy))                   # J
+        bantam_exterior.point_append(P2D(-bantam_dx/2.0, -holder_dy))              # K
+
+        bantam_exterior.point_append(P2D(-bantam_dx/2.0, bantam_s))                # L
+
+        bantam_exterior.point_append(P2D(-half_arm_well_dx, bantam_s))             # M
+        bantam_exterior.point_append(P2D(-half_arm_well_dx, arm_well_y))           # N
+        bantam_exterior.point_append(P2D(half_arm_well_dx, arm_well_y))            # O
+        bantam_exterior.point_append(P2D(half_arm_well_dx, bantam_s))              # P
+
+        bantam_exterior.point_append(P2D(bantam_dx/2.0, bantam_s))                 # Q
+        bantam_exterior.point_append(P2D(bantam_dx/2.0, -holder_dy))               # R
+        bantam_exterior.point_append(P2D(motor_dx, -holder_dy))                    # S
+        bantam_exterior.point_append(P2D(motor_dx, holder_dy))                     # T
+        bantam_exterior.point_append(P2D(bantam_dx/2.0, holder_dy))                # A
+
+        # Lock *bantam_exteior* and append it to the newly created *bantam_polygon*:
+        bantam_exterior.lock()
+        bantam_polygon: Polygon = Polygon("Master PCB Polygon", [], lock=False)
+        bantam_polygon.append(bantam_exterior)
+
         # Use *romi_base_keys* to build *romi_base_keys_table*:
         romi_base_keys_table: Dict[str, Tuple[Any, ...]] = {}
         romi_base_key: Tuple[Any, ...]
@@ -1650,12 +1723,22 @@ class MasterBoard:
         scad_program.append(pcb_polygon_module)
         scad_program.if2d.name_match_append("master_pcb", pcb_polygon_module, ["Master PCB"])
 
+        # Do the same for the *bantam_polygon*:
+        bantam_polygon.lock()
+        bantam_polygon_module: Module2D = Module2D("Bantam PCB Module", [bantam_polygon])
+        scad_program.append(bantam_polygon_module)
+        scad_program.if2d.name_match_append("bantam_pcb", bantam_polygon_module, ["Bantam PCB"])
+
         # Write the *external_polygon* and *kicad_holes* out to *kicad_file_name*:
         kicad_file_name: str = "../electrical/master_board/rev_a/master_board.kicad_pcb"
         kicad_pcb: KicadPcb = KicadPcb(kicad_file_name, P2D(100.0, 100.0))
-        kicad_pcb.edge_cuts_remove()
+        edge_cuts: str = "Edge.Cuts"
+        margin: str = "Margin"
+        kicad_pcb.layer_remove(edge_cuts)
+        kicad_pcb.layer_remove(margin)
         kicad_pcb.mounting_holes_update(kicad_mounting_holes)
-        external_polygon.kicad_edge_cuts_append(kicad_pcb)
+        kicad_pcb.polygon_append(external_polygon, margin, 0.05)
+        kicad_pcb.polygon_append(bantam_exterior, edge_cuts, 0.05)
         kicad_pcb.save()
 
         # Create *colored_pcb* from *pcb_polygon* by extrusion and translation:
@@ -1663,6 +1746,12 @@ class MasterBoard:
         translated_pcb: Translate3D = Translate3D("Translated PCB", extruded_pcb,
                                                   P3D(0.0, 0.0, pcb_bottom_z))
         colored_pcb: Color = Color("Green Color", translated_pcb, "SpringGreen")
+
+        # Create *colored_bantam* from *bantam_polygon* by extrusion and translation:
+        extruded_bantam: LinearExtrude = LinearExtrude("Extruded Bantam", bantam_polygon, pcb_dz)
+        translated_bantam: Translate3D = Translate3D("Translated Bantam", extruded_bantam,
+                                                     P3D(0.0, 0.0, pcb_bottom_z))
+        colored_bantam: Color = Color("", translated_bantam, "Magenta")
 
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
         module: Module3D = Module3D("Master Board Module",
@@ -1672,6 +1761,7 @@ class MasterBoard:
                                      sonars +
                                      st_link_connectors +
                                      [colored_pcb,
+                                      colored_bantam,
                                       translated_st_link,
                                       receptacle_2x20.module.use_module_get(),
                                       north_morpho_connector.module.use_module_get(),
