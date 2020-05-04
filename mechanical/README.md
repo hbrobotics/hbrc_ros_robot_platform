@@ -224,6 +224,9 @@ The current (tentative) design decisions are:
   where NAME is one of:
   <!-- NAME list starts here. -->
 
+  * `bantam_pcb`:
+    Bantam PCB
+
   * `encoder_board`:
     Encoder Board
 

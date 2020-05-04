@@ -173,6 +173,11 @@ clean:
 	rm -f README.html~ README.html setup.py,cover .coverage
 	rm -rf ${CLEAN_DIRECTORIES}
 
+checkout:
+	git checkout ${PNG_FILES}
+	git checkout ../electrical/master_board/rev_a/master_board.kicad_pcb
+
+
 # The documentation for `pytest` and `pytest-cov` is a bit weak.  None of this makes
 # much sense and was arrived at by tedious trial and error.  There may be some strange
 # interaction between `pytest` and Python Virtual Environments that is causing all of

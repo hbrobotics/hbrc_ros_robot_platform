@@ -269,6 +269,7 @@ class P2D:
 class KicadPcb:
     """Represents a KiCAD PCB."""
 
+    # KicadPcb.__init__():
     def __init__(self, file_name: str, offset: P2D) -> None:
         """Bind to a .kicad_pcb file."""
         # Read in *file_name* and split into *lines*:
@@ -286,8 +287,9 @@ class KicadPcb:
         self.lines: List[str] = lines
         self.offset: P2D = offset
 
-    def edge_cut_append(self, point1: P2D, point2: P2D) -> None:
-        """Append an edge cut."""
+    # KicadPcb.line_append():
+    def line_append(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
+        """Append a line cut."""
         # Grab some values from self:
         kicad_pcb: KicadPcb = self
         cut_lines_insert_index: int = kicad_pcb.cut_lines_insert_index
@@ -308,28 +310,31 @@ class KicadPcb:
                     kicad_pcb.cut_lines_insert_index = cut_lines_insert_index
 
         # Create the *cut_line_text* into *lines*:
-        cut_line_text: str = ("  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
-                              "(layer Edge.Cuts) (width 0.05))").format(offset.x + point1.x,
-                                                                        offset.y - point1.y,
-                                                                        offset.x + point2.x,
-                                                                        offset.y - point2.y)
+        cut_line_text: str = (
+            "  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
+            "(layer {4}) (width {5:1.2f}))").format(
+                offset.x + point1.x, offset.y - point1.y,
+                offset.x + point2.x, offset.y - point2.y, layer, width)
         lines.insert(cut_lines_insert_index, cut_line_text)
 
-    def edge_cuts_remove(self) -> None:
-        """Remove the edge cuts."""
+    # KicadPcb.layer_remove():
+    def layer_remove(self, layer: str) -> None:
+        """Remove the a layer."""
         # Grab some values from *kicad_pcb* (i.e. *self*):
         kicad_pcb: KicadPcb = self
         lines: List[str] = kicad_pcb.lines
         new_lines: List[str] = []
+        pattern: str = f"(layer {layer})"
         line: str
         for line in lines:
-            if line.find("(layer Edge.Cuts)") < 0:
-                # Not an edge cut line, copy it over:
+            if line.find(pattern) < 0:
+                # Not a layer we care about, copy it over:
                 new_lines.append(line)
 
         # Save *new_lines* back into *kicad*:
         kicad_pcb.lines = new_lines
 
+    # KicadPcb.mounting_holes_update():
     def mounting_holes_update(self, holes_table: Dict[str, Tuple[P2D, float]]) -> None:
         """Update the mounting hole position."""
         # Grab some values from *kicad_pcb*:
@@ -385,6 +390,18 @@ class KicadPcb:
                 elif line.startswith("    (fp_text reference "):
                     label_line_index = line_index
 
+    # KicadPcb.polygon_append():
+    def polygon_append(self, simple_polygon: "SimplePolygon", layer: str, width: float) -> None:
+        """Append a polygon to a PCB."""
+        kicad_pcb: KicadPcb = self
+        simple_polygon_size: int = len(simple_polygon)
+        index: int
+        for index in range(simple_polygon_size):
+            point1: P2D = simple_polygon[index]
+            point2: P2D = simple_polygon[(index + 1) % simple_polygon_size]
+            kicad_pcb.line_append(point1, point2, layer, width)
+
+    # KicadPcb.save():
     def save(self):
         """Save contents back file."""
         # Grab some values from *kicad_pcb* (i.e. *self*):
@@ -1723,6 +1740,93 @@ class SimplePolygon(Scad2D):
             print(f"<=SimplePolygon.arc_edge_corner_append()={corner_angle * 180.0 / pi}")
         return corner_angle
 
+    def corner_arc_append(self, corner: P2D, corner_radius: float, flags: str) -> None:
+        """Append a rounded corner to the polygon.
+
+        Args:
+            * *corner* (*P2D*): The point where the two edges would meet
+               without corner rounding.
+            * *corner_radius* (*float*): The radius of the corner arc.
+            * *flags* (*str*): The arc entry direction followed by the
+              arc exit direction, where the direction is one of "NEWS"
+              for North, East, West, and South.
+
+        This code only works for corners that are right angles and
+        where the edges are aligned with the X and Y axes.
+        """
+        # Build *flags_table*:
+        # Pretty much everything in this routine is counter-intuitive.
+
+        # The angle stored is the *opposite* of the letter flag because the it needs
+        # considered from from the reference of the *corner_center*:
+        degrees90: float = pi / 2.0
+        degrees180: float = degrees90 + degrees90
+        degrees270: float = degrees180 + degrees90
+        degrees360: float = degrees180 + degrees180
+        flags_table: Dict[str, Tuple[float, P2D]] = {
+            "N": (degrees270, P2D(0.0, corner_radius)),
+            "E": (degrees180, P2D(corner_radius, 0.0)),
+            "W": (0.0, P2D(-corner_radius, 0.0)),
+            "S": (degrees90, P2D(0.0, -corner_radius)),
+        }
+
+        # Do any requested *tracing*:
+        tracing: bool = False
+        # tracing = True
+        if tracing:  # pragma: no cover
+            print("===>corner_arc_append()")
+            print(f"corner:{corner}")
+            print(f"flags:'{flags}'")
+
+        # Verify that *flags* is valid:
+        assert len(flags) == 2
+        start_flag: str = flags[0]
+        end_flag: str = flags[1]
+        assert start_flag in "NEWS"
+        assert end_flag in "NEWS"
+        if tracing:  # pragma: no cover
+            print(f"start_flag:'{start_flag}'")
+            print(f"end_flag:'{end_flag}'")
+
+        # Extract the angles and offsets associated with each flag:
+        start_angle: float
+        end_angle: float
+        start_offset: P2D
+        end_offset: P2D
+        start_angle, start_offset = flags_table[start_flag]
+        end_angle, end_offset = flags_table[end_flag]
+        if tracing:  # pragma: no cover
+            print(f"start_angle:{(start_angle * 180.0 / pi):.3f}")
+            print(f"end_angle:{(end_angle * 180.0 / pi):.3f}")
+            print(f"start_offset:{start_offset}")
+            print(f"end_offset:{end_offset}")
+
+        # These are fix-ups are a kludge to deal with some corner cases:
+        if start_angle - end_angle > degrees180:
+            start_angle -= degrees360
+        if end_angle - start_angle > degrees180:
+            end_angle -= degrees360
+
+        # Append the corner arc to *external_polygon*:
+        corner_center: P2D = corner + start_offset + end_offset
+        if tracing:  # pragma: no cover
+            print(f"corner_center:{corner_center}")
+
+        # This is really counter intuitive, *start_angle* and *end_angle* are swapped.
+        # If you draw it on a piece of paper, you will realize that the arc angle is
+        # always perpendicular to the entry and exit edges.  It turns out that swapping
+        # the two angles performs the correct 90 degree rotation.
+        if tracing:  # pragma: no cover
+            print(f"end_angle={(end_angle * 180.0 / pi):.3f}")
+            print(f"start_angle={(start_angle * 180.0 / pi):.3f}")
+
+        # Finally perform the *arc_append*:
+        external_polygon: SimplePolygon = self
+        external_polygon.arc_append(corner_center, corner_radius, end_angle, start_angle, 5)
+
+        if tracing:  # pragma: no cover
+            print("<===corner_arc_append()")
+
     # SimplePolygon.is_locked():
     def is_locked(self) -> bool:
         """Return whether SimplePolygon is locked or not."""
@@ -1759,19 +1863,6 @@ class SimplePolygon(Scad2D):
         y_center: float = (y_maximum + y_minimum) / 2.0
         key: Tuple[Any, ...] = ("SimplePolygon", name, x_center, y_center, dx, dy, 0.0)
         return key
-
-    # SimplePolygon.kicad_edge_cuts():
-    def kicad_edge_cuts_append(self, kicad_pcb: "KicadPcb") -> None:
-        """Insert a simple Polygon into a KiCAD PCB at an offset."""
-        # Grab some values from *simple_polygon*:
-        simple_polygon: SimplePolygon = self
-        points: List[P2D] = simple_polygon.points
-        points_size: int = len(points)
-        point_index: int
-        point1: P2D
-        for index, point1 in enumerate(points):
-            point2: P2D = points[(index + 1) % points_size]
-            kicad_pcb.edge_cut_append(point1, point2)
 
     # SimplePolygon.lock():
     def lock(self) -> None:
@@ -1912,6 +2003,36 @@ class SimplePolygon(Scad2D):
                     if simple_polygon.locked:
                         raise ValueError(f"'{simple_polygon.name}' is locked.")
                     polygon_points.append(point)
+
+    # SimplePolygon.rounded_arc_append():
+    def rounded_arc_append(self, label: str, flags: str, arc_center: P2D, arc_radius: float,
+                           start_angle: float, end_angle: float, corner_radius: float) -> None:
+        """Append an arc with rounded corners to the external polygon."""
+        # Extract the *start_flags* and *end_flags* from *flags*:
+        assert len(flags) == 6
+        start_flags = flags[0:3]
+        end_flags = flags[3:6]
+
+        # Create *start_corner* and hang onto *start_angle*:
+        start_polygon: SimplePolygon = SimplePolygon(f"{label}, Start Corner", [], lock=False)
+        start_corner_angle: float = start_polygon.arc_edge_corner_append(arc_center, arc_radius,
+                                                                         start_angle,
+                                                                         corner_radius,
+                                                                         start_flags, 5)
+
+        # Create *end_corner* and hang onto *end_angle*:
+        end_polygon: SimplePolygon = SimplePolygon(f"{label} End Corner", [], lock=False)
+        end_corner_angle: float = end_polygon.arc_edge_corner_append(arc_center, arc_radius,
+                                                                     end_angle, corner_radius,
+                                                                     end_flags, 5)
+
+        # Now append the *start_corner*, intermediate arc, and the *end_corner* to
+        # *external_polygon* (i.e. *self*):
+        external_polygon: SimplePolygon = self
+        external_polygon.polygon_append(start_polygon)
+        external_polygon.arc_append(arc_center, arc_radius,
+                                    start_corner_angle, end_corner_angle, 8)
+        external_polygon.polygon_append(end_polygon)
 
     # SimplePolygon.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
