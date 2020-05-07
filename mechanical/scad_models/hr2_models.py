@@ -2598,8 +2598,7 @@ class RomiBase:
         # Create the upper arc:
         upper_start_angle: float = wheel_well_angle
         upper_end_angle: float = pi - wheel_well_angle
-        arc_count = 21
-        outline_polygon.arc_append(origin, radius, upper_start_angle, upper_end_angle, arc_count)
+        outline_polygon.arc_append(origin, radius, upper_start_angle, upper_end_angle, 0.0)
 
         # Create the west wheel well:
         outline_polygon.point_append(P2D(-half_wheel_well_dx, half_wheel_well_dy))
@@ -2612,7 +2611,7 @@ class RomiBase:
         # Create the lower arc:
         lower_start_angle: float = wheel_well_angle + pi
         lower_end_angle: float = upper_end_angle + pi
-        outline_polygon.arc_append(origin, radius, lower_start_angle, lower_end_angle, arc_count)
+        outline_polygon.arc_append(origin, radius, lower_start_angle, lower_end_angle, 0.0)
 
         # Create the right wheel well:
         outline_polygon.point_append(P2D(half_wheel_well_dx, -half_wheel_well_dy))
@@ -2782,7 +2781,7 @@ class RomiBase:
             arc_center: P2D = P2D(arc_center_x, arc_center_y)
             start_angle: float = atan2(p3.y - arc_center_y, p3.x - arc_center_x)
             end_angle: float = atan2(p5.y - arc_center_y, p5.x - arc_center_x) + 2.0 * pi
-            battery_clip.arc_append(arc_center, radius, start_angle, end_angle, 7)
+            battery_clip.arc_append(arc_center, radius, start_angle, end_angle, 0.0)
 
             # Wrap up the wrest of the *battery_clip*, lock it and return it:
             if is_large:
@@ -3867,7 +3866,7 @@ class RomiExpansionPlate:
         # print(f"start_angle={degrees(start_angle)}")
         # print(f"end_angle={degrees(end_angle)}")
         expansion_outer.point_append(P2D(-half_total_dx, -arc_dy))                  # Arc start
-        expansion_outer.arc_append(origin, arc_radius, start_angle, end_angle, 21)  # Arc
+        expansion_outer.arc_append(origin, arc_radius, start_angle, end_angle, 0.0)  # Arc
 
         # Draw the right wheel well and lock up *expansion_outer*:
         expansion_outer.point_append(P2D(half_total_dx, -wheel_well_dy))       # Outer corner
@@ -4196,8 +4195,7 @@ class RomiMotor:
         gearbox_case_polygon.point_append(P2D(gearbox_casing_top_z, gearbox_casing_dy/2.0))
         gearbox_case_polygon.arc_append(center=P2D(0.0, 0.0),  # Wheel axis is at (0.0, 0.0)
                                         radius=gearbox_casing_dy/2.0,
-                                        start_angle=pi/2.0, end_angle=3.0*pi/2.0,
-                                        points_count=16)
+                                        start_angle=pi/2.0, end_angle=3.0*pi/2.0)
         gearbox_case_polygon.point_append(P2D(gearbox_casing_top_z, -gearbox_casing_dy/2.0))
         gearbox_case_polygon.lock()
         extruded_gearbox_case: LinearExtrude = LinearExtrude("Gearbox Casing Linear Extrude",
@@ -4362,8 +4360,7 @@ class RomiMotorHolder:
         west_side_polygon.point_append(P2D(base_bottom_z, holder_south_y))
         west_side_polygon.point_append(P2D(0.0, holder_south_y))
         west_side_polygon.arc_append(center=P2D(0.0, 0.0), radius=motor_gearbox_dy/2.0,
-                                     start_angle=3.0*pi/2.0, end_angle=pi/2.0,
-                                     points_count=16)
+                                     start_angle=3.0*pi/2.0, end_angle=pi/2.0)
         west_side_polygon.lock()
 
         # Now convert *west_side_polygon* into *west_side*:

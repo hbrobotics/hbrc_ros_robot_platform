@@ -1558,24 +1558,43 @@ class SimplePolygon(Scad2D):
 
     # SimplePolygon.arc_append():
     def arc_append(self, center: P2D, radius: float, start_angle: float, end_angle: float,
-                   points_count: int) -> None:
+                   points_angle: float = 0.0) -> None:
         """Append an arc of points to a Polygon.
 
         Args:
-            *center* (*P*): The center of the arc.
-            *radius* (*float*): The arc radius.
-            *start_angle* (*float*): The starting angle for the arc.
-            *end_angle* (*float*): The ending angle for the arc.
-            *points_count* (*int*): The number of points along the arc.
+            *center* (*P*):
+                The center of the arc.
+            *radius* (*float*):
+                The arc radius.
+            *start_angle* (*float*):
+                The starting angle for the arc.
+            *end_angle* (*float*):
+                The ending angle for the arc.
+            *points_angle* (*float*) (Optional: defaults to 0.0):
+                The angular distance between points along the arc in
+                radians.  If non-positive a reasonble value will be used.
 
         """
         # Grab some values from *simple_polygon* (i.e. *self*):
         simple_polygon: SimplePolygon = self
         points: List[P2D] = simple_polygon.points
 
-        # Compute the total angle spanned and the delta angle increments:
+        # Deal with default *points_angle*:
+        print(f"Initial points_angle:{points_angle}")
+        if points_angle <= 0.0:
+            degrees15: float = (pi / 180.0) * 15.0
+            points_angle = degrees15
+
+        # Compute the total *span_angle* spanned and the *delta_angle* increments.  Note that
+        # the value can be either postive or negative:
         span_angle: float = end_angle - start_angle
+        points_count: int = max(3, int(abs(span_angle / points_angle)) + 1)
+        print(f"span_angle:{span_angle * 180.0 / pi}")
+        print(f"points_angle:{points_angle * 180.0 / pi} {points_angle}")
+        print(f"points_count:{points_count}")
         delta_angle: float = span_angle / float(points_count - 1)
+        print(f"delta_angle:{delta_angle * 180.0 / pi}")
+        # Note, that both *span_angle* and *delta_angle*
         # print(f"start_angle={start_angle}={degrees(start_angle)}deg")
         # print(f"end_angle={end_angle}={degrees(end_angle}deg")
         # print(f"span_angle={span_angle}={degrees(span_angle)}deg")
@@ -1823,7 +1842,7 @@ class SimplePolygon(Scad2D):
 
         # Finally perform the *arc_append*:
         external_polygon: SimplePolygon = self
-        external_polygon.arc_append(corner_center, corner_radius, end_angle, start_angle, 5)
+        external_polygon.arc_append(corner_center, corner_radius, end_angle, start_angle, 0.0)
 
         if tracing:  # pragma: no cover
             print("<===corner_arc_append()")
@@ -2032,7 +2051,7 @@ class SimplePolygon(Scad2D):
         external_polygon: SimplePolygon = self
         external_polygon.polygon_append(start_polygon)
         external_polygon.arc_append(arc_center, arc_radius,
-                                    start_corner_angle, end_corner_angle, 8)
+                                    start_corner_angle, end_corner_angle, 0.0)
         external_polygon.polygon_append(end_polygon)
 
     # SimplePolygon.scad_lines_append():
@@ -2488,16 +2507,14 @@ class Square(SimplePolygon):
                 # The rounded ends are on the top and bottom:
                 upper_center: P2D = P2D(center_x, center_y + half_dy - half_dx)
                 lower_center: P2D = P2D(center_x, center_y + half_dx - half_dy)
-                square.arc_append(upper_center, corner_radius, 0.0, pi, 2 * corner_count + 3)
-                square.arc_append(lower_center, corner_radius, pi, 2 * pi, 2 * corner_count + 3)
+                square.arc_append(upper_center, corner_radius, 0.0, pi, 0.0)
+                square.arc_append(lower_center, corner_radius, pi, 2 * pi, 0.0)
             elif dy < dx:
                 # The rounded ends are on the left and right:
                 right_center: P2D = P2D(center_x + half_dx - half_dy, center_y)
                 left_center: P2D = P2D(center_x + half_dy - half_dx, center_y)
-                square.arc_append(right_center, corner_radius,
-                                  -half_pi, half_pi, 2 * corner_count + 3)
-                square.arc_append(left_center, corner_radius,
-                                  half_pi, 3 * half_pi, 2 * corner_count + 3)
+                square.arc_append(right_center, corner_radius, -half_pi, half_pi, 0.0)
+                square.arc_append(left_center, corner_radius, half_pi, 3 * half_pi, 0.0)
             else:  # pragma: no cover
                 assert False, "This should not be possible"
         elif 0.0 < corner_radius < half_dx_dy_minimum:
@@ -2508,11 +2525,10 @@ class Square(SimplePolygon):
             upper_left_center: P2D = P2D(center_x - corner_center_dx, center_y + corner_center_dy)
             lower_left_center: P2D = P2D(center_x - corner_center_dx, center_y - corner_center_dy)
             lower_right_center: P2D = P2D(center_x + corner_center_dx, center_y - corner_center_dy)
-            square.arc_append(upper_right_center, corner_radius, 0.0, half_pi, corner_count + 2)
-            square.arc_append(upper_left_center, corner_radius, half_pi, pi, corner_count + 2)
-            square.arc_append(lower_left_center, corner_radius, pi, 3 * half_pi, corner_count + 2)
-            square.arc_append(lower_right_center, corner_radius,
-                              3 * half_pi, 2 * pi, corner_count + 2)
+            square.arc_append(upper_right_center, corner_radius, 0.0, half_pi, 0.0)
+            square.arc_append(upper_left_center, corner_radius, half_pi, pi, 0.0)
+            square.arc_append(lower_left_center, corner_radius, pi, 3 * half_pi, 0.0)
+            square.arc_append(lower_right_center, corner_radius, 3 * half_pi, 2 * pi, 0.0)
         else:  # pragma: no cover
             assert False, "Problem with corner_radius; this should not happen."
 
