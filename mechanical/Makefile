@@ -6,6 +6,7 @@ VIRTUAL_ENV_SCAD_MODELS_DIRECTORY := $(VIRTUAL_ENV)/lib/$(PYTHON_VERSION)/site-p
 # Define the source SCAD Modles `.py` files and their installed location:
 SCAD_MODELS_BASE_PY_FILES :=			\
     __init__.py					\
+    kicad.py					\
     scad.py					\
     hr2_models.py
 SCAD_MODELS_DIRECTORY := scad_models

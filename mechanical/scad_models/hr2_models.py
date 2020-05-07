@@ -31,6 +31,8 @@ from scad_models.scad import (Color, Circle, CornerCube, Cylinder, If2D, Differe
                               LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
                               Scad2D, Scad3D, SimplePolygon, ScadProgram, Square,
                               Translate3D, UseModule3D, Union3D, Variable2D)
+from pathlib import Path
+from scad_models.kicad import Footprint
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import acos, asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -859,6 +861,9 @@ class Nucleo144:
         #    random dimensions all over the place.
         # The origin for this board is in the exact center:
 
+        footprint: Footprint = Footprint("NUCLEO144")
+        footprint = footprint
+
         # All units are in thousandths of an inch and need to be converted to millimeters:
         def mil(mil: float) -> float:
             return mil * 0.0254
@@ -992,6 +997,13 @@ class Nucleo144:
                                                   pcb_polygon=pcb_polygon,
                                                   vertical_rotate=degrees90)
 
+        # Create the *morpho* KiCAD footprint:
+        morpho: Footprint = Footprint("MORPHO144")
+        morpho.reference(P2D(0.0, 0.0))
+        morpho.value(P2D(0.0, 0.0), True)
+        morpho_pad_diameter: float = 1.524
+        morpho_drill_diameter: float = 1.016
+
         # Create the *east_morpho_connector* and *west_morpho_connector*:
         # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
         # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
@@ -1006,7 +1018,11 @@ class Nucleo144:
                                                      center=cn12_morpho_center,
                                                      insulation_color="DarkRed",
                                                      pcb_polygon=pcb_polygon,
-                                                     is_top=False, vertical_rotate=degrees90)
+                                                     is_top=False, vertical_rotate=degrees90,
+                                                     footprint=morpho, footprint_pin_number=1201,
+                                                     footprint_pad_diameter=morpho_pad_diameter,
+                                                     footprint_drill_diameter=morpho_drill_diameter,
+                                                     footprint_flags="")
         cn11_morpho_center: P3D = P3D(cn11_morpho_center_x, cn11_morpho_center_y, 0.0)
         self.cn11_morpho_center: P3D = cn11_morpho_center
         cn11_morpho_connector: RectangularConnector
@@ -1016,7 +1032,13 @@ class Nucleo144:
                                                      center=cn11_morpho_center,
                                                      insulation_color="DarkRed",
                                                      pcb_polygon=pcb_polygon,
-                                                     is_top=False, vertical_rotate=degrees90)
+                                                     is_top=False, vertical_rotate=degrees90,
+                                                     footprint=morpho, footprint_pin_number=1101,
+                                                     footprint_pad_diameter=morpho_pad_diameter,
+                                                     footprint_drill_diameter=morpho_drill_diameter,
+                                                     footprint_flags="")
+        morpho.save(Path("../electrical/master_board/rev_a/master_board.pretty/"
+                         "MORPHO144.kicad_mod"), "t")
         east_ground_connector: RectangularConnector
         west_ground_connector: RectangularConnector
         east_ground_connector = RectangularConnector(scad_program, "East Ground Connector",
@@ -2084,7 +2106,10 @@ class RectangularConnector:
                  right_angle_length: float = 0.000,
                  cut_out: bool = False,
                  pcb_polygon: Optional[Polygon] = None, pcb_hole_diameter: float = 0.0,
-                 insulation_color: str = "Black", pin_color: str = "Gold") -> None:
+                 insulation_color: str = "Black", pin_color: str = "Gold",
+                 footprint: Footprint = Footprint(""), footprint_pin_number: int = 1,
+                 footprint_pad_diameter: float = 0.0, footprint_drill_diameter: float = 0.0,
+                 footprint_flags: str = "") -> None:
         """Initialize RectangularConnector and append to ScadProgram.
 
         Create a rectangular mail header with through hole PCB pins.
@@ -2158,10 +2183,20 @@ class RectangularConnector:
                 Sets the color of the insultation.
             *pin_color* (*str*): (Optional: defaults to "Gold")
                 Sets the color of the pin.
+            *footprint* (*Footprint*): (Optional: defaults to an footprint with an empty name)
+                Specifies a footprint to draw pads into.
+            *footprint_pin_number* (*int*): (Optional: defaults to 1)
+                Specifies the starting pin number for a footprint.
+            *footprint_pad_diameter* (*float*): (Optional: defaults to 0.0)
+                Specifies the footprint pad diameter.
+            *footprint_pad_drill* (*float*): (Optional: defaults to 0.0)
+                Specifies the through hole drill diameter.
+            *footprint_flags* (*str*): (Optional: defaults to "")
+                Specifies and flags needed to adjust the footprint output (TBD.)
 
         """
-        # Stuff all of the values into *pin_header* (i.e. *self*):
-        # pin_header: RectangularConnector = self
+        # Stuff all of the values into *rectangular_connector* (i.e. *self*):
+        # rectangular_connector: RectangularConnector = self
         self.name: str = name
         self.rows: int = rows
         self.columns: int = columns
@@ -2180,6 +2215,11 @@ class RectangularConnector:
         self.is_top: bool = is_top
         self.insulation_color: str = insulation_color
         self.pin_color: str = pin_color
+        self.footprint: Footprint = footprint
+        self.footprint_pin_number: int = footprint_pin_number
+        self.footprint_pad_diameter: float = footprint_pad_diameter
+        self.footprint_drill_diameter: float = footprint_drill_diameter
+        self.footprint_flags: str = footprint_flags
 
         # Validate argument types:
         assert rows >= 1, f"Rows (={rows}) must be positive"
@@ -2229,6 +2269,8 @@ class RectangularConnector:
         row_start_y: float = -row_pins_dy / 2.0
         column_start_x: float = -column_pins_dx / 2.0
         connector_pins: List[Scad3D] = []
+        first_footprint_pin: P2D
+        last_footprint_pin: P2D
         row_index: int
         for row_index in range(rows):
             column_index: int
@@ -2236,6 +2278,8 @@ class RectangularConnector:
             for column_index in range(columns):
                 # Create the *colored_vertical_pin* and append to *connector_pins*:
                 x: float = column_start_x + column_index * columns_pitch
+
+                # Compute put the pin corners:
                 pin_bsw: P3D = P3D(x - half_pin_dx_dy, y - half_pin_dx_dy, -pcb_pin_height)
                 pin_tne: P3D = P3D(x + half_pin_dx_dy, y + half_pin_dx_dy, pin_above_dz)
                 vertical_pin_corner_cube: CornerCube = CornerCube(f"Pin {full_name} "
@@ -2280,21 +2324,66 @@ class RectangularConnector:
                     insulation_polygon.append(receptacle_hole)
 
                 # Do any any needed PCB holes preforming any *vertical_rotate*:
+                hole_rotate: float = vertical_rotate
+                # Rotation of a point around the origin:
+                # https://en.wikipedia.org/wiki/Rotation_(mathematics):
+                # x' = x * cos(theta) - y * sin(theta)
+                # y' = x * sin(theta) + y * cos(theta)
+                cos_hole_rotate: float = cos(hole_rotate)
+                sin_hole_rotate: float = sin(hole_rotate)
+                rotated_x: float = x * cos_hole_rotate - y * sin_hole_rotate
+                rotated_y: float = x * sin_hole_rotate + y * cos_hole_rotate
+                hole_center: P2D = P2D(center_x + rotated_x,
+                                       center_y + rotated_y)
                 if pcb_polygon is not None:
-                    hole_rotate: float = vertical_rotate
-                    # Rotation of a point around the origin:
-                    # https://en.wikipedia.org/wiki/Rotation_(mathematics):
-                    # x' = x * cos(theta) - y * sin(theta)
-                    # y' = x * sin(theta) + y * cos(theta)
-                    cos_hole_rotate: float = cos(hole_rotate)
-                    sin_hole_rotate: float = sin(hole_rotate)
-                    rotated_x: float = x * cos_hole_rotate - y * sin_hole_rotate
-                    rotated_y: float = x * sin_hole_rotate + y * cos_hole_rotate
                     hole: Circle = Circle(f"{full_name} ({column_index}:{row_index}) PCB Hole",
                                           pcb_hole_diameter, 8,
-                                          center=P2D(center_x + rotated_x,
-                                                     center_y + rotated_y))
+                                          center=hole_center)
                     pcb_polygon.append(hole)
+
+                # ---  69 70
+                # --+  36 01
+                # -+-  01 02 <===
+                # +++  35 70
+
+                # Output a footprint pin number:
+                if footprint.name_get() != "":
+                    if row_index == 0 and column_index == 0:
+                        first_footprint_pin = hole_center
+                    else:
+                        last_footprint_pin = hole_center
+                    swap_row_index: bool = False
+                    swap_column_index: bool = True
+                    transpose_rows_columns: bool = False
+                    footprint_row_index: int = (rows - row_index - 1
+                                                if swap_row_index else row_index)
+                    footprint_column_index: int = (columns - column_index - 1
+                                                   if swap_column_index else column_index)
+                    pin_number: int
+                    if transpose_rows_columns:
+                        pin_number = footprint_pin_number + (footprint_row_index * columns +
+                                                             columns - footprint_column_index - 1)
+                    else:
+                        pin_number = footprint_pin_number + (footprint_column_index * rows +
+                                                             rows - footprint_row_index - 1)
+                    footprint.thru_hole_pad(f"{pin_number}", hole_center,
+                                            footprint_pad_diameter, footprint_drill_diameter)
+
+        # Write out an artwork rectangle around the connector:
+        if footprint.name_get() != "":
+            x1: float = first_footprint_pin.x
+            y1: float = first_footprint_pin.y
+            x2: float = last_footprint_pin.x
+            y2: float = last_footprint_pin.y
+            columns_extra: float = (columns_pitch + columns_extra_insulation) / 2.0
+            rows_extra: float = (rows_pitch + rows_extra_insulation) / 2.0
+            x_maximum: float = max(x1, x2) + columns_extra
+            x_minimum: float = min(x1, x2) - columns_extra
+            y_maximum: float = max(y1, y2) + rows_extra
+            y_minimum: float = min(y1, y2) - rows_extra
+            corner1: P2D = P2D(x_minimum, y_minimum)
+            corner2: P2D = P2D(x_maximum, y_maximum)
+            footprint.rectangle(corner1, corner2, "F.SilkS", 0.2)
         insulation_polygon.lock()
 
         # Deal with *cut-out* that trims some insulation away from connector to see
