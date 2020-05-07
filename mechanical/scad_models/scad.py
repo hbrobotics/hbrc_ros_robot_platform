@@ -1753,6 +1753,7 @@ class SimplePolygon(Scad2D):
 
         This code only works for corners that are right angles and
         where the edges are aligned with the X and Y axes.
+
         """
         # Build *flags_table*:
         # Pretty much everything in this routine is counter-intuitive.
