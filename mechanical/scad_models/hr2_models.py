@@ -305,6 +305,15 @@ class ExpansionDXF(DXF):
         super().__init__("Romi Base DXF", offset_x, offset_top_y, offset_side_y, offset_z)
 
 
+# Footprint:
+class FootPrint:
+    """Represents a footprint for both KiCad and OpenScad."""
+
+    def __init__(self, name: str) -> None:
+        """Initialize a new footprint."""
+        pass
+
+
 # EncoderBoard:
 class EncoderBoard:
     """Represents a motor encoder board."""
@@ -1531,6 +1540,7 @@ class MasterBoard:
         # kicad_pcb.polygon_append(bantam_exterior, edge_cuts, 0.05)
         kicad_pcb.save()
 
+        # TODO: Make into a method:
         # Compute the colored PCB from a PCB polygon:
         def pcb_process(name: str, pcb_polygon: Polygon,
                         pcb_bottom_z: float, pcb_dz: float, color: str) -> Color:
@@ -1639,18 +1649,19 @@ class MasterBoard:
         # * *wheel_well_dy*: The distance between the wheel well edges in the Y direction
         #   (|hm|=|HM|=|CX|=|BZ|).
 
-        # These constants are defined define first since other constants depend upon them:
+        # These constants are defined first since other constants depend upon them:
         wheel_well_dx: float = 125.0  # mm (from user's guide)
         wheel_well_dy: float = 72.0  # mm (from user's guide)
         radius: float = 163.0 / 2.0  # mm (from user's guide)
 
-        # The remaining variable ares in alphabetical order:
+        # The remaining variable are defined in alphabetical order:
         arm_well_dx: float = 15.0  # mm (trail and error)
         arm_well_north: float = -40.0  # mm (trail and error)
         # bantam_dx: float = 5 * 25.4  # mm (size of Bantam Labs PCB blank)
         bantam_dy: float = 4 * 25.4  # mm (size of Bantam Labs PCB blank)
         center_pcb_north: float = wheel_well_dy / 2.0 + 3.0  # mm (trail and error)
         center_pcb_south: float = center_pcb_north - (bantam_dy - 4.0)  # mm (trail and error)
+        corner_radius: float = 1.5  # mm
         # print(f"center_pcb_south:{center_pcb_south}")
         # print(f"center_pcb_north:{center_pcb_north}")
         connector_well_dx: float = 60.0  # mm (trail and error)
@@ -1662,7 +1673,7 @@ class MasterBoard:
         motor_well_dx: float = 90.0  # mm (from user's guide)
         motor_well_dy: float = 25.0  # mm (trail and error)
 
-        # When you have a right triangle and you have the length of the hypotenuse (S) and
+        # When you have a right triangle and you have the length of the hypotenuse (H) and
         # the one of the sides (S), the other side is computed via the Pythagorean Theorem.
         # The sign of O is determined independently.
         # (1) H^2 = S^2 + O^2
@@ -1743,24 +1754,28 @@ class MasterBoard:
         v_angle: float = v.atan2()
         # v_angle = v_angle
 
-        # ...
+        # Create the *master_board_pcb* polygon:
         master_pcb_exterior: SimplePolygon = SimplePolygon("Master PCB Exterior Simple Polygon",
                                                            [], lock=False)
         master_pcb_exterior.point_append(A)
-        master_pcb_exterior.arc_append(origin, radius, a_angle, c_angle, degrees5)
+        master_pcb_exterior.rounded_arc_append("BH+EV+", origin, radius,
+                                               a_angle, c_angle, corner_radius)
         master_pcb_exterior.point_append(D)
         master_pcb_exterior.point_append(E)
-        master_pcb_exterior.arc_append(origin, radius, f_angle, h_angle, degrees5)
+        master_pcb_exterior.rounded_arc_append("BV-EH+", origin, radius,
+                                               f_angle, h_angle, corner_radius)
         master_pcb_exterior.point_append(H)
         master_pcb_exterior.point_append(H)
         master_pcb_exterior.point_append(J)
         master_pcb_exterior.point_append(K)
         master_pcb_exterior.point_append(L)
         master_pcb_exterior.point_append(M)
-        master_pcb_exterior.arc_append(origin, radius, m_angle, p_angle, degrees5)
+        master_pcb_exterior.rounded_arc_append("BH-EV-", origin, radius,
+                                               m_angle, p_angle, corner_radius)
         master_pcb_exterior.point_append(Q)
         master_pcb_exterior.point_append(R)
-        master_pcb_exterior.arc_append(origin, radius, s_angle, v_angle, degrees5)
+        master_pcb_exterior.rounded_arc_append("BV+EH-", origin, radius,
+                                               s_angle, v_angle, corner_radius)
         master_pcb_exterior.point_append(V)
         master_pcb_exterior.point_append(W)
         master_pcb_exterior.point_append(X)
@@ -1806,7 +1821,8 @@ class MasterBoard:
         ne_pcb_exterior: SimplePolygon = SimplePolygon("NE PCB Exterior SimplePolygon",
                                                        [], lock=False)
         ne_pcb_exterior.point_append(A)
-        ne_pcb_exterior.arc_append(origin, radius, a_angle, c_angle, 0.0)
+        ne_pcb_exterior.rounded_arc_append("BH+EV+", origin, radius,
+                                           a_angle, c_angle, corner_radius)
         ne_pcb_exterior.point_append(C)
         ne_pcb_exterior.point_append(B)
         ne_pcb_exterior.lock()
@@ -1816,7 +1832,8 @@ class MasterBoard:
         nw_pcb_exterior: SimplePolygon = SimplePolygon("NW PCB Exterior SimplePolygon",
                                                        [], lock=False)
         nw_pcb_exterior.point_append(F)
-        nw_pcb_exterior.arc_append(origin, radius, f_angle, h_angle, 0.0)
+        nw_pcb_exterior.rounded_arc_append("BV-EH+", origin, radius,
+                                           f_angle, h_angle, corner_radius)
         nw_pcb_exterior.point_append(H)
         nw_pcb_exterior.point_append(G)
         nw_pcb_exterior.lock()
@@ -1826,9 +1843,8 @@ class MasterBoard:
         se_pcb_exterior: SimplePolygon = SimplePolygon("SE PCB Exterior SimplePolygon",
                                                        [], lock=False)
         se_pcb_exterior.point_append(S)
-        # se_pcb_exterior.point_append(s)
-        se_pcb_exterior.arc_append(origin, radius, s_angle, v_angle, 0.0)
-        # se_pcb_exterior.point_append(v)
+        se_pcb_exterior.rounded_arc_append("BV+EH-", origin, radius,
+                                           s_angle, v_angle, corner_radius)
         se_pcb_exterior.point_append(V)
         se_pcb_exterior.point_append(U)
         # se_pcb_exterior.arc_append(origin, radius, U_angle, T_angle, 0.0)
@@ -1836,36 +1852,18 @@ class MasterBoard:
         se_pcb_exterior.lock()
         se_pcb_polygon: Polygon = Polygon("SE PCB Polygon", [se_pcb_exterior], lock=False)
 
-        # print(f"V:{V}")
-        # print(f"v:{v}")
-        # print(f"s:{s}")
-        # print(f"S:{S}")
-        # print(f"T:{T}")
-        # print(f"U:{U}")
-
         # Compute the *sw_pcb_exterior*:
         sw_pcb_exterior: SimplePolygon = SimplePolygon("SW PCB Exterior SimplePolygon",
                                                        [], lock=False)
         sw_pcb_exterior.point_append(M)
-        # sw_pcb_exterior.point_append(m)
-        sw_pcb_exterior.arc_append(origin, radius, m_angle, p_angle, 0.0)
-        # sw_pcb_exterior.point_append(p)
+        sw_pcb_exterior.rounded_arc_append("BH-EV-", origin, radius,
+                                           m_angle, p_angle, corner_radius)
         sw_pcb_exterior.point_append(P)
         sw_pcb_exterior.point_append(O)
         sw_pcb_exterior.point_append(N)
         # sw_pcb_exterior.arc_append(origin, radius, O_angle, N_angle, 0.0)
-        # print(f"N_angle:{N_angle * 180.0 / pi}")
-        # print(f"O_angle:{O_angle * 180.0 / pi}")
         sw_pcb_exterior.lock()
         sw_pcb_polygon: Polygon = Polygon("SW PCB Polygon", [sw_pcb_exterior], lock=False)
-
-        # print(f"M:{M}")
-        # print(f"m:{m}")
-        # print(f"p:{p}")
-        # print(f"P:{P}")
-        # print(f"O:{O}")
-        # print(f"N:{N}")
-        # print("------")
 
         # Return the resulting unlocked polygons so that additional holes and slots
         # can be cut into them.
