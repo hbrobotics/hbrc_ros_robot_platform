@@ -222,6 +222,14 @@ class P2D:
         p2d: P2D = self
         return P2D(p2d.x / scale, p2d.y / scale)
 
+    # P2D.atan2():
+    def atan2(self, center: "Optional[P2D]" = None) -> float:
+        """Return the angle from center to a point."""
+        p2d: P2D = self
+        center_x: float = 0.0 if center is None else center.x
+        center_y: float = 0.0 if center is None else center.y
+        return atan2(p2d.y - center_y, p2d.x - center_x)
+
     # P2D.distance():
     def distance(self, p2d2: "P2D") -> float:
         """Compute the distance between two P2D's."""
@@ -1580,20 +1588,20 @@ class SimplePolygon(Scad2D):
         points: List[P2D] = simple_polygon.points
 
         # Deal with default *points_angle*:
-        print(f"Initial points_angle:{points_angle}")
+        # print(f"Initial points_angle:{points_angle}")
         if points_angle <= 0.0:
-            degrees15: float = (pi / 180.0) * 15.0
-            points_angle = degrees15
+            degrees5: float = 5.0 * pi / 180.0
+            points_angle = degrees5
 
         # Compute the total *span_angle* spanned and the *delta_angle* increments.  Note that
         # the value can be either postive or negative:
         span_angle: float = end_angle - start_angle
         points_count: int = max(3, int(abs(span_angle / points_angle)) + 1)
-        print(f"span_angle:{span_angle * 180.0 / pi}")
-        print(f"points_angle:{points_angle * 180.0 / pi} {points_angle}")
-        print(f"points_count:{points_count}")
+        # print(f"span_angle:{span_angle * 180.0 / pi}")
+        # print(f"points_angle:{points_angle * 180.0 / pi} {points_angle}")
+        # print(f"points_count:{points_count}")
         delta_angle: float = span_angle / float(points_count - 1)
-        print(f"delta_angle:{delta_angle * 180.0 / pi}")
+        # print(f"delta_angle:{delta_angle * 180.0 / pi}")
         # Note, that both *span_angle* and *delta_angle*
         # print(f"start_angle={start_angle}={degrees(start_angle)}deg")
         # print(f"end_angle={end_angle}={degrees(end_angle}deg")
@@ -1751,7 +1759,7 @@ class SimplePolygon(Scad2D):
 
         # Append the corner arc to *polygon* (i.e. *self*):
         polygon: SimplePolygon = self
-        polygon.arc_append(corner_center, corner_radius, begin_angle, end_angle, points_count)
+        polygon.arc_append(corner_center, corner_radius, begin_angle, end_angle, 0.0)
         if tracing:  # pragma: no cover
             print(f"arc_append({corner_center}, {corner_radius:.3f}, "
                   f"{(begin_angle * 180.0 / pi):.3f}"
