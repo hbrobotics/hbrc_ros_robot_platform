@@ -1556,11 +1556,11 @@ class MasterBoard:
         master_pcb_colored: Color = pcb_process("Center", master_pcb_polygon,
                                                 pcb_bottom_z - pcb_dz, pcb_dz, "SpringGreen")
         center_pcb_colored: Color = pcb_process("Center", center_pcb_polygon,
-                                                pcb_bottom_z, pcb_dz, "Yellow")
-        ne_pcb_colored: Color = pcb_process("NE", ne_pcb_polygon, pcb_bottom_z, pcb_dz, "Yellow")
-        nw_pcb_colored: Color = pcb_process("NW", nw_pcb_polygon, pcb_bottom_z, pcb_dz, "Maroon")
-        se_pcb_colored: Color = pcb_process("SE", se_pcb_polygon, pcb_bottom_z, pcb_dz, "Cyan")
-        sw_pcb_colored: Color = pcb_process("SW", sw_pcb_polygon, pcb_bottom_z, pcb_dz, "Pink")
+                                                pcb_bottom_z, pcb_dz, "Gray")
+        ne_pcb_colored: Color = pcb_process("NE", ne_pcb_polygon, pcb_bottom_z, pcb_dz, "Blue")
+        nw_pcb_colored: Color = pcb_process("NW", nw_pcb_polygon, pcb_bottom_z, pcb_dz, "Orange")
+        se_pcb_colored: Color = pcb_process("SE", se_pcb_polygon, pcb_bottom_z, pcb_dz, "Purple")
+        sw_pcb_colored: Color = pcb_process("SW", sw_pcb_polygon, pcb_bottom_z, pcb_dz, "Red")
 
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
         module: Module3D = Module3D("Master Board Module",
@@ -1757,31 +1757,33 @@ class MasterBoard:
         # Create the *master_board_pcb* polygon:
         master_pcb_exterior: SimplePolygon = SimplePolygon("Master PCB Exterior Simple Polygon",
                                                            [], lock=False)
-        master_pcb_exterior.point_append(A)
+        master_pcb_exterior.corner_arc_append(A, corner_radius, "SE")
         master_pcb_exterior.rounded_arc_append("BH+EV+", origin, radius,
                                                a_angle, c_angle, corner_radius)
-        master_pcb_exterior.point_append(D)
-        master_pcb_exterior.point_append(E)
+        master_pcb_exterior.corner_arc_append(D, corner_radius, "NW")
+        master_pcb_exterior.corner_arc_append(E, corner_radius, "EN")
         master_pcb_exterior.rounded_arc_append("BV-EH+", origin, radius,
                                                f_angle, h_angle, corner_radius)
-        master_pcb_exterior.point_append(H)
-        master_pcb_exterior.point_append(H)
-        master_pcb_exterior.point_append(J)
-        master_pcb_exterior.point_append(K)
-        master_pcb_exterior.point_append(L)
-        master_pcb_exterior.point_append(M)
+        master_pcb_exterior.corner_arc_append(H, corner_radius, "WS")
+        master_pcb_exterior.corner_arc_append(I, corner_radius, "NE")
+        master_pcb_exterior.corner_arc_append(J, corner_radius, "WS")
+        master_pcb_exterior.corner_arc_append(K, corner_radius, "NW")
+        master_pcb_exterior.corner_arc_append(L, corner_radius, "ES")
+        master_pcb_exterior.corner_arc_append(M, corner_radius, "NW")
         master_pcb_exterior.rounded_arc_append("BH-EV-", origin, radius,
                                                m_angle, p_angle, corner_radius)
-        master_pcb_exterior.point_append(Q)
-        master_pcb_exterior.point_append(R)
+        master_pcb_exterior.corner_arc_append(Q, corner_radius, "SE")
+        master_pcb_exterior.corner_arc_append(R, corner_radius, "WS")
+        # master_pcb_exterior.point_append(Q)
+        # master_pcb_exterior.point_append(R)
         master_pcb_exterior.rounded_arc_append("BV+EH-", origin, radius,
                                                s_angle, v_angle, corner_radius)
-        master_pcb_exterior.point_append(V)
-        master_pcb_exterior.point_append(W)
-        master_pcb_exterior.point_append(X)
-        master_pcb_exterior.point_append(Y)
-        master_pcb_exterior.point_append(Z)
-        master_pcb_exterior.point_append(A)
+        master_pcb_exterior.corner_arc_append(V, corner_radius, "EN")
+        master_pcb_exterior.corner_arc_append(W, corner_radius, "SW")
+        master_pcb_exterior.corner_arc_append(X, corner_radius, "EN")
+        master_pcb_exterior.corner_arc_append(Y, corner_radius, "SE")
+        master_pcb_exterior.corner_arc_append(Z, corner_radius, "WN")
+        master_pcb_exterior.corner_arc_append(A, corner_radius, "SE")  # Something strange here.
         master_pcb_exterior.lock()
         master_pcb_polygon: Polygon = Polygon("Master PCB Polygon",
                                               [master_pcb_exterior], lock=False)
