@@ -1163,43 +1163,6 @@ class MasterBoard:
         (master_pcb_polygon, center_pcb_polygon, ne_pcb_polygon,
          nw_pcb_polygon, se_pcb_polygon, sw_pcb_polygon) = master_board.pcb_polygons_compute()
 
-        # Create *pcb_polygon* and fill it with the *external_polygon* and start filling
-        # it up with various holes:
-        pcb_polygon: Polygon = Polygon("Master PCB Polygon", [], lock=False)
-
-        # Compute the *center_pcb_colored from *center_pcb_polygon*:
-        center_pcb_extruded: LinearExtrude = LinearExtrude("Extruded Center PCB",
-                                                           center_pcb_polygon, pcb_dz)
-        center_pcb_translated: Translate3D = Translate3D("Translated Center PCB",
-                                                         center_pcb_extruded,
-                                                         P3D(0.0, 0.0, pcb_bottom_z))
-        center_pcb_colored: Color = Color("Colored Center PCB",
-                                          center_pcb_translated, "YellowGreen")
-
-        # Compute the *ne_pcb_colored* from *ne_pcb_polygon*:
-        ne_pcb_extruded: LinearExtrude = LinearExtrude("Extruded NE PCB", ne_pcb_polygon, pcb_dz)
-        ne_pcb_translated: Translate3D = Translate3D("Translated NE PCB",
-                                                     ne_pcb_extruded, P3D(0.0, 0.0, pcb_bottom_z))
-        ne_pcb_colored: Color = Color("Colored NE PCB", ne_pcb_translated, "Yellow")
-
-        # Compute the *nw_pcb_colored* from *ne_pcb_polygon*:
-        nw_pcb_extruded: LinearExtrude = LinearExtrude("Extruded NW PCB", nw_pcb_polygon, pcb_dz)
-        nw_pcb_translated: Translate3D = Translate3D("Translated NW PCB",
-                                                     nw_pcb_extruded, P3D(0.0, 0.0, pcb_bottom_z))
-        nw_pcb_colored: Color = Color("Colored NW PCB", nw_pcb_translated, "Maroon")
-
-        # Compute the *se_pcb_exterior* from *se_pcb_polygon*:
-        se_pcb_extruded: LinearExtrude = LinearExtrude("Extruded SE PCB", se_pcb_polygon, pcb_dz)
-        se_pcb_translated: Translate3D = Translate3D("Translated SE PCB", se_pcb_extruded,
-                                                     P3D(0.0, 0.0, pcb_bottom_z))
-        se_pcb_colored: Color = Color("Colored SE PCB", se_pcb_translated, "Cyan")
-
-        # Compute the *sw_pcb_colored* from *sw_pcb_polygon*:
-        sw_pcb_extruded: LinearExtrude = LinearExtrude("Extruded SW PCB", sw_pcb_polygon, pcb_dz)
-        sw_pcb_translated: Translate3D = Translate3D("Translated SW PCB", sw_pcb_extruded,
-                                                     P3D(0.0, 0.0, pcb_bottom_z))
-        sw_pcb_colored: Color = Color("Colored SW PCB", sw_pcb_translated, "Pink")
-
         # Use *romi_base_keys* to build *romi_base_keys_table*:
         romi_base_keys_table: Dict[str, Tuple[Any, ...]] = {}
         romi_base_key: Tuple[Any, ...]
@@ -1239,7 +1202,7 @@ class MasterBoard:
             spacer_hole: Circle = Circle(f"{spacer_name} Spacer Hole",
                                          spacer_hole_diameter, 16,
                                          center=spacer_hole_center)
-            pcb_polygon.append(spacer_hole)
+            master_pcb_polygon.append(spacer_hole)
 
         # Grab the *arm_plate_keys* and build *arm_plate_keys_table*:
         arm_plate_keys: List[Tuple[Any, ...]] = romi_expansion_plate_keys
@@ -1294,8 +1257,8 @@ class MasterBoard:
                                               2.4, 16, P2D(arm_key_x, arm_key_y))
             arm_spacer_hole2: Circle = Circle(f"{arm_spacer_name} Arm Spacer Hole 2",
                                               2.4, 16, P2D(-arm_key_x, -arm_key_y))
-            pcb_polygon.append(arm_spacer_hole1)
-            pcb_polygon.append(arm_spacer_hole2)
+            master_pcb_polygon.append(arm_spacer_hole1)
+            master_pcb_polygon.append(arm_spacer_hole2)
         assert len(arm_spacers), "Something failed"
 
         # Create the *pi_receptacle_2x20* and append its mounting holes to *pcb_polygon*:
@@ -1308,7 +1271,7 @@ class MasterBoard:
         receptacle_2x20 = RectangularConnector(scad_program, "Pi", 2, 20,
                                                receptacle_height, pcb_pin_height,
                                                cut_out=True,
-                                               pcb_polygon=pcb_polygon,
+                                               pcb_polygon=master_pcb_polygon,
                                                pin_dx_dy=0.640,
                                                center=receptacle_center,
                                                insulation_color="Maroon",
@@ -1341,7 +1304,7 @@ class MasterBoard:
                                                           1, 3, 4.57, 2.92,
                                                           center=center,
                                                           cut_out=True,
-                                                          pcb_polygon=pcb_polygon,
+                                                          pcb_polygon=master_pcb_polygon,
                                                           insulation_color="Olive",
                                                           vertical_rotate=degrees90)
             encoder_receptacles_use_modules.append(encoder_receptacle_1x3.module.use_module_get())
@@ -1377,7 +1340,7 @@ class MasterBoard:
             hole: P2D = P2D(hole_x, hole_y)
             nucleo144_mount_hole: Circle = Circle(nucleo144_mount_hole_name,
                                                   nucleo144_mount_hole_diameter, 16, hole)
-            pcb_polygon.append(nucleo144_mount_hole)
+            master_pcb_polygon.append(nucleo144_mount_hole)
 
             # See if we have a hole that needs to be mirrored to the KiCAD PCB:
             last_space_index: int = nucleo144_mount_hole_name.rfind(' ')
@@ -1424,7 +1387,7 @@ class MasterBoard:
                                                       2, 36, 5.00, 2.92,
                                                       center=north_morpho_center,
                                                       cut_out=True,
-                                                      pcb_polygon=pcb_polygon,
+                                                      pcb_polygon=master_pcb_polygon,
                                                       insulation_color="Teal")
         cn12_morpho_center: P3D = nucleo144.cn12_morpho_center
         south_morpho_center: P3D = P3D(nucleo144_offset.x + cn12_morpho_center.y,
@@ -1436,7 +1399,7 @@ class MasterBoard:
                                                       2, 36, 5.00, 2.92,
                                                       center=south_morpho_center,
                                                       cut_out=True,
-                                                      pcb_polygon=pcb_polygon,
+                                                      pcb_polygon=master_pcb_polygon,
                                                       insulation_color="Teal")
 
         # Create some HC-SR04 sonars:
@@ -1501,13 +1464,14 @@ class MasterBoard:
                 pin_y: float = sonar_y + pin_offset * sin(pin_angle)
                 pin_hole: Circle = Circle(f"Sonar {angle_text} Pin {pin_offset}",
                                           1.27, 8, P2D(pin_x, pin_y))
-                pcb_polygon.append(pin_hole)
+                master_pcb_polygon.append(pin_hole)
 
         # This is where we build the *STLink* board and associated connectors.
         # All the work is done inside the *STLink* initializer.
         st_link_offset: P3D = P3D(0.0, -45.0, pcb_bottom_z)
         st_link_connectors: List[Scad3D] = []
-        st_link: STLink = STLink(scad_program, st_link_offset, pcb_polygon, st_link_connectors)
+        st_link: STLink = STLink(scad_program,
+                                 st_link_offset, master_pcb_polygon, st_link_connectors)
         st_link_use_module: UseModule3D = st_link.module.use_module_get()
         translated_st_link: Scad3D = Translate3D("Translated ST Link",
                                                  st_link_use_module,
@@ -1545,15 +1509,15 @@ class MasterBoard:
         camera_slot: Square = Square("Pi Hat Camera Cable Slot", camera_slot_dx, camera_slot_dy,
                                      center=P2D(camera_slot_center_x, camera_slot_center_y),
                                      rotate=degrees90, corner_radius=1.00, corner_count=3)
-        pcb_polygon.append(lcd_slot)
-        pcb_polygon.append(camera_slot)
+        master_pcb_polygon.append(lcd_slot)
+        master_pcb_polygon.append(camera_slot)
 
         # We are done filling up *pcb_polygon*, create *pcb_polygon_module* and append
         # it *scad_program*:
-        pcb_polygon.lock()
-        pcb_polygon_module: Module2D = Module2D("Master PCB Module", [pcb_polygon])
-        scad_program.append(pcb_polygon_module)
-        scad_program.if2d.name_match_append("master_pcb", pcb_polygon_module, ["Master PCB"])
+        master_pcb_polygon.lock()
+        master_pcb_polygon_module: Module2D = Module2D("Master PCB Module", [master_pcb_polygon])
+        scad_program.append(master_pcb_polygon_module)
+        scad_program.if2d.name_match_append("master_pcb", master_pcb_polygon_module, ["Master PCB"])
 
         # Write the *external_polygon* and *kicad_holes* out to *kicad_file_name*:
         kicad_file_name: str = "../electrical/master_board/rev_a/master_board.kicad_pcb"
@@ -1567,12 +1531,26 @@ class MasterBoard:
         # kicad_pcb.polygon_append(bantam_exterior, edge_cuts, 0.05)
         kicad_pcb.save()
 
-        # Create *colored_pcb* from *pcb_polygon* by extrusion and translation:
-        extruded_pcb: LinearExtrude = LinearExtrude("Extruded PCB", pcb_polygon, pcb_dz)
-        translated_pcb: Translate3D = Translate3D("Translated PCB", extruded_pcb,
-                                                  P3D(0.0, 0.0, pcb_bottom_z))
-        colored_pcb: Color = Color("Green Color", translated_pcb, "SpringGreen")
-        colored_pcb = colored_pcb
+        # Compute the colored PCB from a PCB polygon:
+        def pcb_process(name: str, pcb_polygon: Polygon,
+                        pcb_bottom_z: float, pcb_dz: float, color: str) -> Color:
+            """Extrude, Posistion and Color a PCB Polygon."""
+            pcb_extruded: LinearExtrude = LinearExtrude(f"Extruded {name} PCB",
+                                                        pcb_polygon, pcb_dz)
+            pcb_translated: Translate3D = Translate3D(f"Translated {name} PCB",
+                                                      pcb_extruded, P3D(0.0, 0.0, pcb_bottom_z))
+            pcb_colored: Color = Color(f"Colored {name} PCB", pcb_translated, color)
+            return pcb_colored
+
+        # Construct the various PCB's:
+        master_pcb_colored: Color = pcb_process("Center", master_pcb_polygon,
+                                                pcb_bottom_z - pcb_dz, pcb_dz, "SpringGreen")
+        center_pcb_colored: Color = pcb_process("Center", center_pcb_polygon,
+                                                pcb_bottom_z, pcb_dz, "Yellow")
+        ne_pcb_colored: Color = pcb_process("NE", ne_pcb_polygon, pcb_bottom_z, pcb_dz, "Yellow")
+        nw_pcb_colored: Color = pcb_process("NW", nw_pcb_polygon, pcb_bottom_z, pcb_dz, "Maroon")
+        se_pcb_colored: Color = pcb_process("SE", se_pcb_polygon, pcb_bottom_z, pcb_dz, "Cyan")
+        sw_pcb_colored: Color = pcb_process("SW", sw_pcb_polygon, pcb_bottom_z, pcb_dz, "Pink")
 
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
         module: Module3D = Module3D("Master Board Module",
@@ -1581,7 +1559,8 @@ class MasterBoard:
                                      arm_spacers +
                                      sonars +
                                      st_link_connectors +
-                                     [center_pcb_colored,
+                                     [master_pcb_colored,
+                                      center_pcb_colored,
                                       ne_pcb_colored,
                                       nw_pcb_colored,
                                       se_pcb_colored,
@@ -1660,9 +1639,12 @@ class MasterBoard:
         # * *wheel_well_dy*: The distance between the wheel well edges in the Y direction
         #   (|hm|=|HM|=|CX|=|BZ|).
 
-        # These constants are defined below:
+        # These constants are defined define first since other constants depend upon them:
         wheel_well_dx: float = 125.0  # mm (from user's guide)
         wheel_well_dy: float = 72.0  # mm (from user's guide)
+        radius: float = 163.0 / 2.0  # mm (from user's guide)
+
+        # The remaining variable ares in alphabetical order:
         arm_well_dx: float = 15.0  # mm (trail and error)
         arm_well_north: float = -40.0  # mm (trail and error)
         # bantam_dx: float = 5 * 25.4  # mm (size of Bantam Labs PCB blank)
@@ -1674,14 +1656,15 @@ class MasterBoard:
         connector_well_dx: float = 60.0  # mm (trail and error)
         connector_well_south: float = 32.5  # mm (trail and error)
         degrees5: float = 5.0 * pi / 180.0  # radians
-        radius: float = 163.0 / 2.0  # mm (from user's guide)
         inner_radius: float = radius - 7.00  # mm (trail and error)
         origin: P2D = P2D(0.0, 0.0)
+        # pcb_corner: float = 1.0  # mm
         motor_well_dx: float = 90.0  # mm (from user's guide)
         motor_well_dy: float = 25.0  # mm (trail and error)
 
         # When you have a right triangle and you have the length of the hypotenuse (S) and
         # the one of the sides (S), the other side is computed via the Pythagorean Theorem.
+        # The sign of O is determined independently.
         # (1) H^2 = S^2 + O^2
         # (2) O^2 = H^2 - S^2
         # (3) O = sqrt(H^2 - S^2)
@@ -1781,6 +1764,7 @@ class MasterBoard:
         master_pcb_exterior.point_append(V)
         master_pcb_exterior.point_append(W)
         master_pcb_exterior.point_append(X)
+        master_pcb_exterior.point_append(Y)
         master_pcb_exterior.point_append(Z)
         master_pcb_exterior.point_append(A)
         master_pcb_exterior.lock()
