@@ -1139,6 +1139,7 @@ class MasterBoard:
                  romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the MasterBoard."""
+        master_board: MasterBoard = self
         # Now Grab the X/Y coordinates:
         # Start with some X coordinates:
         # holder_inside_tab_dx: float = 2.60  # Measured with calipers.
@@ -1176,6 +1177,16 @@ class MasterBoard:
         # Miscellaneous constants:
         degrees90: float = pi / 2.0
 
+        master_pcb_polygon: Polygon
+        center_pcb_polygon: Polygon
+        ne_pcb_polygon: Polygon
+        nw_pcb_polygon: Polygon
+        se_pcb_polygon: Polygon
+        sw_pcb_polygon: Polygon
+
+        (master_pcb_polygon, center_pcb_polygon, ne_pcb_polygon,
+         nw_pcb_polygon, se_pcb_polygon, sw_pcb_polygon) = master_board.pcb_polygons_compute()
+
         # Create *pcb_polygon* and fill it with the *external_polygon* and start filling
         # it up with various holes:
         pcb_polygon: Polygon = Polygon("Master PCB Polygon", [], lock=False)
@@ -1205,30 +1216,6 @@ class MasterBoard:
         #        \            |     |            /
         #         ~~~~~~~~~~~~O     R~~~~~~~~~~~~
         #
-        #         *-------f             c-------*
-        #        /        |             |        \
-        #       /         |             |         \
-        #      / G--------F             C--------B \
-        #     h--H        E------+------D        A--a
-        #        |               |               |
-        #        |               |               |
-        #        |               |               |
-        #        I--------J      |      Y--------Z
-        #                 |      |      |
-        #                 +------+------+
-        #                 |      |      |
-        #        L--------K      |      X--------W
-        #        |               |               |
-        #        |               |               |
-        #        |            Q--+--R            |
-        #     m--M            |     |            V---v
-        #      \ N            |     |            U  /
-        #       \ \           |     |           /  /
-        #        \ O----------P     S----------T  /
-        #         \           |     |            /
-        #          \          |     |           /
-        #           \         |     |          /
-        #            *--------p     s---------*
         #
         #
         # The outlines for the 5 boards are where '-' means straight line and '@' means arc are:
@@ -1250,6 +1237,7 @@ class MasterBoard:
         # The wheel well dx distance (|AV| = |at| = |HM| = |hm|) is 125.0mm.
         # The wheel well dy distance (|hm| = |HM| = |AW| = |at|) is 72.0mm.
         wheel_well_dx: float = abs(wheel_well_east_x - wheel_well_west_x)
+        print(f"wheel_well_dx:{wheel_well_dx}")
         wheel_well_dy: float = 72.0   # mm
 
         # The motor well dx distance (|JY| = |KX|) is ??mm.
@@ -1257,6 +1245,8 @@ class MasterBoard:
         # motor_well_dx: float = abs(motor_well_east_x - motor_well_west_x)
         motor_well_dx: float = 90.0  # mm
         motor_well_dy: float = abs(holder_north_y - holder_south_y) + 2 * holder_slop_dy
+        print(f"motor_well_dx:{motor_well_dx}")
+        print(f"motor_well_dy:{motor_well_dy}")
         # motor_well_dy: float = 30.0  # mm
 
         # The south arm well width (|QR| = |PS|) is currently set to 15.0mm.
@@ -1285,6 +1275,8 @@ class MasterBoard:
         bantam_dy: float = 4 * 25.4  # mm
         bantam_n: float = wheel_well_dy/2.0 + 3.0
         bantam_s: float = bantam_n - (bantam_dy - 4.0)
+        print(f"bantam_n:{bantam_n}")
+        print(f"bantam_s:{bantam_s}")
         # wheel_well_dx = bantam_dx - 3.0  # Override *wheel_well_dx*:
 
         # The arcs a~c, f~h, m~p, N~O, r~t, and T~U and of arcs and need to have arc
@@ -1405,8 +1397,8 @@ class MasterBoard:
         center_pcb_exterior.point_append(Z)
         # Skip A
         center_pcb_exterior.lock()
-        center_pcb_polygon: Polygon = Polygon("Center PCB Polygon", [], lock=False)
-        center_pcb_polygon.append(center_pcb_exterior)
+        # center_pcb_polygon = Polygon("Center PCB Polygon", [], lock=False)
+        # center_pcb_polygon.append(center_pcb_exterior)
         center_pcb_extruded: LinearExtrude = LinearExtrude("Extruded Center PCB",
                                                            center_pcb_polygon, pcb_dz)
         center_pcb_translated: Translate3D = Translate3D("Translated Center PCB",
@@ -1424,8 +1416,8 @@ class MasterBoard:
         ne_pcb_exterior.point_append(C)
         ne_pcb_exterior.point_append(B)
         ne_pcb_exterior.lock()
-        ne_pcb_polygon: Polygon = Polygon("NE PCB Polygon", [], lock=False)
-        ne_pcb_polygon.append(ne_pcb_exterior)
+        # ne_pcb_polygon = Polygon("NE PCB Polygon", [], lock=False)
+        # ne_pcb_polygon.append(ne_pcb_exterior)
         ne_pcb_extruded: LinearExtrude = LinearExtrude("Extruded NE PCB", ne_pcb_polygon, pcb_dz)
         ne_pcb_translated: Translate3D = Translate3D("Translated NE PCB",
                                                      ne_pcb_extruded, P3D(0.0, 0.0, pcb_bottom_z))
@@ -1440,8 +1432,8 @@ class MasterBoard:
         nw_pcb_exterior.point_append(H)
         nw_pcb_exterior.point_append(G)
         nw_pcb_exterior.lock()
-        nw_pcb_polygon: Polygon = Polygon("NW PCB Polygon", [], lock=False)
-        nw_pcb_polygon.append(nw_pcb_exterior)
+        # nw_pcb_polygon = Polygon("NW PCB Polygon", [], lock=False)
+        # nw_pcb_polygon.append(nw_pcb_exterior)
         nw_pcb_extruded: LinearExtrude = LinearExtrude("Extruded NW PCB", nw_pcb_polygon, pcb_dz)
         nw_pcb_translated: Translate3D = Translate3D("Translated NW PCB",
                                                      nw_pcb_extruded, P3D(0.0, 0.0, pcb_bottom_z))
@@ -1462,8 +1454,8 @@ class MasterBoard:
         print(f"N_angle:{N_angle * 180.0 / pi}")
         print(f"O_angle:{O_angle * 180.0 / pi}")
         sw_pcb_exterior.lock()
-        sw_pcb_polygon: Polygon = Polygon("SW PCB Polygon", [], lock=False)
-        sw_pcb_polygon.append(sw_pcb_exterior)
+        # sw_pcb_polygon = Polygon("SW PCB Polygon", [], lock=False)
+        # sw_pcb_polygon.append(sw_pcb_exterior)
         sw_pcb_extruded: LinearExtrude = LinearExtrude("Extruded SW PCB", sw_pcb_polygon, pcb_dz)
         sw_pcb_translated: Translate3D = Translate3D("Translated SW PCB", sw_pcb_extruded,
                                                      P3D(0.0, 0.0, pcb_bottom_z))
@@ -1490,8 +1482,8 @@ class MasterBoard:
         # se_pcb_exterior.arc_append(origin, radius, U_angle, T_angle, 0.0)
         se_pcb_exterior.point_append(T)
         se_pcb_exterior.lock()
-        se_pcb_polygon: Polygon = Polygon("SE PCB Polygon", [], lock=False)
-        se_pcb_polygon.append(se_pcb_exterior)
+        # se_pcb_polygon: Polygon = Polygon("SE PCB Polygon", [], lock=False)
+        # se_pcb_polygon.append(se_pcb_exterior)
         se_pcb_extruded: LinearExtrude = LinearExtrude("Extruded SE PCB", se_pcb_polygon, pcb_dz)
         se_pcb_translated: Translate3D = Translate3D("Translated SE PCB", se_pcb_extruded,
                                                      P3D(0.0, 0.0, pcb_bottom_z))
@@ -2090,6 +2082,300 @@ class MasterBoard:
         scad_program.append(module)
         scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
         self.module: Module3D = module
+
+    # MasterBoard.pcb_polygons_compute():
+    def pcb_polygons_compute(self) -> Tuple[Polygon, Polygon, Polygon, Polygon, Polygon, Polygon]:
+        """Compute the various PCB exterior Polygon's."""
+        # The outline of the PCB shown in cruddy ASCII art below.  The PCB is broken into 6 boards
+        # Where '-' means a straight line and and '@' means an arc:
+        #
+        # * *master_pcb*: The master PCB is A-a@c-D-E-f#@h-H-I-J-K-L-M-m@p-Q-R-s@v-V-W-X-Y-Z-A
+        # * *center_pcb*: The center PCB is squarish A-B-C-D-E-F-G-H-I-J-K-L-M-N-O-P-Q-R-X-Y-Z-A
+        # * *ne_pcb*: The north east PCB is A-a@c-C-B-A
+        # * *nw_pcb*: The north west PCB is F-f@h-H-G-F
+        # * *se_pcb*: The south east PCB is S-s@v-V-U-T-S
+        # * *sw_pcb*: The south west PCB is M-m@p-P-O-N-M
+        #
+        # The *center_pcb*, *ne_pcb*, *nw_pcb*, *se_pcb*, and *sw_pcb* basically cover the
+        # *matster_pcb*.
+        #
+        #         *-------f             c-------*
+        #        /        |             |        \
+        #       /         |             |         \
+        #      / G--------F             C--------B \
+        #     h--H        E------+------D        A--a
+        #        |               |               |
+        #        |               |               |
+        #        |               |               |
+        #        I--------J      |      Y--------Z
+        #                 |      |      |
+        #                 +------+------+
+        #                 |      |      |
+        #        L--------K      |      X--------W
+        #        |               |               |
+        #        |               |               |
+        #        |            Q--+--R            |
+        #     m--M            |     |            V--v
+        #      \ N            |     |            U /
+        #       \ \           |     |           / /
+        #        \ O----------P     S----------T /
+        #         \           |     |           /
+        #          \          |     |          /
+        #           \         |     |         /
+        #            *--------p     s--------*
+        #
+        # The dimensions of interest in alphabetical order are:
+        # * *arm_well_dx*: The distance between the connector arm well edges in the X direction
+        #   (|QR|=|PS|=|ps|).
+        # * *arm_well_north: The north edge of the arm well.
+        #   (Qy=Ry).
+        # * *center_pcb_north*: The north coordinate of the master pcb.
+        #   (Gy=Fy=Cy=By).
+        # * *center_pcb_south*: The south coordinate of the master pcb.
+        # * (Oy=Py=Sy=Ty).
+        # * *connctor_well_dx*: The distance between the connector well edges in the X direction
+        #   (|fc|=|FC|=|ED|).
+        # * *connctor_well_south*: The south edge of the connector well.
+        #   (Ey=Dy).
+        # * *inner_radius*: The distance between the board origin and N, O, T, and U.
+        # * *motor_well_dx*: The distance between the motor well edges in the X direction
+        #   (|JY|=|KX|).
+        # * *motor_well_dy*: The distance between the motor well edges in the X direction
+        #   (|IL|=|JK|=|YX|=|ZW|).
+        # * *diameter*: The diameter of the PCB.
+        #   (|hv|/2=|ma|/2).
+        # * *wheel_well_dx*: The distaace between the wheel well edges in the X direction
+        #   (|GB|=|HA|=|IZ|=|LW|=|MV|=|NU|).
+        # * *wheel_well_dy*: The distance between the wheel well edges in the Y direction
+        #   (|hm|=|HM|=|CX|=|BZ|).
+
+        # These constants are defined below:
+        wheel_well_dx: float = 125.0  # mm (from user's guide)
+        wheel_well_dy: float = 72.0  # mm (from user's guide)
+        arm_well_dx: float = 15.0  # mm (trail and error)
+        arm_well_north: float = -40.0  # mm (trail and error)
+        # bantam_dx: float = 5 * 25.4  # mm (size of Bantam Labs PCB blank)
+        bantam_dy: float = 4 * 25.4  # mm (size of Bantam Labs PCB blank)
+        center_pcb_north: float = wheel_well_dy / 2.0 + 3.0  # mm (trail and error)
+        center_pcb_south: float = center_pcb_north - (bantam_dy - 4.0)  # mm (trail and error)
+        print(f"center_pcb_south:{center_pcb_south}")
+        print(f"center_pcb_north:{center_pcb_north}")
+        connector_well_dx: float = 60.0  # mm (trail and error)
+        connector_well_south: float = 32.5  # mm (trail and error)
+        degrees5: float = 5.0 * pi / 180.0  # radians
+        radius: float = 163.0 / 2.0  # mm (from user's guide)
+        inner_radius: float = radius - 7.00  # mm (trail and error)
+        origin: P2D = P2D(0.0, 0.0)
+        motor_well_dx: float = 90.0  # mm (from user's guide)
+        motor_well_dy: float = 25.0  # mm (trail and error)
+
+        # When you have a right triangle and you have the length of the hypotenuse (S) and
+        # the one of the sides (S), the other side is computed via the Pythagorean Theorem.
+        # (1) H^2 = S^2 + O^2
+        # (2) O^2 = H^2 - S^2
+        # (3) O = sqrt(H^2 - S^2)
+        def pythagorean(h: float, s: float) -> float:
+            return sqrt(h * h - s * s)
+
+        # Well start with the central board locations A-Z:
+        A: P2D = P2D(wheel_well_dx/2.0, wheel_well_dy/2.0)  # On center board edge, not a corner
+        B: P2D = P2D(wheel_well_dx/2.0, center_pcb_north)
+        C: P2D = P2D(connector_well_dx/2.0, center_pcb_north)
+        D: P2D = P2D(connector_well_dx/2.0, connector_well_south)
+        E: P2D = P2D(-connector_well_dx/2.0, connector_well_south)
+        F: P2D = P2D(-connector_well_dx/2.0, center_pcb_north)
+        G: P2D = P2D(-wheel_well_dx/2.0, center_pcb_north)
+        H: P2D = P2D(-wheel_well_dx/2.0, wheel_well_dy/2.0)  # On center board edge, not a corner
+        I: P2D = P2D(-wheel_well_dx/2.0, motor_well_dy/2.0)
+        J: P2D = P2D(-motor_well_dx/2.0, motor_well_dy/2.0)
+        K: P2D = P2D(-motor_well_dx/2.0, -motor_well_dy/2.0)
+        L: P2D = P2D(-wheel_well_dx/2.0, -motor_well_dy/2.0)
+        M: P2D = P2D(-wheel_well_dx/2.0, -wheel_well_dy/2.0)  # On center board edge, not a corner
+        N: P2D = P2D(-wheel_well_dx/2.0, -pythagorean(inner_radius, -wheel_well_dx/2.0))
+        O: P2D = P2D(-pythagorean(inner_radius, center_pcb_south), center_pcb_south)
+        P: P2D = P2D(-arm_well_dx/2.0, center_pcb_south)
+        Q: P2D = P2D(-arm_well_dx/2.0, arm_well_north)
+        R: P2D = P2D(arm_well_dx/2.0, arm_well_north)
+        S: P2D = P2D(arm_well_dx/2.0, center_pcb_south)
+        T: P2D = P2D(pythagorean(inner_radius, center_pcb_south), center_pcb_south)
+        U: P2D = P2D(wheel_well_dx/2.0, -pythagorean(inner_radius, wheel_well_dx/2.0))
+        V: P2D = P2D(wheel_well_dx/2.0, -wheel_well_dy/2.0)  # On center board edge, not a corner
+        W: P2D = P2D(wheel_well_dx/2.0, -motor_well_dy/2.0)
+        X: P2D = P2D(motor_well_dx/2.0, -motor_well_dy/2.0)
+        Y: P2D = P2D(motor_well_dx/2.0, motor_well_dy/2.0)
+        Z: P2D = P2D(wheel_well_dx/2.0, motor_well_dy/2.0)
+
+        # Now compute the points of the NE board:
+        a: P2D = P2D(pythagorean(radius, wheel_well_dy/2.0), wheel_well_dy/2.0)
+        c: P2D = P2D(connector_well_dx/2.0, pythagorean(radius, connector_well_dx/2.0))
+        a_angle: float = a.atan2()
+        a_angle = a_angle
+        c_angle: float = c.atan2()
+        c_angle = c_angle
+        print(f"a_angle:{a_angle * 180.0 / pi}")
+        print(f"c_angle:{c_angle * 180.0 / pi}")
+
+        # Now compute the arc points of the NW board:
+        f: P2D = P2D(-connector_well_dx/2.0, pythagorean(radius, -connector_well_dx/2.0))
+        h: P2D = P2D(-pythagorean(radius, wheel_well_dy/2.0), wheel_well_dy/2.0)
+        f_angle: float = f.atan2()
+        f_angle = f_angle
+        h_angle: float = h.atan2()
+        h_angle = h_angle
+        print(f"f_angle:{f_angle * 180.0 / pi}")
+        print(f"h_angle:{h_angle * 180.0 / pi}")
+
+        # Now compute the arc points of the SW board:
+        m: P2D = P2D(-pythagorean(radius, -wheel_well_dy/2.0), -wheel_well_dy/2.0)
+        p: P2D = P2D(-arm_well_dx/2.0, -pythagorean(radius, -arm_well_dx/2.0))
+        m_angle: float = m.atan2()
+        m_angle = m_angle
+        N_angle: float = N.atan2()
+        N_angle = N_angle
+        O_angle: float = O.atan2()
+        O_angle = O_angle
+        p_angle: float = p.atan2()
+        p_angle = p_angle
+
+        # Now compute the arc points of the SE board:
+        s: P2D = P2D(arm_well_dx/2.0, -pythagorean(radius, arm_well_dx/2.0))
+        v: P2D = P2D(pythagorean(radius, -wheel_well_dy/2.0), -wheel_well_dy/2.0)
+        s_angle: float = s.atan2()
+        s_angle = s_angle
+        T_angle: float = T.atan2()
+        T_angle = T_angle
+        U_angle: float = U.atan2()
+        U_angle = U_angle
+        v_angle: float = v.atan2()
+        v_angle = v_angle
+
+        # ...
+        master_pcb_exterior: SimplePolygon = SimplePolygon("Master PCB Exterior Simple Polygon",
+                                                           [], lock=False)
+        master_pcb_exterior.point_append(A)
+        master_pcb_exterior.arc_append(origin, radius, a_angle, c_angle, degrees5)
+        master_pcb_exterior.point_append(D)
+        master_pcb_exterior.point_append(E)
+        master_pcb_exterior.arc_append(origin, radius, f_angle, h_angle, degrees5)
+        master_pcb_exterior.point_append(H)
+        master_pcb_exterior.point_append(H)
+        master_pcb_exterior.point_append(J)
+        master_pcb_exterior.point_append(K)
+        master_pcb_exterior.point_append(L)
+        master_pcb_exterior.point_append(M)
+        master_pcb_exterior.arc_append(origin, radius, m_angle, p_angle, degrees5)
+        master_pcb_exterior.point_append(Q)
+        master_pcb_exterior.point_append(R)
+        master_pcb_exterior.arc_append(origin, radius, s_angle, v_angle, degrees5)
+        master_pcb_exterior.point_append(V)
+        master_pcb_exterior.point_append(W)
+        master_pcb_exterior.point_append(X)
+        master_pcb_exterior.point_append(Z)
+        master_pcb_exterior.point_append(A)
+        master_pcb_exterior.lock()
+        master_pcb_polygon: Polygon = Polygon("Master PCB Polygon",
+                                              [master_pcb_exterior], lock=False)
+
+        # Compute the *center_pcb_exterior*:
+        center_pcb_exterior: SimplePolygon = SimplePolygon("Center PCB Exterior SimplePolygon",
+                                                           [], lock=False)
+        center_pcb_exterior.point_append(B)
+        center_pcb_exterior.point_append(C)
+        center_pcb_exterior.point_append(D)
+        center_pcb_exterior.point_append(E)
+        center_pcb_exterior.point_append(F)
+        center_pcb_exterior.point_append(G)
+        # Skip H
+        center_pcb_exterior.point_append(I)
+        center_pcb_exterior.point_append(J)
+        center_pcb_exterior.point_append(K)
+        center_pcb_exterior.point_append(L)
+        # Skip M
+        center_pcb_exterior.arc_append(origin, inner_radius, N_angle, O_angle, degrees5)
+        center_pcb_exterior.point_append(P)
+        center_pcb_exterior.point_append(Q)
+        center_pcb_exterior.point_append(R)
+        center_pcb_exterior.point_append(S)
+        center_pcb_exterior.arc_append(origin, inner_radius, T_angle, U_angle, degrees5)
+        # Skip V
+        center_pcb_exterior.point_append(W)
+        center_pcb_exterior.point_append(X)
+        center_pcb_exterior.point_append(Y)
+        center_pcb_exterior.point_append(Z)
+        # Skip A
+        center_pcb_exterior.lock()
+        center_pcb_polygon: Polygon = Polygon("Center PCB Polygon",
+                                              [center_pcb_exterior], lock=False)
+
+        # Compute the *ne_pcb_exterior* and stuff it into *ne_pcb_polygon*:
+        ne_pcb_exterior: SimplePolygon = SimplePolygon("NE PCB Exterior SimplePolygon",
+                                                       [], lock=False)
+        ne_pcb_exterior.point_append(A)
+        ne_pcb_exterior.arc_append(origin, radius, a_angle, c_angle, 0.0)
+        ne_pcb_exterior.point_append(C)
+        ne_pcb_exterior.point_append(B)
+        ne_pcb_exterior.lock()
+        ne_pcb_polygon: Polygon = Polygon("NE PCB Polygon", [ne_pcb_exterior], lock=False)
+
+        # Compute the *nw_pcb_exterior* and stuff it into the *nw_pcb_polygon*:
+        nw_pcb_exterior: SimplePolygon = SimplePolygon("NW PCB Exterior SimplePolygon",
+                                                       [], lock=False)
+        nw_pcb_exterior.point_append(F)
+        nw_pcb_exterior.arc_append(origin, radius, f_angle, h_angle, 0.0)
+        nw_pcb_exterior.point_append(H)
+        nw_pcb_exterior.point_append(G)
+        nw_pcb_exterior.lock()
+        nw_pcb_polygon: Polygon = Polygon("NW PCB Polygon", [nw_pcb_exterior], lock=False)
+
+        # Compute the *se_pcb_exterior* and stuff it into the *se_pcb_polygon*:
+        se_pcb_exterior: SimplePolygon = SimplePolygon("SE PCB Exterior SimplePolygon",
+                                                       [], lock=False)
+        se_pcb_exterior.point_append(S)
+        # se_pcb_exterior.point_append(s)
+        se_pcb_exterior.arc_append(origin, radius, s_angle, v_angle, 0.0)
+        # se_pcb_exterior.point_append(v)
+        se_pcb_exterior.point_append(V)
+        se_pcb_exterior.point_append(U)
+        # se_pcb_exterior.arc_append(origin, radius, U_angle, T_angle, 0.0)
+        se_pcb_exterior.point_append(T)
+        se_pcb_exterior.lock()
+        se_pcb_polygon: Polygon = Polygon("SE PCB Polygon", [se_pcb_exterior], lock=False)
+
+        print(f"V:{V}")
+        print(f"v:{v}")
+        print(f"s:{s}")
+        print(f"S:{S}")
+        print(f"T:{T}")
+        print(f"U:{U}")
+
+        # Compute the *sw_pcb_exterior*:
+        sw_pcb_exterior: SimplePolygon = SimplePolygon("SW PCB Exterior SimplePolygon",
+                                                       [], lock=False)
+        sw_pcb_exterior.point_append(M)
+        # sw_pcb_exterior.point_append(m)
+        sw_pcb_exterior.arc_append(origin, radius, m_angle, p_angle, 0.0)
+        # sw_pcb_exterior.point_append(p)
+        sw_pcb_exterior.point_append(P)
+        sw_pcb_exterior.point_append(O)
+        sw_pcb_exterior.point_append(N)
+        # sw_pcb_exterior.arc_append(origin, radius, O_angle, N_angle, 0.0)
+        print(f"N_angle:{N_angle * 180.0 / pi}")
+        print(f"O_angle:{O_angle * 180.0 / pi}")
+        sw_pcb_exterior.lock()
+        sw_pcb_polygon: Polygon = Polygon("SW PCB Polygon", [sw_pcb_exterior], lock=False)
+
+        print(f"M:{M}")
+        print(f"m:{m}")
+        print(f"p:{p}")
+        print(f"P:{P}")
+        print(f"O:{O}")
+        print(f"N:{N}")
+        print("------")
+
+        # Return the resulting unlocked polygons so that additional holes and slots
+        # can be cut into them.
+        return (master_pcb_polygon, center_pcb_polygon,
+                ne_pcb_polygon, nw_pcb_polygon, se_pcb_polygon, sw_pcb_polygon)
 
 
 # PiBoard:
