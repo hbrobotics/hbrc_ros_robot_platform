@@ -1758,11 +1758,11 @@ class MasterBoard:
         master_pcb_exterior: SimplePolygon = SimplePolygon("Master PCB Exterior Simple Polygon",
                                                            [], lock=False)
         master_pcb_exterior.corner_arc_append(A, corner_radius, "SE")
-        master_pcb_exterior.rounded_arc_append("BH+EV+", origin, radius,
+        master_pcb_exterior.rounded_arc_append("BH++EV++", origin, radius,
                                                a_angle, c_angle, corner_radius)
         master_pcb_exterior.corner_arc_append(D, corner_radius, "NW")
         master_pcb_exterior.corner_arc_append(E, corner_radius, "EN")
-        master_pcb_exterior.rounded_arc_append("BV-EH+", origin, radius,
+        master_pcb_exterior.rounded_arc_append("BV-+EH++", origin, radius,
                                                f_angle, h_angle, corner_radius)
         master_pcb_exterior.corner_arc_append(H, corner_radius, "WS")
         master_pcb_exterior.corner_arc_append(I, corner_radius, "NE")
@@ -1770,20 +1770,20 @@ class MasterBoard:
         master_pcb_exterior.corner_arc_append(K, corner_radius, "NW")
         master_pcb_exterior.corner_arc_append(L, corner_radius, "ES")
         master_pcb_exterior.corner_arc_append(M, corner_radius, "NW")
-        master_pcb_exterior.rounded_arc_append("BH-EV-", origin, radius,
+        master_pcb_exterior.rounded_arc_append("BH-+EV-+", origin, radius,
                                                m_angle, p_angle, corner_radius)
         master_pcb_exterior.corner_arc_append(Q, corner_radius, "SE")
         master_pcb_exterior.corner_arc_append(R, corner_radius, "WS")
         # master_pcb_exterior.point_append(Q)
         # master_pcb_exterior.point_append(R)
-        master_pcb_exterior.rounded_arc_append("BV+EH-", origin, radius,
+        master_pcb_exterior.rounded_arc_append("BV++EH-+", origin, radius,
                                                s_angle, v_angle, corner_radius)
         master_pcb_exterior.corner_arc_append(V, corner_radius, "EN")
         master_pcb_exterior.corner_arc_append(W, corner_radius, "SW")
         master_pcb_exterior.corner_arc_append(X, corner_radius, "EN")
         master_pcb_exterior.corner_arc_append(Y, corner_radius, "SE")
         master_pcb_exterior.corner_arc_append(Z, corner_radius, "WN")
-        master_pcb_exterior.corner_arc_append(A, corner_radius, "SE")  # Something strange here.
+        master_pcb_exterior.corner_arc_append(A, corner_radius, "SE")  # Strange! no rounded corner!
         master_pcb_exterior.lock()
         master_pcb_polygon: Polygon = Polygon("Master PCB Polygon",
                                               [master_pcb_exterior], lock=False)
@@ -1791,29 +1791,29 @@ class MasterBoard:
         # Compute the *center_pcb_exterior*:
         center_pcb_exterior: SimplePolygon = SimplePolygon("Center PCB Exterior SimplePolygon",
                                                            [], lock=False)
-        center_pcb_exterior.point_append(B)
+        center_pcb_exterior.corner_arc_append(B, corner_radius, "SW")
         center_pcb_exterior.point_append(C)
-        center_pcb_exterior.point_append(D)
-        center_pcb_exterior.point_append(E)
+        center_pcb_exterior.corner_arc_append(D, corner_radius, "NW")
+        center_pcb_exterior.corner_arc_append(E, corner_radius, "EN")
         center_pcb_exterior.point_append(F)
-        center_pcb_exterior.point_append(G)
+        center_pcb_exterior.corner_arc_append(G, corner_radius, "ES")
         # Skip H
-        center_pcb_exterior.point_append(I)
-        center_pcb_exterior.point_append(J)
-        center_pcb_exterior.point_append(K)
-        center_pcb_exterior.point_append(L)
+        center_pcb_exterior.corner_arc_append(I, corner_radius, "NE")
+        center_pcb_exterior.corner_arc_append(J, corner_radius, "WS")
+        center_pcb_exterior.corner_arc_append(K, corner_radius, "NW")
+        center_pcb_exterior.corner_arc_append(L, corner_radius, "ES")
         # Skip M
         center_pcb_exterior.arc_append(origin, inner_radius, N_angle, O_angle, degrees5)
         center_pcb_exterior.point_append(P)
-        center_pcb_exterior.point_append(Q)
-        center_pcb_exterior.point_append(R)
+        center_pcb_exterior.corner_arc_append(Q, corner_radius, "SE")
+        center_pcb_exterior.corner_arc_append(R, corner_radius, "WS")
         center_pcb_exterior.point_append(S)
         center_pcb_exterior.arc_append(origin, inner_radius, T_angle, U_angle, degrees5)
         # Skip V
-        center_pcb_exterior.point_append(W)
-        center_pcb_exterior.point_append(X)
-        center_pcb_exterior.point_append(Y)
-        center_pcb_exterior.point_append(Z)
+        center_pcb_exterior.corner_arc_append(W, corner_radius, "SW")
+        center_pcb_exterior.corner_arc_append(X, corner_radius, "EN")
+        center_pcb_exterior.corner_arc_append(Y, corner_radius, "SE")
+        center_pcb_exterior.corner_arc_append(Z, corner_radius, "WN")
         # Skip A
         center_pcb_exterior.lock()
         center_pcb_polygon: Polygon = Polygon("Center PCB Polygon",
@@ -1823,10 +1823,10 @@ class MasterBoard:
         ne_pcb_exterior: SimplePolygon = SimplePolygon("NE PCB Exterior SimplePolygon",
                                                        [], lock=False)
         ne_pcb_exterior.point_append(A)
-        ne_pcb_exterior.rounded_arc_append("BH+EV+", origin, radius,
+        ne_pcb_exterior.rounded_arc_append("BH++EV++", origin, radius,
                                            a_angle, c_angle, corner_radius)
         ne_pcb_exterior.point_append(C)
-        ne_pcb_exterior.point_append(B)
+        ne_pcb_exterior.corner_arc_append(B, corner_radius, "WS")
         ne_pcb_exterior.lock()
         ne_pcb_polygon: Polygon = Polygon("NE PCB Polygon", [ne_pcb_exterior], lock=False)
 
@@ -1834,10 +1834,10 @@ class MasterBoard:
         nw_pcb_exterior: SimplePolygon = SimplePolygon("NW PCB Exterior SimplePolygon",
                                                        [], lock=False)
         nw_pcb_exterior.point_append(F)
-        nw_pcb_exterior.rounded_arc_append("BV-EH+", origin, radius,
+        nw_pcb_exterior.rounded_arc_append("BV-+EH++", origin, radius,
                                            f_angle, h_angle, corner_radius)
         nw_pcb_exterior.point_append(H)
-        nw_pcb_exterior.point_append(G)
+        nw_pcb_exterior.corner_arc_append(G, corner_radius, "SE")
         nw_pcb_exterior.lock()
         nw_pcb_polygon: Polygon = Polygon("NW PCB Polygon", [nw_pcb_exterior], lock=False)
 
@@ -1845,12 +1845,12 @@ class MasterBoard:
         se_pcb_exterior: SimplePolygon = SimplePolygon("SE PCB Exterior SimplePolygon",
                                                        [], lock=False)
         se_pcb_exterior.point_append(S)
-        se_pcb_exterior.rounded_arc_append("BV+EH-", origin, radius,
+        se_pcb_exterior.rounded_arc_append("BV++EH-+", origin, radius,
                                            s_angle, v_angle, corner_radius)
         se_pcb_exterior.point_append(V)
-        se_pcb_exterior.point_append(U)
-        # se_pcb_exterior.arc_append(origin, radius, U_angle, T_angle, 0.0)
-        se_pcb_exterior.point_append(T)
+        # se_pcb_exterior.point_append(U)
+        se_pcb_exterior.arc_append(origin, inner_radius, U_angle, T_angle, 0.0)
+        # se_pcb_exterior.point_append(T)
         se_pcb_exterior.lock()
         se_pcb_polygon: Polygon = Polygon("SE PCB Polygon", [se_pcb_exterior], lock=False)
 
@@ -1858,12 +1858,12 @@ class MasterBoard:
         sw_pcb_exterior: SimplePolygon = SimplePolygon("SW PCB Exterior SimplePolygon",
                                                        [], lock=False)
         sw_pcb_exterior.point_append(M)
-        sw_pcb_exterior.rounded_arc_append("BH-EV-", origin, radius,
+        sw_pcb_exterior.rounded_arc_append("BH-+EV-+", origin, radius,
                                            m_angle, p_angle, corner_radius)
         sw_pcb_exterior.point_append(P)
-        sw_pcb_exterior.point_append(O)
-        sw_pcb_exterior.point_append(N)
-        # sw_pcb_exterior.arc_append(origin, radius, O_angle, N_angle, 0.0)
+        # sw_pcb_exterior.point_append(O)
+        sw_pcb_exterior.arc_append(origin, inner_radius, O_angle, N_angle, 0.0)
+        # sw_pcb_exterior.point_append(N)
         sw_pcb_exterior.lock()
         sw_pcb_polygon: Polygon = Polygon("SW PCB Polygon", [sw_pcb_exterior], lock=False)
 
