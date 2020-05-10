@@ -1466,6 +1466,21 @@ class Polygon(Scad2D):
         polygon: Polygon = self
         polygon.locked = True
 
+    # Polygon.reposition():
+    def reposition(self, center: P2D, rotate: float, translate: P2D) -> "Polygon":
+        """Return repositioned copy."""
+        # Unpack *polygon* (i.e. *self*):
+        polygon: Polygon = self
+        name: str = polygon.name
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+        repositioned_polygon: Polygon = Polygon(f"{name} Repositioned Polygon", [], lock=False)
+        simple_polygon: SimplePolygon
+        for simple_polygon in simple_polygons:
+            new_simple_polygon: SimplePolygon = simple_polygon.reposition(center, rotate,
+                                                                          translate)
+            repositioned_polygon.append(new_simple_polygon)
+        return repositioned_polygon
+
     # Polygon.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
         """Append Polygon commands to a lines list.
@@ -2114,6 +2129,40 @@ class SimplePolygon(Scad2D):
         # Use the parent *Scad2D*.*scad_lines_append* method to actually ouput the OpenSCAD
         # `polygon` command:
         super().polygon_scad_lines_append([simple_polygon], scad_lines, indent)
+
+    # SimplePolygon.reposition():
+    def reposition(self, center: P2D, rotate_angle: float,
+                   translate: P2D, lock: bool = True) -> "SimplePolygon":
+        """Return rotated and translated SimplePolygon."""
+        # Grab some values from *simple_polygon* (i.e. *self*):
+        simple_polygon: SimplePolygon = self
+        name: str = simple_polygon.name
+        points: List[P2D] = simple_polygon.points
+        repositioned_points: List[P2D] = []
+
+        # Unpack some argument values:
+        center_x: float = center.x
+        center_y: float = center.y
+        translate_x: float = translate.x
+        translate_y: float = translate.y
+
+        # Compute the *sine* and *cosine* just once:
+        cosine: float = cos(rotate_angle)
+        sine: float = sin(rotate_angle)
+
+        # Interate across *points* doing the rotate and translate:
+        point: P2D
+        for point in points:
+            x: float = point.x - center_x
+            y: float = point.y - center_y
+            rotated_x: float = x * cosine - y * sine + center_x
+            rotated_y: float = y * cosine + x * sine + center_y
+            repositioned_points.append(P2D(rotated_x + translate_x, rotated_y + translate_y))
+
+        # Create and return the result:
+        repositioned_simple_polygon: SimplePolygon = SimplePolygon(f"Repositioned {name}",
+                                                                   repositioned_points, lock=lock)
+        return repositioned_simple_polygon
 
     # SimplePolygon.x_mirror():
     def x_mirror(self, name: str, replace: Optional[str] = None) -> "SimplePolygon":
