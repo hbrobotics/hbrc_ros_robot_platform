@@ -1566,7 +1566,7 @@ class SimplePolygon(Scad2D):
 
     # SimplePolygon.arc_append():
     def arc_append(self, center: P2D, radius: float, start_angle: float, end_angle: float,
-                   points_angle: float = 0.0) -> None:
+                   points_angle: float = 0.0, debug: bool = False) -> None:
         """Append an arc of points to a Polygon.
 
         Args:
@@ -1597,16 +1597,19 @@ class SimplePolygon(Scad2D):
         # the value can be either postive or negative:
         span_angle: float = end_angle - start_angle
         points_count: int = max(3, int(abs(span_angle / points_angle)) + 1)
-        # print(f"span_angle:{span_angle * 180.0 / pi}")
-        # print(f"points_angle:{points_angle * 180.0 / pi} {points_angle}")
-        # print(f"points_count:{points_count}")
+        if debug:
+            print("****************")
+            print(f"span_angle:{span_angle * 180.0 / pi}")
+            print(f"points_angle:{degrees(points_angle):.2f} deg")
+            print(f"points_count:{points_count}")
         delta_angle: float = span_angle / float(points_count - 1)
-        # print(f"delta_angle:{delta_angle * 180.0 / pi}")
-        # Note, that both *span_angle* and *delta_angle*
-        # print(f"start_angle={start_angle}={degrees(start_angle)}deg")
-        # print(f"end_angle={end_angle}={degrees(end_angle}deg")
-        # print(f"span_angle={span_angle}={degrees(span_angle)}deg")
-        # print(f"delta_angle={delta_angle}={degrees(delta_angle}deg")
+        if debug:
+            print(f"delta_angle:{delta_angle * 180.0 / pi}")
+            # Note, that both *span_angle* and *delta_angle*
+            print(f"start_angle={degrees(start_angle)} deg")
+            print(f"end_angle={degrees(end_angle)} deg")
+            print(f"span_angle={degrees(span_angle)} deg")
+            print(f"delta_angle={degrees(delta_angle)} deg")
         center_x: float = center.x
         center_y: float = center.y
         index: int
@@ -1614,29 +1617,30 @@ class SimplePolygon(Scad2D):
             angle: float = start_angle + index * delta_angle
             x: float = center_x + radius * cos(angle)
             y: float = center_y + radius * sin(angle)
-            # print(f"[{index}]angle={degrees(angle} x={x} y={y}")
+            if debug:
+                print(f"[{index}]angle={degrees(angle)} deg x={x} y={y}")
             points.append(P2D(x, y))
 
     # SimplePolygon.arc_edge_corner_append():
     def arc_edge_corner_append(self, center: P2D, arc_radius: float, arc_angle: float,
-                               corner_radius: float, edge_flags: str, points_count: int) -> float:
+                               corner_radius: float, edge_flags: str) -> float:
         """Append an arc edge corner rounded CCW arc to a polygon.
+
+        Draw an corner arc that is tangent to a larger arc and vertical/horizontal line.
 
         Args:
             * *arc_offset* (*P*): The center of the arc.
             * *arc_radius* (*float*): The arc radius.
             * *arc_angle* (*float*): The angle from *center* to corner to be rounded.
             * *corner_radius* (*float*): The corner radius.
-            * *edge_flags* (*str*): 3 character flag string of the form "eos" where:
+            * *edge_flags* (*str*): 4 character flag string of the form "eosd" where:
               * "e" is "B" the edge connects to the Beginning of the corner CCW arc and "E"
                 when the edge connect to the end of the E of the CCW arg.
               * "o" is the edge orientation where "V" is for a veritcal edge and "H" is for
                 a horizontal edge.
               * "s" is "+" is if corner center is to the right/top of a vertical/horizontal edge
                 "-" if the corner center is to the left/bottom of a vertical/horizontal edge.
-            * points_count* (*int*): The number of points along the arc.
-
-            Draw an corner arc that is tangent to a larger arc and vertical/horizontal line.
+              * "d" is th arc direction, "+" for counter-clockwise and "-" for clockwise.
 
         Returns:
             The corner center angle is returned.
@@ -1667,7 +1671,6 @@ class SimplePolygon(Scad2D):
             print(f"arc_angle:{(arc_angle * 180.0 / pi):.3f}")
             print(f"edge_flags:'{edge_flags}'")
             print(f"corner_radius:{corner_radius:.3f}")
-            print(f"points_count:{points_count}")
 
         # Compute the location of S:
         sharp_x: float = arc_radius * cos(arc_angle)
@@ -1678,13 +1681,17 @@ class SimplePolygon(Scad2D):
 
         # Unpack *edge_flags* into *edge_first*, *is_vertical*, *positive_offset*,
         # and *offset_sign*:
-        assert len(edge_flags) == 3
+        assert len(edge_flags) == 4
         side_flag: str = edge_flags[0]  # Which side of the arc the edge is on beginning/end.
         orientation_flag: str = edge_flags[1]  # Which axis the edge is aligned with.
         sign_flag: str = edge_flags[2]
+        direction_flag: str = edge_flags[3]
         assert side_flag in "BE"
         assert orientation_flag in "HV"
         assert sign_flag in "+-"
+        assert direction_flag in "+-"
+
+        clockwise: bool = (direction_flag == '-')  # *True* => CW; *False* => CCW
         edge_first: bool = (side_flag == "B")  # *True* => edge is at beginning of CCW corner arc.
         is_vertical: bool = (orientation_flag == "V")  # *True* => edgie is vertical
         positive_offset: bool = (sign_flag == "+")
@@ -1748,11 +1755,28 @@ class SimplePolygon(Scad2D):
         # Finally we can select *begin_angle* and *end_angle*:
         begin_angle: float = edge_angle if edge_first else corner_angle
         end_angle: float = corner_angle if edge_first else edge_angle
-        degrees360: float = 2.0 * pi
+
+        # Adjust the angles so that sweep in the correct direction:
+        degrees180: float = pi
+        degrees360: float = 2.0 * degrees180
+        if clockwise and end_angle > begin_angle:
+            end_angle -= degrees360
+        if not clockwise and end_angle < begin_angle:
+            end_angle += degrees360
+
+        # Try to keep the angles between -360 degrees and +360 degrees:
+        while begin_angle < -degrees360:  # pragma: no cover
+            begin_angle += degrees360
+            end_angle += degrees360
         while begin_angle > degrees360:  # pragma: no cover
             begin_angle -= degrees360
-        while end_angle < begin_angle:  # pragma: no cover
+            end_angle -= degrees360
+        while end_angle < -degrees360:  # pragma: no cover
+            begin_angle += degrees360
             end_angle += degrees360
+        while end_angle > degrees360:  # pragma: no cover
+            begin_angle -= degrees360
+            end_angle -= degrees360
         if tracing:  # pragma: no cover
             print(f"begin_angle:{(begin_angle * 180.0 / pi):.3f}")
             print(f"end_angle:{(end_angle * 180.0 / pi):.3f}")
@@ -1763,18 +1787,19 @@ class SimplePolygon(Scad2D):
         if tracing:  # pragma: no cover
             print(f"arc_append({corner_center}, {corner_radius:.3f}, "
                   f"{(begin_angle * 180.0 / pi):.3f}"
-                  f"{(end_angle * 180.0 / pi):.3f}, {points_count})")
+                  f"{(end_angle * 180.0 / pi):.3f})")
             print(f"<=SimplePolygon.arc_edge_corner_append()={corner_angle * 180.0 / pi}")
         return corner_angle
 
-    def corner_arc_append(self, corner: P2D, corner_radius: float, flags: str) -> None:
+    def corner_arc_append(self, corner: P2D, corner_radius: float,
+                          flags: str, tracing: bool = False) -> None:
         """Append a rounded corner to the polygon.
 
         Args:
             * *corner* (*P2D*): The point where the two edges would meet
                without corner rounding.
             * *corner_radius* (*float*): The radius of the corner arc.
-            * *flags* (*str*): The arc entry direction followed by the
+            * *flags* (*str*): The arc entry direction followed by thea
               arc exit direction, where the direction is one of "NEWS"
               for North, East, West, and South.
 
@@ -1782,9 +1807,9 @@ class SimplePolygon(Scad2D):
         where the edges are aligned with the X and Y axes.
 
         """
-        # Build *flags_table*:
         # Pretty much everything in this routine is counter-intuitive.
 
+        # Build *flags_table*:
         # The angle stored is the *opposite* of the letter flag because the it needs
         # considered from from the reference of the *corner_center*:
         degrees90: float = pi / 2.0
@@ -1799,7 +1824,6 @@ class SimplePolygon(Scad2D):
         }
 
         # Do any requested *tracing*:
-        tracing: bool = False
         # tracing = True
         if tracing:  # pragma: no cover
             print("===>corner_arc_append()")
@@ -1824,8 +1848,8 @@ class SimplePolygon(Scad2D):
         start_angle, start_offset = flags_table[start_flag]
         end_angle, end_offset = flags_table[end_flag]
         if tracing:  # pragma: no cover
-            print(f"start_angle:{(start_angle * 180.0 / pi):.3f}")
-            print(f"end_angle:{(end_angle * 180.0 / pi):.3f}")
+            print(f"start_angle:{degrees(start_angle):.3f} deg")
+            print(f"end_angle:{degrees(end_angle):.3f} deg")
             print(f"start_offset:{start_offset}")
             print(f"end_offset:{end_offset}")
 
@@ -1845,12 +1869,13 @@ class SimplePolygon(Scad2D):
         # always perpendicular to the entry and exit edges.  It turns out that swapping
         # the two angles performs the correct 90 degree rotation.
         if tracing:  # pragma: no cover
-            print(f"end_angle={(end_angle * 180.0 / pi):.3f}")
-            print(f"start_angle={(start_angle * 180.0 / pi):.3f}")
+            print(f"end_angle={degrees(end_angle):.3f} deg")
+            print(f"start_angle={degrees(start_angle):.3f} deg")
 
         # Finally perform the *arc_append*:
         external_polygon: SimplePolygon = self
-        external_polygon.arc_append(corner_center, corner_radius, end_angle, start_angle, 0.0)
+        external_polygon.arc_append(corner_center, corner_radius,
+                                    end_angle, start_angle, 0.0, tracing)
 
         if tracing:  # pragma: no cover
             print("<===corner_arc_append()")
@@ -2033,34 +2058,52 @@ class SimplePolygon(Scad2D):
                     polygon_points.append(point)
 
     # SimplePolygon.rounded_arc_append():
-    def rounded_arc_append(self, label: str, flags: str, arc_center: P2D, arc_radius: float,
+    def rounded_arc_append(self, flags: str, arc_center: P2D, arc_radius: float,
                            start_angle: float, end_angle: float, corner_radius: float) -> None:
-        """Append an arc with rounded corners to the external polygon."""
+        """Append an arc with rounded corners to the external polygon.
+
+        Args:
+            * *flags* (*str*):
+              Two 3-character strings (6 characters total) that are
+              passed down to *SimplePolygon*.*arc_edge_corner_append*().
+              The first 3 character string is for *start_angle* and
+              the second 3 character string is for *end_angle*.
+            * *arc_center* (*P2D*):
+              The center of the large arc (millimeters, millimeters).
+            * *arc_radius* (*float*):
+              The arc radius of the large arc in millimeters.
+            * *start_angle* (*float*):
+              The start angle in radians.
+            * *end_angle* (*float*):
+              The end angle in radians.
+            * *corner_radius* (*float*):
+              The corner radius in millimeters.
+
+        """
         # Extract the *start_flags* and *end_flags* from *flags*:
-        assert len(flags) == 6
-        start_flags = flags[0:3]
-        end_flags = flags[3:6]
+        assert len(flags) == 8
+        start_flags = flags[0:4]
+        end_flags = flags[4:8]
 
         # Create *start_corner* and hang onto *start_angle*:
-        start_polygon: SimplePolygon = SimplePolygon(f"{label}, Start Corner", [], lock=False)
+        start_polygon: SimplePolygon = SimplePolygon("Start Corner", [], lock=False)
         start_corner_angle: float = start_polygon.arc_edge_corner_append(arc_center, arc_radius,
                                                                          start_angle,
                                                                          corner_radius,
-                                                                         start_flags, 5)
+                                                                         start_flags)
 
         # Create *end_corner* and hang onto *end_angle*:
-        end_polygon: SimplePolygon = SimplePolygon(f"{label} End Corner", [], lock=False)
+        end_polygon: SimplePolygon = SimplePolygon("End Corner", [], lock=False)
         end_corner_angle: float = end_polygon.arc_edge_corner_append(arc_center, arc_radius,
                                                                      end_angle, corner_radius,
-                                                                     end_flags, 5)
+                                                                     end_flags)
 
         # Now append the *start_corner*, intermediate arc, and the *end_corner* to
-        # *external_polygon* (i.e. *self*):
-        external_polygon: SimplePolygon = self
-        external_polygon.polygon_append(start_polygon)
-        external_polygon.arc_append(arc_center, arc_radius,
-                                    start_corner_angle, end_corner_angle, 0.0)
-        external_polygon.polygon_append(end_polygon)
+        # *simple_polygon* (i.e. *self*):
+        simple_polygon: SimplePolygon = self
+        simple_polygon.polygon_append(start_polygon)
+        simple_polygon.arc_append(arc_center, arc_radius, start_corner_angle, end_corner_angle, 0.0)
+        simple_polygon.polygon_append(end_polygon)
 
     # SimplePolygon.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
