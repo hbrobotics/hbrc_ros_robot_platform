@@ -89,7 +89,7 @@ class DXF:
       for the expansion base, this is bottom edge.
 
     The *DXF* class is sub-classed by *BaseDXF* and *ExpansionDXF*.
-    The *__init__* methods for these two sub-classes comute the correct
+    The *__init__* methods for these two sub-classes compute the correct
     values for the attributes listed above.  Other that that the
     methods of the *DXF* class are used:
     * *hole_locate*: Locate the center and diameter of a hole and
@@ -305,13 +305,113 @@ class ExpansionDXF(DXF):
         super().__init__("Romi Base DXF", offset_x, offset_top_y, offset_side_y, offset_z)
 
 
-# Footprint:
-class FootPrint:
-    """Represents a footprint for both KiCad and OpenScad."""
+# Component:
+class Component:
+    """Represents a componant and its associated KiCAD PCB footprint."""
 
+    # Component.__init__():
     def __init__(self, name: str) -> None:
-        """Initialize a new footprint."""
+        """Initialize a new component."""
+        # Load up *component* (i.e. *self*):
+        self.lock: bool = False
+        self.translated_module_uses: List[Translate3D] = []
+        self.holes: Polygon = Polygon(f"{name} Holes Polygon", [], lock=False)
+        self.union: Union3D = Union3D(f"{name} Union", [], lock=False)
+
+    # Component.hole_append():
+    def hole_append(self, hole: SimplePolygon) -> None:
+        """Add a component hole."""
+        # Unpack some values from *component* (i.e. *self*):
+        component: Component = self
+        holes: Polygon = component.holes
+        holes.append(hole)
+
+    # Component.holes_get():
+    def holes_get(self) -> Polygon:
+        """Return the component holes Polygon to append holes to."""
+        # Unpack *component* (i.e. *self*):
+        component: Component = self
+        holes: Polygon = component.holes
+        return holes
+
+    # Comonent.holes_reposition():
+    def holes_reposition(self, center: P2D, rotate: float, translate: P2D) -> Polygon:
+        """Return a the repositioned holes."""
+        # Grab some values from *Component* (i.e. *self*):
+        component: Component = self
+        holes: Polygon = component.holes
+        repositioned_holes: Polygon = holes.reposition(center, rotate, translate)
+        return repositioned_holes
+
+
+# PCB:
+class PCB:
+    """Represents a printed circuit board in KiCad and OpenSCAD."""
+
+    # PCB.__init__():
+    def __init__(self, name: str, pcb_exterior: SimplePolygon) -> None:
+        """Initialize a PCB with a name and pcb exterior."""
+        # Create the *pcb_polygon*:
+        pcb_polygon: Polygon = Polygon(f"name PCB Polygon", [pcb_exterior], lock=False)
+
+        # Load values into *pcb* (i.e. *self*):
+        # pcb: PCB = self
+        self.name: str = name
+        self.pcb_exterior: SimplePolygon = pcb_exterior
+        self.pcb_polygon: Polygon = pcb_polygon
+        # self.pcb_scad3ds: List[]
+
+    # PCB.component_position():
+    def component_position(self, component: Component, kicad_reference: str,
+                           center: P2D, rotation: float, translate: P2D) -> None:
+        """Place reposition a component onto the PCB."""
+        # Unpack some values from *pcb* (i.e. *self*):
+        pcb: PCB = self
+        pcb_polygon: Polygon = pcb.pcb_polygon
+
+        component_holes: Polygon = component.holes_reposition(center, rotation, translate)
+        index: int
+        for index in range(len(component_holes)):
+            pcb_polygon.append(component_holes[index])
+
+    # PCB.kicad_merge():
+    def kicad_merge(self, kicad_pcb_path: Path) -> None:
+        """Merge the appropriate into a KiCad .kicad_pcb file."""
         pass
+
+    # PCB.polygon_get():
+    def polygon_get(self) -> Polygon:
+        """Return the PCB polygon."""
+        return self.pcb_polygon
+
+    # PCB.scad_program_append():
+    def scad_program_append(self, scad_program: ScadProgram,
+                            pcb_bottom_z: float, pcb_dz: float, color: str) -> Module3D:
+        """Merge the..."""
+        # Grab some values from *pcb* (i.e. *self*):
+        pcb: PCB = self
+        name: str = pcb.name
+        # components: List[Component] = pcb.components
+        pcb_polygon: Polygon = pcb.pcb_polygon
+        pcb_polygon.lock()
+
+        # Generate the...
+        print("scad_program_append")
+        pcb_module2d: Module2D = Module2D(f"{name} PCB XModule", [pcb_polygon])
+        scad_program.append(pcb_module2d)
+        scad_program.if2d.name_match_append(f"{name.lower()}_pcb",
+                                            pcb_module2d, [f"{name} PCB"])
+
+        """Extrude, Posistion and Color a PCB Polygon."""
+        pcb_extruded: LinearExtrude = LinearExtrude(f"Extruded {name} PCB",
+                                                    pcb_polygon, pcb_dz)
+        pcb_translated: Translate3D = Translate3D(f"Translated {name} PCB",
+                                                  pcb_extruded, P3D(0.0, 0.0, pcb_bottom_z))
+        pcb_colored: Color = Color(f"Colored {name} PCB", pcb_translated, color)
+        pcb_module3d: Module3D = Module3D(f"{name} Board XModule", [pcb_colored])
+        scad_program.append(pcb_module3d)
+        scad_program.if3d.name_match_append(f"{name.lower}_board", pcb_module3d, [f"{name} Board"])
+        return pcb_module3d
 
 
 # EncoderBoard:
@@ -1162,15 +1262,16 @@ class MasterBoard:
         degrees90: float = pi / 2.0
         degrees180: float = pi
 
-        # Compute the external polygons for the various PCB's:
-        master_pcb_polygon: Polygon
-        center_pcb_polygon: Polygon
-        ne_pcb_polygon: Polygon
-        nw_pcb_polygon: Polygon
-        se_pcb_polygon: Polygon
-        sw_pcb_polygon: Polygon
-        (master_pcb_polygon, center_pcb_polygon, ne_pcb_polygon,
-         nw_pcb_polygon, se_pcb_polygon, sw_pcb_polygon) = master_board.pcb_polygons_compute()
+        # Create the various PCB's:
+        master_pcb: PCB
+        center_pcb: PCB
+        ne_pcb_pol: PCB
+        nw_pcb_pol: PCB
+        se_pcb_pol: PCB
+        sw_pcb_pol: PCB
+        master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb, sw_pcb = master_board.pcbs_create()
+
+        master_pcb_polygon: Polygon = master_pcb.polygon_get()
 
         # Use *romi_base_keys* to build *romi_base_keys_table*:
         romi_base_keys_table: Dict[str, Tuple[Any, ...]] = {}
@@ -1552,15 +1653,20 @@ class MasterBoard:
             pcb_colored: Color = Color(f"Colored {name} PCB", pcb_translated, color)
             return pcb_colored
 
-        # Construct the various PCB's:
-        master_pcb_colored: Color = pcb_process("Center", master_pcb_polygon,
-                                                pcb_bottom_z - pcb_dz, pcb_dz, "SpringGreen")
-        center_pcb_colored: Color = pcb_process("Center", center_pcb_polygon,
-                                                pcb_bottom_z, pcb_dz, "Gray")
-        ne_pcb_colored: Color = pcb_process("NE", ne_pcb_polygon, pcb_bottom_z, pcb_dz, "Blue")
-        nw_pcb_colored: Color = pcb_process("NW", nw_pcb_polygon, pcb_bottom_z, pcb_dz, "Orange")
-        se_pcb_colored: Color = pcb_process("SE", se_pcb_polygon, pcb_bottom_z, pcb_dz, "Purple")
-        sw_pcb_colored: Color = pcb_process("SW", sw_pcb_polygon, pcb_bottom_z, pcb_dz, "Red")
+        # Create the 6 PCB modules:
+        master_pcb_module: Module3D = master_pcb.scad_program_append(scad_program,
+                                                                     pcb_bottom_z - pcb_dz,
+                                                                     pcb_dz, "Yellow")
+        center_pcb_module: Module3D = center_pcb.scad_program_append(scad_program,
+                                                                     pcb_bottom_z, pcb_dz, "Gray")
+        ne_pcb_module: Module3D = ne_pcb.scad_program_append(scad_program,
+                                                             pcb_bottom_z, pcb_dz, "Blue")
+        nw_pcb_module: Module3D = nw_pcb.scad_program_append(scad_program,
+                                                             pcb_bottom_z, pcb_dz, "Orange")
+        se_pcb_module: Module3D = se_pcb.scad_program_append(scad_program,
+                                                             pcb_bottom_z, pcb_dz, "Purple")
+        sw_pcb_module: Module3D = sw_pcb.scad_program_append(scad_program,
+                                                             pcb_bottom_z, pcb_dz, "Red")
 
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
         module: Module3D = Module3D("Master Board Module",
@@ -1569,12 +1675,12 @@ class MasterBoard:
                                      arm_spacers +
                                      sonars +
                                      st_link_connectors +
-                                     [master_pcb_colored,
-                                      center_pcb_colored,
-                                      ne_pcb_colored,
-                                      nw_pcb_colored,
-                                      se_pcb_colored,
-                                      sw_pcb_colored,
+                                     [master_pcb_module.use_module_get(),
+                                      center_pcb_module.use_module_get(),
+                                      ne_pcb_module.use_module_get(),
+                                      nw_pcb_module.use_module_get(),
+                                      se_pcb_module.use_module_get(),
+                                      sw_pcb_module.use_module_get(),
                                       translated_st_link,
                                       receptacle_2x20.module.use_module_get(),
                                       north_morpho_connector.module.use_module_get(),
@@ -1583,11 +1689,19 @@ class MasterBoard:
         scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
         self.module: Module3D = module
 
-    # MasterBoard.pcb_polygons_compute():
-    def pcb_polygons_compute(self) -> Tuple[Polygon, Polygon, Polygon, Polygon, Polygon, Polygon]:
-        """Compute the various PCB exterior Polygon's."""
+    # MasterBoard.pcbs_create():
+    def pcbs_create(self) -> Tuple[PCB, PCB, PCB, PCB, PCB, PCB]:
+        """Create the master board PCB's with exterior contours."""
+        # This routine creates 6 *PCB*'s named "Center", "NE", "NW", "SE", "SW", "Master".
+        # When the first 5 boards are attached to one another, they form the final "Master" *PCB*.
+        # The first 5 boards are designed to be manufatured using the Bantam Labs PCB milling
+        # machine and associated software to allow rapid prototyping.  The Band Labs PCB milling
+        # machine has a maximum size contraint of 5in by 4in.  There 5 individual boards will
+        # eventually into the merged one final "Master" *PCB*.)  The "Master" PCB is designed
+        # to be manufactured using a standard PCB manfucturing service.
+        #
         # The outline of the PCB shown in cruddy ASCII art below.  The PCB is broken into 6 boards
-        # Where '-' means a straight line and and '@' means an arc:
+        # where '-' means a straight line and and '@' means an arc:
         #
         # * *master_pcb*: The master PCB is A-a@c-D-E-f#@h-H-I-J-K-L-M-m@p-Q-R-s@v-V-W-X-Y-Z-A
         # * *center_pcb*: The center PCB is squarish A-B-C-D-E-F-G-H-I-J-K-L-M-N-O-P-Q-R-X-Y-Z-A
@@ -1596,8 +1710,6 @@ class MasterBoard:
         # * *se_pcb*: The south east PCB is S-s@v-V-U-T-S
         # * *sw_pcb*: The south west PCB is M-m@p-P-O-N-M
         #
-        # The *center_pcb*, *ne_pcb*, *nw_pcb*, *se_pcb*, and *sw_pcb* basically cover the
-        # *matster_pcb*.
         #
         #         *-------f             c-------*
         #        /        |             |        \
@@ -1785,8 +1897,7 @@ class MasterBoard:
         master_pcb_exterior.corner_arc_append(Z, corner_radius, "WN")
         master_pcb_exterior.corner_arc_append(A, corner_radius, "SE")  # Strange! no rounded corner!
         master_pcb_exterior.lock()
-        master_pcb_polygon: Polygon = Polygon("Master PCB Polygon",
-                                              [master_pcb_exterior], lock=False)
+        master_pcb: PCB = PCB("Master", master_pcb_exterior)
 
         # Compute the *center_pcb_exterior*:
         center_pcb_exterior: SimplePolygon = SimplePolygon("Center PCB Exterior SimplePolygon",
@@ -1816,8 +1927,7 @@ class MasterBoard:
         center_pcb_exterior.corner_arc_append(Z, corner_radius, "WN")
         # Skip A
         center_pcb_exterior.lock()
-        center_pcb_polygon: Polygon = Polygon("Center PCB Polygon",
-                                              [center_pcb_exterior], lock=False)
+        center_pcb: PCB = PCB("Center", center_pcb_exterior)
 
         # Compute the *ne_pcb_exterior* and stuff it into *ne_pcb_polygon*:
         ne_pcb_exterior: SimplePolygon = SimplePolygon("NE PCB Exterior SimplePolygon",
@@ -1828,7 +1938,7 @@ class MasterBoard:
         ne_pcb_exterior.point_append(C)
         ne_pcb_exterior.corner_arc_append(B, corner_radius, "WS")
         ne_pcb_exterior.lock()
-        ne_pcb_polygon: Polygon = Polygon("NE PCB Polygon", [ne_pcb_exterior], lock=False)
+        ne_pcb: PCB = PCB("NE", ne_pcb_exterior)
 
         # Compute the *nw_pcb_exterior* and stuff it into the *nw_pcb_polygon*:
         nw_pcb_exterior: SimplePolygon = SimplePolygon("NW PCB Exterior SimplePolygon",
@@ -1839,7 +1949,7 @@ class MasterBoard:
         nw_pcb_exterior.point_append(H)
         nw_pcb_exterior.corner_arc_append(G, corner_radius, "SE")
         nw_pcb_exterior.lock()
-        nw_pcb_polygon: Polygon = Polygon("NW PCB Polygon", [nw_pcb_exterior], lock=False)
+        nw_pcb: PCB = PCB("NW", nw_pcb_exterior)
 
         # Compute the *se_pcb_exterior* and stuff it into the *se_pcb_polygon*:
         se_pcb_exterior: SimplePolygon = SimplePolygon("SE PCB Exterior SimplePolygon",
@@ -1852,7 +1962,7 @@ class MasterBoard:
         se_pcb_exterior.arc_append(origin, inner_radius, U_angle, T_angle, 0.0)
         # se_pcb_exterior.point_append(T)
         se_pcb_exterior.lock()
-        se_pcb_polygon: Polygon = Polygon("SE PCB Polygon", [se_pcb_exterior], lock=False)
+        se_pcb: PCB = PCB("SE", se_pcb_exterior)
 
         # Compute the *sw_pcb_exterior*:
         sw_pcb_exterior: SimplePolygon = SimplePolygon("SW PCB Exterior SimplePolygon",
@@ -1865,12 +1975,10 @@ class MasterBoard:
         sw_pcb_exterior.arc_append(origin, inner_radius, O_angle, N_angle, 0.0)
         # sw_pcb_exterior.point_append(N)
         sw_pcb_exterior.lock()
-        sw_pcb_polygon: Polygon = Polygon("SW PCB Polygon", [sw_pcb_exterior], lock=False)
+        sw_pcb: PCB = PCB("SW", sw_pcb_exterior)
 
-        # Return the resulting unlocked polygons so that additional holes and slots
-        # can be cut into them.
-        return (master_pcb_polygon, center_pcb_polygon,
-                ne_pcb_polygon, nw_pcb_polygon, se_pcb_polygon, sw_pcb_polygon)
+        # Return the resulting *PCB*s:
+        return master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb, sw_pcb
 
 
 # PiBoard:
