@@ -344,6 +344,118 @@ class Component:
         return repositioned_holes
 
 
+# ST144Morpho:
+class ST144Morpho(Component):
+    """Represents an ST Nucleo-144 Development Board."""
+
+    # ST144Morpho.__init__():
+    def __init__(self) -> None:
+        """Create an ST NUCLEO-144 Morpho Connector Component."""
+        # Intialize the parent
+        super().__init__("ST144Morpho")
+
+        # Do CN11:p
+        # Do CN12:
+        # Do 5 mechanical mounting holes:
+
+        # Misc. constants:
+        morpho_pin_columns: int = 35
+        morpho_pin_rows: int = 2
+        degrees90: float = pi / 2.0
+        # mount_hole_diameter: float = 3.20
+
+        # All units are in thousandths of an inch and need to be converted to millimeters:
+        def mil(mil: float) -> float:
+            return mil * 0.0254
+
+        # X Coordinates:
+        pcb_dx: float = 70.0
+        pcb_east_x: float = pcb_dx / 2.0
+        pcb_west_x: float = -pcb_east_x
+
+        # Connector X coordinates:
+        cn11_morpho_pin1_x: float = pcb_west_x + mil(127)
+        cn11_morpho_center_x: float = cn11_morpho_pin1_x + mil(50)
+        cn12_morpho_pin1_x: float = pcb_west_x + mil(2527)
+        cn12_morpho_center_x: float = cn12_morpho_pin1_x + mil(50)
+
+        # Mounting hole X coordinates:
+        # center_mount_hole_x: float = pcb_west_x + mil(1727)
+        # nw_mount_hole_x: float = pcb_west_x + mil(427)
+        # ne_mount_hole_x: float = pcb_west_x + mil(2327)
+        # sw_mount_hole_x: float = pcb_west_x + mil(477)
+        # se_mount_hole_x: float = pcb_west_x + mil(2277)
+
+        # Y Coordinates:
+        pcb_dy: float = mil(2002) + mil(2243)
+        pcb_north_y: float = pcb_dy / 2.0
+        pcb_south_y: float = -pcb_north_y
+        pcb_pseudo_origin_y: float = pcb_south_y + mil(2002)
+
+        # Connector Y coordinates:
+        cn11_morpho_pin1_y: float = pcb_pseudo_origin_y + mil(1998)
+        cn11_morpho_y_pins: int = 35
+        cn11_morpho_center_y: float = (cn11_morpho_pin1_y -
+                                       float(cn11_morpho_y_pins - 1) * mil(100) / 2.0)
+        cn12_morpho_pin1_y: float = pcb_pseudo_origin_y + mil(1998)
+        cn12_morpho_y_pins: int = 35
+        cn12_morpho_center_y: float = (cn12_morpho_pin1_y -
+                                       float(cn12_morpho_y_pins - 1) * mil(100) / 2.0)
+        # Mounting_hole_coordinates:
+        # center_mount_hole_y: float = pcb_pseudo_origin_y + mil(98)
+        # ne_mount_hole_y: float = pcb_pseudo_origin_y + mil(2098)
+        # nw_mount_hole_y: float = pcb_pseudo_origin_y + mil(2148)
+        # sw_mount_hole_y: float = pcb_pseudo_origin_y - mil(852)
+        # se_mount_hole_y: float = pcb_pseudo_origin_y - mil(852)
+
+        # Some KiCAD footprint constants:
+        morpho_pad_diameter: float = 1.524
+        morpho_drill_diameter: float = 1.016
+
+        assert False
+        pcb_polygon: Polygon = Polygon("filler")
+        morpho: Footprint = Footprint("filler")
+
+        # Create the *east_morpho_connector* and *west_morpho_connector*:
+        # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
+        # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
+        # In additon, create the two ground connectors:
+        cn12_morpho_center: P3D = P3D(cn12_morpho_center_x, cn12_morpho_center_y, 0.0)
+        self.cn12_morpho_center: P3D = cn12_morpho_center
+        cn12_morpho_connector: RectangularConnector = RectangularConnector(
+            "CN12 East Morpho Connector",
+            morpho_pin_rows, morpho_pin_columns,
+            2.54, 2.79,
+            male_pin_height=8.08,
+            center=cn12_morpho_center,
+            insulation_color="DarkRed",
+            pcb_polygon=pcb_polygon,
+            is_top=False, vertical_rotate=degrees90,
+            footprint=morpho, footprint_pin_number=1201,
+            footprint_pad_diameter=morpho_pad_diameter,
+            footprint_drill_diameter=morpho_drill_diameter,
+            footprint_flags="")
+        cn12_morpho_connector = cn12_morpho_connector
+        # scad_program.append(cn12_morpho)
+        cn11_morpho_center: P3D = P3D(cn11_morpho_center_x, cn11_morpho_center_y, 0.0)
+        self.cn11_morpho_center: P3D = cn11_morpho_center
+        cn11_morpho_connector: RectangularConnector = RectangularConnector(
+            "CN11 West Morpho Connector",
+            morpho_pin_rows, morpho_pin_columns,
+            2.54, 2.79, male_pin_height=6.00,
+            center=cn11_morpho_center,
+            insulation_color="DarkRed",
+            pcb_polygon=pcb_polygon,
+            is_top=False, vertical_rotate=degrees90,
+            footprint=morpho, footprint_pin_number=1101,
+            footprint_pad_diameter=morpho_pad_diameter,
+            footprint_drill_diameter=morpho_drill_diameter,
+            footprint_flags="")
+        cn11_morpho_connector = cn11_morpho_connector
+        morpho.save(Path("../electrical/master_board/rev_a/master_board.pretty/"
+                         "MORPHO144.kicad_mod"), "t")
+
+
 # PCB:
 class PCB:
     """Represents a printed circuit board in KiCad and OpenSCAD."""
@@ -396,7 +508,6 @@ class PCB:
         pcb_polygon.lock()
 
         # Generate the...
-        print("scad_program_append")
         pcb_module2d: Module2D = Module2D(f"{name} PCB XModule", [pcb_polygon])
         scad_program.append(pcb_module2d)
         scad_program.if2d.name_match_append(f"{name.lower()}_pcb",
@@ -521,24 +632,26 @@ class EncoderBoard:
         offset: float = 1.5 * 2.54
         degrees90: float = pi / 2.0
         north_header_center: P3D = P3D(pcb_west_x + 0.5 * 2.54, pcb_north_y - offset, 0.0)
-        north_header = RectangularConnector(scad_program, "North Encoder Header",
-                                            1, 3, 2.50, 3.90 - 2.50, male_pin_height=6.00,
-                                            right_angle_length=(3.05 + 0.127),
-                                            center=north_header_center,
-                                            insulation_color="SkyBlue",
-                                            pcb_polygon=pcb_polygon,
-                                            vertical_rotate=degrees90, is_top=False)
-        north_header_use_module: Scad3D = north_header.module.use_module_get()
+        north_encoder_connector: RectangularConnector = RectangularConnector(
+            "North Encoder Header",
+            1, 3, 2.50, 3.90 - 2.50, male_pin_height=6.00,
+            right_angle_length=(3.05 + 0.127),
+            center=north_header_center,
+            insulation_color="SkyBlue",
+            pcb_polygon=pcb_polygon,
+            vertical_rotate=degrees90, is_top=False)
+        north_header_use_module: Scad3D = north_encoder_connector.module.use_module_get()
 
         south_header_center: P3D = P3D(pcb_west_x + 0.5 * 2.54, pcb_south_y + offset, 0.0)
-        south_header = RectangularConnector(scad_program, "South Encoder Header",
-                                            1, 3, 2.50, 3.90 - 2.50, male_pin_height=6.00,
-                                            right_angle_length=(3.05 + 0.127),
-                                            center=south_header_center,
-                                            insulation_color="Lime",
-                                            pcb_polygon=pcb_polygon,
-                                            vertical_rotate=degrees90, is_top=False)
-        south_header_use_module: Scad3D = south_header.module.use_module_get()
+        south_header_connector: RectangularConnector = RectangularConnector(
+            "South Encoder Header",
+            1, 3, 2.50, 3.90 - 2.50, male_pin_height=6.00,
+            right_angle_length=(3.05 + 0.127),
+            center=south_header_center,
+            insulation_color="Lime",
+            pcb_polygon=pcb_polygon,
+            vertical_rotate=degrees90, is_top=False)
+        south_header_use_module: Scad3D = south_header_connector.module.use_module_get()
 
         # Now that the connector holes have been added to *pcb_polygon*, it can be locked,
         # turned into a *encode_pcb_module*, append it to *scad_program* and make
@@ -1069,42 +1182,42 @@ class Nucleo144:
         pcb_polygon.append(external_outline)
 
         # Create the *zio7_connector*, *zio8_connector*, *zio9_connector*, and *zio10connector*:
-        cn7_zio_connector: RectangularConnector
-        cn7_zio_connector = RectangularConnector(scad_program, "CN7 Zio Connector",
-                                                 2, 10, zio_insulation_dz, zio_pin_dz,
-                                                 center=P3D(cn7_zio_center_x,
-                                                            cn7_zio_center_y, pcb_dz),
-                                                 insulation_color="SlateBlue",
-                                                 cut_out=True,
-                                                 pcb_polygon=pcb_polygon,
-                                                 vertical_rotate=degrees90)
-        cn8_zio_connector: RectangularConnector
-        cn8_zio_connector = RectangularConnector(scad_program, "CN8 Zio Connector",
-                                                 2, 8, zio_insulation_dz, zio_pin_dz,
-                                                 center=P3D(cn8_zio_center_x,
-                                                            cn8_zio_center_y, pcb_dz),
-                                                 insulation_color="SlateBlue",
-                                                 cut_out=True,
-                                                 pcb_polygon=pcb_polygon,
-                                                 vertical_rotate=degrees90)
-        cn9_zio_connector: RectangularConnector
-        cn9_zio_connector = RectangularConnector(scad_program, "CN9 Zio Connector",
-                                                 2, 15, zio_insulation_dz, zio_pin_dz,
-                                                 center=P3D(cn9_zio_center_x,
-                                                            cn9_zio_center_y, pcb_dz),
-                                                 insulation_color="SlateBlue",
-                                                 cut_out=True,
-                                                 pcb_polygon=pcb_polygon,
-                                                 vertical_rotate=degrees90)
-        cn10_zio_connector: RectangularConnector
-        cn10_zio_connector = RectangularConnector(scad_program, "CN10 Zio Connector",
-                                                  2, 17, zio_insulation_dz, zio_pin_dz,
-                                                  center=P3D(cn10_zio_center_x,
-                                                             cn10_zio_center_y, pcb_dz),
-                                                  insulation_color="SlateBlue",
-                                                  cut_out=True,
-                                                  pcb_polygon=pcb_polygon,
-                                                  vertical_rotate=degrees90)
+        cn7_zio_connector: RectangularConnector = RectangularConnector(
+            "CN7 Zio Connector",
+            2, 10, zio_insulation_dz, zio_pin_dz,
+            center=P3D(cn7_zio_center_x, cn7_zio_center_y, pcb_dz),
+            insulation_color="SlateBlue",
+            cut_out=True,
+            pcb_polygon=pcb_polygon,
+            vertical_rotate=degrees90)
+        scad_program.append(cn7_zio_connector.module)
+        cn8_zio_connector: RectangularConnector = RectangularConnector(
+            "CN8 Zio Connector",
+            2, 8, zio_insulation_dz, zio_pin_dz,
+            center=P3D(cn8_zio_center_x, cn8_zio_center_y, pcb_dz),
+            insulation_color="SlateBlue",
+            cut_out=True,
+            pcb_polygon=pcb_polygon,
+            vertical_rotate=degrees90)
+        scad_program.append(cn8_zio_connector.module)
+        cn9_zio_connector: RectangularConnector = RectangularConnector(
+            "CN9 Zio Connector",
+            2, 15, zio_insulation_dz, zio_pin_dz,
+            center=P3D(cn9_zio_center_x, cn9_zio_center_y, pcb_dz),
+            insulation_color="SlateBlue",
+            cut_out=True,
+            pcb_polygon=pcb_polygon,
+            vertical_rotate=degrees90)
+        scad_program.append(cn9_zio_connector.module)
+        cn10_zio_connector: RectangularConnector = RectangularConnector(
+            "CN10 Zio Connector",
+            2, 17, zio_insulation_dz, zio_pin_dz,
+            center=P3D(cn10_zio_center_x, cn10_zio_center_y, pcb_dz),
+            insulation_color="SlateBlue",
+            cut_out=True,
+            pcb_polygon=pcb_polygon,
+            vertical_rotate=degrees90)
+        scad_program.append(cn10_zio_connector.module)
 
         # Create the *morpho* KiCAD footprint:
         morpho: Footprint = Footprint("MORPHO144")
@@ -1119,47 +1232,49 @@ class Nucleo144:
         # In additon, create the two ground connectors:
         cn12_morpho_center: P3D = P3D(cn12_morpho_center_x, cn12_morpho_center_y, 0.0)
         self.cn12_morpho_center: P3D = cn12_morpho_center
-        cn12_morpho_connector: RectangularConnector
-        cn12_morpho_connector = RectangularConnector(scad_program, "CN12 East Morpho Connector",
-                                                     morpho_pin_rows, morpho_pin_columns,
-                                                     2.54, 2.79,
-                                                     male_pin_height=8.08,
-                                                     center=cn12_morpho_center,
-                                                     insulation_color="DarkRed",
-                                                     pcb_polygon=pcb_polygon,
-                                                     is_top=False, vertical_rotate=degrees90,
-                                                     footprint=morpho, footprint_pin_number=1201,
-                                                     footprint_pad_diameter=morpho_pad_diameter,
-                                                     footprint_drill_diameter=morpho_drill_diameter,
-                                                     footprint_flags="")
+        cn12_morpho_connector: RectangularConnector = RectangularConnector(
+            "CN12 East Morpho Connector",
+            morpho_pin_rows, morpho_pin_columns,
+            2.54, 2.79,
+            male_pin_height=8.08,
+            center=cn12_morpho_center,
+            insulation_color="DarkRed",
+            pcb_polygon=pcb_polygon,
+            is_top=False, vertical_rotate=degrees90,
+            footprint=morpho, footprint_pin_number=1201,
+            footprint_pad_diameter=morpho_pad_diameter,
+            footprint_drill_diameter=morpho_drill_diameter,
+            footprint_flags="")
+        scad_program.append(cn12_morpho_connector.module)
         cn11_morpho_center: P3D = P3D(cn11_morpho_center_x, cn11_morpho_center_y, 0.0)
         self.cn11_morpho_center: P3D = cn11_morpho_center
-        cn11_morpho_connector: RectangularConnector
-        cn11_morpho_connector = RectangularConnector(scad_program, "CN11 West Morpho Connector",
-                                                     morpho_pin_rows, morpho_pin_columns,
-                                                     2.54, 2.79, male_pin_height=6.00,
-                                                     center=cn11_morpho_center,
-                                                     insulation_color="DarkRed",
-                                                     pcb_polygon=pcb_polygon,
-                                                     is_top=False, vertical_rotate=degrees90,
-                                                     footprint=morpho, footprint_pin_number=1101,
-                                                     footprint_pad_diameter=morpho_pad_diameter,
-                                                     footprint_drill_diameter=morpho_drill_diameter,
-                                                     footprint_flags="")
+        cn11_morpho_connector: RectangularConnector = RectangularConnector(
+            "CN11 West Morpho Connector",
+            morpho_pin_rows, morpho_pin_columns,
+            2.54, 2.79, male_pin_height=6.00,
+            center=cn11_morpho_center,
+            insulation_color="DarkRed",
+            pcb_polygon=pcb_polygon,
+            is_top=False, vertical_rotate=degrees90,
+            footprint=morpho, footprint_pin_number=1101,
+            footprint_pad_diameter=morpho_pad_diameter,
+            footprint_drill_diameter=morpho_drill_diameter,
+            footprint_flags="")
+        scad_program.append(cn11_morpho_connector.module)
         morpho.save(Path("../electrical/master_board/rev_a/master_board.pretty/"
                          "MORPHO144.kicad_mod"), "t")
-        east_ground_connector: RectangularConnector
-        west_ground_connector: RectangularConnector
-        east_ground_connector = RectangularConnector(scad_program, "East Ground Connector",
-                                                     1, 2, 2.54, 2.79, male_pin_height=5.08,
-                                                     center=P3D(cn12_morpho_center_x,
-                                                                ground_south_y, 0.0),
-                                                     pcb_polygon=pcb_polygon, is_top=False)
-        west_ground_connector = RectangularConnector(scad_program, "West Ground Connector",
-                                                     1, 2, 2.54, 2.79, male_pin_height=5.08,
-                                                     center=P3D(cn11_morpho_center_x,
-                                                                ground_south_y, 0.0),
-                                                     pcb_polygon=pcb_polygon, is_top=False)
+        east_ground_connector: RectangularConnector = RectangularConnector(
+            "East Ground Connector",
+            1, 2, 2.54, 2.79, male_pin_height=5.08,
+            center=P3D(cn12_morpho_center_x, ground_south_y, 0.0),
+            pcb_polygon=pcb_polygon, is_top=False)
+        scad_program.append(east_ground_connector.module)
+        west_ground_connector: RectangularConnector = RectangularConnector(
+            "West Ground Connector",
+            1, 2, 2.54, 2.79, male_pin_height=5.08,
+            center=P3D(cn11_morpho_center_x, ground_south_y, 0.0),
+            pcb_polygon=pcb_polygon, is_top=False)
+        scad_program.append(west_ground_connector.module)
 
         # Create the *ethernet_connector*, using measurements taken via calipers:
         ethernet_corner_cube: CornerCube = CornerCube("Ethernet Connector Corner Cube",
@@ -1377,15 +1492,16 @@ class MasterBoard:
         # insulation_height: float = 2.54
         # horizontal_height: float = pcb_height + insulation_height + header_height
         receptacle_center: P3D = P3D(pi_offset.x - 49.0/2.0, pi_offset.y, master_board_bottom_z)
-        receptcale_2x20: RectangularConnector
-        receptacle_2x20 = RectangularConnector(scad_program, "Pi", 2, 20,
-                                               receptacle_height, pcb_pin_height,
-                                               cut_out=True,
-                                               pcb_polygon=master_pcb_polygon,
-                                               pin_dx_dy=0.640,
-                                               center=receptacle_center,
-                                               insulation_color="Maroon",
-                                               vertical_rotate=degrees90, is_top=False)
+        receptacle_2x20: RectangularConnector = RectangularConnector(
+            "Pi", 2, 20,
+            receptacle_height, pcb_pin_height,
+            cut_out=True,
+            pcb_polygon=master_pcb_polygon,
+            pin_dx_dy=0.640,
+            center=receptacle_center,
+            insulation_color="Maroon",
+            vertical_rotate=degrees90, is_top=False)
+        scad_program.append(receptacle_2x20.module)
 
         # Create the 4 EncoderBoard 1x4 Female connectors and append the mounting holes
         # to *pcb_polygon*:
@@ -1407,16 +1523,16 @@ class MasterBoard:
             x_offset: float = -x_center_offset if index & 1 == 0 else x_center_offset
             y_offset: float = -y_center_offset if index & 2 == 0 else y_center_offset
             center: P3D = P3D(x_offset, y_offset, pcb_top_z)
-            encoder_receptacle_1x3: RectangularConnector
             # SLW-103-01-T-S:
-            encoder_receptacle_1x3 = RectangularConnector(scad_program,
-                                                          f"{name} Encoder Receptacle",
-                                                          1, 3, 4.57, 2.92,
-                                                          center=center,
-                                                          cut_out=True,
-                                                          pcb_polygon=master_pcb_polygon,
-                                                          insulation_color="Olive",
-                                                          vertical_rotate=degrees90)
+            encoder_receptacle_1x3: RectangularConnector = RectangularConnector(
+                f"{name} Encoder Receptacle",
+                1, 3, 4.57, 2.92,
+                center=center,
+                cut_out=True,
+                pcb_polygon=master_pcb_polygon,
+                insulation_color="Olive",
+                vertical_rotate=degrees90)
+            scad_program.append(encoder_receptacle_1x3.module)
             encoder_receptacles_use_modules.append(encoder_receptacle_1x3.module.use_module_get())
 
         # *nucleo144_offset* is the offset from the robot origin to the bottom center of
@@ -1491,26 +1607,26 @@ class MasterBoard:
         north_morpho_center: P3D = P3D(nucleo144_offset.x + cn11_morpho_center.y,
                                        nucleo144_offset.y + cn11_morpho_center.x,
                                        pcb_top_z)
-        north_morpho_connector: RectangularConnector
-        north_morpho_connector = RectangularConnector(scad_program,
-                                                      "North Morpho Connector",
-                                                      2, 36, 5.00, 2.92,
-                                                      center=north_morpho_center,
-                                                      cut_out=True,
-                                                      pcb_polygon=master_pcb_polygon,
-                                                      insulation_color="Teal")
+        north_morpho_connector: RectangularConnector = RectangularConnector(
+            "North Morpho Connector",
+            2, 36, 5.00, 2.92,
+            center=north_morpho_center,
+            cut_out=True,
+            pcb_polygon=master_pcb_polygon,
+            insulation_color="Teal")
+        scad_program.append(north_morpho_connector.module)
         cn12_morpho_center: P3D = nucleo144.cn12_morpho_center
         south_morpho_center: P3D = P3D(nucleo144_offset.x + cn12_morpho_center.y,
                                        nucleo144_offset.y + cn12_morpho_center.x,
                                        pcb_top_z)
-        south_morpho_connector: RectangularConnector
-        south_morpho_connector = RectangularConnector(scad_program,
-                                                      "South Morpho Connector",
-                                                      2, 36, 5.00, 2.92,
-                                                      center=south_morpho_center,
-                                                      cut_out=True,
-                                                      pcb_polygon=master_pcb_polygon,
-                                                      insulation_color="Teal")
+        south_morpho_connector: RectangularConnector = RectangularConnector(
+            "South Morpho Connector",
+            2, 36, 5.00, 2.92,
+            center=south_morpho_center,
+            cut_out=True,
+            pcb_polygon=master_pcb_polygon,
+            insulation_color="Teal")
+        scad_program.append(south_morpho_connector.module)
 
         # Create some HC-SR04 sonars:
         hcsr04: HCSR04 = HCSR04(scad_program)
@@ -2012,13 +2128,14 @@ class OtherPi(PiBoard):
         pi_header_insulation_height: float = 2.54
         pi_header_pin_height: float = (pi_total_header_height
                                        - pi_header_insulation_height - pi_pcb_height)
-        male_2x20_header: RectangularConnector
-        male_2x20_header = RectangularConnector(scad_program, "Other Pi", 2, 20,
-                                                pi_header_insulation_height, 2.54,
-                                                pi_header_pin_height,
-                                                center=male_2x20_header_center,
-                                                pcb_polygon=other_pi_pcb_polygon,
-                                                insulation_color="DarkBlue")
+        male_2x20_header: RectangularConnector = RectangularConnector(
+            "Other Pi", 2, 20,
+            pi_header_insulation_height, 2.54,
+            pi_header_pin_height,
+            center=male_2x20_header_center,
+            pcb_polygon=other_pi_pcb_polygon,
+            insulation_color="DarkBlue")
+        scad_program.append(male_2x20_header.module)
 
         connectors: List[Scad3D] = []
         connectors.append(Color("Silver Ethernet Connector",
@@ -2158,24 +2275,21 @@ class RaspberryPi3(PiBoard):
 
         connectors: List[Scad3D] = []
         mating_length: float = 5.840
-        male_pin_connector2x20: RectangularConnector
-        male_pin_connector2x20 = RectangularConnector(scad_program,
-                                                      "A", 2, 20, mating_length, 2.54, 2.00,
-                                                      center=P3D((57.90 + 7.10) / 2.0,
-                                                                 52.50, 0.0),
-                                                      pcb_polygon=raspi3b_pcb_polygon)
-        male_pin_connector2x2: RectangularConnector
-        male_pin_connector2x2 = RectangularConnector(scad_program,
-                                                     "B", 2, 2, mating_length, 2.54, 2.00,
-                                                     center=P3D((58.918 + 64.087) / 2.0,
-                                                                (44.005 + 48.727) / 2.0, 0.0),
-                                                     pcb_polygon=raspi3b_pcb_polygon)
-        male_pin_connector2x1: RectangularConnector
-        male_pin_connector2x1 = RectangularConnector(scad_program,
-                                                     "C", 2, 1, mating_length, 2.54, 2.00,
-                                                     center=P3D((58.90 + 64.10) / 2.0,
-                                                                (38.91 + 41.11) / 2.0, 0.0),
-                                                     pcb_polygon=raspi3b_pcb_polygon)
+        male_pin_connector2x20: RectangularConnector = RectangularConnector(
+            "A", 2, 20, mating_length, 2.54, 2.00,
+            center=P3D((57.90 + 7.10) / 2.0, 52.50, 0.0),
+            pcb_polygon=raspi3b_pcb_polygon)
+        scad_program.append(male_pin_connector2x20.module)
+        male_pin_connector2x2: RectangularConnector = RectangularConnector(
+            "B", 2, 2, mating_length, 2.54, 2.00,
+            center=P3D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0, 0.0),
+            pcb_polygon=raspi3b_pcb_polygon)
+        scad_program.append(male_pin_connector2x2.module)
+        male_pin_connector2x1: RectangularConnector = RectangularConnector(
+            "C", 2, 1, mating_length, 2.54, 2.00,
+            center=P3D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0, 0.0),
+            pcb_polygon=raspi3b_pcb_polygon)
+        scad_program.append(male_pin_connector2x1.module)
         connectors.append(male_pin_connector2x20.module.use_module_get())
         connectors.append(male_pin_connector2x2.module.use_module_get())
         connectors.append(male_pin_connector2x1.module.use_module_get())
@@ -2282,7 +2396,7 @@ class RectangularConnector:
     """Represents an NxM .1 inch male pin connector."""
 
     # RectangularConnector.__init__():
-    def __init__(self, scad_program: ScadProgram, name: str, rows: int, columns: int,
+    def __init__(self, name: str, rows: int, columns: int,
                  insulation_height: float, pcb_pin_height: float, male_pin_height: float = 0.0,
                  center: P3D = P3D(0.0, 0.0, 0.0),
                  rows_pitch: float = 2.54, columns_pitch: float = 2.54,
@@ -2306,9 +2420,6 @@ class RectangularConnector:
         in millimeters.
 
         Args:
-            *scad_program* (*ScadProgram*):
-                The *ScadProgram* object to append the *Module3D*
-                object for this connector to.
             *name* (*str*):
                 A disambigutation name for the connector.  This name
                 shows up in the generated `.scad` file.
@@ -2655,7 +2766,6 @@ class RectangularConnector:
 
         # Construct *module*, append to *scad_program*:
         module: Module3D = Module3D(f"{full_name} Module", [recentered_connector])
-        scad_program.append(module)
         self.module: Module3D = module
 
 
@@ -4843,148 +4953,137 @@ class STLink:
         jp1_pin1_y = cn2_pin1_y  # Visual inspection
         cn3_pin1_x = -cn2_pin1_x
         cn3_pin1_y = cn2_pin1_y  # Visual inspection (pin 1 on top)
-        print(f"jp1_pin1_x={jp1_pin1_x}")
 
         # Create the *st_connectors*  and *mb_connectors* list:
         # CN2:
-        st_cn2_connector: RectangularConnector
-        st_cn2_connector = RectangularConnector(scad_program, "ST CN2 GND Connector",
-                                                1, 2, 2.54, 2.54, 5.84,
-                                                center=P3D(cn2_pin1_x,
-                                                           cn2_pin1_y - 2.54 / 2.54,
-                                                           pcb_top_z),
-                                                insulation_color="Lime",
-                                                pcb_polygon=st_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
-        mb_cn2_connector: RectangularConnector
-        mb_cn2_connector = RectangularConnector(scad_program, "MB CN2 GND Connector",
-                                                1, 2, 8.50, 2.54, 0.0, is_top=False,
-                                                center=(center + P3D(cn2_pin1_x,
-                                                                     cn2_pin1_y - 2.54 / 2.54,
-                                                                     0.0)),
-                                                insulation_color="Gray",
-                                                pcb_polygon=master_board_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
+        st_cn2_connector: RectangularConnector = RectangularConnector(
+            "ST CN2 GND Connector",
+            1, 2, 2.54, 2.54, 5.84,
+            center=P3D(cn2_pin1_x, cn2_pin1_y - 2.54 / 2.54, pcb_top_z),
+            insulation_color="Lime",
+            pcb_polygon=st_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(st_cn2_connector.module)
+        mb_cn2_connector: RectangularConnector = RectangularConnector(
+            "MB CN2 GND Connector",
+            1, 2, 8.50, 2.54, 0.0, is_top=False,
+            center=(center + P3D(cn2_pin1_x, cn2_pin1_y - 2.54 / 2.54, 0.0)),
+            insulation_color="Gray",
+            pcb_polygon=master_board_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(mb_cn2_connector.module)
         master_board_connectors.append(mb_cn2_connector.module.use_module_get())
 
         # CN6:
-        st_cn6_connector: RectangularConnector
-        st_cn6_connector = RectangularConnector(scad_program, "CN6 SWD Connector",
-                                                1, 6, 2.54, 2.54, 5.84,
-                                                center=P3D(cn6_pin1_x,
-                                                           cn6_pin1_y - (5 * 2.54) / 2.0,
-                                                           pcb_top_z),
-                                                insulation_color="Lime",
-                                                pcb_polygon=st_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
-        mb_cn6_connector: RectangularConnector
-        mb_cn6_connector = RectangularConnector(scad_program, "MB CN6 SWD Connector",
-                                                1, 6, 8.50, 2.54, 0.0, is_top=False,
-                                                center=(center + P3D(cn6_pin1_x,
-                                                                     cn6_pin1_y - (5 * 2.54) / 2.0,
-                                                                     0.0)),
-                                                insulation_color="Gray",
-                                                pcb_polygon=master_board_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
+        st_cn6_connector: RectangularConnector = RectangularConnector(
+            "CN6 SWD Connector",
+            1, 6, 2.54, 2.54, 5.84,
+            center=P3D(cn6_pin1_x, cn6_pin1_y - (5 * 2.54) / 2.0, pcb_top_z),
+            insulation_color="Lime",
+            pcb_polygon=st_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(st_cn6_connector.module)
+        mb_cn6_connector: RectangularConnector = RectangularConnector(
+            "MB CN6 SWD Connector",
+            1, 6, 8.50, 2.54, 0.0, is_top=False,
+            center=(center + P3D(cn6_pin1_x, cn6_pin1_y - (5 * 2.54) / 2.0, 0.0)),
+            insulation_color="Gray",
+            pcb_polygon=master_board_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(mb_cn6_connector.module)
         master_board_connectors.append(mb_cn6_connector.module.use_module_get())
 
         # JP2:
-        st_jp2_connector: RectangularConnector
-        st_jp2_connector = RectangularConnector(scad_program, "JP2 Connector",
-                                                1, 2, 2.54, 2.54, 5.84,
-                                                center=P3D(jp2_pin1_x,
-                                                           jp2_pin1_y + 2.54 / 2.0, pcb_top_z),
-                                                insulation_color="Lime",
-                                                pcb_polygon=st_polygon,
-                                                vertical_rotate=degrees90)  # Pin 1 on bottom
-        mb_jp2_connector: RectangularConnector
-        mb_jp2_connector = RectangularConnector(scad_program, "MB JP2 Connector",
-                                                1, 2, 8.50, 2.54, 5.84, is_top=False,
-                                                center=(center + P3D(jp2_pin1_x,
-                                                                     jp2_pin1_y + 2.54 / 2.0,
-                                                                     0)),
-                                                insulation_color="Gray",
-                                                pcb_polygon=master_board_polygon,
-                                                vertical_rotate=degrees90)  # Pin 1 on bottom
+        st_jp2_connector: RectangularConnector = RectangularConnector(
+            "JP2 Connector",
+            1, 2, 2.54, 2.54, 5.84,
+            center=P3D(jp2_pin1_x, jp2_pin1_y + 2.54 / 2.0, pcb_top_z),
+            insulation_color="Lime",
+            pcb_polygon=st_polygon,
+            vertical_rotate=degrees90)  # Pin 1 on bottom
+        scad_program.append(st_jp2_connector.module)
+        mb_jp2_connector: RectangularConnector = RectangularConnector(
+            "MB JP2 Connector",
+            1, 2, 8.50, 2.54, 5.84, is_top=False,
+            center=(center + P3D(jp2_pin1_x, jp2_pin1_y + 2.54 / 2.0, 0)),
+            insulation_color="Gray",
+            pcb_polygon=master_board_polygon,
+            vertical_rotate=degrees90)  # Pin 1 on bottom
+        scad_program.append(mb_jp2_connector.module)
         master_board_connectors.append(mb_jp2_connector.module.use_module_get())
 
         # CN4:
-        st_cn4_connector: RectangularConnector
-        st_cn4_connector = RectangularConnector(scad_program, "CN4 Nucleo STLink Connector",
-                                                1, 4, 2.54, 2.54, 0.0,
-                                                center=P3D(cn4_pin1_x,
-                                                           cn4_pin1_y - (3 * 2.54) / 2.0,
-                                                           pcb_top_z),
-                                                insulation_color="Lime",
-                                                pcb_polygon=st_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
-        mb_cn4_connector: RectangularConnector
-        mb_cn4_connector = RectangularConnector(scad_program, "MB CN4 Nucleo STLink Connector",
-                                                1, 4, 8.50, 2.54, 5.84, is_top=False,
-                                                center=(center + P3D(cn4_pin1_x,
-                                                                     cn4_pin1_y - (3 * 2.54) / 2.0,
-                                                                     0.0)),
-                                                insulation_color="Gray",
-                                                pcb_polygon=master_board_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
+        st_cn4_connector: RectangularConnector = RectangularConnector(
+            "CN4 Nucleo STLink Connector",
+            1, 4, 2.54, 2.54, 0.0,
+            center=P3D(cn4_pin1_x, cn4_pin1_y - (3 * 2.54) / 2.0, pcb_top_z),
+            insulation_color="Lime",
+            pcb_polygon=st_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(st_cn4_connector.module)
+        mb_cn4_connector: RectangularConnector = RectangularConnector(
+            "MB CN4 Nucleo STLink Connector",
+            1, 4, 8.50, 2.54, 5.84, is_top=False,
+            center=(center + P3D(cn4_pin1_x, cn4_pin1_y - (3 * 2.54) / 2.0, 0.0)),
+            insulation_color="Gray",
+            pcb_polygon=master_board_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(mb_cn4_connector.module)
         master_board_connectors.append(mb_cn4_connector.module.use_module_get())
 
         # CN5:
-        st_cn5_connector: RectangularConnector
-        st_cn5_connector = RectangularConnector(scad_program, "CN5 TX RX Connector",
-                                                1, 2, 2.54, 2.54, 5.84,
-                                                center=P3D(cn5_pin1_x,
-                                                           cn5_pin1_y + 2.54 / 2.0, pcb_top_z),
-                                                insulation_color="Lime",
-                                                pcb_polygon=st_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
-        mb_cn5_connector: RectangularConnector
-        mb_cn5_connector = RectangularConnector(scad_program, "MB CN5 TX RX Connector",
-                                                1, 2, 8.50, 2.54, 0, is_top=False,
-                                                center=(center + P3D(cn5_pin1_x,
-                                                                     cn5_pin1_y + 2.54 / 2.0,
-                                                                     0.0)),
-                                                insulation_color="Gray",
-                                                pcb_polygon=master_board_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
+        st_cn5_connector: RectangularConnector = RectangularConnector(
+            "CN5 TX RX Connector",
+            1, 2, 2.54, 2.54, 5.84,
+            center=P3D(cn5_pin1_x, cn5_pin1_y + 2.54 / 2.0, pcb_top_z),
+            insulation_color="Lime",
+            pcb_polygon=st_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(st_cn5_connector.module)
+        mb_cn5_connector: RectangularConnector = RectangularConnector(
+            "MB CN5 TX RX Connector",
+            1, 2, 8.50, 2.54, 0, is_top=False,
+            center=(center + P3D(cn5_pin1_x, cn5_pin1_y + 2.54 / 2.0, 0.0)),
+            insulation_color="Gray",
+            pcb_polygon=master_board_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(mb_cn5_connector.module)
         master_board_connectors.append(mb_cn5_connector.module.use_module_get())
 
         # JP1:
-        st_jp1_connector: RectangularConnector
-        st_jp1_connector = RectangularConnector(scad_program, "JP1 Connector",
-                                                1, 2, 2.54, 2.54, 5.84,
-                                                center=P3D(jp1_pin1_x + 2.54 / 2.0,
-                                                           jp1_pin1_y, pcb_top_z),
-                                                insulation_color="Lime",
-                                                pcb_polygon=st_polygon)  # Pin1 to left
-        mb_jp1_connector: RectangularConnector
-        mb_jp1_connector = RectangularConnector(scad_program, "MB JP1 Connector",
-                                                1, 2, 8.50, 2.54, 0.0, is_top=False,
-                                                center=(center + P3D(jp1_pin1_x + 2.54 / 2.0,
-                                                                     jp1_pin1_y,
-                                                                     0.0)),
-                                                insulation_color="Gray",
-                                                pcb_polygon=master_board_polygon)  # Pin1 to left
+        st_jp1_connector: RectangularConnector = RectangularConnector(
+            "JP1 Connector",
+            1, 2, 2.54, 2.54, 5.84,
+            center=P3D(jp1_pin1_x + 2.54 / 2.0, jp1_pin1_y, pcb_top_z),
+            insulation_color="Lime",
+            pcb_polygon=st_polygon)  # Pin1 to left
+        scad_program.append(st_jp1_connector.module)
+        mb_jp1_connector: RectangularConnector = RectangularConnector(
+            "MB JP1 Connector",
+            1, 2, 8.50, 2.54, 0.0, is_top=False,
+            center=(center + P3D(jp1_pin1_x + 2.54 / 2.0, jp1_pin1_y, 0.0)),
+            insulation_color="Gray",
+            pcb_polygon=master_board_polygon)  # Pin1 to left
+        scad_program.append(mb_jp1_connector.module)
         master_board_connectors.append(mb_jp1_connector.module.use_module_get())
 
         # CN3:
-        st_cn3_connector: RectangularConnector
-        st_cn3_connector = RectangularConnector(scad_program, "CN3 GND Connector",
-                                                1, 2, 2.54, 2.54, 5.84,
-                                                center=P3D(cn3_pin1_x,
-                                                           cn3_pin1_y - 2.54 / 2.54, pcb_top_z),
-                                                insulation_color="Lime",
-                                                pcb_polygon=st_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
-        mb_cn3_connector: RectangularConnector
-        mb_cn3_connector = RectangularConnector(scad_program, "MB CN3 GND Connector",
-                                                1, 2, 8.50, 2.54, 0.0, is_top=False,
-                                                center=(center + P3D(cn3_pin1_x,
-                                                                     cn3_pin1_y - 2.54 / 2.54,
-                                                                     0.0)),
-                                                insulation_color="Gray",
-                                                pcb_polygon=master_board_polygon,
-                                                vertical_rotate=-degrees90)  # Pin 1 on top
+        st_cn3_connector: RectangularConnector = RectangularConnector(
+            "CN3 GND Connector",
+            1, 2, 2.54, 2.54, 5.84,
+            center=P3D(cn3_pin1_x, cn3_pin1_y - 2.54 / 2.54, pcb_top_z),
+            insulation_color="Lime",
+            pcb_polygon=st_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(st_cn3_connector.module)
+        mb_cn3_connector: RectangularConnector = RectangularConnector(
+            "MB CN3 GND Connector",
+            1, 2, 8.50, 2.54, 0.0, is_top=False,
+            center=(center + P3D(cn3_pin1_x, cn3_pin1_y - 2.54 / 2.54, 0.0)),
+            insulation_color="Gray",
+            pcb_polygon=master_board_polygon,
+            vertical_rotate=-degrees90)  # Pin 1 on top
+        scad_program.append(mb_cn3_connector.module)
         master_board_connectors.append(mb_cn3_connector.module.use_module_get())
 
         st_connectors: List[Scad3D] = [
