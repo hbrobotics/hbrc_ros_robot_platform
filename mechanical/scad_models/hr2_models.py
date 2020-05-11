@@ -2391,9 +2391,8 @@ class RaspberryPi3(PiBoard):
         return pcb_polygon
 
 
-# RectangularConnector:
 class RectangularConnector:
-    """Represents an NxM .1 inch male pin connector."""
+    """RectangularConnector represents an NxM connector."""
 
     # RectangularConnector.__init__():
     def __init__(self, name: str, rows: int, columns: int,
@@ -2767,6 +2766,145 @@ class RectangularConnector:
         # Construct *module*, append to *scad_program*:
         module: Module3D = Module3D(f"{full_name} Module", [recentered_connector])
         self.module: Module3D = module
+
+
+# RectangularConnector:
+class XRectangularConnector:
+    """Represents a group related rectangular NxM pin connector.
+
+    A RectangularConnector represents a group of rectangular pin
+    connectors that are basically compatible with one another in terms
+    of the number of rows, columns, pin dimensions, etc.  From this
+    basic information, it is possible to specify various different
+    interconnectable connectors (e.g. male vs female, straight pin vs.
+    right angle pins, color, shrouded, keyed, etc.)  In addition,
+    it is possible to generate KiCad footprints for these connectors
+    that have the correct pin numbers attached to the correct pins.
+    """
+
+    # XRectangularConnector.__init__():
+    def __init__(self, name: str, rows_count: int, columns_count: int,
+                 rows_pitch: float = 2.54, columns_pitch: float = 2.54,
+                 pin_dx_dy: float = 0.640) -> None:
+        """Create a class of related connectors with the same shape.
+
+        Args:
+            *name* (*str*):
+                A general name for the connector group.  This name
+                non-empty and consist of just alphanumeric characters
+                ('A'-'Z', 'a'-'z', '0'-'9') and underscores ('_'):
+            *rows_count* (*int*):
+                The number of rows in the connector.
+                (Must be positive.)
+            *columns_count* (*int*):
+                The number of rows in the connector.
+                (Must be positive.)
+            *rows_pitch* (*float*):
+                (Optional: defaults to 2.54mm)
+                The pin pitch between rows.
+                (Must be positive)
+            *columns_pitch* (*float*):
+                (Optional: defaults to 2.54mm)
+                The pin pitch between columns.
+                (Must be positive)
+            *pin_dx_dy* (*float*):
+                (Optional: defaults to 0.640mm)
+                The square pin edge length in X and Y.
+                (Must be positive)
+
+        """
+        # Do a little consistancy checking on the routine arguments:
+        assert name != "", "Empty connector name"
+        character: str
+        for character in name:
+            assert character.isalnum() or character == '_', (
+                f"Invalid character '{character}' in '{name}'")
+        assert rows_count > 0, f"rows_count(={rows_count} must be positive"
+        assert columns_count > 0, f"rows_count(={rows_count}) must be positive"
+        assert rows_pitch > 0.0, f"rows_pitch(={rows_pitch}) must be positive"
+        assert columns_pitch > 0.0, f"columns_pitch(={rows_pitch}) must be positive"
+        assert pin_dx_dy > 0.0, f"pin_dx_dy(={pin_dx_dy}) must be positive"
+
+        # Stuff the arguments into *rectangular connector* (i.e. *self*):
+        # rectangular_connector: RectangularConnector = self
+        self.name: str = name
+        self.rows_count: int = rows_count
+        self.columns_count: int = columns_count
+        self.rows_pitch: float = rows_pitch
+        self.columns_pitch: float = columns_pitch
+        self.pin_dx_dy: float = pin_dx_dy
+
+    def module_get(self,
+                   insulation_height: float,
+                   pcb_pin_height: float, male_pin_height: float = 0.0,
+                   is_top: bool = True,
+                   rows_extra_insulation: float = 0.000, columns_extra_insulation: float = 0.000,
+                   right_angle_length: float = 0.000, cut_out: bool = False,
+                   insulation_color: str = "Black", pin_color: str = "Gold") -> Module3D:
+        """Return a Module3D that can be rendered using OpenScad.
+
+        Args:
+            *insulation_height* (*float*):
+                The insulation height from the PCB surface to the
+                either the bottom of the male pin or the top of
+                the female receptacle.
+            *pcb_pin_height* (*float*):
+                The length of the through hole pin from the bottom of
+                the insulation to the end of the PCB pin.
+            *male_pin_height* (*float*):
+                (Optional: Defaults to 0.0.)
+                The pin distance above the insulation for male headers.
+                Set to 0.0 to get a female receptacle.
+            *is_top* (*bool*):
+                *True* if the connnector is on top of the PCB and *False*
+                otherwise.
+            *rows_extra_insulation* (*float*):
+                (Optional: defaults to 0.0mm.)
+                The amount the extra insulation in add to the rows.
+            *columns_extra_insulation* (*float*):
+                (Optional: defaults to 0.0mm.)
+                The amount the extra insulation in add to the columns.
+            *right_angle_length* (*float*):
+                (Optional: defaults to 0.0.)
+                Set to positive to have a right angle pins pointig in
+                positve row direction and negative in the negative
+                row direction.
+            *cut_out* (*bool*):
+                (Optional: Defaults to *False.)
+                If *True*, cut away some insulation to show how deep the
+                pins will go down.
+            *insulation_color*: (*str*):
+                (Optional: defaults to "Black".)
+                Sets the color of the insultation.
+            *pin_color* (*str*):
+                (Optional: defaults to "Gold".)
+                Sets the color of the pin.
+
+        """
+        # Validate argument types:
+        assert male_pin_height >= 0.0, f"Male Pin Height (={male_pin_height}) must be non-negative"
+        assert insulation_height > 0.0, f"Insulation Height (={insulation_height}) must be positive"
+        assert pcb_pin_height > 0.0, f"PCB Pin Height (={pcb_pin_height}) must be positive"
+        assert right_angle_length >= 0.0, (f"Right Angle Length (={right_angle_length} "
+                                           "must be non-negative)")
+
+        # Unpack *rectangular_connector* (i.e. *self*):
+        rectangular_connector: XRectangularConnector = self
+        name: str = rectangular_connector.name
+        rows_count: int = rectangular_connector.rows_count
+        columns_count: int = rectangular_connector.columns_count
+        rows_pitch: float = rectangular_connector.rows_pitch
+        columns_pitch: float = rectangular_connector.columns_pitch
+        pin_dx_dy: float = rectangular_connector.pin_dx_dy
+
+        name = name
+        rows_count = rows_count
+        columns_count = columns_count
+        rows_pitch = rows_pitch
+        columns_pitch = columns_pitch
+        pin_dx_dy = pin_dx_dy
+
+        return Module3D("Bogus", [])
 
 
 # RomiBase:
