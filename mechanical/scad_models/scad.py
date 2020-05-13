@@ -57,7 +57,7 @@ The basic class tree is:
 
 # Import stuff from other libraries:
 from math import acos, atan2, ceil, cos, degrees, pi, sin, sqrt
-from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple, Union
 
 
 # P3D:
@@ -444,8 +444,34 @@ class Scad:
             *name* (*str*): The name of the *Scad* object.
 
         """
-        # Stuff *name* into the *scad* object (i.e. *self*):
+        # Compute *trimmed_name* from *name*:
+        trimmed_characters: List[str] = []
+        for character in name:
+            if character == ' ':
+                character = '_'
+            if character.isalnum() or character == '_':
+                trimmed_characters.append(character)
+        trimmed_name: str = "".join(trimmed_characters)
+        assert name != "", f"Scad name ('{name}' => '{trimmed_name}') is empty."
+
+        # Stuff values into the *Scad* object (i.e. *self*):
+        # scad: Scad = self
         self.name: str = name
+        self.trimmed_name: str = Scad.name_trim(name)
+
+    @staticmethod
+    def name_trim(name: str) -> str:
+        """Return a name with only letters, digits, and underscores."""
+        # Compute *trimmed_name* from *name*:
+        trimmed_characters: List[str] = []
+        for character in name:
+            if character == ' ':
+                character = '_'
+            if character.isalnum() or character == '_':
+                trimmed_characters.append(character)
+        trimmed_name: str = "".join(trimmed_characters)
+        assert name != "", f"Scad name ('{name}' => '{trimmed_name}') is empty."
+        return trimmed_name
 
     # Scad.colors_set_get():
     @staticmethod
@@ -750,7 +776,8 @@ class ScadProgram:
         self.if3d: If3D = If3D("Name If3D", "false", [])
         self.name: str = name
         self.scads: List[Scad] = []
-        self.modules_table: Dict[str, Scad] = {}
+        self.scads_table: Dict[str, Scad] = {}
+        self.modules_table: Dict[str, Union[Module2D, Module3D]] = {}
 
     # ScadProgram.__str__():
     def __str__(self) -> str:
@@ -763,14 +790,45 @@ class ScadProgram:
     # ScadProgram.append():
     def append(self, scad: Scad) -> None:
         """Append a Scad to a ScadProgram."""
+        # Unpack some values from *scad_program* (i.e. *self*):
         scad_program: ScadProgram = self
-        modules_table: Dict[str, Scad] = scad_program.modules_table
-        scad_name: str = scad.name
-        if isinstance(scad, Module2D) or isinstance(scad, Module3D):
-            assert scad_name not in modules_table, f"Module {scad_name} has already been defined"
-        modules_table[scad_name] = scad
+        modules_table: Dict[str, Union[Module2D, Module3D]] = scad_program.modules_table
         scads: List[Scad] = scad_program.scads
+        scads_table: Dict[str, Scad] = scad_program.scads_table
+
+        # Unpack some values from *scad*:
+        scad_name: str = scad.name
+        trimmed_name: str = scad.trimmed_name
+
+        # Insert *scad* into *scads_table* and *modules_table* (if appropraite):
+        if trimmed_name in scads_table:
+            assert False, f"Name '{scad_name}' (=>'{trimmed_name}') has already been used."
+        else:
+            scads_table[trimmed_name] = scad
+        if isinstance(scad, Module2D) or isinstance(scad, Module3D):
+            modules_table[trimmed_name] = scad
+
+        # Finally, append the *scad* onto *scads*:
         scads.append(scad)
+
+    # ScadProgram.use_get():
+    def use_module_get(self, name: str) -> Scad:
+        """Lookup a use module by name."""
+        # Unpack some values from *scad_program* (i.e. *self*):
+        scad_program: ScadProgram = self
+        modules_table: Dict[str, Union[Module2D, Module3D]] = scad_program.modules_table
+        trimmed_name: str = Scad.name_trim(name)
+        assert trimmed_name in modules_table, (f"Module name ('{name}' => '{trimmed_name}') "
+                                               "is not a known module.")
+        module: Union[Module2D, Module3D] = modules_table[trimmed_name]
+        use: Scad
+        if isinstance(module, Module3D):
+            use = module.use_module3d
+        elif isinstance(module, Module2D):
+            use = module.use_module
+        else:
+            assert False, "This should never happen."  # pragma: no cover
+        return use
 
     # ScadProgram.read_me_update():
     def read_me_update(self, read_me_text: str) -> Tuple[str, List[str]]:
