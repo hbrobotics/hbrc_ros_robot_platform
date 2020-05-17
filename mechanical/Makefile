@@ -81,7 +81,7 @@ CLEAN_DIRECTORIES :=				\
 
 # This is the top level target that builds everything.  It uses sub-targets to
 # force things to be built in the "correct* order:
-all: ${DXF_FILES} README.html # ${PNG_FILES}
+all: ${INSTALLED_SCAD_MODELS_PY_FILES} hr2_models.scad # ${DXF_FILES} README.html # ${PNG_FILES}
 
 everything: all
 
