@@ -57,7 +57,7 @@ The basic class tree is:
 
 # Import stuff from other libraries:
 from math import acos, atan2, ceil, cos, degrees, pi, sin, sqrt
-from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple
 
 
 # P3D:
@@ -182,7 +182,8 @@ class P2D:
         """Add two two P2D's together."""
         # Use *p2d1* instead of *self*:
         p2d1: P2D = self
-        return P2D(p2d1.x + p2d2.x, p2d1.y + p2d2.y)
+        sum: P2D = P2D(p2d1.x + p2d2.x, p2d1.y + p2d2.y)
+        return sum
 
     # P2D.__mul__():
     def __mul__(self, scale: float) -> "P2D":
@@ -265,6 +266,52 @@ class P2D:
         rotated_y: float = center_y + y * cos_angle + x * sin_angle
         rotated_point: P2D = P2D(rotated_x, rotated_y)
         return rotated_point
+
+    # P2D.reposition():
+    def reposition(self, flags: str, center: "P2D", rotate: float, translate: "P2D") -> "P2D":
+        """Return a respositioned point.
+
+        Args:
+            * *flags* (*str*):
+              A list of one or more flags that control mirroring:
+              'x': Mirror around the X axis.
+              'y': Mirror aroudn the Y axis.
+            * *center* (*P2D)*:
+              Center to use for mirroring, rotation, and translation.
+            * *rotate* (*float*):
+              The amount to rotate the point by measered in radians.
+            * *translate* (*float*):
+              The final amount to translate by.
+
+        """
+        # Use *p2d* instead of *self*:
+        p2d: P2D = self
+
+        # Verify *flags*:
+        flag: str
+        for flag in flags:
+            if flag not in "xy":
+                raise ValueError("Flag '{flag}' in 'flags' disallowed. It must be 'x' or 'y'.")
+
+        # Translate *p2d* to its virtual origin:
+        origin_centered: P2D = p2d - center
+
+        # Peform the mirror and rotate operations:
+        if 'x' in flags:
+            origin_centered = p2d.x_mirror()
+        if 'y' in flags:
+            origin_centered = p2d.y_mirror()
+        origin_centered = origin_centered.rotate(rotate)
+
+        # Return the translated point:
+        translated: P2D = origin_centered + center + translate
+        return translated
+
+    # PD2.x_mirror():
+    def x_mirror(self) -> "P2D":
+        """Return the p3d mirrored across the X axis."""
+        p2d: P2D = self
+        return P2D(p2d.x, -p2d.y)
 
     # PD2.y_mirror():
     def y_mirror(self) -> "P2D":
@@ -777,7 +824,8 @@ class ScadProgram:
         self.name: str = name
         self.scads: List[Scad] = []
         self.scads_table: Dict[str, Scad] = {}
-        self.modules_table: Dict[str, Union[Module2D, Module3D]] = {}
+        self.module2d_table: Dict[str, Module2D] = {}
+        self.module3d_table: Dict[str, Module3D] = {}
 
     # ScadProgram.__str__():
     def __str__(self) -> str:
@@ -792,7 +840,8 @@ class ScadProgram:
         """Append a Scad to a ScadProgram."""
         # Unpack some values from *scad_program* (i.e. *self*):
         scad_program: ScadProgram = self
-        modules_table: Dict[str, Union[Module2D, Module3D]] = scad_program.modules_table
+        module2d_table: Dict[str, Module2D] = scad_program.module2d_table
+        module3d_table: Dict[str, Module3D] = scad_program.module3d_table
         scads: List[Scad] = scad_program.scads
         scads_table: Dict[str, Scad] = scad_program.scads_table
 
@@ -805,30 +854,37 @@ class ScadProgram:
             assert False, f"Name '{scad_name}' (=>'{trimmed_name}') has already been used."
         else:
             scads_table[trimmed_name] = scad
-        if isinstance(scad, Module2D) or isinstance(scad, Module3D):
-            modules_table[trimmed_name] = scad
+            if isinstance(scad, Module2D):
+                module2d_table[trimmed_name] = scad
+            elif isinstance(scad, Module3D):
+                module3d_table[trimmed_name] = scad
 
         # Finally, append the *scad* onto *scads*:
         scads.append(scad)
 
-    # ScadProgram.use_get():
-    def use_module_get(self, name: str) -> Scad:
+    # ScadProgram.use_module2d_get():
+    def module2d_get(self, name: str) -> "Module2D":
         """Lookup a use module by name."""
         # Unpack some values from *scad_program* (i.e. *self*):
         scad_program: ScadProgram = self
-        modules_table: Dict[str, Union[Module2D, Module3D]] = scad_program.modules_table
+        module2d_table: Dict[str, Module2D] = scad_program.module2d_table
         trimmed_name: str = Scad.name_trim(name)
-        assert trimmed_name in modules_table, (f"Module name ('{name}' => '{trimmed_name}') "
-                                               "is not a known module.")
-        module: Union[Module2D, Module3D] = modules_table[trimmed_name]
-        use: Scad
-        if isinstance(module, Module3D):
-            use = module.use_module3d
-        elif isinstance(module, Module2D):
-            use = module.use_module
-        else:
-            assert False, "This should never happen."  # pragma: no cover
-        return use
+        assert trimmed_name in module2d_table, (f"Module name ('{name}' => '{trimmed_name}') "
+                                                "is not a known Module2D.")
+        module2d: Module2D = module2d_table[trimmed_name]
+        return module2d
+
+    # ScadProgram.use_module3d_get():
+    def module3d_get(self, name: str) -> "Module3D":
+        """Lookup a use module by name."""
+        # Unpack some values from *scad_program* (i.e. *self*):
+        scad_program: ScadProgram = self
+        module3d_table: Dict[str, Module3D] = scad_program.module3d_table
+        trimmed_name: str = Scad.name_trim(name)
+        if trimmed_name not in module3d_table:
+            raise ValueError(f"Module name ('{name}' => '{trimmed_name}') is not a known Module3D.")
+        module3d: Module3D = module3d_table[trimmed_name]
+        return module3d
 
     # ScadProgram.read_me_update():
     def read_me_update(self, read_me_text: str) -> Tuple[str, List[str]]:
@@ -3614,6 +3670,7 @@ class Module3D(Scad3D):
         self.locked: bool = lock
         self.scad3ds: List[Scad3D] = scad3ds[:]  # Make a copy
         self.use_module3d: UseModule3D = UseModule3D(f"Use {name}", self)
+        self.tags_table: Dict[str, Any] = {}
 
     # Module3D.__str__():
     def __str__(self) -> str:  # pragma: no cover
@@ -3728,6 +3785,28 @@ class Module3D(Scad3D):
 
         # Output the closing '}':
         scad_lines.append(f"{indent}}}")
+
+    # Module3D.tag_insert():
+    def tag_insert(self, tag_name: str, tag: Any) -> None:
+        """Insert a tag into a module."""
+        # Unpack some values from *module3d* (i.e. *self*):
+        module3d: Module3D = self
+        name: str = module3d.name
+        tags_table: Dict[str, Any] = module3d.tags_table
+        trimmed_tag_name: str = Scad.name_trim(tag_name)
+        assert trimmed_tag_name not in tags_table, (f"Tag '{tag_name}' (=>'{trimmed_tag_name}') "
+                                                    f"is already associated with module '{name}'")
+        tags_table[trimmed_tag_name] = tag
+
+    # Module3D.tag_lookup():
+    def tag_lookup(self, tag_name: str) -> Any:
+        """Insert a tag into a module."""
+        # Unpack some values from *module3d* (i.e. *self*):
+        module3d: Module3D = self
+        tags_table: Dict[str, Any] = module3d.tags_table
+        trimmed_tag_name: str = Scad.name_trim(tag_name)
+        tag: Any = tags_table[trimmed_tag_name] if trimmed_tag_name in tags_table else None
+        return tag
 
     # Module3D.use_module_get():
     def use_module_get(self) -> "UseModule3D":

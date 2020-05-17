@@ -30,7 +30,7 @@
 from scad_models.scad import (Color, Circle, CornerCube, Cylinder, If2D, Difference2D, KicadPcb,
                               LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
                               Scad2D, Scad3D, SimplePolygon, ScadProgram, Square,
-                              Translate3D, UseModule3D, Union3D, Variable2D)
+                              Translate3D, UseModule2D, UseModule3D, Union3D)  # , Variable2D)
 from pathlib import Path
 from scad_models.kicad import Footprint
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
@@ -304,16 +304,147 @@ class ExpansionDXF(DXF):
         # Initialize the parent *DXF* class:
         super().__init__("Romi Base DXF", offset_x, offset_top_y, offset_side_y, offset_z)
 
+
+# Pad:
+class Pad:
+    """Represents a through hole PCB pad."""
+
+    # Pad.__init__():
+    def __init__(self, name: str, pad_diameter: float, hole_diameter: float, position: P2D) -> None:
+        """Create a PAD."""
+        # Load up *pad* (i.e. *self*):
+        # pad: Pad = self
+        self.hole_diameter: float = hole_diameter
+        self.name: str = name
+        self.pad_diameter: float = pad_diameter
+        self.position: P2D = position
+
+    # Pad.hole_append():
+    def hole_append(self, polygon: Polygon) -> None:
+        """Append the Pad drill holes to a Polygon."""
+        # Unpack some values from *pad*:
+        pad: Pad = self
+        hole_diameter: float = pad.hole_diameter
+        name: str = pad.name
+        position: P2D = pad.position
+        circle: Circle = Circle(name, hole_diameter, 8, position)
+        assert isinstance(circle, SimplePolygon)
+        polygon.append(circle)
+
+    # Pad.reposition():
+    def reposition(self, flags: str, center: P2D, rotate: float, translate: P2D) -> "Pad":
+        """Return a repositioned PAD.
+
+        Args:
+            * *flags* (*str*):
+               A list of one or more character flags that specify any
+               mirroring:
+               * 'x': Mirror along the X axis.
+               * 'y': Mirror along the Y axis.
+            * *center* (*P2D*):
+               * The virtual center of the pads group.
+            * *z_rotate* (*float*):
+               * The amount to rotate around the *center* in radians.
+            * *translate* (*P2D*):
+               * The location to translate *center* to:
+
+        """
+        # Unpack some values from *pad*:
+        pad: Pad = self
+        hole_diameter: float = pad.hole_diameter
+        name: str = pad.name
+        pad_diameter: float = pad.pad_diameter
+        position: P2D = pad.position
+
+        # Verify that the *flags* are OK:
+        flag: str
+        for flag in flags:
+            if flag not in "xy":
+                raise ValueError(f"Flag '{flag} in '{flags}' is not allowed.  Must be 'x' or 'y'.")
+
+        # Return the *repositioned_pad*:
+        reposition: P2D = position.reposition(flags, center, rotate, translate)
+        print(f"position={position} reposition:={reposition}")
+        repositioned_pad: Pad = Pad(name, pad_diameter, hole_diameter, reposition)
+        return repositioned_pad
+
+
+# PadsGroup:
+class PadsGroup:
+    """Represents a list of Pads."""
+
+    # PadsGroup.__init__():
+    def __init__(self) -> None:
+        """Return an empty list of Pads."""
+        # Load up *pads_group* (i.e. *self*):
+        # pads_group: Pads_Group = self
+        self.pads: List[Pad] = []
+
+    # PadsGroup.__str__():
+    def __str__(self) -> str:
+        """Return short string about PadsGroup."""
+        return f"PadsGroup(size={len(self.pads)})"
+
+    # PadsGroup.insert():
+    def insert(self, pad: Pad) -> None:
+        """Append a Pad to a list of Pads."""
+        # Use *pads_group* instead of *self*:
+        pads_group: PadsGroup = self
+        pads_group.pads.append(pad)
+
+    # PadsGroup.reposition():
+    def reposition(self, flags: str, center: P2D, rotate: float, translate: P2D) -> "PadsGroup":
+        """Return a repositioned list of Pad's.
+
+        Args:
+            * *flags* (*str*):
+               A list of one or more character flags that specify any
+               mirroring:
+               * 'x': Mirror along the X axis.
+               * 'y': Mirror along the Y axis.
+            * *center* (*P2D*):
+               * The virtual center of the pads group.
+            * *z_rotate* (*float*):
+               * The amount to rotate around the *center* in radians.
+            * *translate* (*P2D*):
+               * The location to translate *center* to:
+
+        """
+        # Unpacksome values from *pads_group*:
+        print("=>PadsGroup.reposition()")
+        pads_group: PadsGroup = self
+        pads: List[Pad] = pads_group.pads
+
+        # Create the *new_pads* fill it with the respositioned pads:
+        new_pads_group: PadsGroup = PadsGroup()
+        for pad in pads:
+            new_pads_group.insert(pad.reposition(flags, center, rotate, translate))
+        print(f"<=PadsGroup.reposition() new_pads_group{new_pads_group}")
+        return new_pads_group
+
+    # PadsGroup.holes_append():
+    def holes_append(self, polygon: Polygon) -> None:
+        """Append all of the drill holes to a Polygon."""
+        # Use *pads_group* instead of *self*:
+        pads_group: PadsGroup = self
+        pads: List[Pad] = pads_group.pads
+        pad: Pad
+        for pad in pads:
+            pad.hole_append(polygon)
+
+    # Other methods will go here...
+
+
 # Raspberry Pi:
 #
 #    # Create the various connectors first:
-#    connector_1x2: Connector = Rectangular_Connector(openscad, ....)
+#    connector_1x2: Connector = RectangularConnector(openscad, ....)
 #    connector_1x2.module_create("male_1x2", "flags", ....)
 #    connector_1x2.module_create("female_1x2", "flags", ....)
-#    connector_1x3: Connector = Rectangular_Connector(openscad, ....)
+#    connector_1x3: Connector = RectangularConnector(openscad, ....)
 #    connector_1x3.module_create("male_1x3", "flags", ....)
 #    connector_1x3.module_create("female_1x3", "flags", ....)
-#    connector_2x20: Connector = Rectangular_Connector(openscad, ....)
+#    connector_2x20: Connector = RectangularConnector(openscad, ....)
 #    connector_2x20.module_create("male_2x20", "flags", ....)
 #    connector_2x20.module_create("female_2x20", "flags", ....)
 #
@@ -390,7 +521,7 @@ class ST144Morpho(Component):
     """Represents an ST Nucleo-144 Development Board."""
 
     # ST144Morpho.__init__():
-    def __init__(self) -> None:
+    def __init__(self, scad_program: ScadProgram) -> None:
         """Create an ST NUCLEO-144 Morpho Connector Component."""
         # Intialize the parent
         super().__init__("ST144Morpho")
@@ -464,7 +595,7 @@ class ST144Morpho(Component):
         cn12_morpho_center: P3D = P3D(cn12_morpho_center_x, cn12_morpho_center_y, 0.0)
         self.cn12_morpho_center: P3D = cn12_morpho_center
         cn12_morpho_connector: RectangularConnector = RectangularConnector(
-            "CN12 East Morpho Connector",
+            "CN12 East Morpho Connector", scad_program,
             morpho_pin_rows, morpho_pin_columns,
             2.54, 2.79,
             male_pin_height=8.08,
@@ -481,7 +612,7 @@ class ST144Morpho(Component):
         cn11_morpho_center: P3D = P3D(cn11_morpho_center_x, cn11_morpho_center_y, 0.0)
         self.cn11_morpho_center: P3D = cn11_morpho_center
         cn11_morpho_connector: RectangularConnector = RectangularConnector(
-            "CN11 West Morpho Connector",
+            "CN11 West Morpho Connector", scad_program,
             morpho_pin_rows, morpho_pin_columns,
             2.54, 2.79, male_pin_height=6.00,
             center=cn11_morpho_center,
@@ -502,7 +633,8 @@ class PCB:
     """Represents a printed circuit board in KiCad and OpenSCAD."""
 
     # PCB.__init__():
-    def __init__(self, name: str, pcb_exterior: SimplePolygon) -> None:
+    def __init__(self, name: str, scad_program: "ScadProgram", dz: float,
+                 pcb_exterior: SimplePolygon) -> None:
         """Initialize a PCB with a name and pcb exterior."""
         # Create the *pcb_polygon*:
         pcb_polygon: Polygon = Polygon(f"name PCB Polygon", [pcb_exterior], lock=False)
@@ -512,7 +644,9 @@ class PCB:
         self.name: str = name
         self.pcb_exterior: SimplePolygon = pcb_exterior
         self.pcb_polygon: Polygon = pcb_polygon
-        # self.pcb_scad3ds: List[]
+        self.scad3ds: List[Scad3D] = []
+        self.scad_program: ScadProgram = scad_program
+        self.dz: float = dz
 
     # PCB.component_position():
     def component_position(self, component: Component, kicad_reference: str,
@@ -537,32 +671,137 @@ class PCB:
         """Return the PCB polygon."""
         return self.pcb_polygon
 
+    # PCB.module3d_place():
+    def module3d_place(self, module_name: str, flags: str,
+                       center: "P2D", z_rotate: float, translate: "P2D") -> None:
+        """Place a Module3D onto a PCB.
+
+        Place module onto module onto a PCB doing any requested flips,
+        rotations and translations.
+
+        Args:
+        * *module_name* (*str*):
+          The name of the *Module3D* object to lookup from the
+          *ScadProgram* object that was passed into the *PCB* object
+          when it was created.  A *ValueError* is thrown if this
+          *module_name* is not present.
+        * *flags* (*str*):
+          A possibly empty string of 1 character modification codes to
+          the module placement.  The codes are:
+          * 'b':
+            Place the module on the bottom of the board.  This flag is
+            usually followed by either the 'x' or 'y' flag.
+          * 'x':
+            Rotate the module along the X axis by 180 degrees.
+          * 'y':
+            Rotate the module along the Y axis by 180 degrees.
+        * *center* (*PD2D*):
+          The virtual center of module in X and Y.
+        * *z_rotate* (*float*):
+          The amount to rotate the module by around the Z axis
+          at its *center*.
+        * *translate* (*float*):
+          The location to translate the module *center* to.
+
+        """
+        # Unpack some values from *pcb* (i.e. *self*):
+        pcb: PCB = self
+        dz: float = pcb.dz
+        name: str = pcb.name
+        pcb_polygon: Polygon = pcb.pcb_polygon
+        scad_program: ScadProgram = pcb.scad_program
+        scad3ds: List[Scad3D] = pcb.scad3ds
+
+        # Verify that *flags* are OK:
+        flag: str
+        for flag in flags:
+            if flag not in "bxy":
+                raise ValueError(f"Flag '{flag}' is not allowed.")
+        bottom_place: bool = 'b' in flags
+        x_flip: bool = 'x' in flags
+        y_flip: bool = 'y' in flags
+        if x_flip and y_flip:
+            raise ValueError(f"Flags '{flags}' specifies both 'x' and 'y'.  Only one is allowed.")
+        if (x_flip or y_flip) and not bottom_place:
+            x_y_flag: str = 'x' if x_flip else 'y'
+            raise ValueError(f"Flags '{flags}' does not specify 'b' option for '{x_y_flag}' flag. "
+                             "'b' must be specified.")
+
+        # Lookup the *module3d* and its associated *use_module3d* using *module_name*:
+        module3d: Module3D
+        error_message: str
+        try:
+            module3d = scad_program.module3d_get(module_name)
+        except ValueError as error_message:
+            raise ValueError(error_message)
+        use_module3d: UseModule3D = module3d.use_module3d
+
+        # Extract the PADS from the from *module3d*:
+        tag: Any = module3d.tag_lookup("PadsGroup")
+        if isinstance(tag, PadsGroup):
+            pads_group: PadsGroup = tag
+            x_flag: str = "x" if x_flip else ""
+            y_flag: str = "y" if y_flip else ""
+            xy_flags: str = x_flag + y_flag
+            repositioned_pads_group: PadsGroup = pads_group.reposition(xy_flags,
+                                                                       center, z_rotate, translate)
+            print(f"before: len(pcb_polygon)={len(pcb_polygon)}")
+            repositioned_pads_group.holes_append(pcb_polygon)
+            print(f"after: len(pcb_polygon)={len(pcb_polygon)}")
+
+        # Perform any requested rotations by moving to *center* to the origin,
+        # performing the rotations and move it back to *center* again:
+        center3d: P3D = P3D(center.x, center.y, 0.0)
+        origin_centered: Scad3D = Translate3D(f"{name} Origin Centered", use_module3d, -center3d)
+        if x_flip:
+            x_axis: P3D = P3D(1.0, 0.0, 0.0)
+            origin_centered = Rotate3D(f"{name} X Flip", origin_centered, pi, x_axis)
+        elif y_flip:
+            y_axis: P3D = P3D(0.0, 1.0, 0.0)
+            origin_centered = Rotate3D(f"{name} Y Flip", origin_centered, pi, y_axis)
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        rotated: Rotate3D = Rotate3D(f"{name} Z Rotate", origin_centered, z_rotate, z_axis)
+
+        # Do the final *tranlation* and append to *scads3ds*:
+        z: float = 0.0 if bottom_place else dz
+        translate3d: P3D = P3D(translate.x, translate.y, z)
+        translated: Translate3D = Translate3D(f"{name} Translated", rotated, center3d + translate3d)
+        scad3ds.append(translated)
+
     # PCB.scad_program_append():
     def scad_program_append(self, scad_program: ScadProgram,
                             pcb_bottom_z: float, pcb_dz: float, color: str) -> Module3D:
         """Merge the..."""
-        # Grab some values from *pcb* (i.e. *self*):
+        # Unpack some values from *pcb* (i.e. *self*):
         pcb: PCB = self
         name: str = pcb.name
-        # components: List[Component] = pcb.components
+        scad3ds: List[Scad3D] = pcb.scad3ds
+        print(f"=>scad__program_append('{name}')")
+
         pcb_polygon: Polygon = pcb.pcb_polygon
         pcb_polygon.lock()
+        print(f"len(pcb_polygon)={len(pcb_polygon)}")
 
-        # Generate the...
+        # Generate the *pcb_module2d* that contains the PCB exterior, connector holes, slots, etc.
         pcb_module2d: Module2D = Module2D(f"{name} PCB XModule", [pcb_polygon])
         scad_program.append(pcb_module2d)
         scad_program.if2d.name_match_append(f"{name.lower()}_pcb",
                                             pcb_module2d, [f"{name} PCB"])
+        pcb_module2d_use_module: UseModule2D = pcb_module2d.use_module
 
-        """Extrude, Posistion and Color a PCB Polygon."""
-        pcb_extruded: LinearExtrude = LinearExtrude(f"Extruded {name} PCB",
-                                                    pcb_polygon, pcb_dz)
-        pcb_translated: Translate3D = Translate3D(f"Translated {name} PCB",
-                                                  pcb_extruded, P3D(0.0, 0.0, pcb_bottom_z))
-        pcb_colored: Color = Color(f"Colored {name} PCB", pcb_translated, color)
-        pcb_module3d: Module3D = Module3D(f"{name} Board XModule", [pcb_colored])
+        # Extrude end Color the *pcb_polygon*:
+        extruded_pcb: LinearExtrude = LinearExtrude(f"{name} Extruded PCB",
+                                                    pcb_module2d_use_module, pcb_dz)
+        translated_pcb: Translate3D = Translate3D(f"{name} Translated PCB", extruded_pcb,
+                                                  P3D(0.0, 0.0, pcb_bottom_z))
+        colored_pcb: Color = Color(f"{name} Colored PCB", translated_pcb, color)
+
+        # Glue everything together:
+        pcb_module3d: Module3D = Module3D(f"{name} PCB Board Module", scad3ds + [colored_pcb])
         scad_program.append(pcb_module3d)
-        scad_program.if3d.name_match_append(f"{name.lower}_board", pcb_module3d, [f"{name} Board"])
+        scad_program.if3d.name_match_append(f"{name.lower()}_board",
+                                            pcb_module3d, [f"{name} Board"])
+        print(f"<=scad__program_append('{name}')")
         return pcb_module3d
 
 
@@ -1231,7 +1470,6 @@ class Nucleo144:
             cut_out=True,
             pcb_polygon=pcb_polygon,
             vertical_rotate=degrees90)
-        scad_program.append(cn7_zio_connector.module)
         cn8_zio_connector: RectangularConnector = RectangularConnector(
             "CN8 Zio Connector", scad_program,
             2, 8, zio_insulation_dz, zio_pin_dz,
@@ -1240,7 +1478,6 @@ class Nucleo144:
             cut_out=True,
             pcb_polygon=pcb_polygon,
             vertical_rotate=degrees90)
-        scad_program.append(cn8_zio_connector.module)
         cn9_zio_connector: RectangularConnector = RectangularConnector(
             "CN9 Zio Connector", scad_program,
             2, 15, zio_insulation_dz, zio_pin_dz,
@@ -1249,7 +1486,6 @@ class Nucleo144:
             cut_out=True,
             pcb_polygon=pcb_polygon,
             vertical_rotate=degrees90)
-        scad_program.append(cn9_zio_connector.module)
         cn10_zio_connector: RectangularConnector = RectangularConnector(
             "CN10 Zio Connector", scad_program,
             2, 17, zio_insulation_dz, zio_pin_dz,
@@ -1258,7 +1494,6 @@ class Nucleo144:
             cut_out=True,
             pcb_polygon=pcb_polygon,
             vertical_rotate=degrees90)
-        scad_program.append(cn10_zio_connector.module)
 
         # Create the *morpho* KiCAD footprint:
         morpho: Footprint = Footprint("MORPHO144")
@@ -1286,7 +1521,6 @@ class Nucleo144:
             footprint_pad_diameter=morpho_pad_diameter,
             footprint_drill_diameter=morpho_drill_diameter,
             footprint_flags="")
-        scad_program.append(cn12_morpho_connector.module)
         cn11_morpho_center: P3D = P3D(cn11_morpho_center_x, cn11_morpho_center_y, 0.0)
         self.cn11_morpho_center: P3D = cn11_morpho_center
         cn11_morpho_connector: RectangularConnector = RectangularConnector(
@@ -1301,7 +1535,6 @@ class Nucleo144:
             footprint_pad_diameter=morpho_pad_diameter,
             footprint_drill_diameter=morpho_drill_diameter,
             footprint_flags="")
-        scad_program.append(cn11_morpho_connector.module)
         morpho.save(Path("../electrical/master_board/rev_a/master_board.pretty/"
                          "MORPHO144.kicad_mod"), "t")
         east_ground_connector: RectangularConnector = RectangularConnector(
@@ -1309,13 +1542,11 @@ class Nucleo144:
             1, 2, 2.54, 2.79, male_pin_height=5.08,
             center=P3D(cn12_morpho_center_x, ground_south_y, 0.0),
             pcb_polygon=pcb_polygon, is_top=False)
-        scad_program.append(east_ground_connector.module)
         west_ground_connector: RectangularConnector = RectangularConnector(
             "West Ground Connector", scad_program,
             1, 2, 2.54, 2.79, male_pin_height=5.08,
             center=P3D(cn11_morpho_center_x, ground_south_y, 0.0),
             pcb_polygon=pcb_polygon, is_top=False)
-        scad_program.append(west_ground_connector.module)
 
         # Create the *ethernet_connector*, using measurements taken via calipers:
         ethernet_corner_cube: CornerCube = CornerCube("Ethernet Connector Corner Cube",
@@ -1425,7 +1656,8 @@ class MasterBoard:
         nw_pcb_pol: PCB
         se_pcb_pol: PCB
         sw_pcb_pol: PCB
-        master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb, sw_pcb = master_board.pcbs_create()
+        (master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb,
+         sw_pcb) = master_board.pcbs_create(scad_program)
 
         master_pcb_polygon: Polygon = master_pcb.polygon_get()
 
@@ -1542,7 +1774,6 @@ class MasterBoard:
             center=receptacle_center,
             insulation_color="Maroon",
             vertical_rotate=degrees90, is_top=False)
-        scad_program.append(receptacle_2x20.module)
 
         # Create the 4 EncoderBoard 1x4 Female connectors and append the mounting holes
         # to *pcb_polygon*:
@@ -1573,7 +1804,6 @@ class MasterBoard:
                 pcb_polygon=master_pcb_polygon,
                 insulation_color="Olive",
                 vertical_rotate=degrees90)
-            scad_program.append(encoder_receptacle_1x3.module)
             encoder_receptacles_use_modules.append(encoder_receptacle_1x3.module.use_module_get())
 
         # *nucleo144_offset* is the offset from the robot origin to the bottom center of
@@ -1655,7 +1885,6 @@ class MasterBoard:
             cut_out=True,
             pcb_polygon=master_pcb_polygon,
             insulation_color="Teal")
-        scad_program.append(north_morpho_connector.module)
         cn12_morpho_center: P3D = nucleo144.cn12_morpho_center
         south_morpho_center: P3D = P3D(nucleo144_offset.x + cn12_morpho_center.y,
                                        nucleo144_offset.y + cn12_morpho_center.x,
@@ -1667,7 +1896,6 @@ class MasterBoard:
             cut_out=True,
             pcb_polygon=master_pcb_polygon,
             insulation_color="Teal")
-        scad_program.append(south_morpho_connector.module)
 
         # Create some HC-SR04 sonars:
         hcsr04: HCSR04 = HCSR04(scad_program)
@@ -1847,7 +2075,7 @@ class MasterBoard:
         self.module: Module3D = module
 
     # MasterBoard.pcbs_create():
-    def pcbs_create(self) -> Tuple[PCB, PCB, PCB, PCB, PCB, PCB]:
+    def pcbs_create(self, scad_program: "ScadProgram") -> Tuple[PCB, PCB, PCB, PCB, PCB, PCB]:
         """Create the master board PCB's with exterior contours."""
         # This routine creates 6 *PCB*'s named "Center", "NE", "NW", "SE", "SW", "Master".
         # When the first 5 boards are attached to one another, they form the final "Master" *PCB*.
@@ -2054,7 +2282,7 @@ class MasterBoard:
         master_pcb_exterior.corner_arc_append(Z, corner_radius, "WN")
         master_pcb_exterior.corner_arc_append(A, corner_radius, "SE")  # Strange! no rounded corner!
         master_pcb_exterior.lock()
-        master_pcb: PCB = PCB("Master", master_pcb_exterior)
+        master_pcb: PCB = PCB("Master", scad_program, 1.6, master_pcb_exterior)
 
         # Compute the *center_pcb_exterior*:
         center_pcb_exterior: SimplePolygon = SimplePolygon("Center PCB Exterior SimplePolygon",
@@ -2084,7 +2312,7 @@ class MasterBoard:
         center_pcb_exterior.corner_arc_append(Z, corner_radius, "WN")
         # Skip A
         center_pcb_exterior.lock()
-        center_pcb: PCB = PCB("Center", center_pcb_exterior)
+        center_pcb: PCB = PCB("Center", scad_program, 1.6, center_pcb_exterior)
 
         # Compute the *ne_pcb_exterior* and stuff it into *ne_pcb_polygon*:
         ne_pcb_exterior: SimplePolygon = SimplePolygon("NE PCB Exterior SimplePolygon",
@@ -2095,7 +2323,7 @@ class MasterBoard:
         ne_pcb_exterior.point_append(C)
         ne_pcb_exterior.corner_arc_append(B, corner_radius, "WS")
         ne_pcb_exterior.lock()
-        ne_pcb: PCB = PCB("NE", ne_pcb_exterior)
+        ne_pcb: PCB = PCB("NE", scad_program, 1.6, ne_pcb_exterior)
 
         # Compute the *nw_pcb_exterior* and stuff it into the *nw_pcb_polygon*:
         nw_pcb_exterior: SimplePolygon = SimplePolygon("NW PCB Exterior SimplePolygon",
@@ -2106,7 +2334,7 @@ class MasterBoard:
         nw_pcb_exterior.point_append(H)
         nw_pcb_exterior.corner_arc_append(G, corner_radius, "SE")
         nw_pcb_exterior.lock()
-        nw_pcb: PCB = PCB("NW", nw_pcb_exterior)
+        nw_pcb: PCB = PCB("NW", scad_program, 1.6, nw_pcb_exterior)
 
         # Compute the *se_pcb_exterior* and stuff it into the *se_pcb_polygon*:
         se_pcb_exterior: SimplePolygon = SimplePolygon("SE PCB Exterior SimplePolygon",
@@ -2119,7 +2347,7 @@ class MasterBoard:
         se_pcb_exterior.arc_append(origin, inner_radius, U_angle, T_angle, 0.0)
         # se_pcb_exterior.point_append(T)
         se_pcb_exterior.lock()
-        se_pcb: PCB = PCB("SE", se_pcb_exterior)
+        se_pcb: PCB = PCB("SE", scad_program, 2219, se_pcb_exterior)
 
         # Compute the *sw_pcb_exterior*:
         sw_pcb_exterior: SimplePolygon = SimplePolygon("SW PCB Exterior SimplePolygon",
@@ -2132,7 +2360,7 @@ class MasterBoard:
         sw_pcb_exterior.arc_append(origin, inner_radius, O_angle, N_angle, 0.0)
         # sw_pcb_exterior.point_append(N)
         sw_pcb_exterior.lock()
-        sw_pcb: PCB = PCB("SW", sw_pcb_exterior)
+        sw_pcb: PCB = PCB("SW", scad_program, 1.6, sw_pcb_exterior)
 
         # Return the resulting *PCB*s:
         return master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb, sw_pcb
@@ -2176,7 +2404,6 @@ class OtherPi(PiBoard):
             center=male_2x20_header_center,
             pcb_polygon=other_pi_pcb_polygon,
             insulation_color="DarkBlue")
-        scad_program.append(male_2x20_header.module)
 
         connectors: List[Scad3D] = []
         connectors.append(Color("Silver Ethernet Connector",
@@ -2320,17 +2547,14 @@ class RaspberryPi3(PiBoard):
             "A", scad_program, 2, 20, mating_length, 2.54, 2.00,
             center=P3D((57.90 + 7.10) / 2.0, 52.50, 0.0),
             pcb_polygon=raspi3b_pcb_polygon)
-        scad_program.append(male_pin_connector2x20.module)
         male_pin_connector2x2: RectangularConnector = RectangularConnector(
             "B", scad_program, 2, 2, mating_length, 2.54, 2.00,
             center=P3D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0, 0.0),
             pcb_polygon=raspi3b_pcb_polygon)
-        scad_program.append(male_pin_connector2x2.module)
         male_pin_connector2x1: RectangularConnector = RectangularConnector(
             "C", scad_program, 2, 1, mating_length, 2.54, 2.00,
             center=P3D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0, 0.0),
             pcb_polygon=raspi3b_pcb_polygon)
-        scad_program.append(male_pin_connector2x1.module)
         connectors.append(male_pin_connector2x20.module.use_module_get())
         connectors.append(male_pin_connector2x2.module.use_module_get())
         connectors.append(male_pin_connector2x1.module.use_module_get())
@@ -2601,6 +2825,7 @@ class RectangularConnector:
         insulation_exterior: Square = Square(f"{full_name} Insulation Exterior",
                                              insulation_dx, insulation_dy)
         insulation_polygon.append(insulation_exterior)
+        pads_group: PadsGroup = PadsGroup()
 
         # Create each *colored_pin* (and optional *colored_right_angle_pin*) and
         # append to *connector_pins*.
@@ -2626,10 +2851,11 @@ class RectangularConnector:
                                                                   f"({column_index}:{row_index})"
                                                                   "Corner Cube",
                                                                   pin_bsw, pin_tne)
-                colored_vertical_pin: Color = Color(f"{full_name} ({column_index},{row_index}) "
-                                                    f"{pin_color} Pin",
-                                                    vertical_pin_corner_cube, pin_color)
-                connector_pins.append(colored_vertical_pin)
+                # colored_vertical_pin: Color = Color(f"{full_name} ({column_index},{row_index}) "
+                #                                     f"{pin_color} Pin",
+                #                                     vertical_pin_corner_cube, pin_color)
+                # connector_pins.append(colored_vertical_pin)
+                connector_pins.append(vertical_pin_corner_cube)
 
                 # Create *colored_right_angle_pin* and append to *connector_pins* when we
                 # *have_right_angle*:
@@ -2648,12 +2874,13 @@ class RectangularConnector:
                     right_angle_pin_corner_cube: CornerCube = CornerCube(right_angle_pin_name,
                                                                          right_angle_bsw,
                                                                          right_angle_tne)
-                    colored_right_angle_pin: Color = Color(f"{full_name} "
-                                                           f"({column_index}:{row_index})"
-                                                           f"{pin_color} Right Angle Pin",
-                                                           right_angle_pin_corner_cube,
-                                                           pin_color)
-                    connector_pins.append(colored_right_angle_pin)
+                    # colored_right_angle_pin: Color = Color(f"{full_name} "
+                    #                                        f"({column_index}:{row_index})"
+                    #                                        f"{pin_color} Right Angle Pin",
+                    #                                        right_angle_pin_corner_cube,
+                    #                                       pin_color)
+                    # connector_pins.append(colored_right_angle_pin)
+                    connector_pins.append(right_angle_pin_corner_cube)
 
                 # For female receptacles, append a *receptcale_hole* to *insulation_polyon*:
                 if is_female:
@@ -2687,7 +2914,8 @@ class RectangularConnector:
                 # +++  35 70
 
                 # Output a footprint pin number:
-                if footprint.name_get() != "":
+                # if footprint.name_get() != "":
+                if True:
                     if row_index == 0 and column_index == 0:
                         first_footprint_pin = hole_center
                     else:
@@ -2706,6 +2934,9 @@ class RectangularConnector:
                     else:
                         pin_number = footprint_pin_number + (footprint_column_index * rows +
                                                              rows - footprint_row_index - 1)
+                    pad: Pad = Pad(f"{pin_number}", footprint_pad_diameter,
+                                   footprint_drill_diameter, hole_center)
+                    pads_group.insert(pad)
                     footprint.thru_hole_pad(f"{pin_number}", hole_center,
                                             footprint_pad_diameter, footprint_drill_diameter)
 
@@ -2760,8 +2991,14 @@ class RectangularConnector:
 
         # Now stuff everything in *union_connector* and then rotate and translate it into the
         # final position:
+        union_connector_pins: Union3D = Union3D(f"{full_name} Connector Pins Union",
+                                                connector_pins, lock=True)
+        colored_connector_pins: Color = Color(f"{full_name} {pin_color} Connector Pins",
+                                              union_connector_pins, pin_color)
+
         union_connector: Union3D = Union3D(f"{full_name} Union",
-                                           [colored_insulation] + connector_pins, lock=True)
+                                           [colored_insulation] + [colored_connector_pins],
+                                           lock=True)
 
         # For right angle pins, we need to translate the origin to the point between the bent pins,
         # but on the inside side surface of the insulation block.  Next, we need to rotate the
@@ -2805,9 +3042,11 @@ class RectangularConnector:
         recentered_connector: Scad3D = Translate3D(f"Recentered {full_name}",
                                                    pre_centered_connector, center)
 
-        # Construct *module*, append to *scad_program*:
-        module: Module3D = Module3D(f"{full_name} Module", [recentered_connector])
-        self.module: Module3D = module
+        # Construct *connector_module*, append to *scad_program*:
+        connector_module: Module3D = Module3D(name, [recentered_connector])
+        connector_module.tag_insert("PadsGroup", pads_group)
+        scad_program.append(connector_module)
+        self.module: Module3D = connector_module
 
 
 # RectangularConnector:
@@ -5367,7 +5606,6 @@ class STLink:
             insulation_color="Lime",
             pcb_polygon=st_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(st_cn2_connector.module)
         mb_cn2_connector: RectangularConnector = RectangularConnector(
             "MB CN2 GND Connector", scad_program,
             1, 2, 8.50, 2.54, 0.0, is_top=False,
@@ -5375,7 +5613,6 @@ class STLink:
             insulation_color="Gray",
             pcb_polygon=master_board_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(mb_cn2_connector.module)
         master_board_connectors.append(mb_cn2_connector.module.use_module_get())
 
         # CN6:
@@ -5386,7 +5623,6 @@ class STLink:
             insulation_color="Lime",
             pcb_polygon=st_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(st_cn6_connector.module)
         mb_cn6_connector: RectangularConnector = RectangularConnector(
             "MB CN6 SWD Connector", scad_program,
             1, 6, 8.50, 2.54, 0.0, is_top=False,
@@ -5394,7 +5630,6 @@ class STLink:
             insulation_color="Gray",
             pcb_polygon=master_board_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(mb_cn6_connector.module)
         master_board_connectors.append(mb_cn6_connector.module.use_module_get())
 
         # JP2:
@@ -5405,7 +5640,6 @@ class STLink:
             insulation_color="Lime",
             pcb_polygon=st_polygon,
             vertical_rotate=degrees90)  # Pin 1 on bottom
-        scad_program.append(st_jp2_connector.module)
         mb_jp2_connector: RectangularConnector = RectangularConnector(
             "MB JP2 Connector", scad_program,
             1, 2, 8.50, 2.54, 5.84, is_top=False,
@@ -5413,7 +5647,6 @@ class STLink:
             insulation_color="Gray",
             pcb_polygon=master_board_polygon,
             vertical_rotate=degrees90)  # Pin 1 on bottom
-        scad_program.append(mb_jp2_connector.module)
         master_board_connectors.append(mb_jp2_connector.module.use_module_get())
 
         # CN4:
@@ -5424,7 +5657,6 @@ class STLink:
             insulation_color="Lime",
             pcb_polygon=st_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(st_cn4_connector.module)
         mb_cn4_connector: RectangularConnector = RectangularConnector(
             "MB CN4 Nucleo STLink Connector", scad_program,
             1, 4, 8.50, 2.54, 5.84, is_top=False,
@@ -5432,7 +5664,6 @@ class STLink:
             insulation_color="Gray",
             pcb_polygon=master_board_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(mb_cn4_connector.module)
         master_board_connectors.append(mb_cn4_connector.module.use_module_get())
 
         # CN5:
@@ -5443,7 +5674,6 @@ class STLink:
             insulation_color="Lime",
             pcb_polygon=st_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(st_cn5_connector.module)
         mb_cn5_connector: RectangularConnector = RectangularConnector(
             "MB CN5 TX RX Connector", scad_program,
             1, 2, 8.50, 2.54, 0, is_top=False,
@@ -5451,7 +5681,6 @@ class STLink:
             insulation_color="Gray",
             pcb_polygon=master_board_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(mb_cn5_connector.module)
         master_board_connectors.append(mb_cn5_connector.module.use_module_get())
 
         # JP1:
@@ -5461,14 +5690,12 @@ class STLink:
             center=P3D(jp1_pin1_x + 2.54 / 2.0, jp1_pin1_y, pcb_top_z),
             insulation_color="Lime",
             pcb_polygon=st_polygon)  # Pin1 to left
-        scad_program.append(st_jp1_connector.module)
         mb_jp1_connector: RectangularConnector = RectangularConnector(
             "MB JP1 Connector", scad_program,
             1, 2, 8.50, 2.54, 0.0, is_top=False,
             center=(center + P3D(jp1_pin1_x + 2.54 / 2.0, jp1_pin1_y, 0.0)),
             insulation_color="Gray",
             pcb_polygon=master_board_polygon)  # Pin1 to left
-        scad_program.append(mb_jp1_connector.module)
         master_board_connectors.append(mb_jp1_connector.module.use_module_get())
 
         # CN3:
@@ -5479,7 +5706,6 @@ class STLink:
             insulation_color="Lime",
             pcb_polygon=st_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(st_cn3_connector.module)
         mb_cn3_connector: RectangularConnector = RectangularConnector(
             "MB CN3 GND Connector", scad_program,
             1, 2, 8.50, 2.54, 0.0, is_top=False,
@@ -5487,7 +5713,6 @@ class STLink:
             insulation_color="Gray",
             pcb_polygon=master_board_polygon,
             vertical_rotate=-degrees90)  # Pin 1 on top
-        scad_program.append(mb_cn3_connector.module)
         master_board_connectors.append(mb_cn3_connector.module.use_module_get())
 
         st_connectors: List[Scad3D] = [
@@ -5562,6 +5787,29 @@ class SRF02:
         self.module: Module3D = module
 
 
+def connectors_create(scad_program: ScadProgram):
+    """Generate a bunch of common connectors."""
+    print("=>connectors_create()")
+    pins_dx_dy: float = 2.56  # = .1in
+    pcb_pin_height: float = 2.79
+    # RectangularConnector("F2x35", scad_program, 2, 35, pins_dx_dy, pcb_pin_height,
+    #                      insulation_color="Fuchsia")
+    RectangularConnector("M2x35_Long", scad_program, 2, 35, pins_dx_dy, pcb_pin_height,
+                         insulation_color="Maroon", male_pin_height=8.08,
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+    # f2x35_module: Module3D = scad_program.module3d_get("F2x35")
+    # f2x35_pads_any: Any = f2x35_module.tag_lookup("PadsGroup")
+    # assert isinstance(f2x35_pads_any, PadsGroup)
+    # f2x35_pads_group: PadsGroup = f2x35_pads_any
+    # f2x35_pads_group = f2x35_pads_group
+    test_exterior: Square = Square("Test Square", 100.0, 20.0, corner_radius=1.5)
+    test_pcb: PCB = PCB("TestPCB", scad_program, 1.6, test_exterior)
+    test_pcb = test_pcb
+    test_pcb.module3d_place("M2x35_Long", "bx", P2D(0.0, 0.0), 0.0, P2D(0.0, 0.0))
+    test_pcb.scad_program_append(scad_program, 30.0, 1.6, "Tan")
+    print("<=connectors_create()")
+
+
 def main() -> int:  # pragma: no cover
     """Generate the openscand file."""
     print("hr2_models.main() called")
@@ -5584,7 +5832,9 @@ def main() -> int:  # pragma: no cover
     #     openscad -D 'name="VALID_NAME"' hr2_models.scad
     #
     # The list of *VALID_NAME*'s can be found near the bottom of `README.md`.
-    scad_program.append(Variable2D("Name", "name", '"hr2_arm_assembly"'))
+    # scad_program.append(Variable2D("Name", "name", '"hr2_arm_assembly"'))
+
+    connectors_create(scad_program)
 
     # romi_base: RomiBase = RomiBase(scad_program, base_dxf)
     # romi_base.holes_slots_rectangles_write()
@@ -5606,7 +5856,7 @@ def main() -> int:  # pragma: no cover
 
     # Now create *hr2*:
     # hr2: HR2 = HR2(scad_program, romi_base, east_romi_wheel_assembly, west_romi_wheel_assembly,
-    #                master_board, other_pi, pi_offset)
+    #                 master_board, other_pi, pi_offset)
     # hr2 = hr2
 
     # Update the `README.md` file:
@@ -5629,11 +5879,12 @@ def main() -> int:  # pragma: no cover
     scad_lines: List[str] = []
     scad_program.scad_lines_append(scad_lines, "")
     # Funky slice syntax for inserting a list in the middle of another list:
-    scad_lines[2:2] = scad_comment_lines
+    # scad_lines[2:2] = scad_comment_lines
     scad_lines.append("")
-    scad_text: str = '\n'.join(scad_lines)
+    scad_text: str = '\n'.join(scad_lines) + '\n'
     scad_file: IO[Any]
     with open("hr2_models.scad", "w") as scad_file:
+        print("writing out to hr2_models.scad")
         scad_file.write(scad_text)
 
     return 0
