@@ -224,8 +224,11 @@ The current (tentative) design decisions are:
   where NAME is one of:
   <!-- NAME list starts here. -->
 
-  * `bantam_pcb`:
-    Bantam PCB
+  * `center_board`:
+    Center Board
+
+  * `center_pcb`:
+    Center PCB
 
   * `encoder_board`:
     Encoder Board
@@ -260,14 +263,35 @@ The current (tentative) design decisions are:
   * `master_board`:
     Master Board
 
+  * `master_board`:
+    Master Board
+
   * `master_pcb`:
     Master PCB
+
+  * `master_pcb`:
+    Master PCB
+
+  * `ne_board`:
+    NE Board
+
+  * `ne_pcb`:
+    NE PCB
 
   * `nucleo144`:
     Nucleo144 Board
 
-  * `nucleo144_pcb`:
-    Nucleo144 PCB
+  * `nucleo144x_board`:
+    NUCLEO144X Board
+
+  * `nucleo144x_pcb`:
+    NUCLEO144X PCB
+
+  * `nw_board`:
+    NW Board
+
+  * `nw_pcb`:
+    NW PCB
 
   * `other_pi`:
     OtherPI SBC
@@ -284,6 +308,12 @@ The current (tentative) design decisions are:
   * `romi_base`:
     Romi Base Polygon
 
+  * `se_board`:
+    SE Board
+
+  * `se_pcb`:
+    SE PCB
+
   * `sonar`:
     HC-SR04 Sonar
 
@@ -292,6 +322,12 @@ The current (tentative) design decisions are:
 
   * `stlink_pcb`:
     STLInk PCB
+
+  * `sw_board`:
+    SW Board
+
+  * `sw_pcb`:
+    SW PCB
 
   * `wheel_assembly`:
     Wheel Assembly
