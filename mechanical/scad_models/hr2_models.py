@@ -481,158 +481,6 @@ class PadsGroup:
 #    fpga_pcb.footprint_place(nucleo144_pcb, "ref", ["ZIO_Bottom]), center, rotate, translate)
 #    fpga_pcb.footprint_place(tiny_fpga_bx, "ref", ["Top"]]
 
-
-# Component:
-class Component:
-    """Represents a componant and its associated KiCAD PCB footprint."""
-
-    # Component.__init__():
-    def __init__(self, name: str) -> None:
-        """Initialize a new component."""
-        # Load up *component* (i.e. *self*):
-        self.lock: bool = False
-        self.translated_module_uses: List[Translate3D] = []
-        self.holes: Polygon = Polygon(f"{name} Holes Polygon", [], lock=False)
-        self.union: Union3D = Union3D(f"{name} Union", [], lock=False)
-
-    # Component.hole_append():
-    def hole_append(self, hole: SimplePolygon) -> None:
-        """Add a component hole."""
-        # Unpack some values from *component* (i.e. *self*):
-        component: Component = self
-        holes: Polygon = component.holes
-        holes.append(hole)
-
-    # Component.holes_get():
-    def holes_get(self) -> Polygon:
-        """Return the component holes Polygon to append holes to."""
-        # Unpack *component* (i.e. *self*):
-        component: Component = self
-        holes: Polygon = component.holes
-        return holes
-
-    # Comonent.holes_reposition():
-    def holes_reposition(self, center: P2D, rotate: float, translate: P2D) -> Polygon:
-        """Return a the repositioned holes."""
-        # Grab some values from *Component* (i.e. *self*):
-        component: Component = self
-        holes: Polygon = component.holes
-        repositioned_holes: Polygon = holes.reposition(center, rotate, translate)
-        return repositioned_holes
-
-
-# ST144Morpho:
-class ST144Morpho(Component):
-    """Represents an ST Nucleo-144 Development Board."""
-
-    # ST144Morpho.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
-        """Create an ST NUCLEO-144 Morpho Connector Component."""
-        # Intialize the parent
-        super().__init__("ST144Morpho")
-
-        # Do CN11:p
-        # Do CN12:
-        # Do 5 mechanical mounting holes:
-
-        # Misc. constants:
-        morpho_pin_columns: int = 35
-        morpho_pin_rows: int = 2
-        degrees90: float = pi / 2.0
-        # mount_hole_diameter: float = 3.20
-
-        # All units are in thousandths of an inch and need to be converted to millimeters:
-        def mil(mil: float) -> float:
-            return mil * 0.0254
-
-        # X Coordinates:
-        pcb_dx: float = 70.0
-        pcb_east_x: float = pcb_dx / 2.0
-        pcb_west_x: float = -pcb_east_x
-
-        # Connector X coordinates:
-        cn11_morpho_pin1_x: float = pcb_west_x + mil(127)
-        cn11_morpho_center_x: float = cn11_morpho_pin1_x + mil(50)
-        cn12_morpho_pin1_x: float = pcb_west_x + mil(2527)
-        cn12_morpho_center_x: float = cn12_morpho_pin1_x + mil(50)
-
-        # Mounting hole X coordinates:
-        # center_mount_hole_x: float = pcb_west_x + mil(1727)
-        # nw_mount_hole_x: float = pcb_west_x + mil(427)
-        # ne_mount_hole_x: float = pcb_west_x + mil(2327)
-        # sw_mount_hole_x: float = pcb_west_x + mil(477)
-        # se_mount_hole_x: float = pcb_west_x + mil(2277)
-
-        # Y Coordinates:
-        pcb_dy: float = mil(2002) + mil(2243)
-        pcb_north_y: float = pcb_dy / 2.0
-        pcb_south_y: float = -pcb_north_y
-        pcb_pseudo_origin_y: float = pcb_south_y + mil(2002)
-
-        # Connector Y coordinates:
-        cn11_morpho_pin1_y: float = pcb_pseudo_origin_y + mil(1998)
-        cn11_morpho_y_pins: int = 35
-        cn11_morpho_center_y: float = (cn11_morpho_pin1_y -
-                                       float(cn11_morpho_y_pins - 1) * mil(100) / 2.0)
-        cn12_morpho_pin1_y: float = pcb_pseudo_origin_y + mil(1998)
-        cn12_morpho_y_pins: int = 35
-        cn12_morpho_center_y: float = (cn12_morpho_pin1_y -
-                                       float(cn12_morpho_y_pins - 1) * mil(100) / 2.0)
-        # Mounting_hole_coordinates:
-        # center_mount_hole_y: float = pcb_pseudo_origin_y + mil(98)
-        # ne_mount_hole_y: float = pcb_pseudo_origin_y + mil(2098)
-        # nw_mount_hole_y: float = pcb_pseudo_origin_y + mil(2148)
-        # sw_mount_hole_y: float = pcb_pseudo_origin_y - mil(852)
-        # se_mount_hole_y: float = pcb_pseudo_origin_y - mil(852)
-
-        # Some KiCAD footprint constants:
-        morpho_pad_diameter: float = 1.524
-        morpho_drill_diameter: float = 1.016
-
-        assert False
-        pcb_polygon: Polygon = Polygon("filler")
-        morpho: Footprint = Footprint("filler")
-
-        # Create the *east_morpho_connector* and *west_morpho_connector*:
-        # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
-        # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
-        # In additon, create the two ground connectors:
-        cn12_morpho_center: P3D = P3D(cn12_morpho_center_x, cn12_morpho_center_y, 0.0)
-        self.cn12_morpho_center: P3D = cn12_morpho_center
-        cn12_morpho_connector: RectangularConnector = RectangularConnector(
-            "CN12 East Morpho Connector", scad_program,
-            morpho_pin_rows, morpho_pin_columns,
-            2.54, 2.79,
-            male_pin_height=8.08,
-            center=cn12_morpho_center,
-            insulation_color="DarkRed",
-            pcb_polygon=pcb_polygon,
-            is_top=False, vertical_rotate=degrees90,
-            footprint=morpho, footprint_pin_number=1201,
-            footprint_pad_diameter=morpho_pad_diameter,
-            footprint_drill_diameter=morpho_drill_diameter,
-            footprint_flags="")
-        cn12_morpho_connector = cn12_morpho_connector
-        # scad_program.append(cn12_morpho)
-        cn11_morpho_center: P3D = P3D(cn11_morpho_center_x, cn11_morpho_center_y, 0.0)
-        self.cn11_morpho_center: P3D = cn11_morpho_center
-        cn11_morpho_connector: RectangularConnector = RectangularConnector(
-            "CN11 West Morpho Connector", scad_program,
-            morpho_pin_rows, morpho_pin_columns,
-            2.54, 2.79, male_pin_height=6.00,
-            center=cn11_morpho_center,
-            insulation_color="DarkRed",
-            pcb_polygon=pcb_polygon,
-            is_top=False, vertical_rotate=degrees90,
-            footprint=morpho, footprint_pin_number=1101,
-            footprint_pad_diameter=morpho_pad_diameter,
-            footprint_drill_diameter=morpho_drill_diameter,
-            footprint_flags="")
-        cn11_morpho_connector = cn11_morpho_connector
-        morpho.save(Path("../electrical/master_board/rev_a/master_board.pretty/"
-                         "MORPHO144.kicad_mod"), "t")
-
-
 # PCB:
 class PCB:
     """Represents a printed circuit board in KiCad and OpenSCAD."""
@@ -653,19 +501,6 @@ class PCB:
         self.scad3ds: List[Scad3D] = []
         self.scad_program: ScadProgram = scad_program
         self.dz: float = dz
-
-    # PCB.component_position():
-    def component_position(self, component: Component, kicad_reference: str,
-                           center: P2D, rotation: float, translate: P2D) -> None:
-        """Place reposition a component onto the PCB."""
-        # Unpack some values from *pcb* (i.e. *self*):
-        pcb: PCB = self
-        pcb_polygon: Polygon = pcb.pcb_polygon
-
-        component_holes: Polygon = component.holes_reposition(center, rotation, translate)
-        index: int
-        for index in range(len(component_holes)):
-            pcb_polygon.append(component_holes[index])
 
     # PCB.kicad_merge():
     def kicad_merge(self, kicad_pcb_path: Path) -> None:
@@ -1615,13 +1450,17 @@ class Nucleo144:
                                   P2D(cn9_zio_center_x, cn9_zio_center_y))
         nucleo_pcb.module3d_place("F2x17_Long", {"zio"}, "", origin, degrees90,
                                   P2D(cn10_zio_center_x, cn10_zio_center_y))
+
+        # Create the 2 morpho connectors and 2 associated ground connectors:
+        # # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
+        # # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
         nucleo_pcb.module3d_place("M2x35_Long", {"morpho"}, "bx", origin, degrees90,
                                   cn11_morpho_center, pads_base=1100)
         nucleo_pcb.module3d_place("M2x35_Long", {"morpho"}, "bx", origin, degrees90,
                                   cn12_morpho_center, pads_base=1200)
-        nucleo_pcb.module3d_place("M1x2", {"ignore"}, "bx", origin, 0.0,
+        nucleo_pcb.module3d_place("M1x2", {"ground"}, "bx", origin, 0.0,
                                   P2D(cn11_morpho_center_x, ground_south_y))
-        nucleo_pcb.module3d_place("M1x2", {"ignore"}, "bx", origin, 0.0,
+        nucleo_pcb.module3d_place("M1x2", {"ground"}, "bx", origin, 0.0,
                                   P2D(cn12_morpho_center_x, ground_south_y))
 
         # Create a list of *mount_hole_keys* that specify where each mount holes goes:
@@ -1653,168 +1492,6 @@ class Nucleo144:
         self.mount_hole_keys: List[Tuple[str, float, float, float]] = []  # mount_hole_keys
         self.offset: P3D = nucleo144_offset
         scad_program.if3d.name_match_append("nucleo144", module, ["Nucleo144 Board"])
-
-        # if True:
-        #     return
-
-        # footprint: Footprint = Footprint("NUCLEO144")
-        # footprint = footprint
-
-        # # Create *pcb_polygon* and load it with *external_outline*:
-        # pcb_polygon: Polygon = Polygon("Nucleo144 PCB Polygon", [], lock=False)
-        # external_outline: Square = Square("Nucleo144 PCB Outline", pcb_dx, pcb_dy)
-        # pcb_polygon.append(external_outline)
-
-        # # Create the *zio7_connector*, *zio8_connector*, *zio9_connector*, and *zio10connector*:
-        # cn7_zio_connector: RectangularConnector = RectangularConnector(
-        #     "CN7 Zio Connector", scad_program,
-        #     2, 10, zio_insulation_dz, zio_pin_dz,
-        #     center=P3D(cn7_zio_center_x, cn7_zio_center_y, pcb_dz),
-        #     insulation_color="SlateBlue",
-        #     cut_out=True,
-        #     pcb_polygon=pcb_polygon,
-        #     vertical_rotate=degrees90)
-        # cn8_zio_connector: RectangularConnector = RectangularConnector(
-        #     "CN8 Zio Connector", scad_program,
-        #     2, 8, zio_insulation_dz, zio_pin_dz,
-        #     center=P3D(cn8_zio_center_x, cn8_zio_center_y, pcb_dz),
-        #     insulation_color="SlateBlue",
-        #     cut_out=True,
-        #     pcb_polygon=pcb_polygon,
-        #     vertical_rotate=degrees90)
-        # cn9_zio_connector: RectangularConnector = RectangularConnector(
-        #     "CN9 Zio Connector", scad_program,
-        #     2, 15, zio_insulation_dz, zio_pin_dz,
-        #     center=P3D(cn9_zio_center_x, cn9_zio_center_y, pcb_dz),
-        #     insulation_color="SlateBlue",
-        #     cut_out=True,
-        #     pcb_polygon=pcb_polygon,
-        #     vertical_rotate=degrees90)
-        # cn10_zio_connector: RectangularConnector = RectangularConnector(
-        #     "CN10 Zio Connector", scad_program,
-        #     2, 17, zio_insulation_dz, zio_pin_dz,
-        #     center=P3D(cn10_zio_center_x, cn10_zio_center_y, pcb_dz),
-        #     insulation_color="SlateBlue",
-        #     cut_out=True,
-        #     pcb_polygon=pcb_polygon,
-        #     vertical_rotate=degrees90)
-
-        # # Create the *morpho* KiCAD footprint:
-        # morpho: Footprint = Footprint("MORPHO144")
-        # morpho.reference(P2D(0.0, 0.0))
-        # morpho.value(P2D(0.0, 0.0), True)
-        # morpho_pad_diameter: float = 1.524
-        # morpho_drill_diameter: float = 1.016
-
-        # # Create the *east_morpho_connector* and *west_morpho_connector*:
-        # # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
-        # # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
-        # # In additon, create the two ground connectors:
-        # cn12_morpho_center: P3D = P3D(cn12_morpho_center_x, cn12_morpho_center_y, 0.0)
-        # self.cn12_morpho_center: P3D = cn12_morpho_center
-        # cn12_morpho_connector: RectangularConnector = RectangularConnector(
-        #     "CN12 East Morpho Connector", scad_program,
-        #     morpho_pin_rows, morpho_pin_columns,
-        #     2.54, 2.79,
-        #     male_pin_height=8.08,
-        #     center=cn12_morpho_center,
-        #     insulation_color="DarkRed",
-        #     pcb_polygon=pcb_polygon,
-        #     is_top=False, vertical_rotate=degrees90,
-        #     footprint=morpho, footprint_pin_number=1201,
-        #     footprint_pad_diameter=morpho_pad_diameter,
-        #     footprint_drill_diameter=morpho_drill_diameter,
-        #     footprint_flags="")
-        # cn11_morpho_center: P3D = P3D(cn11_morpho_center_x, cn11_morpho_center_y, 0.0)
-        # self.cn11_morpho_center: P3D = cn11_morpho_center
-        # cn11_morpho_connector: RectangularConnector = RectangularConnector(
-        #     "CN11 West Morpho Connector", scad_program,
-        #     morpho_pin_rows, morpho_pin_columns,
-        #     2.54, 2.79, male_pin_height=6.00,
-        #     center=cn11_morpho_center,
-        #     insulation_color="DarkRed",
-        #     pcb_polygon=pcb_polygon,
-        #     is_top=False, vertical_rotate=degrees90,
-        #     footprint=morpho, footprint_pin_number=1101,
-        #     footprint_pad_diameter=morpho_pad_diameter,
-        #     footprint_drill_diameter=morpho_drill_diameter,
-        #     footprint_flags="")
-        # morpho.save(Path("../electrical/master_board/rev_a/master_board.pretty/"
-        #                  "MORPHO144.kicad_mod"), "t")
-        # east_ground_connector: RectangularConnector = RectangularConnector(
-        #     "East Ground Connector", scad_program,
-        #     1, 2, 2.54, 2.79, male_pin_height=5.08,
-        #     center=P3D(cn12_morpho_center_x, ground_south_y, 0.0),
-        #     pcb_polygon=pcb_polygon, is_top=False)
-        # west_ground_connector: RectangularConnector = RectangularConnector(
-        #     "West Ground Connector", scad_program,
-        #     1, 2, 2.54, 2.79, male_pin_height=5.08,
-        #     center=P3D(cn11_morpho_center_x, ground_south_y, 0.0),
-        #     pcb_polygon=pcb_polygon, is_top=False)
-
-        # # Create a list of *mount_hole_keys* that specify where each mount holes goes:
-        # mount_hole_keys: List[Tuple[str, float, float, float]] = [
-        #     ("NE Mount Hole H2", mount_hole_diameter, ne_mount_hole_x, ne_mount_hole_y),
-        #     ("NW Mount Hole H3", mount_hole_diameter, nw_mount_hole_x, nw_mount_hole_y),
-        #     ("SE Mount Hole H4", mount_hole_diameter, se_mount_hole_x, se_mount_hole_y),
-        #     ("SW Mount Hole H5", mount_hole_diameter, sw_mount_hole_x, sw_mount_hole_y),
-        #     ("Center Mount Hole H1", mount_hole_diameter, center_mount_hole_x,
-        #      center_mount_hole_y),
-        # ]
-
-        # # Interate across *mount_hole_keys* and append each *mount_hole* to *pcb_polygon*:
-        # mount_hole_key: Tuple[str, float, float, float]
-        # for mount_hole_key in mount_hole_keys:
-        #     mount_hole_name: str = mount_hole_key[0]
-        #     mount_hole_diameter = mount_hole_key[1]
-        #     mount_hole_x: float = mount_hole_key[2]
-        #     mount_hole_y: float = mount_hole_key[3]
-        #     mount_hole: Circle = Circle(mount_hole_name, mount_hole_diameter, 16,
-        #                                 P2D(mount_hole_x, mount_hole_y))
-        #     pcb_polygon.append(mount_hole)
-
-        # # To improve visibility cut a hole into the center of the PCB:
-        # pcb_polygon.append(pcb_cut_out)
-
-        # # We are done adding holes to the *pcb_polygon* so we can lock it and create
-        # # a *pcb_module* that cand be displayed by name in using the `openscad` program:
-        # pcb_polygon.lock()
-        # pcb_module: Module2D = Module2D("Nucleo144 PCB Module", [pcb_polygon])
-        # scad_program.append(pcb_module)
-        # scad_program.if2d.name_match_append("nucleo144_pcb", pcb_module, ["Nucleo144 PCB"])
-
-        # # Now create *nucleo144_pcb* and color it:
-        # extruded_pcb: LinearExtrude = LinearExtrude("Extruded Nucleo144 PCB", pcb_polygon, pcb_dz)
-        # nucleo144_pcb: Color = Color("White Nucleo144 PCB", extruded_pcb, "White")
-
-        # # Now create *nucleo144_union* consisting of the connectors and the *nucleo144*_pcb*:
-        # nucleo144_union: Union3D = Union3D("Nucleao 144 Union", [
-        #     cn7_zio_connector.module.use_module_get(),
-        #     cn8_zio_connector.module.use_module_get(),
-        #     cn9_zio_connector.module.use_module_get(),
-        #     cn10_zio_connector.module.use_module_get(),
-        #     cn11_morpho_connector.module.use_module_get(),
-        #     cn12_morpho_connector.module.use_module_get(),
-        #     east_ground_connector.module.use_module_get(),
-        #     west_ground_connector.module.use_module_get(),
-        #     colored_ethernet,
-        #     nucleo144_pcb,
-        #     ])
-
-        # # Perform the final *z_axis_rotation* and *nucleo144_offset*:
-        # z_axis: P3D = P3D(0.0, 0.0, 1.0)
-        # rotated_nucleo144: Rotate3D = Rotate3D("Rotated Nucleo144", nucleo144_union,
-        #                                        z_axis_rotate, z_axis)
-        # translated_nucleo144: Translate3D = Translate3D("Translated Nucleo144",
-        #                                                 rotated_nucleo144, nucleo144_offset)
-
-        # # Now create *module*, append it to *scad_program*":
-        # module: Module3D = Module3D("Nucleo144 Module", [translated_nucleo144])
-        # scad_program.append(module)
-        # self.module: Module3D = module
-        # self.mount_hole_keys: List[Tuple[str, float, float, float]] = mount_hole_keys
-        # self.offset: P3D = nucleo144_offset
-        # scad_program.if3d.name_match_append("nucleo144", module, ["Nucleo144 Board"])
 
 
 # MasterBoard:
