@@ -855,8 +855,10 @@ class ScadProgram:
         else:
             scads_table[trimmed_name] = scad
             if isinstance(scad, Module2D):
+                # print(f"Inserting '{scad_name}'=>'{trimmed_name}' into module2d_table")
                 module2d_table[trimmed_name] = scad
             elif isinstance(scad, Module3D):
+                # print(f"Inserting '{scad_name}'=>'{trimmed_name}' into module3d_table")
                 module3d_table[trimmed_name] = scad
 
         # Finally, append the *scad* onto *scads*:
@@ -2663,18 +2665,21 @@ class Square(SimplePolygon):
         """Create a translated/rotated rectangular SimplePolygon.
 
         Args:
-            *name* (*str*): The debugging text name to output to the
-                `.scad` file.
-            *dx* (*float*): The X dimension of the initial rectangle.
-            *dy* (*float*): The Y dimension of the initial rectangle.
-            *center* (*P2D*): The center of the rectangle.  This defaults
-                to the origin (i.e. *P2D*(0.0, 0.0).)
-            *rotate* (*float*): The amount to rotate the rectangle about
-                its center (in radians.)  This defaults to 0.0.
-            *corner_radius* (*float*): The amount to round all 4 corners by.
-                This defaults to 0.0
-            *corner_count* (*int*): The number of points on along corner
-                arc excluding the arc end-points.  This defaults to 3.
+            *name* (*str*):
+                The debugging text name to output to the `.scad` file.
+            *dx* (*float*):
+                The X dimension of the initial rectangle.
+            *dy* (*float*):
+                The Y dimension of the initial rectangle.
+            *center* (*P2D*) (Optional: Defaults to *P2D*(0.0, 0.0)):
+                The center of the rectangle.
+            *rotate* (*float*) (Optional: Defaults to 0.0):
+                The amount to rotate the rectangle about its *center*.
+                The angle is measured in radians.
+            *corner_radius* (*float*) (Optional: Defaults to 0.0):
+                The amount to round all 4 corners by.
+            *corner_count* (*int*) (Optional: Defaults to 3):
+                The number of points on along corner arc.
 
         """
         # Compute some intermediate values:

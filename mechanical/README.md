@@ -299,11 +299,11 @@ The current (tentative) design decisions are:
   * `other_pi_pcb`:
     Other Pi PCB
 
-  * `raspi3`:
-    Raspberry Pi 3B+
+  * `raspi3b_board`:
+    RasPi3B Board
 
-  * `raspi3_pcb`:
-    Raspberry Pi 3B+ PCB
+  * `raspi3b_pcb`:
+    RasPi3B PCB
 
   * `romi_base`:
     Romi Base Polygon
