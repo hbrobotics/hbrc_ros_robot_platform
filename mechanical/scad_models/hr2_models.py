@@ -475,6 +475,7 @@ class PCB:
               The names of the groups to use for the footprint.
             * *reference_prefix* (*str*):
               The default reference prefix to put into the footprint.
+
         """
         # Unpack some values from *pcb* (i.e. *self*):
         pcb: PCB = self
@@ -1197,12 +1198,15 @@ class HR2MasterAssembly:
 
     # HR2MasterAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, hr2_pi_assembly: "HR2PiAssembly",
-                 base_dxf: BaseDXF, master_board_z: float, arm_z, pi_offset: P3D,
-                 nucleo144: "Nucleo144", romi_base_keys: List[Tuple[Any, ...]],
+                 base_dxf: BaseDXF,
+                 master_board_z: float, nucleo_board_z: float, arm_z: float,
+                 pi_offset: P3D, nucleo144: "Nucleo144", romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the HR2MasterAssembly."""
+        nucleo_offset: P2D = P2D(0.0, 0.0)
         master_board: MasterBoard = MasterBoard(scad_program, base_dxf, nucleo144,
-                                                pi_offset, master_board_z, arm_z,
+                                                pi_offset, nucleo_offset,
+                                                master_board_z, nucleo_board_z, arm_z,
                                                 romi_base_keys, romi_expansion_plate_keys)
 
         # Create *module*, append to *scad_program* and save into *hr2_master_assembly*
@@ -1225,19 +1229,28 @@ class HR2NucleoAssembly:
 
     # HR2NucleoAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, hr2_wheel_assembly: "HR2WheelAssembly",
-                 nucleo144: "Nucleo144", master_board_z: float) -> None:
+                 nucleo144: "Nucleo144", nucleo144_offset: P3D) -> None:
         """Initialize the HR2NucleoAssembly."""
         # Create *module*, append to *scad_program* and save into *hr2_nucleo_assembly*
         # (i.e. *self*):
-        module: Module3D = Module3D("HR2 Nucleo Assembly", [
-            hr2_wheel_assembly.module.use_module_get(),
-            nucleo144.module.use_module_get(),
+
+        nucleo144_module: Module3D = nucleo144.module
+        nucleo144_use_module: UseModule3D = nucleo144_module.use_module_get()
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        degrees90: float = pi / 2.0
+        rotated_nucleo144: Rotate3D = Rotate3D("Rotated Nucleo144 PCB",
+                                               nucleo144_use_module, -degrees90, z_axis)
+        translated_nucleo144: Translate3D = Translate3D("Translated Nucleo 144",
+                                                        rotated_nucleo144, nucleo144_offset)
+
+        hr2_nucleo_assembly: Module3D = Module3D("HR2 Nucleo Assembly", [
+             hr2_wheel_assembly.module.use_module_get(),
+             translated_nucleo144,
         ])
-        scad_program.append(module)
-        # hr2_master_assembly: HR2MasterAssembly = self
-        self.module = module
+        scad_program.append(hr2_nucleo_assembly)
+        self.module = hr2_nucleo_assembly
         scad_program.if3d.name_match_append("hr2_nucleo_assembly",
-                                            module, ["HR2 Nucleo144 Assembly"])
+                                            hr2_nucleo_assembly, ["HR2 Nucleo144 Assembly"])
 
 
 # HR2PiAssembly:
@@ -1318,12 +1331,12 @@ class HR2Robot:
         pi_z: float = base_top_z + 11.00
         pi_offset: P3D = P3D(pi_x, pi_y, pi_z)
         master_board_z: float = pi_z + 8.000
+        nucleo_board_z: float = master_board_z + 13.00
         arm_z: float = master_board_z + 26.00
 
         # Create the *nucleo144* before *master_board* so it can be passed in:
         nucleo144_offset: P3D = P3D(pi_x + 6.5, pi_y - 1.0, master_board_z + 13.00)
-        degrees90 = pi / 2.0
-        nucleo144: Nucleo144 = Nucleo144(scad_program, -degrees90, nucleo144_offset)
+        nucleo144: Nucleo144 = Nucleo144(scad_program)
 
         # Create the *romi_expansion_plate* before *master_board* so it can be passed in:
         romi_expansion_plate: RomiExpansionPlate = RomiExpansionPlate(scad_program)
@@ -1338,7 +1351,7 @@ class HR2Robot:
         romi_base_keys: List[Tuple[Any, ...]] = hr2_base_assembly.romi_base_keys_get()
         hr2_master_assembly: HR2MasterAssembly = HR2MasterAssembly(scad_program, hr2_pi_assembly,
                                                                    base_dxf, master_board_z,
-                                                                   arm_z,
+                                                                   nucleo_board_z, arm_z,
                                                                    pi_offset, nucleo144,
                                                                    romi_base_keys,
                                                                    romi_expansion_plate_keys)
@@ -1348,7 +1361,7 @@ class HR2Robot:
         hr2_nucleo_assembly: HR2NucleoAssembly = HR2NucleoAssembly(scad_program,
                                                                    hr2_wheel_assembly,
                                                                    nucleo144,
-                                                                   master_board_z)
+                                                                   nucleo144_offset)
         hr2_arm_assembly: HR2ArmAssembly = HR2ArmAssembly(scad_program, hr2_nucleo_assembly,
                                                           romi_expansion_plate, arm_z)
         hr2_arm_assembly = hr2_arm_assembly
@@ -1391,8 +1404,7 @@ class Nucleo144:
     """Represents a STM32 Nucleo-144 development board."""
 
     # Nucleo144.__init__():
-    def __init__(self, scad_program: ScadProgram,
-                 z_axis_rotate: float, nucleo144_offset: P3D) -> None:
+    def __init__(self, scad_program: ScadProgram) -> None:
         """Initialize Nucleo144 and append to ScadProgram."""
         # Define various constants, particularly the various X/Y/Z coordinates of component
         # position on the Nucleo144.  The ethernet RJ45 connector locations are done using
@@ -1562,24 +1574,18 @@ class Nucleo144:
                                      P2D(sw_mount_hole_x, sw_mount_hole_y))
         nucleo_pcb.mount_hole_append("Center Mount Hole H1", {"align"}, mount_hole_diameter,
                                      P2D(center_mount_hole_x, center_mount_hole_y))
-        # Wrap up *nucleo_pcb*:
-        nucleo_pcb_module: Module3D = nucleo_pcb.scad_program_append(scad_program, "White")
+
+        # Generate the ST144MORPHO KiCad footprint:
         nucleo_pcb.footprint_generate(Path("/tmp"), "ST144MORPHO",
                                       {"morpho", "arduino", "align"}, "U")
 
-        z_axis: P3D = P3D(0.0, 0.0, 1.0)
-        rotated_nucleo144: Rotate3D = Rotate3D("Rotated Nucleo144 PCB",
-                                               nucleo_pcb_module.use_module3d, -degrees90, z_axis)
-        translated_nucleo144: Translate3D = Translate3D("Translated Nucleo 144",
-                                                        rotated_nucleo144, nucleo144_offset)
+        # Wrap up *nucleo_pcb*:
+        nucleo_board: Module3D = nucleo_pcb.scad_program_append(scad_program, "White")
 
-        module: Module3D = Module3D("Nucleo144 Module", [translated_nucleo144])
-        scad_program.append(module)
-        self.module: Module3D = module
-        self.mount_hole_keys: List[Tuple[str, float, float, float]] = []  # mount_hole_keys
-        self.offset: P3D = nucleo144_offset
+        # Stuff a some values into *nucleo144* (i.e. *self*):
+        # nucleo144: Nucleo144 = self
+        self.module: Module3D = nucleo_board
         self.pcb: PCB = nucleo_pcb
-        scad_program.if3d.name_match_append("nucleo144", module, ["Nucleo144 Board"])
 
 
 # MasterBoard:
@@ -1588,7 +1594,8 @@ class MasterBoard:
 
     # MasterBoard.__init__():
     def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, nucleo144: Nucleo144,
-                 pi_offset: P3D, master_board_bottom_z: float, arm_z: float,
+                 pi_offset: P3D, nucleo_offset: P2D,
+                 master_board_bottom_z: float, nucleo_board_z: float, arm_z: float,
                  romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the MasterBoard."""
@@ -1775,70 +1782,72 @@ class MasterBoard:
         # Install the *nucleo144* mounting holes into *pcb_polygon* and create a list
         # of *nucleo144_spacer*:
         # Set *spacer_debug_dz* to non zero to show some gap space above and below the spacer:
-        spacer_debug_dz: float = 0.0 + 0.250
-        nucleo144_offset: P3D = nucleo144.offset
-        spacer_height: float = abs(nucleo144_offset.z - pcb_top_z) - 2.0 * spacer_debug_dz
+        # spacer_debug_dz: float = 0.0 + 0.250
+        # nucleo144_offset: P3D = nucleo144.offset
+        # spacer_height: float = abs(nucleo_board_z - pcb_top_z) - 2.0 * spacer_debug_dz
         nucleo144_spacers: List[Scad3D] = []
-        nucleo144_mount_hole_keys: List[Tuple[str, float, float, float]]
-        nucleo144_mount_hole_keys = nucleo144.mount_hole_keys
-        nucleo144_mount_index: int
-        for nucleo144_mount_index, nucleo144_mount_hole_key in enumerate(nucleo144_mount_hole_keys):
-            # The first 4 keys are for the 4 M3.0 corner spacers.  The fifth key is for the
-            # alignment screw which is going to M2.0 (~=#2)
-            is_screw: bool = nucleo144_mount_index == 4
-            nucleo144_mount_hole_name: str = nucleo144_mount_hole_key[0]
-            nucleo144_mount_hole_diameter: float = 2.20 if is_screw else 3.20
-            # Swap *nucleo144_mount_hole_x* and *nucleo144_mount_hole_y*
-            # due to the 90 degree rotation:
-            nucleo144_mount_hole_y: float = nucleo144_mount_hole_key[2]
-            nucleo144_mount_hole_x: float = nucleo144_mount_hole_key[3]
-            hole_x: float = nucleo144_offset.x + nucleo144_mount_hole_x
-            # Subtle: The Nucleo144 90 degree rotation causes the Y coordinate to need
-            # to be negative:
-            hole_y: float = nucleo144_offset.y - nucleo144_mount_hole_y
-            hole: P2D = P2D(hole_x, hole_y)
-            nucleo144_mount_hole: Circle = Circle(nucleo144_mount_hole_name,
-                                                  nucleo144_mount_hole_diameter, 16, hole)
-            master_pcb_polygon.append(nucleo144_mount_hole)
+        # nucleo144_mount_hole_keys: List[Tuple[str, float, float, float]]
+        # nucleo144_mount_hole_keys = nucleo144.mount_hole_keys
+        # assert len(nucleo144_mount_hole_keys) == 0
+        # nucleo144_mount_index: int
+        # for nucleo144_mount_index, nucleo144_mount_hole_key in enumerate(
+        #        nucleo144_mount_hole_keys):
+        #     # The first 4 keys are for the 4 M3.0 corner spacers.  The fifth key is for the
+        #     # alignment screw which is going to M2.0 (~=#2)
+        #     is_screw: bool = nucleo144_mount_index == 4
+        #     nucleo144_mount_hole_name: str = nucleo144_mount_hole_key[0]
+        #     nucleo144_mount_hole_diameter: float = 2.20 if is_screw else 3.20
+        #     # Swap *nucleo144_mount_hole_x* and *nucleo144_mount_hole_y*
+        #     # due to the 90 degree rotation:
+        #     nucleo144_mount_hole_y: float = nucleo144_mount_hole_key[2]
+        #     nucleo144_mount_hole_x: float = nucleo144_mount_hole_key[3]
+        #     hole_x: float = nucleo_offset.x + nucleo144_mount_hole_x
+        #     # Subtle: The Nucleo144 90 degree rotation causes the Y coordinate to need
+        #     # to be negative:
+        #     hole_y: float = nucleo_offset.y - nucleo144_mount_hole_y
+        #     hole: P2D = P2D(hole_x, hole_y)
+        #     nucleo144_mount_hole: Circle = Circle(nucleo144_mount_hole_name,
+        #                                           nucleo144_mount_hole_diameter, 16, hole)
+        #     master_pcb_polygon.append(nucleo144_mount_hole)
 
-            # See if we have a hole that needs to be mirrored to the KiCAD PCB:
-            last_space_index: int = nucleo144_mount_hole_name.rfind(' ')
-            if (last_space_index >= 0 and (nucleo144_mount_hole_name[-1] != ' ' and
-                                           nucleo144_mount_hole_name[last_space_index+1] == 'H')):
-                # There might be a hole name of the form Hnumber" ad the end of the name:
-                kicad_hole_name = nucleo144_mount_hole_name[last_space_index+1:]
-                if kicad_hole_name[1:].isdigit():
-                    assert kicad_hole_name not in kicad_mounting_holes, (
-                        f"Nucleo Mount Hole '{kicad_hole_name}' is a duplicate")
-                    mount_hole_diameter: float = (2.20 if kicad_hole_name == "H1"
-                                                  else nucleo144_mount_hole_diameter)
-                    # print(f">>>>>>>>>>>>>>>Kicad Hole:'{kicad_hole_name} "
-                    #       f"diameter:{mount_hole_diameter}'")
-                    kicad_mounting_holes[kicad_hole_name] = (hole, mount_hole_diameter)
+        #     # See if we have a hole that needs to be mirrored to the KiCAD PCB:
+        #     last_space_index: int = nucleo144_mount_hole_name.rfind(' ')
+        #     if (last_space_index >= 0 and (nucleo144_mount_hole_name[-1] != ' ' and
+        #                                    nucleo144_mount_hole_name[last_space_index+1] == 'H')):
+        #         # There might be a hole name of the form Hnumber" ad the end of the name:
+        #         kicad_hole_name = nucleo144_mount_hole_name[last_space_index+1:]
+        #         if kicad_hole_name[1:].isdigit():
+        #             assert kicad_hole_name not in kicad_mounting_holes, (
+        #                 f"Nucleo Mount Hole '{kicad_hole_name}' is a duplicate")
+        #             mount_hole_diameter: float = (2.20 if kicad_hole_name == "H1"
+        #                                           else nucleo144_mount_hole_diameter)
+        #             # print(f">>>>>>>>>>>>>>>Kicad Hole:'{kicad_hole_name} "
+        #             #       f"diameter:{mount_hole_diameter}'")
+        #             kicad_mounting_holes[kicad_hole_name] = (hole, mount_hole_diameter)
 
-            # Create the spacer (or alignment screw):
-            spacer_bottom_center: P3D = P3D(hole_x, hole_y, pcb_top_z + spacer_debug_dz)
-            if is_screw:
-                # Install a vertical *alignment_screw*:
-                screw_start: P3D = P3D(hole_x, hole_y, pcb_bottom_z - 1.0)
-                screw_end: P3D = P3D(hole_x, hole_y, nucleo144_offset.z + 3.0)
-                alignment_screw: Cylinder = Cylinder("Nucleo144 Alignment Screw",
-                                                     3.0, screw_start, screw_end, 8)
-                nucleo144_spacers.append(alignment_screw)
-            else:
-                # Install a vertical mounting spacer:
-                spacer: Spacer = Spacer(scad_program, f"{nucleo144_mount_hole_name} Spacer",
-                                        spacer_height, "M3", diameter=4.50,
-                                        bottom_center=spacer_bottom_center)
-                nucleo144_spacers.append(spacer.module.use_module_get())
+        #     # Create the spacer (or alignment screw):
+        #     spacer_bottom_center: P3D = P3D(hole_x, hole_y, pcb_top_z + spacer_debug_dz)
+        #     if is_screw:
+        #         # Install a vertical *alignment_screw*:
+        #         screw_start: P3D = P3D(hole_x, hole_y, pcb_bottom_z - 1.0)
+        #         screw_end: P3D = P3D(hole_x, hole_y, nucleo_board_z + 3.0)
+        #         alignment_screw: Cylinder = Cylinder("Nucleo144 Alignment Screw",
+        #                                              3.0, screw_start, screw_end, 8)
+        #         nucleo144_spacers.append(alignment_screw)
+        #     else:
+        #         # Install a vertical mounting spacer:
+        #         spacer: Spacer = Spacer(scad_program, f"{nucleo144_mount_hole_name} Spacer",
+        #                                 spacer_height, "M3", diameter=4.50,
+        #                                 bottom_center=spacer_bottom_center)
+        #         nucleo144_spacers.append(spacer.module.use_module_get())
 
         # Place the two "morpho" connectors.  On the Nucleo144 theya are called "east" and "west",
         # but since the Nucleo144 board has been rotated by 90 degrees, they actually become
         # "north" and "south".  Thus, there is some swapping between X and Y coordinates to
         # make this work:
         cn11_morpho_center: P2D = nucleo144.cn11_morpho_center
-        north_morpho_center: P3D = P3D(nucleo144_offset.x + cn11_morpho_center.y,
-                                       nucleo144_offset.y + cn11_morpho_center.x,
+        north_morpho_center: P3D = P3D(nucleo_offset.x + cn11_morpho_center.y,
+                                       nucleo_offset.y + cn11_morpho_center.x,
                                        pcb_top_z)
         north_morpho_connector: RectangularConnector = RectangularConnector(
             "North Morpho Connector", scad_program,
@@ -1848,8 +1857,8 @@ class MasterBoard:
             pcb_polygon=master_pcb_polygon,
             insulation_color="Teal")
         cn12_morpho_center: P2D = nucleo144.cn12_morpho_center
-        south_morpho_center: P3D = P3D(nucleo144_offset.x + cn12_morpho_center.y,
-                                       nucleo144_offset.y + cn12_morpho_center.x,
+        south_morpho_center: P3D = P3D(nucleo_offset.x + cn12_morpho_center.y,
+                                       nucleo_offset.y + cn12_morpho_center.x,
                                        pcb_top_z)
         south_morpho_connector: RectangularConnector = RectangularConnector(
             "South Morpho Connector", scad_program,
