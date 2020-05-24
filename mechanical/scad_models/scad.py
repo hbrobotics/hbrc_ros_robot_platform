@@ -863,10 +863,10 @@ class ScadProgram:
         else:
             scads_table[trimmed_name] = scad
             if isinstance(scad, Module2D):
-                print(f"Inserting '{scad_name}'=>'{trimmed_name}' into module2d_table")
+                # print(f"Inserting '{scad_name}'=>'{trimmed_name}' into module2d_table")
                 module2d_table[trimmed_name] = scad
             elif isinstance(scad, Module3D):
-                print(f"Inserting '{scad_name}'=>'{trimmed_name}' into module3d_table")
+                # print(f"Inserting '{scad_name}'=>'{trimmed_name}' into module3d_table")
                 module3d_table[trimmed_name] = scad
 
         # Finally, append the *scad* onto *scads*:

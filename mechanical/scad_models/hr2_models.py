@@ -1262,33 +1262,28 @@ class HR2PiAssembly:
                  pi_offset: P3D, master_board_z: float) -> None:
         """Initialize the HR2BaseAssembly."""
         # Define some constants
-        z_axis: P3D = P3D(0.0, 0.0, 1.0)
         degrees90: float = pi / 2.0
+        origin3d: P3D = P3D(0.0, 0.0, 0.0)
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
 
         # Create the *other_pi* and rotate and translate to the correct location:
         OtherPi(scad_program)
         other_pi_board: Module3D = scad_program.module3d_get("OtherPi_Board")
         other_pi_board_use_module: UseModule3D = other_pi_board.use_module_get()
-        other_pi_center: P3D = P3D(3.5 + 58.0/2.0, 70.0 - (3.5 + 49.0/2.0), 0.0)
-        translated_other_pi_board: Translate3D = Translate3D("Translated Other Pi Board",
-                                                             other_pi_board_use_module,
-                                                             pi_offset - other_pi_center)
-        rotated_other_pi_board: Rotate3D = Rotate3D("Rotated Other Pi Board",
-                                                    translated_other_pi_board, degrees90, z_axis)
+        repositioned_other_pi: Scad3D = other_pi_board_use_module.reposition(
+            "Reposition Other Pi", origin3d, z_axis, degrees90, pi_offset)
 
         # Create the *raspberry_pi3* and rotate and translate to the correct location.:
         RaspberryPi3(scad_program)
-        origin3d: P3D = P3D(0.0, 0.0, 0.0)
         raspi3b_board_module: Module3D = scad_program.module3d_get("RasPi3B_Board")
         raspi3b_board_use_module: UseModule3D = raspi3b_board_module.use_module_get()
-        # raspi3b_corner_offset: P3D = P3D(3.5 + 58.0/2.0, 3.5 + 49.0/2.0, 0.0)
         repositioned_raspi3b: Scad3D = raspi3b_board_use_module.reposition(
-            f"Reposition Raspberry Pi 3B", origin3d, z_axis, degrees90, pi_offset)
+            "Reposition Raspberry Pi 3B", origin3d, z_axis, degrees90, pi_offset)
 
         # Create *module*, append to *scad_program* and save into *hr2_base_assembly* (i.e. *self*):
         module: Module3D = Module3D("HR2 Pi Assembly", [
             hr2_base_assembly.module.use_module_get(),
-            rotated_other_pi_board, repositioned_raspi3b])
+            repositioned_other_pi, repositioned_raspi3b])
         scad_program.append(module)
 
         # hr2_pi_assembly: HR2PiAssembly = self
@@ -2347,33 +2342,54 @@ class OtherPi(PiBoard):
         """Initialize OtherPi."""
         # Define the board dimensions:
         pcb_dx: float = 104.00
+        pcb_center_x: float = pcb_dx / 2
         pcb_dy: float = 70.00
+        pcb_center_y: float = pcb_dy / 2
         pcb_dz: float = 1.0
+        pcb_center: P2D = P2D(pcb_center_x, pcb_center_y)
+        pcb_corner_radius: float = 1.5
 
-        # Define the mounting hole centers:
-        upper_left_hole_center: P2D = P2D(3.5, pcb_dy - 3.5)
-        upper_right_hole_center: P2D = P2D(3.5 + 58.0, pcb_dy - 3.5)
-        lower_left_hole_center: P2D = P2D(3.5, pcb_dy - 3.5 - 49.0)
-        lower_right_hole_center: P2D = P2D(3.5 + 58.0, pcb_dy - 3.5 - 49.0)
+        # The dimensions read off the drawing assume that the origin is at the lower left corner.
+        # When we are done we want *pcb_center* to point to the exact middle of the 4 mounting
+        # holes.  Define all of the hole locations first:
+        hole_east_x: float = 3.5
+        hole_pitch_dx: float = 58.0
+        hole_west_x: float = hole_east_x + hole_pitch_dx
+        holes_center_x: float = (hole_east_x + hole_west_x) / 2.0
+        hole_north_y: float = pcb_dy - 3.5
+        hole_pitch_dy: float = 49.0
+        hole_south_y: float = hole_north_y - hole_pitch_dy
+        holes_center_y: float = (hole_south_y + hole_north_y) / 2.0
+        holes_center: P2D = P2D(holes_center_x, holes_center_y)
+        # The code below offsets by *holes_center* so that origin aligns with *holes_center*.
 
+        # Define the 4 hole center locations:
+        hole_ne: P2D = P2D(hole_east_x, hole_north_y)
+        hole_nw: P2D = P2D(hole_west_x, hole_north_y)
+        hole_se: P2D = P2D(hole_east_x, hole_south_y)
+        hole_sw: P2D = P2D(hole_west_x, hole_south_y)
+
+        # The *Sqaure* class takes a *center* argument that specifies where the center
+        # of the square is to be located in the X/Y plane.  We need to compute *square_center*
+        # such that square is offset so that the holes center is at the origin (0, 0):
         # Create the *pcb_outline* with the origin in the lower left corner:
-        other_pi_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
-        other_pi_exterior: Square = Square("PCB Exterior",
-                                           pcb_dx, pcb_dy, other_pi_center, corner_radius=1.5)
+        square_center: P2D = pcb_center - holes_center
+        other_pi_exterior: Square = Square("PCB Exterior", pcb_dx, pcb_dy,
+                                           center=square_center, corner_radius=pcb_corner_radius)
 
         # Create the *other_pi_pcb*:
         other_pi_pcb: PCB = PCB("OtherPi", scad_program, pcb_dz, other_pi_exterior)
 
         # Define the mounting holes:
         hole_diameter: float = 2.75
-        other_pi_pcb.mount_hole_append("Upper Left Hole", {"mounts"},
-                                       hole_diameter, upper_left_hole_center)
-        other_pi_pcb.mount_hole_append("Upper Right Hole", {"mounts"},
-                                       hole_diameter, upper_right_hole_center)
-        other_pi_pcb.mount_hole_append("Lower Left Hole", {"mounts"},
-                                       hole_diameter, lower_left_hole_center)
-        other_pi_pcb.mount_hole_append("Lower Right Hole", {"mounts"},
-                                       hole_diameter, lower_right_hole_center)
+        other_pi_pcb.mount_hole_append("NE Mount Hole", {"mounts"},
+                                       hole_diameter, hole_ne - holes_center)
+        other_pi_pcb.mount_hole_append("NW Mount Hole", {"mounts"},
+                                       hole_diameter, hole_nw - holes_center)
+        other_pi_pcb.mount_hole_append("SE Mount Hole", {"mounts"},
+                                       hole_diameter, hole_se - holes_center)
+        other_pi_pcb.mount_hole_append("SW Mount Hole", {"mounts"},
+                                       hole_diameter, hole_sw - holes_center)
 
         # Create the Male 2x20 Header:
         male_2x20_header_center: P2D = P2D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0)
@@ -2381,58 +2397,68 @@ class OtherPi(PiBoard):
         # male_2x20_header_center = P3D(0.0, 0.0, 0.0)
         origin2d: P2D = P2D(0.0, 0.0)
         other_pi_pcb.module3d_place("M2x20", {"connectory"}, "",
-                                    origin2d, 0.0, male_2x20_header_center)
+                                    origin2d, 0.0, male_2x20_header_center - holes_center)
 
         other_pi_pcb.scad3d_place(Color("Silver Ethernet Connector",
                                         CornerCube("Ethernet Connector",
                                                    P3D(80.00, 29.26, pcb_dz + 0.00),
                                                    P3D(105.00, 44.51, pcb_dz + 13.08)),
-                                        "Silver"))
+                                        "Silver"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB2 Connector",
                                         CornerCube("USB2 Connector",
                                                    P3D(85.00, 12.82, 0.00),
                                                    P3D(104.00, 25.57, 15.33)),  # 85.00? 104.00?
-                                        "Silver"))
+                                        "Silver"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver West Connector",
                                         CornerCube("West Connector",
                                                    P3D(98.00, 50.69, 0.00),
                                                    P3D(105.00, 58.09, 3.00)),  # 98.00? 3.00? 105??
-                                        "Silver"))
+                                        "Silver"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black North Connector",
                                         CornerCube("North Connector",
                                                    P3D(70.03, 60.92, 0.00),
                                                    P3D(76.38, 66.00, 5.00)),  # 5.00? 66.00??
-                                        "Black"))
+                                        "Black"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black Audio Connector",
                                         CornerCube("Audio Connector",
                                                    P3D(66.31, -1.00, 0.00),
                                                    P3D(72.31, 14.00, 5.12)),  # -1.00? 14.00?
-                                        "Black"))
+                                        "Black"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB3A Connector",
                                         CornerCube("USB3A Connector",
                                                    P3D(9.54, 0.00, 0.00),
                                                    P3D(18.52, 10.00, 2.95)),  # 10.00?
-                                        "Silver"))
+                                        "Silver"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB3B Connector",
                                         CornerCube("USB3B Connector",
                                                    P3D(22.73, 0.00, 0.00),
                                                    P3D(31.71, 10.00, 2.95)),  # 10.00?
-                                        "Silver"))
+                                        "Silver"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver Power Connector",
                                         CornerCube("Power Connector",
                                                    P3D(-1.00, 22.50, 0.00),
                                                    P3D(8.00, 29.00, 2.95)),  # -1.00? 8.00?
-                                        "Silver"))
+                                        "Silver"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("White JST Connector",
                                         CornerCube("JST Connector",
                                                    P3D(0.00, 55.01, 0.00),
                                                    P3D(3.00, 63.37, 2.95)),  # 0.00? 3.00?
-                                        "White"))
+                                        "White"),
+                                  translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black Buttons Area",
                                         CornerCube("Buttons Area",
                                                    P3D(85.51, 62.12, 0.00),
                                                    P3D(98.23, 68.74, 2.95)),  # 10.00?
-                                        "Black"))
+                                        "Black"),
+                                  translate=-holes_center)
         other_pi_module: Module3D = other_pi_pcb.scad_program_append(scad_program, "Yellow")
 
         # Stuff some values into *other_pi* (i.e. *self*):
