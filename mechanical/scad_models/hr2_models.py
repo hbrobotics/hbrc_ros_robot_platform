@@ -2437,12 +2437,12 @@ class OtherPi(PiBoard):
                                                    P3D(85.51, 62.12, 0.00),
                                                    P3D(98.23, 68.74, 2.95)),  # 10.00?
                                         "Black"))
-        other_pi_pcb.scad_program_append(scad_program, "Yellow")
+        other_pi_module: Module3D = other_pi_pcb.scad_program_append(scad_program, "Yellow")
 
-        # other_pi_pcb.scad3d_place(male_2x20_header.module.use_module_get())
-        # connectors.append(Translate3D("2x20 Male Header",
-        #                               male_2x20_header.module.use_module_get(),
-        #                               P3D((7.37 + 57.67) / 2.0, (64.00 + 69.08) / 2.0, 0.0)))
+        # Stuff some values into *other_pi* (i.e. *self*):
+        # other_pi: OtherPi = self
+        self.module: Module3D = other_pi_module
+        self.pcb: PCB = other_pi_pcb
 
 
 # RaspberryPi3:
@@ -2532,39 +2532,12 @@ class RaspberryPi3:
                                        "Black"))
 
         # Wrap up the *raspi3b_module*:
-        raspi3b_pcb.scad_program_append(scad_program, "Green")
+        raspi3b_module: Module3D = raspi3b_pcb.scad_program_append(scad_program, "Green")
 
-    # RaspberryPi3.pcb_polygon_get():
-    def pcb_polygon_get(self) -> Polygon:
-        """Return the RasPi 3B+ PCB Polygon."""
-        # Origin is set to lower left so all dimensions are postive except for
-        # one or two connectors along the bottom edge:
-        pcb_dx: float = 85.0
-        holes_dx: float = 58
-        pcb_dy: float = 56.0
-        pcb_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
-        pcb_board_outline: Square = Square("RasPi3B+ PCB Outiline",
-                                           pcb_dx, pcb_dy, center=pcb_center)
-
-        # Define the 4 holes:
-        hole_diameter = 3.2
-        lower_left_hole: Circle = Circle("Lower Left Hole", hole_diameter, 8,
-                                         center=P2D(3.5, 3.5))
-        lower_right_hole: Circle = Circle("Lower Right Hole", hole_diameter, 8,
-                                          center=P2D(3.5 + holes_dx, 3.5))
-        upper_left_hole: Circle = Circle("Upper Left Hole", hole_diameter, 8,
-                                         center=P2D(3.5, pcb_dy - 3.5))
-        upper_right_hole: Circle = Circle("Lower Left Hole", hole_diameter, 8,
-                                          center=P2D(3.5 + holes_dx, pcb_dy - 3.5))
-
-        # Create and return the *pcb_polygon*:
-        pcb_polygon: Polygon = Polygon("Rasp3b+ PCB", [pcb_board_outline,
-                                                       lower_left_hole,
-                                                       lower_right_hole,
-                                                       upper_left_hole,
-                                                       upper_right_hole],
-                                       lock=False)
-        return pcb_polygon
+        # Stuff some values into into *raspi3b* (i.e. *self*):
+        # raspi3b: RaspberryPi3 = self
+        self.module: Module3D = raspi3b_module
+        self.pcb: PCB = raspi3b_pcb
 
 
 # RectangularConnector:
