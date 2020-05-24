@@ -91,7 +91,7 @@ class P3D:
     # P3D.__neg__():
     def __neg__(self) -> "P3D":
         """Return the negative of of a point."""
-        # USe *p3d* insetead of *self*:
+        # Use *p3d* insetead of *self*:
         p3d: P3D = self
         negative: P3D = P3D(-p3d.x, -p3d.y, -p3d.z)
         return negative
@@ -191,6 +191,14 @@ class P2D:
         # Use *p2d* instead of *self*:
         p2d: P2D = self
         return P2D(p2d.x * scale, p2d.y * scale)
+
+    # P2D.__neg__():
+    def __neg__(self) -> "P2D":
+        """Negate a *P2D*."""
+        # Use *p2d* instead of *self*:
+        p2d: P2D = self
+        negative: P2D = P2D(-p2d.x, -p2d.y)
+        return negative
 
     # P2D.__rmul__():
     def __rmul__(self, scale: float) -> "P2D":
@@ -3072,6 +3080,53 @@ class Scad3D(Scad):
     def __init__(self, name: str) -> None:
         """Set the name of the 3-dimensional SCAD object."""
         super().__init__(name)
+
+    # Scad3D.reposition():
+    def reposition(self, name: str,
+                   center: "P3D", axis: "P3D", rotate: float, translate: "P3D") -> "Scad3D":
+        """Reposition a SCAD3D to a new orientation and location.
+
+        Args:
+            * *name* (*str*):
+              Name of the reposition operation for debugging.
+            * *center* (*P3D*):
+              The virtual center of the SCAD3D.
+            * *axis* (*P3D*):
+              The axis to perform any rotation around.
+            * *rotate* (*float*):
+              The number of radians to rotate by.
+            * *translate* (*P3D*):
+              The location to translate the *center* to.
+
+        """
+        # Use *scad3d* instead of *self*:
+        scad3d: Scad3D = self
+
+        # Compute some flags:
+        small_distance: float = .0000001
+        center_translate: bool = center.length() > small_distance
+        do_rotation: bool = rotate != 0.0
+        assert axis.length() > small_distance, f"Invalid axis {axis}"
+        do_translate: bool = translate.length() > small_distance
+
+        # Do the various translate and rotate operations:
+        if do_rotation:
+            # For rotate, move to *center* first, rotate, then move back to the final location.
+            if center_translate:
+                scad3d = Translate3D(f"{name} Move Center to Origin", scad3d, -center)
+            scad3d = Rotate3D("f{name} Rotate Around Center", scad3d, rotate, axis)
+            if do_translate:
+                scad3d = Translate3D(f"{name} Move Origin to Translate Point", scad3d, translate)
+            else:
+                scad3d = Translate3D(f"{name} Move Origin back to Center", scad3d, center)
+        elif do_translate:
+            # Translate only:
+            scad3d = Translate3D(f"{name} Move Center to Translate Point",
+                                 scad3d, translate - center)
+        else:
+            # Nothing to do:
+            pass
+        return scad3d
 
 
 # Cylinder:
