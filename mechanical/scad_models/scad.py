@@ -91,7 +91,7 @@ class P3D:
     # P3D.__neg__():
     def __neg__(self) -> "P3D":
         """Return the negative of of a point."""
-        # USe *p3d* insetead of *self*:
+        # Use *p3d* insetead of *self*:
         p3d: P3D = self
         negative: P3D = P3D(-p3d.x, -p3d.y, -p3d.z)
         return negative
@@ -191,6 +191,14 @@ class P2D:
         # Use *p2d* instead of *self*:
         p2d: P2D = self
         return P2D(p2d.x * scale, p2d.y * scale)
+
+    # P2D.__neg__():
+    def __neg__(self) -> "P2D":
+        """Negate a *P2D*."""
+        # Use *p2d* instead of *self*:
+        p2d: P2D = self
+        negative: P2D = P2D(-p2d.x, -p2d.y)
+        return negative
 
     # P2D.__rmul__():
     def __rmul__(self, scale: float) -> "P2D":

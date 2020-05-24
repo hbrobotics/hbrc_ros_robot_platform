@@ -773,13 +773,13 @@ class PCB:
         pcb: PCB = self
         scad3ds: List[Scad3D] = pcb.scad3ds
 
-        # For now, just fail if the optional arguments are not zero.
-        assert center.length() < .00001
-        assert rotate == 0.0
-        assert translate.length() < .00001
-
-        # Perform the actual append
-        scad3ds.append(scad3d)
+        # Reposition *scad3d* into *repositioned_scad3d* and append to *scad3ds*:
+        center3d: P3D = P3D(center.x, center.y, 0.0)
+        translate3d: P3D = P3D(translate.x, translate.y, 0.0)
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        repositioned_scad3d: Scad3D = scad3d.reposition(
+            f"{scad3d.name} Reposition", center3d, z_axis, rotate, translate3d)
+        scad3ds.append(repositioned_scad3d)
 
     # PCB.scad_program_append():
     def scad_program_append(self, scad_program: ScadProgram, color: str) -> Module3D:
@@ -1278,21 +1278,17 @@ class HR2PiAssembly:
 
         # Create the *raspberry_pi3* and rotate and translate to the correct location.:
         RaspberryPi3(scad_program)
+        origin3d: P3D = P3D(0.0, 0.0, 0.0)
         raspi3b_board_module: Module3D = scad_program.module3d_get("RasPi3B_Board")
         raspi3b_board_use_module: UseModule3D = raspi3b_board_module.use_module_get()
-        raspi3b_corner_offset: P3D = P3D(3.5 + 58.0/2.0, 3.5 + 49.0/2.0, 0.0)
-        centered_raspi3b_board: Translate3D = Translate3D("Centered Raspberry Pi3 Board",
-                                                          raspi3b_board_use_module,
-                                                          -raspi3b_corner_offset)
-        rotated_raspi3b_board: Rotate3D = Rotate3D("Rotated Raspberry Pi3 Board",
-                                                   centered_raspi3b_board, degrees90, z_axis)
-        translated_raspi3b_board: Translate3D = Translate3D("Translated Raspberry Pi3 Board",
-                                                            rotated_raspi3b_board, pi_offset)
+        # raspi3b_corner_offset: P3D = P3D(3.5 + 58.0/2.0, 3.5 + 49.0/2.0, 0.0)
+        repositioned_raspi3b: Scad3D = raspi3b_board_use_module.reposition(
+            f"Reposition Raspberry Pi 3B", origin3d, z_axis, degrees90, pi_offset)
 
         # Create *module*, append to *scad_program* and save into *hr2_base_assembly* (i.e. *self*):
         module: Module3D = Module3D("HR2 Pi Assembly", [
             hr2_base_assembly.module.use_module_get(),
-            rotated_other_pi_board, translated_raspi3b_board])
+            rotated_other_pi_board, repositioned_raspi3b])
         scad_program.append(module)
 
         # hr2_pi_assembly: HR2PiAssembly = self
@@ -2454,90 +2450,123 @@ class RaspberryPi3:
         """Initialize RaspberryPi3 and append to ScadProgram."""
         # Define the board dimensions:
         pcb_dx: float = 85.00
+        pcb_center_x: float = pcb_dx / 2
         pcb_dy: float = 56.00
+        pcb_center_y: float = pcb_dy / 2
         pcb_dz: float = 1.6
+        pcb_center: P2D = P2D(pcb_center_x, pcb_center_y)
+        pcb_corner_radius: float = 3.0
 
         # The dimensions read off the drawing assume that the origin is at the lower left corner.
-        # When we are done we want *pcb_center* to point to the exact middle of the board
-        # (not the middle of the 4 mounting holes):
-        pcb_center: P2D = P2D(pcb_dx / 2.0, pcb_dy / 2.0)
+        # When we are done we want *pcb_center* to point to the exact middle of the 4 mounting
+        # holes.  Define all of the hole locations first:
+        hole_east_x: float = 3.5
+        hole_pitch_dx: float = 58.0
+        hole_west_x: float = hole_east_x + hole_pitch_dx
+        holes_center_x: float = (hole_east_x + hole_west_x) / 2.0
+        hole_south_y: float = 3.5
+        hole_pitch_dy: float = 49.0  # Note: Is equal to *pcb_dy* - 2 * 3.5 = 56 - 7 = 49
+        hole_north_y: float = hole_south_y + hole_pitch_dy
+        holes_center_y: float = (hole_south_y + hole_north_y) / 2.0
+        # Note that *pcb_center_y* is equal to *holes_center_y*:
+        holes_center: P2D = P2D(holes_center_x, holes_center_y)
+        # All of the code below offsets by *holes_center* so that origin aligns with *holes_center*.
 
+        # Define the 4 hole center locations:
+        hole_ne: P2D = P2D(hole_east_x, hole_north_y)
+        hole_nw: P2D = P2D(hole_west_x, hole_north_y)
+        hole_se: P2D = P2D(hole_east_x, hole_south_y)
+        hole_sw: P2D = P2D(hole_west_x, hole_south_y)
+
+        # The *Sqaure* class takes a *center* argument that specifies where the center
+        # of the square is to be located in the X/Y plane.  We need to compute *square_center*
+        # such that square is offset so that the holes center is at the origin (0, 0):
         # Create the *pcb_outline* with the origin in the lower left corner:
+        square_center: P2D = pcb_center - holes_center
         raspi3b_exterior: Square = Square("PCB Exterior", pcb_dx, pcb_dy,
-                                          center=pcb_center, corner_radius=3.0)
-        # Create the *raspib_pcb* using *raspi3b* (i.e. *self*):
+                                          center=square_center, corner_radius=pcb_corner_radius)
+
+        # Create the *raspib_pcb*:
         raspi3b_pcb: PCB = PCB("RasPi3B", scad_program, pcb_dz, raspi3b_exterior)
 
-        # Define the mount holes:
+        # Create the 4 mount holes:
         hole_diameter: float = 2.75
-        raspi3b_pcb.mount_hole_append("Upper Left Hole", {"mounts"},
-                                      hole_diameter, P2D(3.5, pcb_dy - 3.5))
-        raspi3b_pcb.mount_hole_append("Upper Right Hole", {"mounts"},
-                                      hole_diameter, P2D(3.5 + 58.0, pcb_dy - 3.5))
-        raspi3b_pcb.mount_hole_append("Lower Left Hole", {"mounts"},
-                                      hole_diameter, P2D(3.5, pcb_dy - 3.5 - 49.0))
-        raspi3b_pcb.mount_hole_append("Lower Right Hole", {"mounts"},
-                                      hole_diameter, P2D(3.5 + 58.0, pcb_dy - 3.5 - 49.0))
+        raspi3b_pcb.mount_hole_append("NE Mount Hole", {"mounts"},
+                                      hole_diameter, hole_ne - holes_center)
+        raspi3b_pcb.mount_hole_append("NW Mount Hole", {"mounts"},
+                                      hole_diameter, hole_nw - holes_center)
+        raspi3b_pcb.mount_hole_append("SE Mount Hole", {"mounts"},
+                                      hole_diameter, hole_se - holes_center)
+        raspi3b_pcb.mount_hole_append("SW Mount Hole", {"mounts"},
+                                      hole_diameter, hole_sw - holes_center)
 
         # Install the header connectors:
         origin2d: P2D = P2D(0.0, 0.0)
         # The main 2x20 header:
-        connector2x20_translate: P2D = P2D((57.90 + 7.10) / 2.0, 52.50)
+        connector2x20_center: P2D = P2D((57.90 + 7.10) / 2.0, 52.50)
         raspi3b_pcb.module3d_place("M2x20", {"connector"}, "",
-                                   origin2d, 0.0, connector2x20_translate)
+                                   origin2d, 0.0, connector2x20_center - holes_center)
         # A 2x2 jumper header:
-        connector2x2_translate: P2D = P2D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0)
+        connector2x2_center: P2D = P2D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0)
         raspi3b_pcb.module3d_place("M2x2", {"jumpers"}, "",
-                                   origin2d, 0.0, connector2x2_translate)
+                                   origin2d, 0.0, connector2x2_center - holes_center)
         # A 1x2 jumper header:
-        connector1x2_translate: P2D = P2D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0)
+        connector1x2_center: P2D = P2D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0)
         raspi3b_pcb.module3d_place("M1x2", {"jumpers"}, "",
-                                   origin2d, 0.0, connector1x2_translate)
+                                   origin2d, 0.0, connector1x2_center - holes_center)
 
         # Now place various cubes to represent the other connectors:
         raspi3b_pcb.scad3d_place(Color("Silver RJ45 Connector",
                                        CornerCube("RJ45 Connecttor",
                                                   P3D(65.650, 2.495, pcb_dz + 0.000),
                                                   P3D(87.000, 18.005, pcb_dz + 13.500)),
-                                       "Silver"))
+                                       "Silver"),
+                                 translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Silver Lower USB2",
                                        CornerCube("Lower USB2",
                                                   P3D(69.30, 22.43, pcb_dz + 0.00),
                                                   P3D(87.00, 34.57, pcb_dz + 16.00)),
-                                       "Silver"))
+                                       "Silver"),
+                                 translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Silver Upper USB2",
                                        CornerCube("Upper USB2",
                                                   P3D(69.30, 40.43, pcb_dz + 0.00),
                                                   P3D(87.00, 53.57, pcb_dz + 16.00)),
-                                       "Silver"))
+                                       "Silver"),
+                                 translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Black Camera Connector",
                                        CornerCube("Camera Connector",
                                                   P3D(43.55, 0.30, pcb_dz + 0.00),
                                                   P3D(47.50, 22.70, pcb_dz + 5.50)),
-                                       "Black"))
+                                       "Black"),
+                                 translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Silver HDMI Connector",
                                        CornerCube("HDMI Connector",
                                                   P3D(24.75, -1.50, pcb_dz + 0.00),
                                                   P3D(39.25, 10.65, pcb_dz + 6.50)),
-                                       "Silver"))
+                                       "Silver"),
+                                 translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Silver Power Connector",
                                        CornerCube("Power Connector",
                                                   P3D(6.58, -1.22, pcb_dz + 0.00),
                                                   P3D(14.62, 14.35, pcb_dz + 2.00)),
-                                       "Silver"))
+                                       "Silver"),
+                                 translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Black LCD Connector",
                                        CornerCube("LCD Connector",
                                                   P3D(2.65, 16.80, pcb_dz + 0.00),
                                                   P3D(5.45, 39.20, pcb_dz + 5.50)),
-                                       "Black"))
+                                       "Black"),
+                                 translate=-holes_center)
 
-        # Wrap up the *raspi3b_module*:
+        # Wrap up the *raspi3b_pcb*:
         raspi3b_module: Module3D = raspi3b_pcb.scad_program_append(scad_program, "Green")
 
         # Stuff some values into into *raspi3b* (i.e. *self*):
         # raspi3b: RaspberryPi3 = self
         self.module: Module3D = raspi3b_module
         self.pcb: PCB = raspi3b_pcb
+        # TODO: add the Camera and LCD connector locations:
 
 
 # RectangularConnector:
