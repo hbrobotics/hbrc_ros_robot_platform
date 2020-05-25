@@ -75,13 +75,13 @@ class Footprint:
         return match
 
     # Footprint.hole():
-    def hole(self, name: str, center: P2D, diameter: float, drill: float) -> None:
+    def hole(self, name: str, center: P2D, pad_dx: float, pad_dy: float, drill: float) -> None:
         """Append a hole to a footprint."""
         footprint: Footprint = self
         lines: List[str] = footprint.lines
         line: str
-        if diameter == 0.0:
-            line = (f"  (pad \"\" np_thru_hole circle "
+        if pad_dx == 0.0 or pad_dy == 0.0:
+            line = (f"  (pad \"{name}\" np_thru_hole circle "
                     f"(at {center.x:.4f} {-center.y:.4f}) "
                     f"(size {drill:.1f} {drill:.1f}) "
                     f"(drill {drill:.1f}) "
@@ -90,7 +90,7 @@ class Footprint:
         else:
             line = (f"  (pad \"{name}\" thru_hole circle "
                     f"(at {center.x:.4f} {-center.y:.4f}) "
-                    f"(size {diameter:.1f} {diameter:.1f}) "
+                    f"(size {pad_dx:.1f} {pad_dy:.1f}) "
                     f"(drill {drill:.1f}) "
                     "(layers *.Cu *.Mask))")
             lines.append(line)

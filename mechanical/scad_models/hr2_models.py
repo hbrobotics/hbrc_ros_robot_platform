@@ -25,7 +25,7 @@
 #
 # ##################################################################################################
 # <======================================= 100 characters =======================================> #
-"""Code genarates an OpenSCAD model for HR2 (HBRC ROS Robot)."""
+"""Code that generates an OpenSCAD model for HR2 (HBRC ROS Robot)."""
 
 from scad_models.scad import (Color, Circle, CornerCube, Cylinder, If2D, Difference2D, KicadPcb,
                               LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
@@ -310,26 +310,58 @@ class Pad:
     """Represents a through hole PCB pad."""
 
     # Pad.__init__():
-    def __init__(self, name: str, pad_diameter: float, hole_diameter: float, position: P2D) -> None:
+    def __init__(self, name: str, pad_dx: float, pad_dy: float, drill_diameter: float,
+                 pad_center: "P2D", pad_rotate: float = 0.0) -> None:
         """Create a PAD."""
+        # Verify argument types:
+        assert name != ""
+        assert drill_diameter >= 0.0
+        assert pad_dx >= 0.0
+        assert pad_dy >= 0.0
+
         # Load up *pad* (i.e. *self*):
         # pad: Pad = self
-        self.hole_diameter: float = hole_diameter
+        self.drill_diameter: float = drill_diameter
         self.name: str = name
-        self.pad_diameter: float = pad_diameter
-        self.position: P2D = position
+        self.pad_center: P2D = pad_center
+        self.pad_dx: float = pad_dx
+        self.pad_dy: float = pad_dy
+        self.pad_rotate: float = pad_rotate
 
     # Pad.hole_append():
     def hole_append(self, polygon: Polygon) -> None:
         """Append the Pad drill holes to a Polygon."""
-        # Unpack some values from *pad*:
+        # Unpack some values from *pad* (i.e. *self*):
         pad: Pad = self
-        hole_diameter: float = pad.hole_diameter
+        drill_diameter: float = pad.drill_diameter
         name: str = pad.name
-        position: P2D = pad.position
-        circle: Circle = Circle(name, hole_diameter, 8, position)
-        assert isinstance(circle, SimplePolygon)
-        polygon.append(circle)
+        pad_center: P2D = pad.pad_center
+        pad_dx: float = pad.pad_dx
+        pad_dy: float = pad.pad_dy
+        pad_rotate: float = pad.pad_rotate
+
+        # Use a *Circle* for a round pad and a rounded *Square* for a "oval" pad:
+        pad_dx_dy_minimum: float = min(pad_dx, pad_dy)
+        small_distance: float = .0000001
+        if pad_dx_dy_minimum < small_distance:
+            # Round Mechanical hole only:
+            polygon.append(Circle(f"{name} Hole", drill_diameter, 16, pad_center))
+        else:
+            # There is a pad as well.  The pad can be either circular or slotted.
+            if abs(pad_dx - pad_dy) < small_distance:
+                # The pad is circular, use a *Circle* for a round hole:
+                polygon.append(Circle(f"{name} Hole", pad_dx, 16, pad_center))
+            else:
+                # Use a rounded *Sqaure* to generate a slot hole:
+                pad_extra: float = pad_dx_dy_minimum - drill_diameter
+                assert pad_extra > small_distance, "Really narrow slot pad"
+                if pad_extra > small_distance:
+                    corner_radius: float = (pad_dx_dy_minimum - pad_extra) / 2.0
+                    polygon.append(Square(f"{name} Slot",
+                                          pad_dx - pad_extra, pad_dy - pad_extra,
+                                          pad_center, pad_rotate, corner_radius, 5))
+                else:
+                    assert False, "Unhandled hole condition in Pad.hole_append()."
 
     # Pad.reposition():
     def reposition(self, flags: str, center: P2D, rotate: float,
@@ -352,12 +384,14 @@ class Pad:
                * A base number to add to each pin number.
 
         """
-        # Unpack some values from *pad*:
+        # Unpack some values from *pad* (i.e. *self*):
         pad: Pad = self
-        hole_diameter: float = pad.hole_diameter
+        drill_diameter: float = pad.drill_diameter
         name: str = pad.name
-        pad_diameter: float = pad.pad_diameter
-        position: P2D = pad.position
+        pad_center: P2D = pad.pad_center
+        pad_dx: float = pad.pad_dx
+        pad_dy: float = pad.pad_dy
+        pad_rotate: float = pad.pad_rotate
 
         # Verify that the *flags* are OK:
         flag: str
@@ -366,10 +400,11 @@ class Pad:
                 raise ValueError(f"Flag '{flag} in '{flags}' is not allowed.  Must be 'x' or 'y'.")
 
         # Return the *repositioned_pad*:
-        reposition: P2D = position.reposition(flags, center, rotate, translate)
+        reposition_pad_center: P2D = pad_center.reposition(flags, center, rotate, translate)
 
         new_pad_name: str = name if pads_base == 0 else str(int(name) + pads_base)
-        repositioned_pad: Pad = Pad(new_pad_name, pad_diameter, hole_diameter, reposition)
+        repositioned_pad: Pad = Pad(new_pad_name, pad_dx, pad_dy, drill_diameter,
+                                    reposition_pad_center, pad_rotate + rotate)
         return repositioned_pad
 
 
@@ -502,7 +537,8 @@ class PCB:
                 pad: Pad
                 for pad in pads:
                     # Output a pad defintion:
-                    footprint.hole(pad.name, pad.position, pad.pad_diameter, pad.hole_diameter)
+                    footprint.hole(pad.name, pad.pad_center,
+                                   pad.pad_dx, pad.pad_dy, pad.drill_diameter)
 
         # Save the *footprint* into the file system:
         full_base_name = base_name + ".kicad_mod"
@@ -537,6 +573,9 @@ class PCB:
           * 'b':
             Place the module on the bottom of the board.  This flag is
             usually followed by either the 'x' or 'y' flag.
+          * 'n':
+            Do NOT actually place the module on the actual PCB.
+            Instead, just leave it available for other PCB's to place.
           * 'x':
             Rotate the module and along the X axis by 180 degrees
           * 'X':
@@ -569,9 +608,11 @@ class PCB:
         # Verify that *flags* are OK:
         flag: str
         for flag in flags:
-            if flag not in "bxyXY":
+            if flag not in "bnxyXY":
                 raise ValueError(f"Flag '{flag}' is not allowed.")
         bottom_place: bool = 'b' in flags
+        no_place: bool = 'n' in flags
+        place: bool = not no_place  # Double negative!
         x_flip: bool = 'x' in flags
         y_flip: bool = 'y' in flags
         if x_flip and y_flip:
@@ -599,7 +640,7 @@ class PCB:
 
         # Extract the PADS from the from *module3d*:
         tag: Any = module3d.tag_lookup("PadsGroup")
-        if isinstance(tag, PadsGroup):
+        if place and isinstance(tag, PadsGroup):
             pads_group: PadsGroup = tag
             # print(f"pads_group:{pads_group}")
             x_flag: str = "x" if x_mirror else ""
@@ -635,7 +676,10 @@ class PCB:
         z: float = 0.0 if bottom_place else dz
         translate3d: P3D = P3D(translate.x, translate.y, z)
         translated: Translate3D = Translate3D(f"{name} Translated", rotated, center3d + translate3d)
-        scad3ds.append(translated)
+
+        # Only *place* translated if 'n' is not specified in flags:
+        if place:
+            scad3ds.append(translated)
 
         # Stuff *translated* into the appropiate *pcb_groups*:
         for group_name in group_names:
@@ -660,7 +704,7 @@ class PCB:
                 The position of the mounting hole:
 
         """
-        # Unpack soem values from *pcb* (i.e. *self*):
+        # Unpack some values from *pcb* (i.e. *self*):
         pcb: PCB = self
         pcb_polygon: Polygon = pcb.pcb_polygon
         pcb_groups: Dict[str, PCBGroup] = pcb.pcb_groups
@@ -673,11 +717,36 @@ class PCB:
                 # print(f"PCB.mount_hole_append: Creating group '{group_name}'")
             pcb_group: PCBGroup = pcb_groups[group_name]
             pads_groups: List[PadsGroup] = pcb_group.pads_groups
-            pad: Pad = Pad(name, 0.0, diameter, position)
+            pad: Pad = Pad(name, 0.0, 0.0, diameter, position)
             pads_group: PadsGroup = PadsGroup()
             pads_group.insert(pad)
             pads_groups.append(pads_group)
-        pcb_polygon.append(Circle(name, diameter, 16, position))
+        pad.hole_append(pcb_polygon)
+
+    # PCB.pad_append():
+    def pad_append(self, name: str, group_names: Set[str], flags: str,
+                   pad_dx: float, pad_dy: float, drill_diameter: float,
+                   center: "P2D" = P2D(0.0, 0.0), rotate=0.0) -> None:
+        """Install a bare Pad onto a PCB."""
+        # Unpack soem values from *pcb* (i.e. *self*):
+        pcb: PCB = self
+        pcb_polygon: Polygon = pcb.pcb_polygon
+        pcb_groups: Dict[str, PCBGroup] = pcb.pcb_groups
+
+        # Iterate through all of the *group_names*:
+        group_name: str
+        for group_name in group_names:
+            if group_name not in pcb_groups:
+                pcb_groups[group_name] = PCBGroup(group_name)
+            pcb_group: PCBGroup = pcb_groups[group_name]
+            pads_groups: List[PadsGroup] = pcb_group.pads_groups
+            pad: Pad = Pad(name, pad_dx, pad_dy, drill_diameter, center, rotate)
+            pads_group: PadsGroup = PadsGroup()
+            pads_group.insert(pad)
+            pads_groups.append(pads_group)
+
+        # Append the hole/slot to *pcb_polygon*:
+        pad.hole_append(pcb_polygon)
 
     # PCB.pcb_place():
     def pcb_place(self, other_pcb: "PCB", group_names: Set[str], flags: str,
@@ -705,7 +774,6 @@ class PCB:
               The location to translate *center* to.
 
         """
-        print("****************")
         # Unpack some values from *pcb* (i.e. *self*):
         pcb: PCB = self
         name: str = pcb.name
@@ -790,6 +858,7 @@ class PCB:
         name: str = pcb.name
         scad3ds: List[Scad3D] = pcb.scad3ds
 
+        # next_tracing: str = tracing + " " if tracing else ""
         pcb_polygon: Polygon = pcb.pcb_polygon
         pcb_polygon.lock()
 
@@ -837,20 +906,20 @@ class PCBGroup:
         self.scad3ds: List[Scad3D] = []
 
 
-# EncoderBoard:
-class EncoderBoard:
+# Encoder:
+class Encoder:
     """Represents a motor encoder board."""
 
-    # EncoderBoard.__init__():
+    # Encoder.__init__():
     def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
-        """Initialize the EncoderBoard and append to ScadProgram."""
+        """Initialize the Encoder and append to ScadProgram."""
         # Grab some X/Y/Z coordinates from *base_dxf*:
         motor_casing_east_x: float = base_dxf.x_locate(-5.253299)
         motor_casing_north_y: float = base_dxf.y_locate(3.382512)
         north_electrical_north_y: float = base_dxf.y_locate(3.208303)
         north_electrical_south_y: float = base_dxf.y_locate(3.188610)
-        motor_shart_north_y: float = base_dxf.y_locate(2.967165)
-        motor_shart_south_y: float = base_dxf.y_locate(2.908110)
+        motor_shaft_north_y: float = base_dxf.y_locate(2.967165)
+        motor_shaft_south_y: float = base_dxf.y_locate(2.908110)
         south_electrical_north_y: float = base_dxf.y_locate(2.686650)
         south_electrical_south_y: float = base_dxf.y_locate(2.666957)
         motor_casing_south_y: float = base_dxf.y_locate(2.492748)
@@ -868,25 +937,26 @@ class EncoderBoard:
         electrical_dz: float = abs(electrical_top_z - electrical_bottom_z)
         motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
         motor_casing_dz: float = abs(motor_casing_top_z - motor_casing_bottom_z)
-        motor_shaft_diameter: float = (motor_shart_north_y + motor_shart_south_y) / 2.0
+        motor_shaft_diameter: float = (motor_shaft_north_y + motor_shaft_south_y) / 2.0
         motor_shaft_z: float = motor_casing_bottom_z + motor_casing_dz / 2.0
-        pcb_translate: P3D = P3D(motor_casing_east_x, 0.0, motor_shaft_z)
 
-        # The PCB is designed flat with the motor shaft in the center and then rotated on end
-        # and translated into position.  This tends to swap X and Z coordinates:
+        # Some random comments:
+        degrees90: float = pi / 2.0
+        origin2d: P2D = P2D(0.0, 0.0)
+
+        # The PCB is designed in a flat orientation with the motor shaft in the center aligned
+        # with the Z-axis and then rotated on end and translated into position.  This tends to
+        # swap X and Z coordinates.  Thus the constants below are *VERY* confusing:
         pcb_west_x: float = -motor_casing_dz / 2.0 - 3.0  # Note the X/Z coordinate swap
         pcb_east_x: float = motor_casing_dz / 2.0
-        pcb_header_dx: float = 5.0
+        pcb_header_dx: float = 6.5
         pcb_corner_x: float = pcb_west_x + pcb_header_dx
-        pcb_dy_extra: float = 7.0 * 2.54
+        pcb_dy_extra: float = 9.0 * 2.54
+        pcb_dz: float = 1.0  # mm
         pcb_north_y: float = (motor_casing_dy + pcb_dy_extra) / 2.0
         pcb_north_corner_y: float = motor_casing_dy / 2.0
         pcb_south_corner_y: float = -pcb_north_corner_y
         pcb_south_y: float = -pcb_north_y
-
-        self.pcb_north_y: float = pcb_north_y
-        self.pcb_south_y: float = pcb_south_y
-        pcb_height: float = 1.0
         pcb_shaft_diameter_extra: float = 3.0
         pcb_shaft_hole_diameter: float = motor_shaft_diameter + pcb_shaft_diameter_extra
         pcb_slot_extra: float = 0.400
@@ -894,111 +964,108 @@ class EncoderBoard:
         pcb_slot_dy: float = electrical_dy + pcb_slot_extra
         pcb_north_slot_center: P2D = P2D(0.0, north_electrical_y)
         pcb_south_slot_center: P2D = P2D(0.0, south_electrical_y)
+        pcb_pad_extra: float = 0.75
+        pcb_pad_dx: float = pcb_slot_dx + pcb_pad_extra
+        pcb_pad_dy: float = pcb_slot_dy + pcb_pad_extra
+        pcb_drill_diameter: float = min(pcb_slot_dx, pcb_slot_dy)
 
-        # Create the *pcb_extorior* to allow enough space for the *MasterBoard* to slide up
+        # Create the *encoder_exterior* to allow enough space for the *MasterBoard* to slide up
         # to approximately the motor shaft Z:
         #
         #    A---H
         #    |   |
+        #    |   |
         #    |   G--F
+        #    |      |
+        #    |      |
         #    |      |
         #    |   D--E
         #    |   |
+        #    |   |
         #    B---C
         #
-        pcb_exterior: SimplePolygon = SimplePolygon("Encoder PCB Exterior Polygon", [
-            P2D(pcb_west_x, pcb_north_y),           # A
-            P2D(pcb_west_x, pcb_south_y),           # B
-            P2D(pcb_corner_x, pcb_south_y),         # C
-            P2D(pcb_corner_x, pcb_south_corner_y),  # D
-            P2D(pcb_east_x, pcb_south_corner_y),    # E
-            P2D(pcb_east_x, pcb_north_corner_y),    # F
-            P2D(pcb_corner_x, pcb_north_corner_y),  # G
-            P2D(pcb_corner_x, pcb_north_y)          # H
-        ], lock=True)
+        encoder_exterior: SimplePolygon = SimplePolygon(
+            "Encoder PCB Exterior Polygon", [], lock=False)
+        corner_radius: float = 1.5
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_west_x, pcb_north_y), corner_radius, "ES")           # A
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_west_x, pcb_south_y), corner_radius, "NE")           # B
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_corner_x, pcb_south_y), corner_radius, "WN")         # C
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_corner_x, pcb_south_corner_y), corner_radius, "SE")  # D
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_east_x, pcb_south_corner_y), corner_radius, "WN")    # E
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_east_x, pcb_north_corner_y), corner_radius, "SW")    # F
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_corner_x, pcb_north_corner_y), corner_radius, "EN")  # G
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_corner_x, pcb_north_y), corner_radius, "SW")         # H
+        encoder_exterior.lock()
 
-        # Create the *pcb_polygon* centered with the motor shaft hole at the origin (0,0):
-        pcb_shaft_hole: Circle = Circle("Encoder Shaft Hole", pcb_shaft_hole_diameter, 16)
-        pcb_north_electrical_slot: Square = Square("Encoder North Electrical Slot",
-                                                   pcb_slot_dx, pcb_slot_dy,
-                                                   center=pcb_north_slot_center,
-                                                   corner_radius=pcb_slot_extra/2.0,
-                                                   corner_count=1)
-        pcb_south_electrical_slot: Square = Square("Encoder South Electrical Slot",
-                                                   pcb_slot_dx, pcb_slot_dy,
-                                                   center=pcb_south_slot_center,
-                                                   corner_radius=pcb_slot_extra/2.0,
-                                                   corner_count=1)
-        # Create the *pcb_polygon* from the *pcb_exterior*, *pcb_shaft_hole*,
-        # *pcb_north_electrical_slot* and *pcb_south_electrical_slot*.  Leave it unlocked
-        # so that the electrical connectors can be added:
-        pcb_polygon: Polygon = Polygon("Encoder PCB Polygon", [
-            pcb_exterior,
-            pcb_shaft_hole,
-            pcb_north_electrical_slot,
-            pcb_south_electrical_slot
-        ], lock=False)
+        # Create *encoder_pcb* iwth *encoder_exterior* as the PCB outline:
+        encoder_pcb: PCB = PCB("Encoder", scad_program, pcb_dz, encoder_exterior)
 
         # Create *north_header* and *south_header* for (Digikey: 2057-PH1RB-03-UA-ND (Adam Tech))
         # and make sure the header pin holes are appended to *pcb_polygon*:
-        offset: float = 1.5 * 2.54
-        degrees90: float = pi / 2.0
-        north_header_center: P3D = P3D(pcb_west_x + 0.5 * 2.54, pcb_north_y - offset, 0.0)
-        north_encoder_connector: RectangularConnector = RectangularConnector(
-            "North Encoder Header", scad_program,
-            1, 3, 2.50, 3.90 - 2.50, male_pin_height=6.00,
-            right_angle_length=(3.05 + 0.127),
-            center=north_header_center,
-            insulation_color="SkyBlue",
-            pcb_polygon=pcb_polygon,
-            vertical_rotate=degrees90, is_top=False)
-        north_header_use_module: Scad3D = north_encoder_connector.module.use_module_get()
+        header_offset: float = 2.0 * 2.54
+        north_header_center2d: P2D = P2D(pcb_west_x + 0.5 * 2.54, pcb_north_y - header_offset)
+        south_header_center2d: P2D = P2D(pcb_west_x + 0.5 * 2.54, pcb_south_y + header_offset)
 
-        south_header_center: P3D = P3D(pcb_west_x + 0.5 * 2.54, pcb_south_y + offset, 0.0)
-        south_header_connector: RectangularConnector = RectangularConnector(
-            "South Encoder Header", scad_program,
-            1, 3, 2.50, 3.90 - 2.50, male_pin_height=6.00,
-            right_angle_length=(3.05 + 0.127),
-            center=south_header_center,
-            insulation_color="Lime",
-            pcb_polygon=pcb_polygon,
-            vertical_rotate=degrees90, is_top=False)
-        south_header_use_module: Scad3D = south_header_connector.module.use_module_get()
+        # Install the connectors to the encoder board:
+        encoder_pcb.module3d_place("M1x3RA", {"connectors"}, "bx",
+                                   origin2d, degrees90, north_header_center2d)
+        encoder_pcb.module3d_place("F1x3", {"connectors_mate"}, "n",
+                                   origin2d, degrees90, north_header_center2d)
+        encoder_pcb.module3d_place("M1x3RA", {"connectors"}, "bx",
+                                   origin2d, degrees90, south_header_center2d, pads_base=3)
+        encoder_pcb.module3d_place("F1x3", {"connectors_mate"}, "n",
+                                   origin2d, degrees90, south_header_center2d, pads_base=3)
+        encoder_pcb.mount_hole_append("SHAFT", {"shaft"}, pcb_shaft_hole_diameter, origin2d)
 
-        # Now that the connector holes have been added to *pcb_polygon*, it can be locked,
-        # turned into a *encode_pcb_module*, append it to *scad_program* and make
-        # it independently viewable as a 2D object:
-        pcb_polygon.lock()
-        encoder_pcb_module: Module2D = Module2D("Encoder PCB Module", [pcb_polygon])
-        scad_program.append(encoder_pcb_module)
-        scad_program.if2d.name_match_append("encoder_pcb", encoder_pcb_module, ["Encoder PCB"])
+        # Constuct the slots for the motor tabs:
+        encoder_pcb.pad_append("7", {"motors"}, "",
+                               pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_north_slot_center)
+        encoder_pcb.pad_append("8", {"motors"}, "",
+                               pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_south_slot_center)
 
-        # Now create *encoder_pcb* and *colored_pcb*:
-        extruded_pcb: LinearExtrude = LinearExtrude("Extruded Encoder PCB", pcb_polygon, pcb_height)
-        colored_pcb: Scad3D = Color("Colored Encoder PCB", extruded_pcb, "Fuchsia")
+        # Digikey: 2057-PH1RB-03-UA-ND (Adam Tech):
+        encoder_pcb.footprint_generate(Path("/tmp"), "ENCODER",
+                                       {"connectors", "motors", "shaft"}, "U")
+        encoder_pcb.footprint_generate(Path("/tmp"), "ENCODER_MATE",
+                                       {"connectors"}, "U")
 
-        # Create the *encoder_union* so we can do the final rotate and translate operations:
-        encoder_union: Union3D = Union3D("Encoder Union", [
-            colored_pcb,
-            north_header_use_module,
-            south_header_use_module,
-        ])
+        # Wrap up the *encoder_pcb*:
+        encoder_module: Module3D = encoder_pcb.scad_program_append(scad_program, "Purple")
 
-        # Now rotate to vertical and traslate to the left motor:
-        rotated_encoder_pcb: Rotate3D = Rotate3D("Rotated Encoder PCB", encoder_union,
-                                                 pi/2.0, P3D(0.0, 1.0, 0.0))
-        translated_encoder_pcb: Translate3D = Translate3D("Translated Encoder PCB",
-                                                          rotated_encoder_pcb,
-                                                          pcb_translate)
+        # *translate* is the point on the east motor where the shaft comes out:
+        # No need to worry about the west motor because the entire east wheel assembly is
+        # is rotated and placed on the west side of the robot.
+        translate: P3D = P3D(motor_casing_east_x, 0.0, motor_shaft_z)
 
-        # Create *module*, append to *scad_program*, and save into *encoder_board* (i.e. *self*):
-        module: Module3D = Module3D("EncoderBoard Module", [
-            translated_encoder_pcb,
-        ])
-        scad_program.append(module)
-        scad_program.if3d.name_match_append("encoder_board", module, ["Encoder Board"])
-        # encoder_board: EncoderBoard = self
-        self.module: Module3D = module
+        # *offset* is the point the east side of the master board to place the mating connectors
+        # footprint.  This is complicated because the center of the footprint is the motor shaft.
+        # So an additional *adjustment* and *tweak* is needed to get *offset* correct.
+        # *tweak* is determined by trial and error:
+        tweak: float = 0.290  # mm
+        adjustment: float = pcb_header_dx
+        offset: P2D = P2D(motor_casing_east_x + adjustment - tweak, 0.0)
+
+        # *bottom_z* is the lower insulation lip on the encoder connectors, measured in
+        # the robot frame (i.e. origin at the center of the base.)
+        male_inuslation_bottom_z: float = -pcb_corner_x  # Usual X/Z coordinate swap (see above.)
+        mating_female_insulation_length: float = 7.00
+        bottom_z: float = motor_shaft_z + male_inuslation_bottom_z - mating_female_insulation_length
+
+        # Stuff some values into *encoder* (i.e. *self*):
+        # encoder: Encoder = self
+        self.bottom_z: float = bottom_z
+        self.module: Module3D = encoder_module
+        self.offset: P2D = offset
+        self.pcb: PCB = encoder_pcb
+        self.translate: P3D = translate
 
 
 # HCSR04:
@@ -1200,12 +1267,17 @@ class HR2MasterAssembly:
     def __init__(self, scad_program: ScadProgram, hr2_pi_assembly: "HR2PiAssembly",
                  base_dxf: BaseDXF,
                  master_board_z: float, nucleo_board_z: float, arm_z: float,
-                 pi_offset: P3D, nucleo144: "Nucleo144", romi_base_keys: List[Tuple[Any, ...]],
+                 pi_offset: P3D, nucleo_offset: P3D,
+                 encoder: "Encoder", raspi3b: "RaspberryPi3", nucleo144: "Nucleo144",
+                 romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the HR2MasterAssembly."""
-        nucleo_offset: P2D = P2D(0.0, 0.0)
-        master_board: MasterBoard = MasterBoard(scad_program, base_dxf, nucleo144,
-                                                pi_offset, nucleo_offset,
+        print(f"HR2MasterAssembly: nucleo_offset:{nucleo_offset}")
+        nucleo_offset2d: P2D = P2D(nucleo_offset.x, nucleo_offset.y)
+        pi_offset2d: P2D = P2D(pi_offset.x, pi_offset.y)
+        master_board: MasterBoard = MasterBoard(scad_program, base_dxf,
+                                                encoder, raspi3b, nucleo144,
+                                                pi_offset2d, nucleo_offset2d,
                                                 master_board_z, nucleo_board_z, arm_z,
                                                 romi_base_keys, romi_expansion_plate_keys)
 
@@ -1259,7 +1331,7 @@ class HR2PiAssembly:
 
     # HR2PiAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, hr2_base_assembly: HR2BaseAssembly,
-                 pi_offset: P3D, master_board_z: float) -> None:
+                 raspi3b: "RaspberryPi3", pi_offset: P3D, master_board_z: float) -> None:
         """Initialize the HR2BaseAssembly."""
         # Define some constants
         degrees90: float = pi / 2.0
@@ -1274,7 +1346,6 @@ class HR2PiAssembly:
             "Reposition Other Pi", origin3d, z_axis, degrees90, pi_offset)
 
         # Create the *raspberry_pi3* and rotate and translate to the correct location.:
-        RaspberryPi3(scad_program)
         raspi3b_board_module: Module3D = scad_program.module3d_get("RasPi3B_Board")
         raspi3b_board_use_module: UseModule3D = raspi3b_board_module.use_module_get()
         repositioned_raspi3b: Scad3D = raspi3b_board_use_module.reposition(
@@ -1300,6 +1371,9 @@ class HR2Robot:
         """Initialize an HR2Robot."""
         base_dxf: BaseDXF = BaseDXF()
         base_top_z: float = base_dxf.z_locate(-2.701374)
+        encoder: Encoder = Encoder(scad_program, base_dxf)
+        encoder_bottom_z: float = encoder.bottom_z
+        master_board_z: float = encoder_bottom_z - 0.2  # Leave .2mm slop between encoder connectors
 
         # romi_base_key: Tuple[Any, ...]
         # The tuple is stored as:
@@ -1321,12 +1395,15 @@ class HR2Robot:
         pi_y: float = 0.0
         pi_z: float = base_top_z + 11.00
         pi_offset: P3D = P3D(pi_x, pi_y, pi_z)
-        master_board_z: float = pi_z + 8.000
+        # master_board_z: float = pi_z + 8.000
         nucleo_board_z: float = master_board_z + 13.00
         arm_z: float = master_board_z + 26.00
 
+        raspi3b: RaspberryPi3 = RaspberryPi3(scad_program)
+
         # Create the *nucleo144* before *master_board* so it can be passed in:
         nucleo144_offset: P3D = P3D(pi_x + 6.5, pi_y - 1.0, master_board_z + 13.00)
+        print(f"HR2PiAssembly:nucle144_offst:{nucleo144_offset}")
         nucleo144: Nucleo144 = Nucleo144(scad_program)
 
         # Create the *romi_expansion_plate* before *master_board* so it can be passed in:
@@ -1338,16 +1415,17 @@ class HR2Robot:
         hr2_base_assembly: HR2BaseAssembly = HR2BaseAssembly(scad_program, base_dxf,
                                                              pi_z, master_board_z, arm_z)
         hr2_pi_assembly: HR2PiAssembly = HR2PiAssembly(scad_program, hr2_base_assembly,
-                                                       pi_offset, master_board_z)
+                                                       raspi3b, pi_offset, master_board_z)
         romi_base_keys: List[Tuple[Any, ...]] = hr2_base_assembly.romi_base_keys_get()
         hr2_master_assembly: HR2MasterAssembly = HR2MasterAssembly(scad_program, hr2_pi_assembly,
                                                                    base_dxf, master_board_z,
                                                                    nucleo_board_z, arm_z,
-                                                                   pi_offset, nucleo144,
+                                                                   pi_offset, nucleo144_offset,
+                                                                   encoder, raspi3b, nucleo144,
                                                                    romi_base_keys,
                                                                    romi_expansion_plate_keys)
-        hr2_wheel_assembly: HR2WheelAssembly = HR2WheelAssembly(scad_program,
-                                                                hr2_master_assembly, base_dxf)
+        hr2_wheel_assembly: HR2WheelAssembly = HR2WheelAssembly(scad_program, hr2_master_assembly,
+                                                                base_dxf, encoder)
 
         hr2_nucleo_assembly: HR2NucleoAssembly = HR2NucleoAssembly(scad_program,
                                                                    hr2_wheel_assembly,
@@ -1360,14 +1438,16 @@ class HR2Robot:
 
 # HR2WheelAssembly:
 class HR2WheelAssembly:
-    """Represents HR2 with both wheels assemblies installed."""
+    """Represents HR2 with wheels, motors, and encoders installed."""
 
     # HR2WheelAssemlby.__init__():
     def __init__(self, scad_program: ScadProgram,
-                 hr2_master_assembly: HR2MasterAssembly, base_dxf: BaseDXF) -> None:
+                 hr2_master_assembly: HR2MasterAssembly,
+                 base_dxf: BaseDXF, encoder: Encoder) -> None:
         """Initialzie HR2WheelAssembly."""
         # Create the *west_romi_wheel_assembly* and associated *UseModule3D*:
-        west_romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly(scad_program, base_dxf)
+        west_romi_wheel_assembly: RomiWheelAssembly = RomiWheelAssembly(scad_program,
+                                                                        base_dxf, encoder)
         west_romi_wheel_assembly_use_module: UseModule3D
         west_romi_wheel_assembly_use_module = west_romi_wheel_assembly.module.use_module_get()
 
@@ -1549,9 +1629,9 @@ class Nucleo144:
                                   P2D(cn12_morpho_center_x, ground_south_y))
 
         # Create the associated 2 mating morpho connectors:
-        nucleo_pcb.module3d_place("F2x35", {"morpho_mate"}, "", origin, degrees90,
+        nucleo_pcb.module3d_place("F2x35", {"morpho_mate"}, "n", origin, degrees90,
                                   cn11_morpho_center, pads_base=1100)
-        nucleo_pcb.module3d_place("F2x35", {"morpho_mate"}, "", origin, degrees90,
+        nucleo_pcb.module3d_place("F2x35", {"morpho_mate"}, "n", origin, degrees90,
                                   cn12_morpho_center, pads_base=1200)
 
         # Create a list of *mount_hole_keys* that specify where each mount holes goes:
@@ -1584,13 +1664,16 @@ class MasterBoard:
     """Represents Master PCB that the various Pi boards mount to."""
 
     # MasterBoard.__init__():
-    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, nucleo144: Nucleo144,
-                 pi_offset: P3D, nucleo_offset: P2D,
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF,
+                 encoder: "Encoder", raspi3b: "RaspberryPi3", nucleo144: "Nucleo144",
+                 pi_offset: P2D, nucleo_offset: P2D,
                  master_board_bottom_z: float, nucleo_board_z: float, arm_z: float,
                  romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the MasterBoard."""
         master_board: MasterBoard = self
+
+        print(f"MasterBoard: nucleo_offset:{nucleo_offset}")
 
         # Find the bottom edge of the motor casing.  Arbitrarily set Y to 0.0 since it is unneeded.
         # The Y coordinate cooresponds to the Z height.
@@ -1619,7 +1702,19 @@ class MasterBoard:
         # Install the nucleo144 connector and mounting holes:
         origin2d: P2D = P2D(0.0, 0.0)
         center_pcb.pcb_place(nucleo144.pcb, {"morpho_mate", "arduino"}, "",
-                             origin2d, degrees90, origin2d)
+                             origin2d, -degrees90, nucleo_offset)
+        center_pcb.pcb_place(raspi3b.pcb, {"connector_mate"}, "",
+                             origin2d, degrees90, pi_offset)
+
+        # Install the Pi connector:
+        # center_pcb.pcb_place(
+
+        # Install the two encoder connectors:
+        encoder_offset: P2D = encoder.offset
+        center_pcb.pcb_place(encoder.pcb, {"connectors_mate"},
+                             "West Encoder Connectors", origin2d, 0.0, encoder_offset)
+        center_pcb.pcb_place(encoder.pcb, {"connectors_mate"},
+                             "East Encoder Connectors", origin2d, degrees180, -encoder_offset)
 
         # Use *romi_base_keys* to build *romi_base_keys_table*:
         romi_base_keys_table: Dict[str, Tuple[Any, ...]] = {}
@@ -1719,52 +1814,36 @@ class MasterBoard:
             master_pcb_polygon.append(arm_spacer_hole2)
         assert len(arm_spacers), "Something failed"
 
-        # Create the *pi_receptacle_2x20* and append its mounting holes to *pcb_polygon*:
-        receptacle_height: float = 4.57
-        pcb_pin_height: float = 2.92
-        # insulation_height: float = 2.54
-        # horizontal_height: float = pcb_height + insulation_height + header_height
-        receptacle_center: P3D = P3D(pi_offset.x - 49.0/2.0, pi_offset.y, master_board_bottom_z)
-        receptacle_2x20: RectangularConnector = RectangularConnector(
-            "Pi", scad_program, 2, 20,
-            receptacle_height, pcb_pin_height,
-            cut_out=True,
-            pcb_polygon=master_pcb_polygon,
-            pin_dx_dy=0.640,
-            center=receptacle_center,
-            insulation_color="Maroon",
-            vertical_rotate=degrees90, is_top=False)
-
-        # Create the 4 EncoderBoard 1x4 Female connectors and append the mounting holes
+        # Create the 4 Encoder 1x4 Female connectors and append the mounting holes
         # to *pcb_polygon*:
-        encoder_receptacles_use_modules: List[Scad3D] = []
-        names: List[str] = ["South West",
-                            "South East",
-                            "North West",
-                            "North East"]
-        pin_pitch: float = 2.54  # .1in = 2.54mm
-        # encoder_board_thickness: float = 1.0
-        motor_casing_east_x: float = base_dxf.x_locate(-5.253299)
-        motor_casing_north_y: float = base_dxf.y_locate(3.382512)
-        motor_casing_south_y: float = base_dxf.y_locate(2.492748)
-        motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y) / 2.0
-        x_center_offset: float = abs(motor_casing_east_x) + pin_pitch / 2.0
-        y_center_offset: float = motor_casing_dy + (1.5 + .5) * pin_pitch
-        index: int
-        for index, name in enumerate(names):
-            x_offset: float = -x_center_offset if index & 1 == 0 else x_center_offset
-            y_offset: float = -y_center_offset if index & 2 == 0 else y_center_offset
-            center: P3D = P3D(x_offset, y_offset, pcb_top_z)
-            # SLW-103-01-T-S:
-            encoder_receptacle_1x3: RectangularConnector = RectangularConnector(
-                f"{name} Encoder Receptacle", scad_program,
-                1, 3, 4.57, 2.92,
-                center=center,
-                cut_out=True,
-                pcb_polygon=master_pcb_polygon,
-                insulation_color="Olive",
-                vertical_rotate=degrees90)
-            encoder_receptacles_use_modules.append(encoder_receptacle_1x3.module.use_module_get())
+        # encoder_receptacles_use_modules: List[Scad3D] = []
+        # names: List[str] = ["South West",
+        #                     "South East",
+        #                     "North West",
+        #                     "North East"]
+        # pin_pitch: float = 2.54  # .1in = 2.54mm
+        # encoder_thickness: float = 1.0
+        # motor_casing_east_x: float = base_dxf.x_locate(-5.253299)
+        # motor_casing_north_y: float = base_dxf.y_locate(3.382512)
+        # motor_casing_south_y: float = base_dxf.y_locate(2.492748)
+        # motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y) / 2.0
+        # x_center_offset: float = abs(motor_casing_east_x) + pin_pitch / 2.0
+        # y_center_offset: float = motor_casing_dy + (1.5 + .5) * pin_pitch
+        # index: int
+        # for index, name in enumerate(names):
+        #     x_offset: float = -x_center_offset if index & 1 == 0 else x_center_offset
+        #     y_offset: float = -y_center_offset if index & 2 == 0 else y_center_offset
+        #     center: P3D = P3D(x_offset, y_offset, pcb_top_z)
+        #     # SLW-103-01-T-S:
+        #     encoder_receptacle_1x3: RectangularConnector = RectangularConnector(
+        #         f"{name} Encoder Receptacle", scad_program,
+        #         1, 3, 4.57, 2.92,
+        #         center=center,
+        #         cut_out=True,
+        #         pcb_polygon=master_pcb_polygon,
+        #         insulation_color="Olive",
+        #         vertical_rotate=degrees90)
+        #     encoder_receptacles_use_modules.append(encoder_receptacle_1x3.module.use_module_get())
 
         # *nucleo144_offset* is the offset from the robot origin to the bottom center of
         # the Nucleo144 board.  We use these offsets to place the various holes Nucleo144
@@ -1777,88 +1856,6 @@ class MasterBoard:
         # nucleo144_offset: P3D = nucleo144.offset
         # spacer_height: float = abs(nucleo_board_z - pcb_top_z) - 2.0 * spacer_debug_dz
         nucleo144_spacers: List[Scad3D] = []
-        # nucleo144_mount_hole_keys: List[Tuple[str, float, float, float]]
-        # nucleo144_mount_hole_keys = nucleo144.mount_hole_keys
-        # assert len(nucleo144_mount_hole_keys) == 0
-        # nucleo144_mount_index: int
-        # for nucleo144_mount_index, nucleo144_mount_hole_key in enumerate(
-        #        nucleo144_mount_hole_keys):
-        #     # The first 4 keys are for the 4 M3.0 corner spacers.  The fifth key is for the
-        #     # alignment screw which is going to M2.0 (~=#2)
-        #     is_screw: bool = nucleo144_mount_index == 4
-        #     nucleo144_mount_hole_name: str = nucleo144_mount_hole_key[0]
-        #     nucleo144_mount_hole_diameter: float = 2.20 if is_screw else 3.20
-        #     # Swap *nucleo144_mount_hole_x* and *nucleo144_mount_hole_y*
-        #     # due to the 90 degree rotation:
-        #     nucleo144_mount_hole_y: float = nucleo144_mount_hole_key[2]
-        #     nucleo144_mount_hole_x: float = nucleo144_mount_hole_key[3]
-        #     hole_x: float = nucleo_offset.x + nucleo144_mount_hole_x
-        #     # Subtle: The Nucleo144 90 degree rotation causes the Y coordinate to need
-        #     # to be negative:
-        #     hole_y: float = nucleo_offset.y - nucleo144_mount_hole_y
-        #     hole: P2D = P2D(hole_x, hole_y)
-        #     nucleo144_mount_hole: Circle = Circle(nucleo144_mount_hole_name,
-        #                                           nucleo144_mount_hole_diameter, 16, hole)
-        #     master_pcb_polygon.append(nucleo144_mount_hole)
-
-        #     # See if we have a hole that needs to be mirrored to the KiCAD PCB:
-        #     last_space_index: int = nucleo144_mount_hole_name.rfind(' ')
-        #     if (last_space_index >= 0 and (nucleo144_mount_hole_name[-1] != ' ' and
-        #                                    nucleo144_mount_hole_name[last_space_index+1] == 'H')):
-        #         # There might be a hole name of the form Hnumber" ad the end of the name:
-        #         kicad_hole_name = nucleo144_mount_hole_name[last_space_index+1:]
-        #         if kicad_hole_name[1:].isdigit():
-        #             assert kicad_hole_name not in kicad_mounting_holes, (
-        #                 f"Nucleo Mount Hole '{kicad_hole_name}' is a duplicate")
-        #             mount_hole_diameter: float = (2.20 if kicad_hole_name == "H1"
-        #                                           else nucleo144_mount_hole_diameter)
-        #             # print(f">>>>>>>>>>>>>>>Kicad Hole:'{kicad_hole_name} "
-        #             #       f"diameter:{mount_hole_diameter}'")
-        #             kicad_mounting_holes[kicad_hole_name] = (hole, mount_hole_diameter)
-
-        #     # Create the spacer (or alignment screw):
-        #     spacer_bottom_center: P3D = P3D(hole_x, hole_y, pcb_top_z + spacer_debug_dz)
-        #     if is_screw:
-        #         # Install a vertical *alignment_screw*:
-        #         screw_start: P3D = P3D(hole_x, hole_y, pcb_bottom_z - 1.0)
-        #         screw_end: P3D = P3D(hole_x, hole_y, nucleo_board_z + 3.0)
-        #         alignment_screw: Cylinder = Cylinder("Nucleo144 Alignment Screw",
-        #                                              3.0, screw_start, screw_end, 8)
-        #         nucleo144_spacers.append(alignment_screw)
-        #     else:
-        #         # Install a vertical mounting spacer:
-        #         spacer: Spacer = Spacer(scad_program, f"{nucleo144_mount_hole_name} Spacer",
-        #                                 spacer_height, "M3", diameter=4.50,
-        #                                 bottom_center=spacer_bottom_center)
-        #         nucleo144_spacers.append(spacer.module.use_module_get())
-
-        # Place the two "morpho" connectors.  On the Nucleo144 theya are called "east" and "west",
-        # but since the Nucleo144 board has been rotated by 90 degrees, they actually become
-        # "north" and "south".  Thus, there is some swapping between X and Y coordinates to
-        # make this work:
-        cn11_morpho_center: P2D = nucleo144.cn11_morpho_center
-        north_morpho_center: P3D = P3D(nucleo_offset.x + cn11_morpho_center.y,
-                                       nucleo_offset.y + cn11_morpho_center.x,
-                                       pcb_top_z)
-        north_morpho_connector: RectangularConnector = RectangularConnector(
-            "North Morpho Connector", scad_program,
-            2, 36, 5.00, 2.92,
-            center=north_morpho_center,
-            cut_out=True,
-            pcb_polygon=master_pcb_polygon,
-            insulation_color="Teal")
-        cn12_morpho_center: P2D = nucleo144.cn12_morpho_center
-        south_morpho_center: P3D = P3D(nucleo_offset.x + cn12_morpho_center.y,
-                                       nucleo_offset.y + cn12_morpho_center.x,
-                                       pcb_top_z)
-        south_morpho_connector: RectangularConnector = RectangularConnector(
-            "South Morpho Connector", scad_program,
-            2, 36, 5.00, 2.92,
-            center=south_morpho_center,
-            cut_out=True,
-            pcb_polygon=master_pcb_polygon,
-            insulation_color="Teal")
-
         # Create some HC-SR04 sonars:
         hcsr04: HCSR04 = HCSR04(scad_program)
         # srf02: SRF02 = SRF02(scad_program)
@@ -1992,7 +1989,7 @@ class MasterBoard:
         # Compute the colored PCB from a PCB polygon:
         def pcb_process(name: str, pcb_polygon: Polygon,
                         pcb_bottom_z: float, pcb_dz: float, color: str) -> Color:
-            """Extrude, Posistion and Color a PCB Polygon."""
+            """Extrude, Position and Color a PCB Polygon."""
             pcb_extruded: LinearExtrude = LinearExtrude(f"Extruded {name} PCB",
                                                         pcb_polygon, pcb_dz)
             pcb_translated: Translate3D = Translate3D(f"Translated {name} PCB",
@@ -2002,6 +1999,7 @@ class MasterBoard:
 
         # Create the 6 PCB modules:
         master_pcb_module: Module3D = master_pcb.scad_program_append(scad_program, "Yellow")
+        master_pcb_module = master_pcb_module
         center_pcb_module: Module3D = center_pcb.scad_program_append(scad_program, "Gray")
         ne_pcb_module: Module3D = ne_pcb.scad_program_append(scad_program, "Blue")
         nw_pcb_module: Module3D = nw_pcb.scad_program_append(scad_program, "Orange")
@@ -2010,21 +2008,18 @@ class MasterBoard:
 
         # Create *module*, append it to *scad_program* and stuff it into *master_pcb* (i.e. *self*):
         module: Module3D = Module3D("Master Board Module",
-                                    (encoder_receptacles_use_modules +
+                                    (  # encoder_receptacles_use_modules +
                                      nucleo144_spacers +
                                      arm_spacers +
                                      sonars +
                                      st_link_connectors +
-                                     [master_pcb_module.use_module_get(),
+                                     [  # master_pcb_module.use_module_get(),
                                       center_pcb_module.use_module_get(),
                                       ne_pcb_module.use_module_get(),
                                       nw_pcb_module.use_module_get(),
                                       se_pcb_module.use_module_get(),
                                       sw_pcb_module.use_module_get(),
-                                      translated_st_link,
-                                      receptacle_2x20.module.use_module_get(),
-                                      north_morpho_connector.module.use_module_get(),
-                                      south_morpho_connector.module.use_module_get()]))
+                                      translated_st_link]))
         scad_program.append(module)
         scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
         self.module: Module3D = module
@@ -2108,7 +2103,7 @@ class MasterBoard:
 
         # The remaining variable are defined in alphabetical order:
         arm_well_dx: float = 15.0  # mm (trail and error)
-        arm_well_north: float = -40.0  # mm (trail and error)
+        arm_well_north: float = -50.0  # mm (trail and error)
         # bantam_dx: float = 5 * 25.4  # mm (size of Bantam Labs PCB blank)
         bantam_dy: float = 4 * 25.4  # mm (size of Bantam Labs PCB blank)
         center_pcb_north: float = wheel_well_dy / 2.0 + 3.0  # mm (trail and error)
@@ -2122,7 +2117,7 @@ class MasterBoard:
         inner_radius: float = radius - 7.00  # mm (trail and error)
         origin: P2D = P2D(0.0, 0.0)
         # pcb_corner: float = 1.0  # mm
-        motor_well_dx: float = 90.0  # mm (from user's guide)
+        motor_well_dx: float = 60.0  # mm (trail and error)
         motor_well_dy: float = 25.0  # mm (trail and error)
 
         # When you have a right triangle and you have the length of the hypotenuse (H) and
@@ -2401,62 +2396,62 @@ class OtherPi(PiBoard):
 
         other_pi_pcb.scad3d_place(Color("Silver Ethernet Connector",
                                         CornerCube("Ethernet Connector",
-                                                   P3D(80.00, 29.26, pcb_dz + 0.00),
+                                                   P3D(80.00, 29.26, pcb_dz),
                                                    P3D(105.00, 44.51, pcb_dz + 13.08)),
                                         "Silver"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB2 Connector",
                                         CornerCube("USB2 Connector",
-                                                   P3D(85.00, 12.82, 0.00),
-                                                   P3D(104.00, 25.57, 15.33)),  # 85.00? 104.00?
+                                                   P3D(85.00, 12.82, pcb_dz),
+                                                   P3D(104.00, 25.57, pcb_dz + 15.33)),
                                         "Silver"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver West Connector",
                                         CornerCube("West Connector",
-                                                   P3D(98.00, 50.69, 0.00),
-                                                   P3D(105.00, 58.09, 3.00)),  # 98.00? 3.00? 105??
+                                                   P3D(98.00, 50.69, pcb_dz),
+                                                   P3D(105.00, 58.09, pcb_dz + 3.00)),
                                         "Silver"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black North Connector",
                                         CornerCube("North Connector",
-                                                   P3D(70.03, 60.92, 0.00),
-                                                   P3D(76.38, 66.00, 5.00)),  # 5.00? 66.00??
+                                                   P3D(70.03, 60.92, pcb_dz),
+                                                   P3D(76.38, 66.00, pcb_dz + 5.00)),
                                         "Black"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black Audio Connector",
                                         CornerCube("Audio Connector",
-                                                   P3D(66.31, -1.00, 0.00),
-                                                   P3D(72.31, 14.00, 5.12)),  # -1.00? 14.00?
+                                                   P3D(66.31, -1.00, pcb_dz),
+                                                   P3D(72.31, 14.00, pcb_dz + 5.12)),
                                         "Black"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB3A Connector",
                                         CornerCube("USB3A Connector",
-                                                   P3D(9.54, 0.00, 0.00),
-                                                   P3D(18.52, 10.00, 2.95)),  # 10.00?
+                                                   P3D(9.54, 0.00, pcb_dz),
+                                                   P3D(18.52, 10.00, pcb_dz + 2.95)),
                                         "Silver"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB3B Connector",
                                         CornerCube("USB3B Connector",
-                                                   P3D(22.73, 0.00, 0.00),
-                                                   P3D(31.71, 10.00, 2.95)),  # 10.00?
+                                                   P3D(22.73, 0.00, pcb_dz),
+                                                   P3D(31.71, 10.00, pcb_dz + 2.95)),
                                         "Silver"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver Power Connector",
                                         CornerCube("Power Connector",
-                                                   P3D(-1.00, 22.50, 0.00),
-                                                   P3D(8.00, 29.00, 2.95)),  # -1.00? 8.00?
+                                                   P3D(-1.00, 22.50, pcb_dz),
+                                                   P3D(8.00, 29.00, pcb_dz + 2.95)),
                                         "Silver"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("White JST Connector",
                                         CornerCube("JST Connector",
-                                                   P3D(0.00, 55.01, 0.00),
-                                                   P3D(3.00, 63.37, 2.95)),  # 0.00? 3.00?
+                                                   P3D(0.00, 55.01, pcb_dz),
+                                                   P3D(3.00, 63.37, pcb_dz + 2.95)),  # 0.00? 3.00?
                                         "White"),
                                   translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black Buttons Area",
                                         CornerCube("Buttons Area",
-                                                   P3D(85.51, 62.12, 0.00),
-                                                   P3D(98.23, 68.74, 2.95)),  # 10.00?
+                                                   P3D(85.51, 62.12, pcb_dz),
+                                                   P3D(98.23, 68.74, pcb_dz + 2.95)),  # 10.00?
                                         "Black"),
                                   translate=-holes_center)
         other_pi_module: Module3D = other_pi_pcb.scad_program_append(scad_program, "Yellow")
@@ -2528,10 +2523,13 @@ class RaspberryPi3:
 
         # Install the header connectors:
         origin2d: P2D = P2D(0.0, 0.0)
-        # The main 2x20 header:
+        # The main Pi 2x20 header:
         connector2x20_center: P2D = P2D((57.90 + 7.10) / 2.0, 52.50)
         raspi3b_pcb.module3d_place("M2x20", {"connector"}, "",
                                    origin2d, 0.0, connector2x20_center - holes_center)
+        raspi3b_pcb.module3d_place("F2x20", {"connector_mate"}, "bxn",
+                                   origin2d, 0.0, connector2x20_center - holes_center)
+
         # A 2x2 jumper header:
         connector2x2_center: P2D = P2D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0)
         raspi3b_pcb.module3d_place("M2x2", {"jumpers"}, "",
@@ -2606,7 +2604,7 @@ class RectangularConnector:
                  rows_pitch: float = 2.54, columns_pitch: float = 2.54,
                  is_top: bool = True,
                  vertical_rotate: float = 0.0,
-                 pin_dx_dy: float = 0.640,
+                 pin_dx_dy: float = 0.640,  # 0.640mm = 0.25in,
                  rows_extra_insulation: float = 0.000,
                  columns_extra_insulation: float = 0.000,
                  right_angle_length: float = 0.000,
@@ -2769,7 +2767,9 @@ class RectangularConnector:
         # Create each *colored_pin* (and optional *colored_right_angle_pin*) and
         # append to *connector_pins*.
         if pcb_hole_diameter == 0:
-            pcb_hole_diameter = sqrt(3.0) * pin_dx_dy
+            pin_diagonal: float = sqrt(2.0 * pin_dx_dy * pin_dx_dy)
+            pin_hole_extra: float = 0.100  # mm
+            pcb_hole_diameter = pin_diagonal + pin_hole_extra
         row_start_y: float = -row_pins_dy / 2.0
         column_start_x: float = -column_pins_dx / 2.0
         connector_pins: List[Scad3D] = []
@@ -2873,7 +2873,7 @@ class RectangularConnector:
                     else:
                         pin_number = footprint_pin_number + (footprint_column_index * rows +
                                                              rows - footprint_row_index - 1)
-                    pad: Pad = Pad(f"{pin_number}", footprint_pad_diameter,
+                    pad: Pad = Pad(f"{pin_number}", footprint_pad_diameter, footprint_pad_diameter,
                                    footprint_drill_diameter, hole_center)
                     pads_group.insert(pad)
                     footprint.thru_hole_pad(f"{pin_number}", hole_center,
@@ -4914,19 +4914,27 @@ class RomiWheelAssembly:
     """Represents a Romi motor/wheel/magnet/encoder board assembly."""
 
     # RomiWheelAssembly.__init__():
-    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, encoder: Encoder) -> None:
         """Initialize RomiWheelAssembly and append to ScadProgram."""
-        # Create *romi_motor*, *romi_magnet*, and *encoder_board*:
+        # Create *romi_motor*, *romi_magnet*, and *encoder*:
         romi_motor: RomiMotor = RomiMotor(scad_program, base_dxf)
         romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)
-        encoder_board: EncoderBoard = EncoderBoard(scad_program, base_dxf)
+
+        y_axis: P3D = P3D(0.0, 1.0, 0.0)
+        degrees90: float = pi / 2.0
+        encoder_use_module: UseModule3D = encoder.module.use_module_get()
+        encoder_translate: P3D = encoder.translate
+        rotated_encoder: Rotate3D = Rotate3D("Rotated Encoder", encoder_use_module,
+                                             degrees90, y_axis)
+        translated_encoder: Translate3D = Translate3D("Translated Encoder",
+                                                      rotated_encoder, encoder_translate)
 
         # Construct *module*, append to *scad_program*, and store into *rom_wheel_assembly*
         # (i.e. *self*):
         module = Module3D("Romi Wheel Assembly Module", [
             romi_motor.module.use_module_get(),
             romi_magnet.module.use_module_get(),
-            encoder_board.module.use_module_get()
+            translated_encoder,
         ])
 
         scad_program.append(module)
@@ -4936,10 +4944,10 @@ class RomiWheelAssembly:
 
         # Save some values into *romi_wheel_assembly* (i.e. *self*).
         # romi_wheel_assembly: Romi_Wheel_Assembly = self
-        # self.east_encoder_board: EncoderBoard = east_encoder_board
+        # self.east_encoder: Encoder = east_encoder
         self.romi_magnet: RomiMagnet = romi_magnet
         self.romi_motor: RomiMotor = romi_motor
-        # self.west_encoder_board: EncoderBoard = west_encoder_board
+        # self.west_encoder: Encoder = west_encoder
 
 
 # Spacer:
@@ -5372,9 +5380,25 @@ def connectors_create(scad_program: ScadProgram):
     female_insulation_height: float = 5.85
     male_insulation_height: float = pins_dx_dy
 
-    # Common 1x2 male jumper:
+    # Common 1x2 connectors:
     RectangularConnector("M1x2", scad_program, 1, 2, pins_dx_dy, pcb_pin_height,
+                         insulation_color="Maroon", male_pin_height=4.04,
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+    RectangularConnector("F1x2", scad_program, 1, 2, female_insulation_height, pcb_pin_height,
+                         insulation_color="Fuchsia",
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+    # Common 1x3 connectors:
+    RectangularConnector("M1x3", scad_program, 1, 3, pins_dx_dy, pcb_pin_height,
                          insulation_color="Fuchsia", male_pin_height=4.04,
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+    # Digikey: 2057-PH1RB-03-UA-ND (Adam Tech):
+    RectangularConnector("M1x3RA", scad_program, 1, 3, pins_dx_dy, pcb_pin_height,
+                         insulation_color="Cyan", male_pin_height=6.00,
+                         right_angle_length=(3.05 + 0.127),
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+    RectangularConnector("F1x3", scad_program, 1, 3, female_insulation_height, pcb_pin_height,
+                         insulation_color="Fuchsia",
                          footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
     # Common 2x2 male jumper:
@@ -5382,9 +5406,12 @@ def connectors_create(scad_program: ScadProgram):
                          insulation_color="Fuchsia", male_pin_height=4.04,
                          footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
-    # Standard 2x20 RaspberryPi connector:
+    # Standard 2x20 RaspberryPi connectors
     RectangularConnector("M2x20", scad_program, 2, 20, pins_dx_dy, male_insulation_height,
                          insulation_color="Maroon", male_pin_height=4.04,
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+    RectangularConnector("F2x20", scad_program, 2, 20, female_insulation_height, pcb_pin_height,
+                         insulation_color="Fuchsia", cut_out=True,
                          footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
     # Mating connector for Nucleo144 CN11 and CN12 connectors:
