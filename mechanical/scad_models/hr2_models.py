@@ -906,13 +906,13 @@ class PCBGroup:
         self.scad3ds: List[Scad3D] = []
 
 
-# EncoderBoard:
-class EncoderBoard:
+# Encoder:
+class Encoder:
     """Represents a motor encoder board."""
 
-    # EncoderBoard.__init__():
+    # Encoder.__init__():
     def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
-        """Initialize the EncoderBoard and append to ScadProgram."""
+        """Initialize the Encoder and append to ScadProgram."""
         # Grab some X/Y/Z coordinates from *base_dxf*:
         motor_casing_east_x: float = base_dxf.x_locate(-5.253299)
         motor_casing_north_y: float = base_dxf.y_locate(3.382512)
@@ -1110,13 +1110,13 @@ class EncoderBoard:
         #                                                   pcb_translate)
         # translated_encoder_pcb = translated_encoder_pcb
 
-        # Create *module*, append to *scad_program*, and save into *encoder_board* (i.e. *self*):
-        # module: Module3D = Module3D("EncoderBoard Module", [
+        # Create *module*, append to *scad_program*, and save into *encoder* (i.e. *self*):
+        # module: Module3D = Module3D("Encoder Module", [
         #     translated_encoder_pcb,
         # ])
         # scad_program.append(module)
-        # scad_program.if3d.name_match_append("encoder_board", module, ["Encoder Board"])
-        # encoder_board: EncoderBoard = self
+        # scad_program.if3d.name_match_append("encoder", module, ["Encoder Board"])
+        # encoder: Encoder = self
 
         translate: P3D = P3D(motor_casing_east_x, 0.0, motor_shaft_z)
 
@@ -1859,7 +1859,7 @@ class MasterBoard:
             master_pcb_polygon.append(arm_spacer_hole2)
         assert len(arm_spacers), "Something failed"
 
-        # Create the 4 EncoderBoard 1x4 Female connectors and append the mounting holes
+        # Create the 4 Encoder 1x4 Female connectors and append the mounting holes
         # to *pcb_polygon*:
         encoder_receptacles_use_modules: List[Scad3D] = []
         names: List[str] = ["South West",
@@ -1867,7 +1867,7 @@ class MasterBoard:
                             "North West",
                             "North East"]
         pin_pitch: float = 2.54  # .1in = 2.54mm
-        # encoder_board_thickness: float = 1.0
+        # encoder_thickness: float = 1.0
         motor_casing_east_x: float = base_dxf.x_locate(-5.253299)
         motor_casing_north_y: float = base_dxf.y_locate(3.382512)
         motor_casing_south_y: float = base_dxf.y_locate(2.492748)
@@ -4961,19 +4961,19 @@ class RomiWheelAssembly:
     # RomiWheelAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF) -> None:
         """Initialize RomiWheelAssembly and append to ScadProgram."""
-        # Create *romi_motor*, *romi_magnet*, and *encoder_board*:
+        # Create *romi_motor*, *romi_magnet*, and *encoder*:
         romi_motor: RomiMotor = RomiMotor(scad_program, base_dxf)
         romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)
-        encoder_board: EncoderBoard = EncoderBoard(scad_program, base_dxf)
+        encoder: Encoder = Encoder(scad_program, base_dxf)
 
         y_axis: P3D = P3D(0.0, 1.0, 0.0)
         degrees90: float = pi / 2.0
-        encoder_board_use_module: UseModule3D = encoder_board.module.use_module_get()
-        encoder_board_translate: P3D = encoder_board.translate
-        rotated_encoder: Rotate3D = Rotate3D("Rotated Encoder", encoder_board_use_module,
+        encoder_use_module: UseModule3D = encoder.module.use_module_get()
+        encoder_translate: P3D = encoder.translate
+        rotated_encoder: Rotate3D = Rotate3D("Rotated Encoder", encoder_use_module,
                                              degrees90, y_axis)
         translated_encoder: Translate3D = Translate3D("Translated Encoder",
-                                                      rotated_encoder, encoder_board_translate)
+                                                      rotated_encoder, encoder_translate)
 
         # Construct *module*, append to *scad_program*, and store into *rom_wheel_assembly*
         # (i.e. *self*):
@@ -4990,10 +4990,10 @@ class RomiWheelAssembly:
 
         # Save some values into *romi_wheel_assembly* (i.e. *self*).
         # romi_wheel_assembly: Romi_Wheel_Assembly = self
-        # self.east_encoder_board: EncoderBoard = east_encoder_board
+        # self.east_encoder: Encoder = east_encoder
         self.romi_magnet: RomiMagnet = romi_magnet
         self.romi_motor: RomiMotor = romi_motor
-        # self.west_encoder_board: EncoderBoard = west_encoder_board
+        # self.west_encoder: Encoder = west_encoder
 
 
 # Spacer:
