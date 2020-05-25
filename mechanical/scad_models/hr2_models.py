@@ -906,16 +906,27 @@ class EncoderBoard:
         #    |   |
         #    B---C
         #
-        pcb_exterior: SimplePolygon = SimplePolygon("Encoder PCB Exterior Polygon", [
-            P2D(pcb_west_x, pcb_north_y),           # A
-            P2D(pcb_west_x, pcb_south_y),           # B
-            P2D(pcb_corner_x, pcb_south_y),         # C
-            P2D(pcb_corner_x, pcb_south_corner_y),  # D
-            P2D(pcb_east_x, pcb_south_corner_y),    # E
-            P2D(pcb_east_x, pcb_north_corner_y),    # F
-            P2D(pcb_corner_x, pcb_north_corner_y),  # G
-            P2D(pcb_corner_x, pcb_north_y)          # H
-        ], lock=True)
+
+        encoder_exterior: SimplePolygon = SimplePolygon(
+            "Encoder PCB Exterior Polygon", [], lock=False)
+        corner_radius: float = 1.5
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_west_x, pcb_north_y), corner_radius, "ES")           # A
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_west_x, pcb_south_y), corner_radius, "NE")           # B
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_corner_x, pcb_south_y), corner_radius, "WN")         # C
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_corner_x, pcb_south_corner_y), corner_radius, "SE")  # D
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_east_x, pcb_south_corner_y), corner_radius, "WN")    # E
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_east_x, pcb_north_corner_y), corner_radius, "SW")    # F
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_corner_x, pcb_north_corner_y), corner_radius, "EN")  # G
+        encoder_exterior.corner_arc_append(
+            P2D(pcb_corner_x, pcb_north_y), corner_radius, "SW")         # H
+        encoder_exterior.lock()
 
         # Create the *pcb_polygon* centered with the motor shaft hole at the origin (0,0):
         pcb_shaft_hole: Circle = Circle("Encoder Shaft Hole", pcb_shaft_hole_diameter, 16)
@@ -933,7 +944,7 @@ class EncoderBoard:
         # *pcb_north_electrical_slot* and *pcb_south_electrical_slot*.  Leave it unlocked
         # so that the electrical connectors can be added:
         pcb_polygon: Polygon = Polygon("Encoder PCB Polygon", [
-            pcb_exterior,
+            encoder_exterior,
             pcb_shaft_hole,
             pcb_north_electrical_slot,
             pcb_south_electrical_slot
