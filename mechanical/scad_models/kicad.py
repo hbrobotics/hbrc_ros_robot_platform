@@ -86,7 +86,6 @@ class Footprint:
                     f"(size {drill:.1f} {drill:.1f}) "
                     f"(drill {drill:.1f}) "
                     "(layers *.Cu *.Mask))")
-            lines.append(line)
         else:
             small_distance: float = 0.0000001
             if abs(pad_dx - pad_dy) < small_distance:
@@ -107,7 +106,7 @@ class Footprint:
                         f"(size {pad_dx:.1f} {pad_dy:.1f}) "
                         f"(drill oval {drill_dx:.1f} {drill_dy:.1f}) "
                         "(layers *.Cu *.Mask))")
-            lines.append(line)
+        lines.append(line)
 
     # Footprint.line():
     def line(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
