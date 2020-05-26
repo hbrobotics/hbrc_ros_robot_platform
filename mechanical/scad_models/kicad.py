@@ -86,14 +86,27 @@ class Footprint:
                     f"(size {drill:.1f} {drill:.1f}) "
                     f"(drill {drill:.1f}) "
                     "(layers *.Cu *.Mask))")
-            lines.append(line)
         else:
-            line = (f"  (pad \"{name}\" thru_hole circle "
-                    f"(at {center.x:.4f} {-center.y:.4f}) "
-                    f"(size {pad_dx:.1f} {pad_dy:.1f}) "
-                    f"(drill {drill:.1f}) "
-                    "(layers *.Cu *.Mask))")
-            lines.append(line)
+            small_distance: float = 0.0000001
+            if abs(pad_dx - pad_dy) < small_distance:
+                # Do a simple circular pad:
+                line = (f"  (pad \"{name}\" thru_hole circle "
+                        f"(at {center.x:.4f} {-center.y:.4f}) "
+                        f"(size {pad_dx:.1f} {pad_dy:.1f}) "
+                        f"(drill {drill:.1f}) "
+                        "(layers *.Cu *.Mask))")
+            else:
+                # Do an oval pad:
+                pad_dx_dy_minimum: float = min(pad_dx, pad_dy)
+                pad_extra: float = pad_dx_dy_minimum - drill
+                drill_dx: float = pad_dx - pad_extra
+                drill_dy: float = pad_dy - pad_extra
+                line = (f"  (pad \"{name}\" thru_hole oval "
+                        f"(at {center.x:.4f} {-center.y:.4f}) "
+                        f"(size {pad_dx:.1f} {pad_dy:.1f}) "
+                        f"(drill oval {drill_dx:.1f} {drill_dy:.1f}) "
+                        "(layers *.Cu *.Mask))")
+        lines.append(line)
 
     # Footprint.line():
     def line(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
