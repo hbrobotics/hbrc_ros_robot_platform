@@ -817,14 +817,17 @@ class PCB:
         return self.pcb_polygon
 
     # PCB.scad3d_place():
-
-    def scad3d_place(self, scad3d: "Scad3D", center: "P2D" = P2D(0.0, 0.0),
+    def scad3d_place(self, scad3d: "Scad3D", flags: str, center: "P2D" = P2D(0.0, 0.0),
                      rotate: float = 0.0, translate: "P2D" = P2D(0.0, 0.0)) -> None:
         """Add a Scad3D to a PCB.
 
         Args:
             * *scad3d* (*Scad3D*):
               The *Scad3D* object to append to the PCB.
+            * *flags* (*str*):
+              Some one character flags for placing the *scad3d*:
+              * 'b': Place the *scad3d* on the back surface.
+              * 't': Place the *scad3d* on the back surface.
             * *center* (*P2D*)
               (Optional: Defaults to *P3D*(0.0, 0.0, 0.0):
               The virtual center of the object to rotate around
@@ -839,11 +842,17 @@ class PCB:
         """
         # Unpack some values from *pcb* (i.e. *self*):
         pcb: PCB = self
+        dz: float = pcb.dz
         scad3ds: List[Scad3D] = pcb.scad3ds
+
+        flag: str
+        for flag in flags:
+            assert flag in "bt", f"'{flag}' is not one of 'b' or 't'."
+        translate_dz: float = 0.0 if 'b' in flags else dz
 
         # Reposition *scad3d* into *repositioned_scad3d* and append to *scad3ds*:
         center3d: P3D = P3D(center.x, center.y, 0.0)
-        translate3d: P3D = P3D(translate.x, translate.y, 0.0)
+        translate3d: P3D = P3D(translate.x, translate.y, translate_dz)
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
         repositioned_scad3d: Scad3D = scad3d.reposition(
             f"{scad3d.name} Reposition", center3d, z_axis, rotate, translate3d)
@@ -1074,55 +1083,155 @@ class HCSR04:
 
     # HCSR04.__init__():
     def __init__(self, scad_program: ScadProgram) -> None:
-        """Initialize anHCSR04."""
-        # Create the PCB:
-        pcb_dy: float = 20.60
-        pcb_dx: float = 44.50
-        pcb_dz: float = 1.20
-        pcb_square: Square = Square("HCSR04 PCB", pcb_dx, pcb_dy, center=P2D(0.0, pcb_dy / 2.0))
-        extruded_pcb: LinearExtrude = LinearExtrude("Extruded HCSR04 PCB", pcb_square, pcb_dz)
-        colored_pcb: Color = Color("Colored HRCSR04", extruded_pcb, "Green")
+        """Initialize an HCSR04."""
+        # Define some constants:
+        #   https://www.makerguides.com/wp-content/uploads/2019/02/HC-SR04-Dimensions-964x1024.jpg
+        mount_hole_pitch_dx: float = 41.00  # mm
+        mount_hole_pitch_dy: float = 16.50  # mm
+        mount_hole_diameter: float = 2.00   # mm
+        mount_hole_ne: P2D = P2D(mount_hole_pitch_dx / 2.0, mount_hole_pitch_dy / 2.0)
+        mount_hole_sw: P2D = -mount_hole_ne
+        pcb_dy: float = 20.00  # mm
+        pcb_dx: float = 45.00  # mm
+        pcb_dz: float = 1.50   # mm
+        connector_center: P2D = P2D(0.0, pcb_dy / 2.0 - 4.0 * 2.54 / 2.0)
+        transducer_pitch: float = 26.00  # mm
+        transducer_diameter: float = 16.00  # mm
+        transducer_dz: float = 12.00  # mm
+        transducer_left_x: float = transducer_pitch / 2.0
+        transducer_right_x: float = -transducer_left_x
+        transducer_left_center: P2D = P2D(transducer_left_x, 0.0)
+        transducer_right_center: P2D = P2D(transducer_right_x, 0.0)
 
-        # Create the sonar cylinders:
-        sonar_diameter: float = 16.00
-        sonar_radius: float = sonar_diameter / 2.0
-        sonar_dz: float = 12.00
-        sonar_left_x: float = pcb_dx / 2.0 - sonar_radius
-        sonar_right_x: float = -pcb_dx / 2.0 + sonar_radius
-        sonar_start_z: float = pcb_dz
-        sonar_end_z: float = sonar_start_z + sonar_dz
-        left_start: P3D = P3D(sonar_left_x, pcb_dy/2, sonar_start_z)
-        left_end: P3D = P3D(sonar_left_x, pcb_dy/2, sonar_end_z)
-        right_start: P3D = P3D(sonar_right_x, pcb_dy/2, sonar_start_z)
-        right_end: P3D = P3D(sonar_right_x, pcb_dy/2, sonar_end_z)
-        left_cylinder: Cylinder = Cylinder("Left Sonar Transducer",
-                                           sonar_diameter, left_start, left_end, 16)
-        right_cylinder: Cylinder = Cylinder("Left Sonar Transducer",
-                                            sonar_diameter, right_start, right_end, 16)
-        colored_left_cylinder: Color = Color("Colored Left Sonar Transducer",
-                                             left_cylinder, "Silver")
-        colored_right_cylinder: Color = Color("Colored Right Sonar Transducer",
-                                              right_cylinder, "Silver")
-        hcsr04_union: Union3D = Union3D("HCSR04 Union", [
-            colored_pcb,
-            colored_left_cylinder,
-            colored_right_cylinder
-        ])
+        # *center_y* is Y center line value:
+        center_y: float = 0.0  # pcb_dy / 2.0
 
-        # Now tilt the sonar up followed by rotating it to vertical:
-        x_axis: P3D = P3D(1.0, 0.0, 0.0)
-        degrees90: float = pi / 2.0
-        vertical_hcsr04: Rotate3D = Rotate3D("Veritcal HC-SR04", hcsr04_union, degrees90, x_axis)
-        z_axis: P3D = P3D(0.0, 0.0, 1.0)
-        east_facing_hcsr04: Rotate3D = Rotate3D("East Facing HC-S404",
-                                                vertical_hcsr04, degrees90, z_axis)
+        # Create the *sonar_pcb*:
+        sonar_exterior: Square = Square("HCSR04 PCB", pcb_dx, pcb_dy, center=P2D(0.0, center_y))
+        sonar_pcb: PCB = PCB("HCSR04", scad_program, pcb_dz, sonar_exterior)
 
-        # Create *module*, append to *scad_program*, and save into *hcsr04* (i.e. *self*):
-        module: Module3D = Module3D("HR SR04 Sonar Module", [east_facing_hcsr04])
-        scad_program.append(module)
-        scad_program.if3d.name_match_append("sonar", module, ["HC-SR04 Sonar"])
+        # Create the *colored_transducer* and place two of them on *sonar_pcb*:
+        transducer_start: P3D = P3D(0.0, center_y, 0.0)
+        transducer_end: P3D = P3D(0.0, center_y, transducer_dz)
+        transducer_cylinder: Cylinder = Cylinder("Sonar Transducer", transducer_diameter,
+                                                 transducer_start, transducer_end, 16)
+        colored_transducer: Color = Color("Colored Transducer", transducer_cylinder, "Silver")
+        origin2d = P2D(0.0, 0.0)
+        sonar_pcb.scad3d_place(colored_transducer, "", origin2d, 0.0, transducer_left_center)
+        sonar_pcb.scad3d_place(colored_transducer, "", origin2d, 0.0, transducer_right_center)
+
+        # Install the two mounting holes:
+        sonar_pcb.mount_hole_append("NE Mount Hole", {"mounts"}, mount_hole_diameter, mount_hole_ne)
+        sonar_pcb.mount_hole_append("SW Mount Hole", {"mounts"}, mount_hole_diameter, mount_hole_sw)
+
+        # Install the connector:
+        sonar_pcb.module3d_place("M1x4RA", {"connector"}, "by", origin2d, 0.0, connector_center)
+
+        # Wrap up *sonar_pcb*:
+        sonar_module: Module3D = sonar_pcb.scad_program_append(scad_program, "LightGreen")
+
+        # Stuff some values into *hrcsr04* (i.e. *self*):
         # hcsr04: HCSR04 = self
-        self.module: Module3D = module
+        self.module: Module3D = sonar_module
+        self.pcb: PCB = sonar_pcb
+        self.pcb_dx: float = pcb_dx
+        self.pcb_dy: float = pcb_dy
+        self.pcb_dz: float = pcb_dz
+        self.right_angle_pin_dy: float = 3.00 - 0.127  # Pin tips to PCB edge; caliper measurement
+
+
+# MMM1x4:
+class F1x4LP:
+    """Represents a Mill-Max F1x4LP low profile connector."""
+
+    def __init__(self, scad_program: ScadProgram) -> None:
+        """Initilialize the F1x4LP."""
+        # Define some constants for the Mill Max 315-87-164-41-003101 (low profile 64-pins).
+        # Digikey: 1212-1125-ND
+        inch2mm: float = 25.4
+        insulation_dx: float = 0.100 * inch2mm
+        insulation_dy: float = 0.100 * inch2mm
+        pin_diameter: float = 0.030 * inch2mm
+        landing_diameter: float = 2 * pin_diameter  # Estimate.
+        pin_pitch: float = 0.100 * inch2mm
+        top_z: float = 0.095 * inch2mm
+        insulation_z: float = top_z - 0.071 * inch2mm
+        insulation_dz: float = abs(top_z - insulation_z)
+        landing_z: float = 0.0
+        landing_dz: float = top_z - landing_z
+        pin_bottom_z: float = top_z - 0.155 * inch2mm
+        bottom_z: float = top_z - (0.095 + 0.095) * inch2mm
+
+        # First, create the *landing_tube* which contacts the top of the PCB and has an
+        # opening that the pin fits into:
+        landing_inner_circle: Circle = Circle("F1x4LP Landing Inner Circle", pin_diameter, 16)
+        landing_outer_circle: Circle = Circle("F1x4LP Landing Outer Circle", landing_diameter, 16)
+        landing_polygon: Polygon = Polygon("F1x4LP Landing Polygon",
+                                           [landing_outer_circle, landing_inner_circle])
+        landing_tube: LinearExtrude = LinearExtrude("F1x4LP Landing Tube",
+                                                    landing_polygon, landing_dz)
+
+        # Next, create the *pin_cylinder* which is the pin that pushes through PCB to the
+        # other side.  It sticks out the bottom a little in order to be low profile:
+        pin_cylinder: Cylinder = Cylinder("F1x4LP Pin Cylinder", pin_diameter,
+                                          P3D(0.0, 0.0, bottom_z), P3D(0.0, 0.0, landing_z), 16)
+
+        # Join the two *landing_tube* and *pin_cylinder* together into *colored_pin*:
+        pin_union: Union3D = Union3D("F1x4LP Pin Union", [landing_tube, pin_cylinder])
+        colored_pin: Color = Color("F1x4LP Colored Pin", pin_union, "Gold")
+
+        # Create the *pin_module* and associated *pin_use_module*:
+        pin_module: Module3D = Module3D("F1x4LP Pin Module", [colored_pin])
+        scad_program.append(pin_module)
+        pin_use_module: UseModule3D = pin_module.use_module3d
+
+        # Now create the 1x4 insulation:
+        insulation_square: Square = Square("F1x4LP Insulation Square",
+                                           4 * insulation_dx, insulation_dy)
+        insulation_polygon: Polygon = Polygon("F1x4LP Insulation Polygon",
+                                              [insulation_square], lock=False)
+
+        # Start place in the *translate_pin*'s into the *connector_union*:
+        connector_union: Union3D = Union3D("F1x4LP Union", [], lock=False)
+        index: int
+        x_fraction: float
+        for index, x_pitch_fraction in enumerate([-1.5, -0.5, 0.5, 1.5]):
+            # Place each *translated_pin* into the *connector_union*:
+            x: float = x_pitch_fraction * pin_pitch
+            pin_position: P3D = P3D(x, 0.0, 0.0)
+            translated_pin: Translate3D = Translate3D(f"F1x4LP Translated Pin {index}",
+                                                      pin_use_module, pin_position)
+            connector_union.append(translated_pin)
+
+            # Add a *pin_hole* to the *insulation_polygon*:
+            pin_hole: Circle = Circle(f"F1x4LP Pin Circle {index}",
+                                      landing_diameter, 16, P2D(x, 0.0))
+            insulation_polygon.append(pin_hole)
+        insulation_polygon.lock()
+
+        # Now extrude and color the *colored_insulation*:
+        insulation_polygon.lock()
+        extruded_insulation: LinearExtrude = LinearExtrude("F1x4LP Extruded Insulation",
+                                                           insulation_polygon, insulation_dz)
+        translated_insulation: Translate3D = Translate3D("`F1x4LP Translated Insulation",
+                                                         extruded_insulation,
+                                                         P3D(0.0, 0.0, insulation_z))
+        colored_insulation: Color = Color("F1x4LP Colored Insulation",
+                                          translated_insulation, "Blue")
+        connector_union.append(colored_insulation)
+        connector_union.lock()
+
+        # Now create the module:
+        connector_module: Module3D = Module3D("F1x4LP", [connector_union])
+        scad_program.append(connector_module)
+        scad_program.if3d.name_match_append("f1x4lp", connector_module,
+                                            ["Female 1x4 Low Profile Cnnector"])
+
+        # Stuff some values into *f1x4lp* (i.e. *self*):
+        # f1x4lp: F1x4LP = self
+        self.module: Module3D = connector_module
+        self.top_z: float = top_z
+        self.pin_bottom_z: float = pin_bottom_z
 
 
 # HR2BaseAssembly:
@@ -1611,7 +1720,7 @@ class Nucleo144:
         colored_ethernet: Color = Color("Colored Ethenet Connector",
                                         ethernet_corner_cube,
                                         "Silver")
-        nucleo_pcb.scad3d_place(colored_ethernet)
+        nucleo_pcb.scad3d_place(colored_ethernet, "")
 
         # To improve visibility cut a hole into the center of the PCB:
         pcb_cut_out: Square = Square("PCB Cut-Out", .575 * pcb_dx, .75 * pcb_dy)
@@ -1824,37 +1933,6 @@ class MasterBoard:
             master_pcb_polygon.append(arm_spacer_hole2)
         assert len(arm_spacers), "Something failed"
 
-        # Create the 4 Encoder 1x4 Female connectors and append the mounting holes
-        # to *pcb_polygon*:
-        # encoder_receptacles_use_modules: List[Scad3D] = []
-        # names: List[str] = ["South West",
-        #                     "South East",
-        #                     "North West",
-        #                     "North East"]
-        # pin_pitch: float = 2.54  # .1in = 2.54mm
-        # encoder_thickness: float = 1.0
-        # motor_casing_east_x: float = base_dxf.x_locate(-5.253299)
-        # motor_casing_north_y: float = base_dxf.y_locate(3.382512)
-        # motor_casing_south_y: float = base_dxf.y_locate(2.492748)
-        # motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y) / 2.0
-        # x_center_offset: float = abs(motor_casing_east_x) + pin_pitch / 2.0
-        # y_center_offset: float = motor_casing_dy + (1.5 + .5) * pin_pitch
-        # index: int
-        # for index, name in enumerate(names):
-        #     x_offset: float = -x_center_offset if index & 1 == 0 else x_center_offset
-        #     y_offset: float = -y_center_offset if index & 2 == 0 else y_center_offset
-        #     center: P3D = P3D(x_offset, y_offset, pcb_top_z)
-        #     # SLW-103-01-T-S:
-        #     encoder_receptacle_1x3: RectangularConnector = RectangularConnector(
-        #         f"{name} Encoder Receptacle", scad_program,
-        #         1, 3, 4.57, 2.92,
-        #         center=center,
-        #         cut_out=True,
-        #         pcb_polygon=master_pcb_polygon,
-        #         insulation_color="Olive",
-        #         vertical_rotate=degrees90)
-        #     encoder_receptacles_use_modules.append(encoder_receptacle_1x3.module.use_module_get())
-
         # *nucleo144_offset* is the offset from the robot origin to the bottom center of
         # the Nucleo144 board.  We use these offsets to place the various holes Nucleo144
         # mounting holes, female morpho connectors, etc.
@@ -1866,69 +1944,10 @@ class MasterBoard:
         # nucleo144_offset: P3D = nucleo144.offset
         # spacer_height: float = abs(nucleo_board_z - pcb_top_z) - 2.0 * spacer_debug_dz
         nucleo144_spacers: List[Scad3D] = []
-        # Create some HC-SR04 sonars:
-        hcsr04: HCSR04 = HCSR04(scad_program)
-        # srf02: SRF02 = SRF02(scad_program)
-        hcsr04_use_module: UseModule3D = hcsr04.module.use_module_get()
-        # srf02_use_module: UseModule3D = srf02.module.use_module_get()
-        sonars: List[Scad3D] = []
-        degrees2radians: float = pi / 180.0
-        sonar_poses: List[Tuple[float, float, float, bool]] = [
-            # (*rim_angle*, *beam_angle* (negative => same), *sonar_offset*, *on_bottom*)
-            ((90.0 - 2.3 * 22.5) * degrees2radians,
-             (90.0 - 1.5 * 22.5) * degrees2radians, 0.0, True),
-            ((90.0 - 1.9 * 22.5) * degrees2radians,
-             (90.0 - 0.5 * 22.5) * degrees2radians, 0.0, False),
-            # No rear center sonar:
-            ((90.0 + 1.9 * 22.5) * degrees2radians,
-             (90.0 + 0.5 * 22.5) * degrees2radians, 0.0, False),
-            ((90.0 + 2.3 * 22.5) * degrees2radians,
-             (90.0 + 1.5 * 22.5) * degrees2radians, 0.0, True),
-            # Front Sonars:
-            ((270.0 - 2 * 22.5) * degrees2radians, -1.0, 0.0, False),
-            ((270.0 - 1 * 22.5) * degrees2radians, -1.0, 0.0, True),
-            ((270.0) * degrees2radians, -1.0, 35.0, False),
-            ((270.0 + 1 * 22.5) * degrees2radians, -1.0, 0.0, True),
-            ((270.0 + 2 * 22.5) * degrees2radians, -1.0, 0.0, False)]
-        x_axis: P3D = P3D(1.0, 0.0, 0.0)
-        z_axis: P3D = P3D(0.0, 0.0, 1.0)
-        sonars_radius: float = 77.0
-        rim_angle: float
-        beam_angle: float
-        radius_offset: float
-        on_bottom: bool
-        for rim_angle, beam_angle, sonar_offset, on_bottom in sonar_poses:
-            if beam_angle < 0.0:
-                beam_angle = rim_angle
-            angle_text: str = f"{rim_angle * 180.0 / pi}deg:{on_bottom}"
-            sonar_z: float = pcb_top_z
-            sonar: Scad3D = hcsr04_use_module
 
-            # Deal with *on_bottom* first:
-            if on_bottom:
-                sonar_z = pcb_bottom_z
-                sonar = Rotate3D(f"Bottom Sonar ({angle_text})", sonar, degrees180, x_axis)
-
-            # Now rotate the *sonar* by *beam_angle* along the *z_axis*:
-            sonar = Rotate3D(f"Rotated Sonar ({angle_text})", sonar, beam_angle, z_axis)
-
-            # Now position *sonar* to *sonar_position* along the rim and tack onto *sonars* list:
-            sonar_x: float = (sonars_radius - sonar_offset) * cos(rim_angle)
-            sonar_y: float = (sonars_radius - sonar_offset) * sin(rim_angle)
-            sonar_position: P3D = P3D(sonar_x, sonar_y, sonar_z)
-            sonar = Translate3D(f"Translated Sonar ({angle_text})", sonar, sonar_position)
-            sonars.append(sonar)
-
-            # In addition, output 4 PCB holes for the sonars:
-            pin_index: int
-            for pin_index in range(4):
-                pin_angle: float = beam_angle + pi / 2.0
-                pin_offset: float = float(pin_index) * 2.54 - 1.5 * 2.54
-                pin_x: float = sonar_x + pin_offset * cos(pin_angle)
-                pin_y: float = sonar_y + pin_offset * sin(pin_angle)
-                pin_hole: Circle = Circle(f"Sonar {angle_text} Pin {pin_offset}",
-                                          1.27, 8, P2D(pin_x, pin_y))
-                master_pcb_polygon.append(pin_hole)
+        # Create and install all of the sonars:
+        master_board.sonar_modules_create(scad_program)
+        master_board.sonars_install(master_pcb, center_pcb)
 
         # This is where we build the *STLink* board and associated connectors.
         # All the work is done inside the *STLink* initializer.
@@ -2020,7 +2039,6 @@ class MasterBoard:
                                     (  # encoder_receptacles_use_modules +
                                      nucleo144_spacers +
                                      arm_spacers +
-                                     sonars +
                                      st_link_connectors +
                                      [  # master_pcb_module.use_module_get(),
                                       center_pcb_module.use_module_get(),
@@ -2031,6 +2049,7 @@ class MasterBoard:
                                       translated_st_link]))
         scad_program.append(module)
         scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
+        # master_board: MasterBoard = self
         self.module: Module3D = module
 
     # MasterBoard.pcbs_create():
@@ -2324,6 +2343,93 @@ class MasterBoard:
         # Return the resulting *PCB*s:
         return master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb, sw_pcb
 
+    # MasterBoard.sonar_modules_create():
+    def sonar_modules_create(self, scad_program: ScadProgram) -> None:
+        """Create all of the sonar modules."""
+        # Create "F1x4LP" low profile 1x4 .1in female connector:
+        f1x4lp: F1x4LP = F1x4LP(scad_program)
+        f1x4lp_top_z: float = f1x4lp.top_z
+
+        # Create the *hcsr04_module* and grab some values out of it:
+        hcsr04: HCSR04 = HCSR04(scad_program)
+        hcsr04_pcb_dy: float = hcsr04.pcb_dy
+        hcsr04_module: Module3D = hcsr04.module
+        hcsr04_use_module: UseModule3D = hcsr04_module.use_module_get()
+
+        # Create an *upright_sonar_module* that has repositioned *hcs04_use_module* so that
+        # fits properly into the *f1x41p*:
+        degrees180: float = pi
+        degrees90: float = degrees180 / 2.0
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        z_rotated_hcsr04: Rotate3D = Rotate3D("Z-Axis Rotated HC-SR04",
+                                              hcsr04_use_module, degrees180, z_axis)
+        recenter_dy: float = (hcsr04_pcb_dy / 2.0  # Move PCB bottom edge to origin
+                              + f1x4lp_top_z)      # Sonar insululation bottom to top of F1x4LP
+        recenter_dz: float = 1.27                  # Move from PCB bottom to center of pins
+        recentered_hcsr04: Translate3D = Translate3D(
+            "Recentered HC-SR04", z_rotated_hcsr04, P3D(0.0, recenter_dy, recenter_dz))
+        x_axis: P3D = P3D(1.0, 0.0, 0.0)
+        x_rotated_hcsr04: Rotate3D = Rotate3D("X-Axis Rotated HC-SR04", recentered_hcsr04,
+                                              degrees90, x_axis)
+        # RP => RePositioned:
+        hcsr04rp_module: Module3D = Module3D("HCSR04RP", [x_rotated_hcsr04])
+        scad_program.append(hcsr04rp_module)
+        # scad_program.if3d.name_match_append("hcsr04rp", hcsr04rp_module,
+        #                                     ["Repositioned HC-SR04 sonar"])
+
+    # MasterBoard.sonars_install():
+    def sonars_install(self, master_pcb: PCB, center_pcb: PCB) -> None:
+        """Install all of the sonars."""
+        # Create *sonar_poses* list, which has 1 4-tuple for each sonar.  The format of
+        # the 4-tuple is:
+        #      (*rim_angle*, *beam_angle*, *sonar_offset*, *on_bottom*)
+        # where:
+        # * *rim_angle*: The polar coordinate angle from the orgin of the sonar.
+        # * *beam_angle*: The angle of the sonar direction.
+        # * *sonar_offset*: The offset from the nominal *sonar_radius*.
+        # * *on_bottom*: A flag that is *True* if the sonar is on the PCB bottom.
+        sonars_radius: float = 64.0
+        degrees2radians: float = pi / 180.0
+        sonar_poses: List[Tuple[float, float, float, bool]] = [
+            ((90.0 - 2.3 * 22.5) * degrees2radians,
+             (90.0 - 1.5 * 22.5) * degrees2radians, 0.0, True),
+            ((90.0 - 1.9 * 22.5) * degrees2radians,
+             (90.0 - 0.5 * 22.5) * degrees2radians, 0.0, False),
+            # No rear center sonar:
+            ((90.0 + 1.9 * 22.5) * degrees2radians,
+             (90.0 + 0.5 * 22.5) * degrees2radians, 0.0, False),
+            ((90.0 + 2.3 * 22.5) * degrees2radians,
+             (90.0 + 1.5 * 22.5) * degrees2radians, 0.0, True),
+            # Front Sonars:
+            ((270.0 - 2 * 22.5 + 2.5) * degrees2radians,
+             (270.0 - 2 * 22.5) * degrees2radians, 0.0, False),
+            ((270.0 - 1 * 22.5 - 2.5) * degrees2radians,
+             (270.0 - 1 * 22.5) * degrees2radians, 0.0, True),
+            ((270.0) * degrees2radians,
+             (270.0) * degrees2radians, 25.0, False),
+            ((270.0 + 1 * 22.5 + 2.5) * degrees2radians,
+             (270.0 + 1 * 22.5) * degrees2radians, 0.0, True),
+            ((270.0 + 2 * 22.5 - 2.5) * degrees2radians,
+             (270.0 + 2 * 22.5) * degrees2radians, 0.0, False)]
+
+        # Iterate across all of the sonars in *sonar_poses*:
+        origin2d: P2D = P2D(0.0, 0.0)
+        degrees90: float = pi / 2.0
+        rim_angle: float
+        beam_angle: float
+        radius_offset: float
+        on_bottom: bool
+        for rim_angle, beam_angle, sonar_offset, on_bottom in sonar_poses:
+            sonar_radius: float = sonars_radius - sonar_offset - 1.27
+            sonar_x: float = sonar_radius * cos(rim_angle)
+            sonar_y: float = sonar_radius * sin(rim_angle)
+            sonar_flags: str = "byY" if on_bottom else ""
+            sonar_translate: P2D = P2D(sonar_x, sonar_y)
+            center_pcb.module3d_place("F1x4LP", {"sonar_connectors"}, sonar_flags,
+                                      origin2d, rim_angle + degrees90, sonar_translate)
+            center_pcb.module3d_place("HCSR04RP", {"sonars"}, sonar_flags,
+                                      origin2d, rim_angle + degrees90, sonar_translate)
+
 
 # PiBoard:
 class PiBoard:
@@ -2408,61 +2514,61 @@ class OtherPi(PiBoard):
                                                    P3D(80.00, 29.26, pcb_dz),
                                                    P3D(105.00, 44.51, pcb_dz + 13.08)),
                                         "Silver"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB2 Connector",
                                         CornerCube("USB2 Connector",
                                                    P3D(85.00, 12.82, pcb_dz),
                                                    P3D(104.00, 25.57, pcb_dz + 15.33)),
                                         "Silver"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver West Connector",
                                         CornerCube("West Connector",
                                                    P3D(98.00, 50.69, pcb_dz),
                                                    P3D(105.00, 58.09, pcb_dz + 3.00)),
                                         "Silver"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black North Connector",
                                         CornerCube("North Connector",
                                                    P3D(70.03, 60.92, pcb_dz),
                                                    P3D(76.38, 66.00, pcb_dz + 5.00)),
                                         "Black"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black Audio Connector",
                                         CornerCube("Audio Connector",
                                                    P3D(66.31, -1.00, pcb_dz),
                                                    P3D(72.31, 14.00, pcb_dz + 5.12)),
                                         "Black"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB3A Connector",
                                         CornerCube("USB3A Connector",
                                                    P3D(9.54, 0.00, pcb_dz),
                                                    P3D(18.52, 10.00, pcb_dz + 2.95)),
                                         "Silver"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver USB3B Connector",
                                         CornerCube("USB3B Connector",
                                                    P3D(22.73, 0.00, pcb_dz),
                                                    P3D(31.71, 10.00, pcb_dz + 2.95)),
                                         "Silver"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Silver Power Connector",
                                         CornerCube("Power Connector",
                                                    P3D(-1.00, 22.50, pcb_dz),
                                                    P3D(8.00, 29.00, pcb_dz + 2.95)),
                                         "Silver"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("White JST Connector",
                                         CornerCube("JST Connector",
                                                    P3D(0.00, 55.01, pcb_dz),
                                                    P3D(3.00, 63.37, pcb_dz + 2.95)),  # 0.00? 3.00?
                                         "White"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_pcb.scad3d_place(Color("Black Buttons Area",
                                         CornerCube("Buttons Area",
                                                    P3D(85.51, 62.12, pcb_dz),
                                                    P3D(98.23, 68.74, pcb_dz + 2.95)),  # 10.00?
                                         "Black"),
-                                  translate=-holes_center)
+                                  "", translate=-holes_center)
         other_pi_module: Module3D = other_pi_pcb.scad_program_append(scad_program, "Yellow")
 
         # Stuff some values into *other_pi* (i.e. *self*):
@@ -2554,43 +2660,43 @@ class RaspberryPi3:
                                                   P3D(65.650, 2.495, pcb_dz + 0.000),
                                                   P3D(87.000, 18.005, pcb_dz + 13.500)),
                                        "Silver"),
-                                 translate=-holes_center)
+                                 "", translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Silver Lower USB2",
                                        CornerCube("Lower USB2",
                                                   P3D(69.30, 22.43, pcb_dz + 0.00),
                                                   P3D(87.00, 34.57, pcb_dz + 16.00)),
                                        "Silver"),
-                                 translate=-holes_center)
+                                 "", translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Silver Upper USB2",
                                        CornerCube("Upper USB2",
                                                   P3D(69.30, 40.43, pcb_dz + 0.00),
                                                   P3D(87.00, 53.57, pcb_dz + 16.00)),
                                        "Silver"),
-                                 translate=-holes_center)
+                                 "", translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Black Camera Connector",
                                        CornerCube("Camera Connector",
                                                   P3D(43.55, 0.30, pcb_dz + 0.00),
                                                   P3D(47.50, 22.70, pcb_dz + 5.50)),
                                        "Black"),
-                                 translate=-holes_center)
+                                 "", translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Silver HDMI Connector",
                                        CornerCube("HDMI Connector",
                                                   P3D(24.75, -1.50, pcb_dz + 0.00),
                                                   P3D(39.25, 10.65, pcb_dz + 6.50)),
                                        "Silver"),
-                                 translate=-holes_center)
+                                 "", translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Silver Power Connector",
                                        CornerCube("Power Connector",
                                                   P3D(6.58, -1.22, pcb_dz + 0.00),
                                                   P3D(14.62, 14.35, pcb_dz + 2.00)),
                                        "Silver"),
-                                 translate=-holes_center)
+                                 "", translate=-holes_center)
         raspi3b_pcb.scad3d_place(Color("Black LCD Connector",
                                        CornerCube("LCD Connector",
                                                   P3D(2.65, 16.80, pcb_dz + 0.00),
                                                   P3D(5.45, 39.20, pcb_dz + 5.50)),
                                        "Black"),
-                                 translate=-holes_center)
+                                 "", translate=-holes_center)
 
         # Wrap up the *raspi3b_pcb*:
         raspi3b_module: Module3D = raspi3b_pcb.scad_program_append(scad_program, "Green")
@@ -5250,6 +5356,7 @@ class STLink:
         self.module: Module3D = st_link_module
         self.pcb: PCB = st_link_pcb
 
+
 # SRF02:
 class SRF02:
     """Represents an Devantech SRF02 sonar module."""
@@ -5330,6 +5437,11 @@ def connectors_create(scad_program: ScadProgram):
     # Common 1x4 connectors:
     RectangularConnector("M1x4", scad_program, 1, 4, pins_dx_dy, pcb_pin_height,
                          insulation_color="Maroon", male_pin_height=4.04,
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+    # HCSR04 Right angle:
+    RectangularConnector("M1x4RA", scad_program, 1, 4, pins_dx_dy, pcb_pin_height,
+                         insulation_color="Cyan", male_pin_height=6.00,
+                         right_angle_length=3.00 - 0.127,  # <=calipers / schematic=>6.00 + 0.127
                          footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
     RectangularConnector("F1x4", scad_program, 1, 4, female_insulation_height, pcb_pin_height,
                          insulation_color="Fuchsia",
