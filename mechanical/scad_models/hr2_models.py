@@ -27,9 +27,9 @@
 # <======================================= 100 characters =======================================> #
 """Code that generates an OpenSCAD model for HR2 (HBRC ROS Robot)."""
 
-from scad_models.scad import (Color, Circle, CornerCube, Cylinder, If2D, Difference2D, KicadPcb,
-                              LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon, Rotate3D,
-                              Scad2D, Scad3D, SimplePolygon, ScadProgram, Square,
+from scad_models.scad import (Circle, Color, CornerCube, Cube, Cylinder, If2D, Difference2D,
+                              KicadPcb, LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon,
+                              Rotate3D, Scad2D, Scad3D, SimplePolygon, ScadProgram, Square,
                               Translate3D, UseModule2D, UseModule3D, Union3D)  # , Variable2D)
 from pathlib import Path
 from scad_models.kicad import Footprint
@@ -416,8 +416,14 @@ class PadsGroup:
     def __init__(self) -> None:
         """Return an empty list of Pads."""
         # Load up *pads_group* (i.e. *self*):
-        # pads_group: Pads_Group = self
+        # pads_group: PadsGroup = self
         self.pads: List[Pad] = []
+
+    # PadsGroup.__len__():
+    def __len__(self) -> int:
+        """Return the number of pads currently in a PadsGroup."""
+        pads_group: PadsGroup = self
+        return len(pads_group.pads)
 
     # PadsGroup.__str__():
     def __str__(self) -> str:
@@ -425,14 +431,18 @@ class PadsGroup:
         return f"PadsGroup(size={len(self.pads)})"
 
     # PadsGroup.holes_append():
-    def holes_append(self, polygon: Polygon) -> None:
+    def holes_append(self, polygon: Polygon, tracing: str = "") -> None:
         """Append all of the drill holes to a Polygon."""
         # Use *pads_group* instead of *self*:
+        if tracing:
+            print(f"{tracing}=>PadsGroup.holes_append(*, polygon:{len(polygon)})")
         pads_group: PadsGroup = self
         pads: List[Pad] = pads_group.pads
         pad: Pad
         for pad in pads:
             pad.hole_append(polygon)
+        if tracing:
+            print(f"{tracing}<=PadsGroup.holes_append(*, polygon:{len(polygon)})")
 
     # PadsGroup.insert():
     def insert(self, pad: Pad) -> None:
@@ -483,7 +493,6 @@ class PCB:
         """Initialize a PCB with a name and pcb exterior."""
         # Create the *pcb_polygon*:
         pcb_polygon: Polygon = Polygon(f"name PCB Polygon", [pcb_exterior], lock=False)
-
         # Load values into *pcb* (i.e. *self*):
         # pcb: PCB = self
         self.dz: float = dz
@@ -552,7 +561,7 @@ class PCB:
     # PCB.module3d_place():
     def module3d_place(self, module_name: str, group_names: Set[str], flags: str,
                        center: "P2D", z_rotate: float, translate: "P2D",
-                       pads_base: int = 0) -> None:
+                       pads_base: int = 0, tracing: str = "") -> None:
         """Place a Module3D onto a PCB.
 
         Place module onto module onto a PCB doing any requested flips,
@@ -605,6 +614,11 @@ class PCB:
         scad3ds: List[Scad3D] = pcb.scad3ds
         dz: float = pcb.dz
 
+        # Perform any requested *tracing*:
+        # next_tracing: str = ""
+        if tracing:
+            print(f"{tracing}=>PCB.module3d_place('{name}', {group_names}, '{flags}, ...)")
+
         # Verify that *flags* are OK:
         flag: str
         for flag in flags:
@@ -623,6 +637,10 @@ class PCB:
                              "'b' must be specified.")
         x_mirror: bool = 'X' in flags
         y_mirror: bool = 'Y' in flags
+        if tracing:
+            print(f"{tracing}place:{place} bottom_place:{bottom_place}")
+            print(f"{tracing}x_flip:{x_flip} y_flip:{y_flip}")
+            print(f"{tracing}x_mirror:{x_mirror} y_mirror:{y_mirror}")
 
         # Make sure that each *group_name* in *group_names* has a corresponding *PCB_Group*:
         for group_name in group_names:
@@ -642,16 +660,19 @@ class PCB:
         tag: Any = module3d.tag_lookup("PadsGroup")
         if place and isinstance(tag, PadsGroup):
             pads_group: PadsGroup = tag
-            # print(f"pads_group:{pads_group}")
+            if tracing:
+                print(f"{tracing}Module '{name}' has pads_group(len={len(pads_group)})")
             x_flag: str = "x" if x_mirror else ""
             y_flag: str = "y" if y_mirror else ""
             xy_flags: str = x_flag + y_flag
             repositioned_pads_group: PadsGroup = pads_group.reposition(xy_flags,
                                                                        center, z_rotate, translate,
                                                                        pads_base)
-            # print(f"repositioned_pads_group:{repositioned_pads_group}")
+            if tracing:
+                print(f"{tracing}Before holes_append: len(pcb_polygon):{len(pcb_polygon)}")
             repositioned_pads_group.holes_append(pcb_polygon)
-            # print(f"len(pcb_polygon):{len(pcb_polygon)}")
+            if tracing:
+                print(f"{tracing}After holes_append: len(pcb_polygon):{len(pcb_polygon)}")
 
             # Now add *repositioned_pads_group* to each *group_name* in *groups*:
             # print(f"group_names:{group_names}")
@@ -686,7 +707,9 @@ class PCB:
             pcb_group = pcb_groups[group_name]
             pcb_group.scad3ds.append(translated)
 
-        # print(f"<=PCB.module3d_place('{module_name}')\n")
+        # Perform any requested tracing:
+        if tracing:
+            print(f"{tracing}<=PCB.module3d_place('{name}', {group_names}, '{flags}, ...)")
 
     # PCB.mount_hole_append():
     def mount_hole_append(self, name: str, group_names: Set[str],
@@ -751,7 +774,7 @@ class PCB:
     # PCB.pcb_place():
     def pcb_place(self, other_pcb: "PCB", group_names: Set[str], flags: str,
                   center: "P2D" = P2D(0.0, 0.0), rotate: float = 0.0,
-                  translate: "P2D" = P2D(0.0, 0.0)) -> None:
+                  translate: "P2D" = P2D(0.0, 0.0), tracing: str = "") -> None:
         """Place the connectors to mate to another PCB.
 
         Args:
@@ -780,6 +803,16 @@ class PCB:
         scad3ds: List[Scad3D] = pcb.scad3ds
         pcb_polygon: Polygon = pcb.pcb_polygon
 
+        # Perform any requested *tracing*:
+        next_tracing: str = ""
+        if tracing:
+            next_tracing = tracing + " "
+            print(f"{tracing}=>PCB.pcb_place('{name}', '{other_pcb.name}', "
+                  f"{group_names}, '{flags}'...)")
+            print(f"{tracing}len(scad3ds):{len(scad3ds)}")
+            print(f"{tracing}(pcb_polygon):{len(pcb_polygon)}")
+            other_pcb.show("", next_tracing)
+
         # Unpack some values from *other_pcb*:
         other_pcb_groups: Dict[str, PCBGroup] = other_pcb.pcb_groups
 
@@ -789,6 +822,8 @@ class PCB:
         center3d: P3D = P3D(center.x, center.y, 0.0)
         translate3d: P3D = P3D(translate.x, translate.y, 0.0)
         for group_name in group_names:
+            if tracing:
+                print(f"{tracing}Group['{group_name}']")
             # Grab the *other_pcb_group* from *other_pcb_groupes*:
             assert group_name in other_pcb_groups, (
                 f"Group name '{group_name}' not one of {set(other_pcb_groups.keys())}.")
@@ -796,7 +831,8 @@ class PCB:
 
             # Take *other_pcb_scad3s, contstruct a union, reposition it and append to *scad3ds*:
             other_pcb_scad3ds: List[Scad3D] = other_pcb_group.scad3ds
-            print(f"Group:'{group_name}' len(other_pcb_scad3ds):'{len(other_pcb_scad3ds)}'")
+            if tracing:
+                print(f"{tracing}len(other_pcb_scad3ds):{len(other_pcb_scad3ds)}")
             other_pcb_union: Union3D = Union3D(
                 f"'{name}' PCB import from '{group_name}'", other_pcb_scad3ds)
             other_pcb_repositioned: Scad3D = other_pcb_union.reposition(
@@ -805,11 +841,23 @@ class PCB:
 
             # Do the same for pads:
             other_pads_groups: List[PadsGroup] = other_pcb_group.pads_groups
+            if tracing:
+                print(f"{tracing}len(other_pads_groups):{len(other_pads_groups)}")
             other_pads_group: PadsGroup
-            for other_pads_group in other_pads_groups:
+            for index, other_pads_group in enumerate(other_pads_groups):
+                if tracing:
+                    print(f"{tracing} [{index}]len(other_pads_group)={len(other_pads_group)}")
                 other_pads_group_repositioned: PadsGroup = other_pads_group.reposition(
                     "", center, rotate, translate)
-                other_pads_group_repositioned.holes_append(pcb_polygon)
+                if tracing:
+                    print(f"{tracing} [{index}]len(other_pads_group_repositioned)="
+                          f"{len(other_pads_group_repositioned)}")
+                other_pads_group_repositioned.holes_append(pcb_polygon, tracing=next_tracing)
+        if tracing:
+            print(f"{tracing}len(scad3ds):{len(scad3ds)}")
+            print(f"{tracing}len(pcb_polygon):{len(pcb_polygon)}")
+            print(f"{tracing}<=PCB.pcb_place('{name}', '{other_pcb.name}', "
+                  f"{group_names}, '{flags}'...)")
 
     # PCB.polygon_get():
     def polygon_get(self) -> Polygon:
@@ -827,7 +875,7 @@ class PCB:
             * *flags* (*str*):
               Some one character flags for placing the *scad3d*:
               * 'b': Place the *scad3d* on the back surface.
-              * 't': Place the *scad3d* on the back surface.
+              * 't': Place the *scad3d* on the top surface.
             * *center* (*P2D*)
               (Optional: Defaults to *P3D*(0.0, 0.0, 0.0):
               The virtual center of the object to rotate around
@@ -859,7 +907,8 @@ class PCB:
         scad3ds.append(repositioned_scad3d)
 
     # PCB.scad_program_append():
-    def scad_program_append(self, scad_program: ScadProgram, color: str) -> Module3D:
+    def scad_program_append(self, scad_program: ScadProgram,
+                            color: str, tracing: str = "") -> Module3D:
         """Merge the..."""
         # Unpack some values from *pcb* (i.e. *self*):
         pcb: PCB = self
@@ -867,9 +916,12 @@ class PCB:
         name: str = pcb.name
         scad3ds: List[Scad3D] = pcb.scad3ds
 
-        # next_tracing: str = tracing + " " if tracing else ""
+        # Perform any requested *tracing*:
+        # next_tracing: str = ""
         pcb_polygon: Polygon = pcb.pcb_polygon
         pcb_polygon.lock()
+        if tracing:
+            print(f"{tracing}len(pcb_polygon)={len(pcb_polygon)}")
 
         # Generate the *pcb_module2d* that contains the PCB exterior, connector holes, slots, etc.
         pcb_module2d: Module2D = Module2D(f"{name} PCB", [pcb_polygon])
@@ -890,7 +942,43 @@ class PCB:
         scad_program.append(pcb_board)
         scad_program.if3d.name_match_append(f"{name.lower()}_board",
                                             pcb_board, [f"{name} Board"])
+
+        if tracing:
+            print(f"{tracing}<=PCB.scad_program_append('{name}, *, '{color}')")
         return pcb_board
+
+    # PCB.show():
+    def show(self, flags: str, indent: str):
+        """Show the contents of a PCB."""
+        pcb: PCB = self
+        name: str = pcb.name
+        print(f"{indent}=>PCB.show('{name}', '{flags}')")
+        print(f"{indent}PCB:  dz:{pcb.dz}")
+        pcb_polygon: Polygon = pcb.pcb_polygon
+        pcb_polygon_size: int = len(pcb_polygon)
+        index: int
+        sizes: List[str] = []
+        for index in range(pcb_polygon_size):
+            sizes.append(str(len(pcb_polygon[index])))
+        # print(f"{indent}pcb_polygon:[{' '.join(sizes)}]")
+        pcb_groups: Dict[str, PCBGroup] = pcb.pcb_groups
+        group_name: str
+        pcb_group: PCBGroup
+        pairs: List[str] = []
+        for group_name, pcb_group in pcb_groups.items():
+            pairs.append(f"'{group_name}': {{"
+                         f"P{len(pcb_group.pads_groups)};S{len(pcb_group.scad3ds)} }}")
+            pass
+        print(f"{indent}pcb_groups: {' '.join(pairs)}")
+
+        scad3ds: List[Scad3D] = pcb_group.scad3ds
+        names: List[str] = []
+        scad3d: Scad3D
+        for scad3d in scad3ds:
+            names.append(f"'{scad3d.name}'")
+            pass
+        print(f"{indent}scad3ds:[{' '.join(names)}]")
+        print(f"{indent}<=PCB.show('{name}', '{flags}')")
 
     # PCB.simple_polygon_append():
     def simple_polygon_append(self, simple_polygon: "SimplePolygon") -> None:
@@ -1153,6 +1241,8 @@ class F1x4LP:
         insulation_dy: float = 0.100 * inch2mm
         pin_diameter: float = 0.030 * inch2mm
         landing_diameter: float = 2 * pin_diameter  # Estimate.
+        drill_diameter: float = pin_diameter + 0.05
+        pad_diameter: float = drill_diameter + 1.00
         pin_pitch: float = 0.100 * inch2mm
         top_z: float = 0.095 * inch2mm
         insulation_z: float = top_z - 0.071 * inch2mm
@@ -1191,17 +1281,22 @@ class F1x4LP:
         insulation_polygon: Polygon = Polygon("F1x4LP Insulation Polygon",
                                               [insulation_square], lock=False)
 
-        # Start place in the *translate_pin*'s into the *connector_union*:
-        connector_union: Union3D = Union3D("F1x4LP Union", [], lock=False)
+        # Start place in the *translate_pin*'s into the *f1x4lp_union*:
+        pads_group: PadsGroup = PadsGroup()
+        f1x4lp_union: Union3D = Union3D("F1x4LP Union", [], lock=False)
         index: int
         x_fraction: float
         for index, x_pitch_fraction in enumerate([-1.5, -0.5, 0.5, 1.5]):
-            # Place each *translated_pin* into the *connector_union*:
+            # Create a *pad* and stuff it into *pads_group*:
             x: float = x_pitch_fraction * pin_pitch
+            pad: Pad = Pad(f"{index}", pad_diameter, pad_diameter, drill_diameter, P2D(x, 0.0))
+            pads_group.insert(pad)
+
+            # Place each *translated_pin* into the *f1x4lp_union*:
             pin_position: P3D = P3D(x, 0.0, 0.0)
             translated_pin: Translate3D = Translate3D(f"F1x4LP Translated Pin {index}",
                                                       pin_use_module, pin_position)
-            connector_union.append(translated_pin)
+            f1x4lp_union.append(translated_pin)
 
             # Add a *pin_hole* to the *insulation_polygon*:
             pin_hole: Circle = Circle(f"F1x4LP Pin Circle {index}",
@@ -1218,18 +1313,21 @@ class F1x4LP:
                                                          P3D(0.0, 0.0, insulation_z))
         colored_insulation: Color = Color("F1x4LP Colored Insulation",
                                           translated_insulation, "Blue")
-        connector_union.append(colored_insulation)
-        connector_union.lock()
+        f1x4lp_union.append(colored_insulation)
+        f1x4lp_union.lock()
 
         # Now create the module:
-        connector_module: Module3D = Module3D("F1x4LP", [connector_union])
-        scad_program.append(connector_module)
-        scad_program.if3d.name_match_append("f1x4lp", connector_module,
+        f1x4lp_module: Module3D = Module3D("F1x4LP", [f1x4lp_union])
+        scad_program.append(f1x4lp_module)
+        scad_program.if3d.name_match_append("f1x4lp", f1x4lp_module,
                                             ["Female 1x4 Low Profile Cnnector"])
+
+        # Now insert *pads_group* into *f1x4lp_module*:
+        f1x4lp_module.tag_insert("PadsGroup", pads_group)
 
         # Stuff some values into *f1x4lp* (i.e. *self*):
         # f1x4lp: F1x4LP = self
-        self.module: Module3D = connector_module
+        self.module: Module3D = f1x4lp_module
         self.top_z: float = top_z
         self.pin_bottom_z: float = pin_bottom_z
 
@@ -1387,7 +1485,8 @@ class HR2MasterAssembly:
                                                 encoder, raspi3b, nucleo144, st_link,
                                                 pi_offset2d, nucleo_offset2d, st_link_offset2d,
                                                 master_board_z, nucleo_board_z, arm_z,
-                                                romi_base_keys, romi_expansion_plate_keys)
+                                                romi_base_keys, romi_expansion_plate_keys,
+                                                tracing=" ")
 
         # Create *module*, append to *scad_program* and save into *hr2_master_assembly*
         # (i.e. *self*):
@@ -1506,7 +1605,7 @@ class HR2Robot:
         pi_x: float = 0.0
         pi_y: float = 0.0
         pi_offset2d: P2D = P2D(pi_x, pi_y)
-        st_link_offset2d: P2D = P2D(0.0, -45.0)
+        st_link_offset2d: P2D = P2D(17.5, -47.5)  # Trial and error
         # master_board_z: float = pi_z + 8.000
 
         # *nucleo_board_z* is selected such that the bottom lib of the Ethernet connector
@@ -1523,7 +1622,7 @@ class HR2Robot:
         # Create the *nucleo144* before *master_board* so it can be passed in:
         nucleo_offset2d: P2D = P2D(pi_x + 8.5, pi_y - 1.0)
         print(f"HR2PiAssembly:nucleo_offset2d:{nucleo_offset2d}")
-        nucleo144: Nucleo144 = Nucleo144(scad_program)
+        nucleo144: Nucleo144 = Nucleo144(scad_program, tracing=" ")
 
         # Create the *romi_expansion_plate* before *master_board* so it can be passed in:
         romi_expansion_plate: RomiExpansionPlate = RomiExpansionPlate(scad_program)
@@ -1595,7 +1694,7 @@ class Nucleo144:
     """Represents a STM32 Nucleo-144 development board."""
 
     # Nucleo144.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, tracing: str = "") -> None:
         """Initialize Nucleo144 and append to ScadProgram."""
         # Define various constants, particularly the various X/Y/Z coordinates of component
         # position on the Nucleo144.  The ethernet RJ45 connector locations are done using
@@ -1613,6 +1712,11 @@ class Nucleo144:
         # All units are in thousandths of an inch and need to be converted to millimeters:
         def mil(mil: float) -> float:
             return mil * 0.0254
+
+        next_tracing: str = ""
+        if tracing:
+            print(f"{tracing}=>Nucleo144.__init()")
+            next_tracing = tracing + " "
 
         # Misc. constants:
         degrees90: float = pi / 2.0
@@ -1740,7 +1844,7 @@ class Nucleo144:
         # # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
         # # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
         nucleo_pcb.module3d_place("M2x35_Long", {"morpho"}, "bx", origin, degrees90,
-                                  cn11_morpho_center, pads_base=1100)
+                                  cn11_morpho_center, pads_base=1100, tracing=next_tracing)
         nucleo_pcb.module3d_place("M2x35_Long", {"morpho"}, "bx", origin, degrees90,
                                   cn12_morpho_center, pads_base=1200)
         nucleo_pcb.module3d_place("M1x2", {"ground"}, "bx", origin, 0.0,
@@ -1749,9 +1853,9 @@ class Nucleo144:
                                   P2D(cn12_morpho_center_x, ground_south_y))
 
         # Create the associated 2 mating morpho connectors:
-        nucleo_pcb.module3d_place("F2x35", {"morpho_mate"}, "n", origin, degrees90,
+        nucleo_pcb.module3d_place("F2x35", {"morpho_mate"}, "", origin, degrees90,
                                   cn11_morpho_center, pads_base=1100)
-        nucleo_pcb.module3d_place("F2x35", {"morpho_mate"}, "n", origin, degrees90,
+        nucleo_pcb.module3d_place("F2x35", {"morpho_mate"}, "", origin, degrees90,
                                   cn12_morpho_center, pads_base=1200)
 
         # Create a list of *mount_hole_keys* that specify where each mount holes goes:
@@ -1778,6 +1882,10 @@ class Nucleo144:
         self.module: Module3D = nucleo_board
         self.pcb: PCB = nucleo_pcb
 
+        if tracing:
+            nucleo_pcb.show("", next_tracing)
+            print(f"{tracing}<=Nucleo144.__init()")
+
 
 # MasterBoard:
 class MasterBoard:
@@ -1789,11 +1897,14 @@ class MasterBoard:
                  st_link: "STLink", pi_offset: P2D, nucleo_offset: P2D, st_link_offset: P2D,
                  master_board_bottom_z: float, nucleo_board_z: float, arm_z: float,
                  romi_base_keys: List[Tuple[Any, ...]],
-                 romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
+                 romi_expansion_plate_keys: List[Tuple[Any, ...]], tracing: str = "") -> None:
         """Initialize the MasterBoard."""
         master_board: MasterBoard = self
 
-        print(f"MasterBoard: nucleo_offset:{nucleo_offset}")
+        next_tracing: str = ""
+        if tracing:
+            next_tracing = tracing + " "
+            print(f"{tracing}=>MasterBoard.__init__(...)")
 
         # Find the bottom edge of the motor casing.  Arbitrarily set Y to 0.0 since it is unneeded.
         # The Y coordinate cooresponds to the Z height.
@@ -1819,14 +1930,14 @@ class MasterBoard:
          sw_pcb) = master_board.pcbs_create(scad_program)
         master_pcb_polygon: Polygon = master_pcb.polygon_get()
 
-        # Install the nucleo144 connector and mounting holes:
+        # Install the nucleo144 and Raspberry Pi connectors and mounting holes:
         origin2d: P2D = P2D(0.0, 0.0)
         center_pcb.pcb_place(nucleo144.pcb, {"morpho_mate", "arduino"}, "",
-                             origin2d, -degrees90, nucleo_offset)
+                             origin2d, -degrees90, nucleo_offset, tracing=" ")
         center_pcb.pcb_place(raspi3b.pcb, {"connector_mate"}, "",
-                             origin2d, degrees90, pi_offset)
-        center_pcb.pcb_place(st_link.pcb, {"connectors_mate"}, "b",
-                             origin2d, 0.0, st_link_offset)
+                             origin2d, degrees90, pi_offset, tracing=" ")
+        # center_pcb.pcb_place(st_link.pcb, {"connectors_mate"}, "b",
+        #                       origin2d, 0.0, st_link_offset)
 
         # Install the two encoder connectors:
         encoder_offset: P2D = encoder.offset
@@ -1947,17 +2058,17 @@ class MasterBoard:
 
         # Create and install all of the sonars:
         master_board.sonar_modules_create(scad_program)
-        master_board.sonars_install(master_pcb, center_pcb)
+        master_board.sonars_install(master_pcb, center_pcb, tracing=next_tracing)
 
         # This is where we build the *STLink* board and associated connectors.
         # All the work is done inside the *STLink* initializer.
-        st_link_connectors: List[Scad3D] = []
+        # st_link_connectors: List[Scad3D] = []
         # st_link: STLink = STLink(scad_program)
         #                        st_link_offset, master_pcb_polygon, st_link_connectors)
         st_link_use_module: UseModule3D = st_link.module.use_module_get()
         translated_st_link: Scad3D = Translate3D(
             "Translated ST Link", st_link_use_module,
-            P3D(st_link_offset.x, st_link_offset.y, -10.0))
+            P3D(st_link_offset.x, st_link_offset.y, 0.0))  # 40.0))  # -10.0))
 
         # We need to cut out the two slots needed for the two Raspberry Pi flex connectors:
         # The camera slot is 17mm x 2mm and it is centered at (45, 11.5) from the lower left corner.
@@ -2039,7 +2150,7 @@ class MasterBoard:
                                     (  # encoder_receptacles_use_modules +
                                      nucleo144_spacers +
                                      arm_spacers +
-                                     st_link_connectors +
+                                     # st_link_connectors +
                                      [  # master_pcb_module.use_module_get(),
                                       center_pcb_module.use_module_get(),
                                       ne_pcb_module.use_module_get(),
@@ -2051,6 +2162,10 @@ class MasterBoard:
         scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
         # master_board: MasterBoard = self
         self.module: Module3D = module
+
+        if tracing:
+            next_tracing = tracing + " "
+            print(f"{tracing}<=MasterBoard.__init__(...)")
 
     # MasterBoard.pcbs_create():
     def pcbs_create(self, scad_program: "ScadProgram") -> Tuple[PCB, PCB, PCB, PCB, PCB, PCB]:
@@ -2363,72 +2478,126 @@ class MasterBoard:
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
         z_rotated_hcsr04: Rotate3D = Rotate3D("Z-Axis Rotated HC-SR04",
                                               hcsr04_use_module, degrees180, z_axis)
-        recenter_dy: float = (hcsr04_pcb_dy / 2.0  # Move PCB bottom edge to origin
-                              + f1x4lp_top_z)      # Sonar insululation bottom to top of F1x4LP
-        recenter_dz: float = 1.27                  # Move from PCB bottom to center of pins
-        recentered_hcsr04: Translate3D = Translate3D(
-            "Recentered HC-SR04", z_rotated_hcsr04, P3D(0.0, recenter_dy, recenter_dz))
+        low_dy: float = (hcsr04_pcb_dy / 2.0     # Move PCB bottom edge to origin
+                         + f1x4lp_top_z)         # Move PCB to top of F1x4LP (LP=>Low Profile)
+        medium_dy: float = (hcsr04_pcb_dy / 2.0  # Move PCB bottom edge to origin
+                            + 6.00)              # Move PBB to top of F1x4 (M=>Medium Profile)
+        high_dy: float = (hcsr04_pcb_dy / 2.0    # Move PCB bottom edge to origin
+                          + 8.00)                # Move PCB to top of F1x4H (H=>High Connector)
+        recenter_dz: float = 1.27                # Move from PCB bottom to center of pins
+
+        # There are three different sonar heights -- low, medium and high:
+        # * *low*: Use low profile (and more expensive) connector to keep Sonar close to PCB.
+        # * *medium*: Use nominal (and inexpensive) height connector where sonar height unimportant.
+        # * *high*: Use high profile (and more expensive) connecto to boost Sonar above rear
+        #   connectors on SBC (in particular the RaspBerry Pi.
+        low_recentered_hcsr04: Translate3D = Translate3D(
+            "Low Recentered HC-SR04", z_rotated_hcsr04, P3D(0.0, low_dy, recenter_dz))
+        medium_recentered_hcsr04: Translate3D = Translate3D(
+            "Medium Recentered HC-SR04", z_rotated_hcsr04, P3D(0.0, medium_dy, recenter_dz))
+        high_recentered_hcsr04: Translate3D = Translate3D(
+            "High Recentered HC-SR04", z_rotated_hcsr04, P3D(0.0, high_dy, recenter_dz))
+
+        # Rotate both by 90 degrees so they point along the X axis:
         x_axis: P3D = P3D(1.0, 0.0, 0.0)
-        x_rotated_hcsr04: Rotate3D = Rotate3D("X-Axis Rotated HC-SR04", recentered_hcsr04,
-                                              degrees90, x_axis)
-        # RP => RePositioned:
-        hcsr04rp_module: Module3D = Module3D("HCSR04RP", [x_rotated_hcsr04])
-        scad_program.append(hcsr04rp_module)
+        low_x_rotated_hcsr04: Rotate3D = Rotate3D("Low X-Axis Rotated HC-SR04",
+                                                  low_recentered_hcsr04, degrees90, x_axis)
+        medium_x_rotated_hcsr04: Rotate3D = Rotate3D("Medium X-Axis Rotated HC-SR04",
+                                                     medium_recentered_hcsr04, degrees90, x_axis)
+        high_x_rotated_hcsr04: Rotate3D = Rotate3D("High X-Axis Rotated HC-SR04",
+                                                   high_recentered_hcsr04, degrees90, x_axis)
+        # Create both low and high modules:
+        hcsr04low_module: Module3D = Module3D("HCSR04Low", [low_x_rotated_hcsr04])
+        hcsr04medium_module: Module3D = Module3D("HCSR04Medium", [medium_x_rotated_hcsr04])
+        hcsr04high_module: Module3D = Module3D("HCSR04High", [high_x_rotated_hcsr04])
+        scad_program.append(hcsr04low_module)
+        scad_program.append(hcsr04medium_module)
+        scad_program.append(hcsr04high_module)
         # scad_program.if3d.name_match_append("hcsr04rp", hcsr04rp_module,
         #                                     ["Repositioned HC-SR04 sonar"])
 
     # MasterBoard.sonars_install():
-    def sonars_install(self, master_pcb: PCB, center_pcb: PCB) -> None:
+    def sonars_install(self, master_pcb: PCB, center_pcb: PCB, tracing: str = "") -> None:
         """Install all of the sonars."""
+        # Perform any requestd *tracing*:
+        # next_tracing: str = ""
+        if tracing:
+            # next_tracing = tracing + " "
+            print(f"{tracing}=>MasterBoard.sonars_install(*, *, *)")
+
         # Create *sonar_poses* list, which has 1 4-tuple for each sonar.  The format of
-        # the 4-tuple is:
-        #      (*rim_angle*, *beam_angle*, *sonar_offset*, *on_bottom*)
+        # the 6-tuple is:
+        #      (*sonar_name*, *rim_angle*, *beam_angle*, *sonar_offset*, *on_bottom*, *height*)
         # where:
+        # * *sonar_name*: Is the name of the sonar:
+        # * *height*: One of "high", "medium", "low" for the sonar height.
         # * *rim_angle*: The polar coordinate angle from the orgin of the sonar.
         # * *beam_angle*: The angle of the sonar direction.
         # * *sonar_offset*: The offset from the nominal *sonar_radius*.
         # * *on_bottom*: A flag that is *True* if the sonar is on the PCB bottom.
-        sonars_radius: float = 64.0
+        sonars_radius: float = 62.0
         degrees2radians: float = pi / 180.0
-        sonar_poses: List[Tuple[float, float, float, bool]] = [
-            ((90.0 - 2.3 * 22.5) * degrees2radians,
-             (90.0 - 1.5 * 22.5) * degrees2radians, 0.0, True),
-            ((90.0 - 1.9 * 22.5) * degrees2radians,
-             (90.0 - 0.5 * 22.5) * degrees2radians, 0.0, False),
-            # No rear center sonar:
-            ((90.0 + 1.9 * 22.5) * degrees2radians,
-             (90.0 + 0.5 * 22.5) * degrees2radians, 0.0, False),
-            ((90.0 + 2.3 * 22.5) * degrees2radians,
-             (90.0 + 1.5 * 22.5) * degrees2radians, 0.0, True),
-            # Front Sonars:
-            ((270.0 - 2 * 22.5 + 2.5) * degrees2radians,
+        sonar_poses: List[Tuple[str, str, float, float, float, bool]] = [
+            ("Rear Left Sonar", "high",
+             (90.0 - 1.8 * 22.5) * degrees2radians,               # Trial and error to fit iniside
+             (90.0 + 0.5 * 22.5) * degrees2radians, 5.0, False),  # robot perimeter and miss spacer.
+            ("Rear Right Sonar", "high",
+             (90.0 + 1.8 * 22.5) * degrees2radians,               # Same Trial and error as above.
+             (90.0 - 0.5 * 22.5) * degrees2radians, 5.0, False),
+            ("Front Right Top Sonar", "medium",
+             (270.0 - 2 * 22.5 + 2.5) * degrees2radians,
              (270.0 - 2 * 22.5) * degrees2radians, 0.0, False),
-            ((270.0 - 1 * 22.5 - 2.5) * degrees2radians,
+            ("Front Right Bottom Sonar", "low",
+             (270.0 - 1 * 22.5 - 2.5) * degrees2radians,
              (270.0 - 1 * 22.5) * degrees2radians, 0.0, True),
-            ((270.0) * degrees2radians,
-             (270.0) * degrees2radians, 25.0, False),
-            ((270.0 + 1 * 22.5 + 2.5) * degrees2radians,
+            ("Front Center Sonar", "low",
+             (270.0) * degrees2radians,
+             (270.0) * degrees2radians, 23.0, False),
+            ("Front Left Center Sonar", "low",
+             (270.0 + 1 * 22.5 + 2.5) * degrees2radians,
              (270.0 + 1 * 22.5) * degrees2radians, 0.0, True),
-            ((270.0 + 2 * 22.5 - 2.5) * degrees2radians,
-             (270.0 + 2 * 22.5) * degrees2radians, 0.0, False)]
+            ("Front Right Center Sonar", "high",
+             (270.0 + 2 * 22.5 - 2.5) * degrees2radians,
+             (270.0 + 2 * 22.5) * degrees2radians, 0.0, False),
+        ]
 
         # Iterate across all of the sonars in *sonar_poses*:
         origin2d: P2D = P2D(0.0, 0.0)
         degrees90: float = pi / 2.0
+        sonar_name: str
+        height: str
         rim_angle: float
         beam_angle: float
         radius_offset: float
         on_bottom: bool
-        for rim_angle, beam_angle, sonar_offset, on_bottom in sonar_poses:
+        for sonar_name, height, rim_angle, beam_angle, sonar_offset, on_bottom in sonar_poses:
+            print("****************")
             sonar_radius: float = sonars_radius - sonar_offset - 1.27
             sonar_x: float = sonar_radius * cos(rim_angle)
             sonar_y: float = sonar_radius * sin(rim_angle)
             sonar_flags: str = "byY" if on_bottom else ""
             sonar_translate: P2D = P2D(sonar_x, sonar_y)
-            center_pcb.module3d_place("F1x4LP", {"sonar_connectors"}, sonar_flags,
-                                      origin2d, rim_angle + degrees90, sonar_translate)
-            center_pcb.module3d_place("HCSR04RP", {"sonars"}, sonar_flags,
-                                      origin2d, rim_angle + degrees90, sonar_translate)
+            if height == "low":
+                center_pcb.module3d_place("F1x4LP", {"sonar_connectors"}, sonar_flags,
+                                          origin2d, beam_angle + degrees90, sonar_translate)
+                center_pcb.module3d_place("HCSR04Low", {"sonars"}, sonar_flags,
+                                          origin2d, beam_angle + degrees90, sonar_translate)
+            elif height == "medium":
+                center_pcb.module3d_place("F1x4", {"sonar_connectors"}, sonar_flags,
+                                          origin2d, beam_angle + degrees90, sonar_translate)
+                center_pcb.module3d_place("HCSR04Medium", {"sonars"}, sonar_flags,
+                                          origin2d, beam_angle + degrees90, sonar_translate)
+            elif height == "high":
+                center_pcb.module3d_place("F1x4H", {"sonar_connectors"}, sonar_flags,
+                                          origin2d, beam_angle + degrees90, sonar_translate)
+                center_pcb.module3d_place("HCSR04High", {"sonars"}, sonar_flags,
+                                          origin2d, beam_angle + degrees90, sonar_translate)
+            else:
+                assert False, f"'{height}' is not one of 'high', 'medium', or 'low'."
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=MasterBoard.sonars_install(*, *, *)")
 
 
 # PiBoard:
@@ -5273,21 +5442,29 @@ class STLink:
         # pcb_top_z: float = pcb_bottom_z + pcb_dz
 
         # Define all of the connector locations:
-        degrees90: float = pi / 2.0
-        cn2_pin1_x = -pcb_dx / 2.0 + 3.25  # Calipers
-        cn2_pin1_y = pcb_dy / 2.0 - 3.80  # Assume .1in spacing  (pin 1 on top)
-        cn6_pin1_x = cn2_pin1_x + 5.00  # Calipers (pretty accurate)
-        cn6_pin1_y = cn2_pin1_y - 2 * 2.54  # Pin 1 on on top
-        jp2_pin1_x = cn2_pin1_x  # Visual inspection
-        jp2_pin1_y = cn6_pin1_y - 5 * 2.54  # Visual inspection (pin 1 on bottom)
-        cn4_pin1_x = cn2_pin1_x + 15.00  # Calipers (pretty accurate)
-        cn4_pin1_y = cn2_pin1_y  # Visual inspection (pin 1 on top)
-        cn5_pin1_x = cn4_pin1_x  # Visual inspecition
-        cn5_pin1_y = jp2_pin1_y  # Visual inspection (pin 1 on bottom)
-        jp1_pin1_x = -(2.54 / 2.0)  # It is pretty clear that it is centered along Y axis
-        jp1_pin1_y = cn2_pin1_y  # Visual inspection
-        cn3_pin1_x = -cn2_pin1_x
-        cn3_pin1_y = cn2_pin1_y  # Visual inspection (pin 1 on top)
+        degrees180: float = pi
+        degrees90: float = degrees180 / 2.0
+        cn1_dx: float = 3.0  # Calipers
+        cn1_bottom_y: float = pcb_dy / 2.0 - 1.2  # Calipers
+        cn1_top_y: float = cn1_bottom_y + 10  # Extra large to poke through PCB
+        cn1_dy: float = abs(cn1_top_y - cn1_bottom_y)
+        cn1_dz: float = 1.0
+        cn1_center_x: float = pcb_dx / 2.0 - 21.00  # Calipers
+        cn1_center_y: float = cn1_bottom_y + cn1_dy / 2.0
+        cn2_pin1_x: float = -pcb_dx / 2.0 + 3.25  # Calipers
+        cn2_pin1_y: float = pcb_dy / 2.0 - 3.80  # Assume .1in spacing  (pin 1 on top)
+        cn6_pin1_x: float = cn2_pin1_x + 5.00  # Calipers (pretty accurate)
+        cn6_pin1_y: float = cn2_pin1_y - 2 * 2.54  # Pin 1 on on top
+        jp2_pin1_x: float = cn2_pin1_x  # Visual inspection
+        jp2_pin1_y: float = cn6_pin1_y - 5 * 2.54  # Visual inspection (pin 1 on bottom)
+        cn4_pin1_x: float = cn2_pin1_x + 15.00  # Calipers (pretty accurate)
+        cn4_pin1_y: float = cn2_pin1_y  # Visual inspection (pin 1 on top)
+        cn5_pin1_x: float = cn4_pin1_x  # Visual inspecition
+        cn5_pin1_y: float = jp2_pin1_y  # Visual inspection (pin 1 on bottom)
+        jp1_pin1_x: float = -(2.54 / 2.0)  # It is pretty clear that it is centered along Y axis
+        jp1_pin1_y: float = cn2_pin1_y  # Visual inspection
+        cn3_pin1_x: float = -cn2_pin1_x
+        cn3_pin1_y: float = cn2_pin1_y  # Visual inspection (pin 1 on top)
 
         # Compute the connector centers:
         pin_dx_dy: float = 2.54
@@ -5306,10 +5483,16 @@ class STLink:
         # Create the *st_link_pcb*:
         st_link_pcb: PCB = PCB("ST_Link", scad_program, pcb_dz, st_link_exterior)
 
-        # Install CN1 connectors:
-        st_link_pcb.module3d_place("M1x2", {"connectors"}, "",
+        # Install CN1 USB connector:
+        cn1_cube_center: P3D = P3D(0.0, 0.0, cn1_dz / 2.0)
+        cn1_cube: Cube = Cube("CN1 USB Connector", cn1_dx, cn1_dy, cn1_dz, cn1_cube_center)
+        colored_cn1_cube: Color = Color("Colored CN1 USB Connector", cn1_cube, "Silver")
+        st_link_pcb.scad3d_place(colored_cn1_cube, "t", translate=P2D(cn1_center_x, cn1_center_y))
+
+        # Install CN2 connectors:
+        st_link_pcb.module3d_place("M1x2", {"ground_connectors"}, "",
                                    origin2d, -degrees90, cn2_center, pads_base=0)
-        st_link_pcb.module3d_place("F1x2", {"connectors_mate"}, "bny",
+        st_link_pcb.module3d_place("F1x2", {"ground_connectors_mate"}, "bny",
                                    origin2d, -degrees90, cn2_center, pads_base=0)
 
         # Install CN6 connectors:
@@ -5343,18 +5526,59 @@ class STLink:
                                    origin2d, 0.0, jp1_center, pads_base=16)
 
         # Install CN3 connectors:
-        st_link_pcb.module3d_place("M1x2", {"connectors"}, "",
+        st_link_pcb.module3d_place("M1x2", {"ground_connectors"}, "",
                                    origin2d, -degrees90, cn3_center, pads_base=18)
-        st_link_pcb.module3d_place("F1x2", {"connectors_mate"}, "bny",
+        st_link_pcb.module3d_place("F1x2", {"ground_connectors_mate"}, "bny",
                                    origin2d, -degrees90, cn3_center, pads_base=18)
 
         # Wrap-up *st_link_pcb* and generate *st_link_module*:
         st_link_module: Module3D = st_link_pcb.scad_program_append(scad_program, "Beige")
+        st_link_use_module: UseModule3D = st_link_module.use_module_get()
+
+        # Now create *sandwich_pcb*:
+        sandwich_pcb_dy: float = pcb_dy
+        sandwich_pcb_dx: float = pcb_dx / 2.0 + 5.0
+        sandwich_pcb_dz: float = 1.6
+        adapter_exterior: Square = Square("STLink Adapter Exterior",
+                                          sandwich_pcb_dx, sandwich_pcb_dy,
+                                          center=P2D(-(pcb_dx - sandwich_pcb_dx) / 2.0, 0.0),
+                                          corner_radius=1.5, corner_count=5)
+
+        adapter_pcb: PCB = PCB("ST_Link_Adapter", scad_program, sandwich_pcb_dz, adapter_exterior)
+        adapter_pcb.pcb_place(st_link_pcb, {"connectors_mate"}, "")
+        f1x5ra_center: P2D = P2D(-9.0, 4.0 - 2.54)
+        adapter_pcb.module3d_place("F1x5RA", {"connectors"}, "byY", origin2d, 0.0, f1x5ra_center)
+        adapter_module: Module3D = adapter_pcb.scad_program_append(scad_program, "Tan")
+        adapter_use_module: UseModule3D = adapter_module.use_module_get()
+
+        translated_st_link: Translate3D = Translate3D("Translated ST Link", st_link_use_module,
+                                                      P3D(0.0, 0.0, -10.0))
+        sandwich_union: Union3D = Union3D("STLink Sandwich Union",
+                                          [adapter_use_module, translated_st_link])
+
+        # y_axis: P3D = P3D(0.0, 1.0, 0.0)
+        # y_axis_rotated_sandwich: Rotate3D = Rotate3D("Y Axis Rotated ST Link Sandwich",
+        #                                              sandwich_union, degrees180, y_axis)
+        x_axis: P3D = P3D(1.0, 0.0, 0.0)
+        x_axis_rotated_sandwich: Rotate3D = Rotate3D("X Axis Rotated ST Link Sandwich",
+                                                     sandwich_union, degrees90, x_axis)
+        # There are all sorts of rotations that happened Y and Z are swapped:
+        translated_sandwich: Translate3D = Translate3D("Connector Centered Sandwich",
+                                                       x_axis_rotated_sandwich,
+                                                       P3D(f1x5ra_center.x, 1.27, -pcb_dy / 2.0))
+
+        sandwich_module: Module3D = Module3D("ST_Link_Sandwich_Module", [translated_sandwich])
+        scad_program.append(sandwich_module)
+        scad_program.if3d.name_match_append("st_link_sandwich", sandwich_module,
+                                            ["ST-Link Adapter Sandwich"])
 
         # Stuff some values into *st_link* (i.e. *self*):
         # st_link: STLink = self
-        self.module: Module3D = st_link_module
-        self.pcb: PCB = st_link_pcb
+        self.module: Module3D = sandwich_module
+        self.adapter_module: Module3D = adapter_module
+        self.adapter_pcb: PCB = adapter_pcb
+        self.st_link_module: Module3D = st_link_module
+        self.st_link_pcb: PCB = st_link_pcb
 
 
 # SRF02:
@@ -5410,7 +5634,7 @@ def connectors_create(scad_program: ScadProgram):
     pins_dx_dy: float = 2.56  # = .1in
     pcb_pin_height: float = 2.79
     # female_insulation_height: float = 8.85
-    female_insulation_height: float = 5.85
+    female_insulation_height: float = 6.00
     male_insulation_height: float = pins_dx_dy
 
     # Common 1x2 connectors:
@@ -5445,6 +5669,16 @@ def connectors_create(scad_program: ScadProgram):
                          footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
     RectangularConnector("F1x4", scad_program, 1, 4, female_insulation_height, pcb_pin_height,
                          insulation_color="Fuchsia",
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+    # High Insulation
+    RectangularConnector("F1x4H", scad_program, 1, 4, female_insulation_height + 2.0,
+                         pcb_pin_height, insulation_color="Fuchsia",
+                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+    # Common 1x5 connectors:
+    RectangularConnector("F1x5RA", scad_program, 1, 5, female_insulation_height, pcb_pin_height,
+                         insulation_color="Fuchsia",
+                         right_angle_length=3.00 - 0.127,  # <=calipers / schematic=>6.00 + 0.127
                          footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
     # Common 1x6 connectors:
