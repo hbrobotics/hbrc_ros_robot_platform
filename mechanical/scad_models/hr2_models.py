@@ -27,10 +27,10 @@
 # <======================================= 100 characters =======================================> #
 """Code that generates an OpenSCAD model for HR2 (HBRC ROS Robot)."""
 
-from scad_models.scad import (Circle, Color, CornerCube, Cube, Cylinder, If2D, Difference2D,
-                              KicadPcb, LinearExtrude, Module2D, Module3D, P2D, P3D, Polygon,
-                              Rotate3D, Scad2D, Scad3D, SimplePolygon, ScadProgram, Square,
-                              Translate3D, UseModule2D, UseModule3D, Union3D)  # , Variable2D)
+from scad_models.scad import (
+    Circle, Color, CornerCube, Cube, Cylinder, If2D, Difference2D, KicadPcb, LinearExtrude,
+    Module2D, Module3D, P2D, P3D, Polygon, Rotate3D, Scad2D, Scad3D, SimplePolygon, ScadProgram,
+    Square, Translate3D, UseModule2D, UseModule3D, Union3D)
 from pathlib import Path
 from scad_models.kicad import Footprint
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
@@ -498,6 +498,7 @@ class PCB:
         self.dz: float = dz
         # self.groups: Dict[str, List[PadsGroup]] = {}
         self.name: str = name
+        self.pcb_parent: Optional[PCB] = None
         self.pcb_exterior: SimplePolygon = pcb_exterior
         self.pcb_polygon: Polygon = pcb_polygon
         self.pcb_groups: Dict[str, PCBGroup] = {}
@@ -615,9 +616,16 @@ class PCB:
         dz: float = pcb.dz
 
         # Perform any requested *tracing*:
-        # next_tracing: str = ""
+        next_tracing: str = ""
         if tracing:
+            next_tracing = tracing + " "
             print(f"{tracing}=>PCB.module3d_place('{name}', {group_names}, '{flags}, ...)")
+
+        # Mirror the entire operation on *pcb_parent* if it is set:
+        if isinstance(pcb.pcb_parent, PCB):
+            pcb_parent: PCB = pcb.pcb_parent
+            pcb_parent.module3d_place(module_name, group_names, flags, center, z_rotate, translate,
+                                      pads_base=pads_base, tracing=next_tracing)
 
         # Verify that *flags* are OK:
         flag: str
@@ -732,6 +740,11 @@ class PCB:
         pcb_polygon: Polygon = pcb.pcb_polygon
         pcb_groups: Dict[str, PCBGroup] = pcb.pcb_groups
 
+        # Mirror the entire operation on *pcb_parent* if it is set:
+        if isinstance(pcb.pcb_parent, PCB):
+            pcb_parent: PCB = pcb.pcb_parent
+            pcb_parent.mount_hole_append(name, group_names, diameter, position)
+
         # Interate through all of the *group_names*:
         group_name: str
         for group_name in group_names:
@@ -753,8 +766,14 @@ class PCB:
         """Install a bare Pad onto a PCB."""
         # Unpack soem values from *pcb* (i.e. *self*):
         pcb: PCB = self
+        pcb_parent: Optional[PCB] = pcb.pcb_parent
         pcb_polygon: Polygon = pcb.pcb_polygon
         pcb_groups: Dict[str, PCBGroup] = pcb.pcb_groups
+
+        # Mirror operation onto *pcb_parent* (if present*):
+        if isinstance(pcb_parent, PCB):
+            pcb_parent.pad_append(name, group_names, flags, pad_dx, pad_dy, drill_diameter,
+                                  center=center, rotate=rotate)
 
         # Iterate through all of the *group_names*:
         group_name: str
@@ -770,6 +789,13 @@ class PCB:
 
         # Append the hole/slot to *pcb_polygon*:
         pad.hole_append(pcb_polygon)
+
+    # PCB.pcb_parent_set():
+    def pcb_parent_set(self, pcb_parent: "PCB") -> None:
+        """Set parent PCB to replicate operations on."""
+        # Set the *pcb_parent* in *pcb* (i.e. *self*):
+        pcb: PCB = self
+        pcb.pcb_parent = pcb_parent
 
     # PCB.pcb_place():
     def pcb_place(self, other_pcb: "PCB", group_names: Set[str], flags: str,
@@ -801,6 +827,7 @@ class PCB:
         pcb: PCB = self
         name: str = pcb.name
         scad3ds: List[Scad3D] = pcb.scad3ds
+        pcb_parent: Optional[PCB] = pcb.pcb_parent
         pcb_polygon: Polygon = pcb.pcb_polygon
 
         # Perform any requested *tracing*:
@@ -812,6 +839,11 @@ class PCB:
             print(f"{tracing}len(scad3ds):{len(scad3ds)}")
             print(f"{tracing}(pcb_polygon):{len(pcb_polygon)}")
             other_pcb.show("", next_tracing)
+
+        # Mirror the operation to *pcb_parent* (if present):
+        if isinstance(pcb_parent, PCB):
+            pcb_parent.pcb_place(other_pcb, group_names, flags, center=center,
+                                 rotate=rotate, translate=translate, tracing=next_tracing)
 
         # Unpack some values from *other_pcb*:
         other_pcb_groups: Dict[str, PCBGroup] = other_pcb.pcb_groups
@@ -891,15 +923,22 @@ class PCB:
         # Unpack some values from *pcb* (i.e. *self*):
         pcb: PCB = self
         dz: float = pcb.dz
+        pcb_parent: Optional[PCB] = pcb.pcb_parent
         scad3ds: List[Scad3D] = pcb.scad3ds
 
+        # Mirror operation on *pcb_parent* (if present):
+        if isinstance(pcb_parent, PCB):
+            pcb_parent.scad3d_place(scad3d, flags,
+                                    center=center, rotate=rotate, translate=translate)
+
+        # Verify *flags*:
         flag: str
         for flag in flags:
             assert flag in "bt", f"'{flag}' is not one of 'b' or 't'."
-        translate_dz: float = 0.0 if 'b' in flags else dz
 
         # Reposition *scad3d* into *repositioned_scad3d* and append to *scad3ds*:
         center3d: P3D = P3D(center.x, center.y, 0.0)
+        translate_dz: float = 0.0 if 'b' in flags else dz
         translate3d: P3D = P3D(translate.x, translate.y, translate_dz)
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
         repositioned_scad3d: Scad3D = scad3d.reposition(
@@ -985,7 +1024,14 @@ class PCB:
         """Append a SimplePolygon to the PCB polygon."""
         # Unpack some values from *pcb* (i.e. *self*):
         pcb: PCB = self
+        pcb_parent: Optional[PCB] = pcb.pcb_parent
         pcb_polygon: Polygon = pcb.pcb_polygon
+
+        # Mirror the operation on *pcb_parent* (if present):
+        if isinstance(pcb_parent, PCB):
+            pcb_parent.simple_polygon_append(simple_polygon)
+
+        # Do the actual append:
         pcb_polygon.append(simple_polygon)
 
 
@@ -2058,7 +2104,7 @@ class MasterBoard:
 
         # Create and install all of the sonars:
         master_board.sonar_modules_create(scad_program)
-        master_board.sonars_install(master_pcb, center_pcb, tracing=next_tracing)
+        master_board.sonars_install(center_pcb, ne_pcb, nw_pcb, tracing=next_tracing)
 
         # This is where we build the *STLink* board and associated connectors.
         # All the work is done inside the *STLink* initializer.
@@ -2163,6 +2209,7 @@ class MasterBoard:
         # master_board: MasterBoard = self
         self.module: Module3D = module
 
+        # Wrap up any requested *tracing*:
         if tracing:
             next_tracing = tracing + " "
             print(f"{tracing}<=MasterBoard.__init__(...)")
@@ -2406,6 +2453,7 @@ class MasterBoard:
         # Skip A
         center_pcb_exterior.lock()
         center_pcb: PCB = PCB("Center", scad_program, 1.6, center_pcb_exterior)
+        center_pcb.pcb_parent_set(master_pcb)
 
         # Compute the *ne_pcb_exterior* and stuff it into *ne_pcb_polygon*:
         ne_pcb_exterior: SimplePolygon = SimplePolygon("NE PCB Exterior SimplePolygon",
@@ -2417,6 +2465,7 @@ class MasterBoard:
         ne_pcb_exterior.corner_arc_append(B, corner_radius, "WS")
         ne_pcb_exterior.lock()
         ne_pcb: PCB = PCB("NE", scad_program, 1.6, ne_pcb_exterior)
+        ne_pcb.pcb_parent_set(master_pcb)
 
         # Compute the *nw_pcb_exterior* and stuff it into the *nw_pcb_polygon*:
         nw_pcb_exterior: SimplePolygon = SimplePolygon("NW PCB Exterior SimplePolygon",
@@ -2428,6 +2477,7 @@ class MasterBoard:
         nw_pcb_exterior.corner_arc_append(G, corner_radius, "SE")
         nw_pcb_exterior.lock()
         nw_pcb: PCB = PCB("NW", scad_program, 1.6, nw_pcb_exterior)
+        nw_pcb.pcb_parent_set(master_pcb)
 
         # Compute the *se_pcb_exterior* and stuff it into the *se_pcb_polygon*:
         se_pcb_exterior: SimplePolygon = SimplePolygon("SE PCB Exterior SimplePolygon",
@@ -2441,6 +2491,7 @@ class MasterBoard:
         # se_pcb_exterior.point_append(T)
         se_pcb_exterior.lock()
         se_pcb: PCB = PCB("SE", scad_program, 1.6, se_pcb_exterior)
+        se_pcb.pcb_parent_set(master_pcb)
 
         # Compute the *sw_pcb_exterior*:
         sw_pcb_exterior: SimplePolygon = SimplePolygon("SW PCB Exterior SimplePolygon",
@@ -2454,6 +2505,7 @@ class MasterBoard:
         # sw_pcb_exterior.point_append(N)
         sw_pcb_exterior.lock()
         sw_pcb: PCB = PCB("SW", scad_program, 1.6, sw_pcb_exterior)
+        sw_pcb.pcb_parent_set(master_pcb)
 
         # Return the resulting *PCB*s:
         return master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb, sw_pcb
@@ -2517,7 +2569,7 @@ class MasterBoard:
         #                                     ["Repositioned HC-SR04 sonar"])
 
     # MasterBoard.sonars_install():
-    def sonars_install(self, master_pcb: PCB, center_pcb: PCB, tracing: str = "") -> None:
+    def sonars_install(self, center_pcb: PCB, ne_pcb: PCB, nw_pcb: PCB, tracing: str = "") -> None:
         """Install all of the sonars."""
         # Perform any requestd *tracing*:
         # next_tracing: str = ""
@@ -2526,10 +2578,11 @@ class MasterBoard:
             print(f"{tracing}=>MasterBoard.sonars_install(*, *, *)")
 
         # Create *sonar_poses* list, which has 1 4-tuple for each sonar.  The format of
-        # the 6-tuple is:
-        #      (*sonar_name*, *rim_angle*, *beam_angle*, *sonar_offset*, *on_bottom*, *height*)
+        # the 7-tuple is:
+        #      (*name*, *height, *board*,*rim_angle*, *beam_angle*, *sonar_offset*, *on_bottom*)
         # where:
-        # * *sonar_name*: Is the name of the sonar:
+        # * *name*: Is the name of the sonar:
+        # * *board*: The sub-PCB to install sonars on:
         # * *height*: One of "high", "medium", "low" for the sonar height.
         # * *rim_angle*: The polar coordinate angle from the orgin of the sonar.
         # * *beam_angle*: The angle of the sonar direction.
@@ -2537,26 +2590,26 @@ class MasterBoard:
         # * *on_bottom*: A flag that is *True* if the sonar is on the PCB bottom.
         sonars_radius: float = 62.0
         degrees2radians: float = pi / 180.0
-        sonar_poses: List[Tuple[str, str, float, float, float, bool]] = [
-            ("Rear Left Sonar", "high",
+        sonar_poses: List[Tuple[str, str, PCB, float, float, float, bool]] = [
+            ("Rear Left Sonar", "high", ne_pcb,
              (90.0 - 1.8 * 22.5) * degrees2radians,               # Trial and error to fit iniside
              (90.0 + 0.5 * 22.5) * degrees2radians, 5.0, False),  # robot perimeter and miss spacer.
-            ("Rear Right Sonar", "high",
+            ("Rear Right Sonar", "high", nw_pcb,
              (90.0 + 1.8 * 22.5) * degrees2radians,               # Same Trial and error as above.
              (90.0 - 0.5 * 22.5) * degrees2radians, 5.0, False),
-            ("Front Right Top Sonar", "medium",
+            ("Front Right Top Sonar", "medium", center_pcb,
              (270.0 - 2 * 22.5 + 2.5) * degrees2radians,
              (270.0 - 2 * 22.5) * degrees2radians, 0.0, False),
-            ("Front Right Bottom Sonar", "low",
+            ("Front Right Bottom Sonar", "low", center_pcb,
              (270.0 - 1 * 22.5 - 2.5) * degrees2radians,
              (270.0 - 1 * 22.5) * degrees2radians, 0.0, True),
-            ("Front Center Sonar", "low",
+            ("Front Center Sonar", "low", center_pcb,
              (270.0) * degrees2radians,
              (270.0) * degrees2radians, 23.0, False),
-            ("Front Left Center Sonar", "low",
+            ("Front Left Center Sonar", "low", center_pcb,
              (270.0 + 1 * 22.5 + 2.5) * degrees2radians,
              (270.0 + 1 * 22.5) * degrees2radians, 0.0, True),
-            ("Front Right Center Sonar", "high",
+            ("Front Right Center Sonar", "high", center_pcb,
              (270.0 + 2 * 22.5 - 2.5) * degrees2radians,
              (270.0 + 2 * 22.5) * degrees2radians, 0.0, False),
         ]
@@ -2566,11 +2619,12 @@ class MasterBoard:
         degrees90: float = pi / 2.0
         sonar_name: str
         height: str
+        pcb: PCB
         rim_angle: float
         beam_angle: float
         radius_offset: float
         on_bottom: bool
-        for sonar_name, height, rim_angle, beam_angle, sonar_offset, on_bottom in sonar_poses:
+        for sonar_name, height, pcb, rim_angle, beam_angle, sonar_offset, on_bottom in sonar_poses:
             print("****************")
             sonar_radius: float = sonars_radius - sonar_offset - 1.27
             sonar_x: float = sonar_radius * cos(rim_angle)
@@ -2578,20 +2632,20 @@ class MasterBoard:
             sonar_flags: str = "byY" if on_bottom else ""
             sonar_translate: P2D = P2D(sonar_x, sonar_y)
             if height == "low":
-                center_pcb.module3d_place("F1x4LP", {"sonar_connectors"}, sonar_flags,
-                                          origin2d, beam_angle + degrees90, sonar_translate)
-                center_pcb.module3d_place("HCSR04Low", {"sonars"}, sonar_flags,
-                                          origin2d, beam_angle + degrees90, sonar_translate)
+                pcb.module3d_place("F1x4LP", {"sonar_connectors"}, sonar_flags,
+                                   origin2d, beam_angle + degrees90, sonar_translate)
+                pcb.module3d_place("HCSR04Low", {"sonars"}, sonar_flags,
+                                   origin2d, beam_angle + degrees90, sonar_translate)
             elif height == "medium":
-                center_pcb.module3d_place("F1x4", {"sonar_connectors"}, sonar_flags,
-                                          origin2d, beam_angle + degrees90, sonar_translate)
-                center_pcb.module3d_place("HCSR04Medium", {"sonars"}, sonar_flags,
-                                          origin2d, beam_angle + degrees90, sonar_translate)
+                pcb.module3d_place("F1x4", {"sonar_connectors"}, sonar_flags,
+                                   origin2d, beam_angle + degrees90, sonar_translate)
+                pcb.module3d_place("HCSR04Medium", {"sonars"}, sonar_flags,
+                                   origin2d, beam_angle + degrees90, sonar_translate)
             elif height == "high":
-                center_pcb.module3d_place("F1x4H", {"sonar_connectors"}, sonar_flags,
-                                          origin2d, beam_angle + degrees90, sonar_translate)
-                center_pcb.module3d_place("HCSR04High", {"sonars"}, sonar_flags,
-                                          origin2d, beam_angle + degrees90, sonar_translate)
+                pcb.module3d_place("F1x4H", {"sonar_connectors"}, sonar_flags,
+                                   origin2d, beam_angle + degrees90, sonar_translate)
+                pcb.module3d_place("HCSR04High", {"sonars"}, sonar_flags,
+                                   origin2d, beam_angle + degrees90, sonar_translate)
             else:
                 assert False, f"'{height}' is not one of 'high', 'medium', or 'low'."
 
