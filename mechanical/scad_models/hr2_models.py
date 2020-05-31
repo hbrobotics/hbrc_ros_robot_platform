@@ -1974,7 +1974,6 @@ class MasterBoard:
         sw_pcb_pcb: PCB
         (master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb,
          sw_pcb) = master_board.pcbs_create(scad_program)
-        master_pcb_polygon: Polygon = master_pcb.polygon_get()
 
         # Install the nucleo144 and Raspberry Pi connectors and mounting holes:
         origin2d: P2D = P2D(0.0, 0.0)
@@ -2028,10 +2027,11 @@ class MasterBoard:
 
             # Consturct the *spacer_hole*:
             spacer_hole_center: P2D = P2D(romi_base_key_x, romi_base_key_y)
-            spacer_hole: Circle = Circle(f"{spacer_name} Spacer Hole",
-                                         spacer_hole_diameter, 16,
-                                         center=spacer_hole_center)
-            master_pcb_polygon.append(spacer_hole)
+            # spacer_hole: Circle = Circle(f"{spacer_name} Spacer Hole",
+            #                              spacer_hole_diameter, 16,
+            #                              center=spacer_hole_center)
+            master_pcb.mount_hole_append(f"{spacer_name} Spacer Hole", {"mounts"},
+                                         spacer_hole_diameter, spacer_hole_center)
 
         # Grab the *arm_plate_keys* and build *arm_plate_keys_table*:
         arm_plate_keys: List[Tuple[Any, ...]] = romi_expansion_plate_keys
@@ -2082,12 +2082,11 @@ class MasterBoard:
             arm_spacers.append(arm_spacer.module.use_module_get())
 
             # Now add the mounting holes to the PCB.
-            arm_spacer_hole1: Circle = Circle(f"{arm_spacer_name} Arm Spacer Hole 1",
-                                              2.4, 16, P2D(arm_key_x, arm_key_y))
-            arm_spacer_hole2: Circle = Circle(f"{arm_spacer_name} Arm Spacer Hole 2",
-                                              2.4, 16, P2D(-arm_key_x, -arm_key_y))
-            master_pcb_polygon.append(arm_spacer_hole1)
-            master_pcb_polygon.append(arm_spacer_hole2)
+            arm_hole_diameter: float = 2.4
+            master_pcb.mount_hole_append(f"{arm_spacer_name} Arm Spacer Hole 1", {"mounts"},
+                                         arm_hole_diameter, P2D(arm_key_x, arm_key_y))
+            master_pcb.mount_hole_append(f"{arm_spacer_name} Arm Spacer Hole 1", {"mounts"},
+                                         arm_hole_diameter, P2D(-arm_key_x, -arm_key_y))
         assert len(arm_spacers), "Something failed"
 
         # *nucleo144_offset* is the offset from the robot origin to the bottom center of
@@ -2106,11 +2105,7 @@ class MasterBoard:
         master_board.sonar_modules_create(scad_program)
         master_board.sonars_install(center_pcb, ne_pcb, nw_pcb, tracing=next_tracing)
 
-        # This is where we build the *STLink* board and associated connectors.
-        # All the work is done inside the *STLink* initializer.
-        # st_link_connectors: List[Scad3D] = []
-        # st_link: STLink = STLink(scad_program)
-        #                        st_link_offset, master_pcb_polygon, st_link_connectors)
+        # This is where we *st_link_use_modle* and translate it to the desired location:
         st_link_use_module: UseModule3D = st_link.module.use_module_get()
         translated_st_link: Scad3D = Translate3D(
             "Translated ST Link", st_link_use_module,
@@ -2148,15 +2143,8 @@ class MasterBoard:
         camera_slot: Square = Square("Pi Hat Camera Cable Slot", camera_slot_dx, camera_slot_dy,
                                      center=P2D(camera_slot_center_x, camera_slot_center_y),
                                      rotate=degrees90, corner_radius=1.00, corner_count=3)
-        master_pcb_polygon.append(lcd_slot)
-        master_pcb_polygon.append(camera_slot)
-
-        # We are done filling up *pcb_polygon*, create *pcb_polygon_module* and append
-        # it *scad_program*:
-        master_pcb_polygon.lock()
-        master_pcb_polygon_module: Module2D = Module2D("Master PCB Module", [master_pcb_polygon])
-        scad_program.append(master_pcb_polygon_module)
-        scad_program.if2d.name_match_append("master_pcb", master_pcb_polygon_module, ["Master PCB"])
+        master_pcb.simple_polygon_append(lcd_slot)
+        master_pcb.simple_polygon_append(camera_slot)
 
         # Write the *external_polygon* and *kicad_holes* out to *kicad_file_name*:
         kicad_file_name: str = "../electrical/master_board/rev_a/master_board.kicad_pcb"
@@ -2166,8 +2154,6 @@ class MasterBoard:
         kicad_pcb.layer_remove(edge_cuts)
         kicad_pcb.layer_remove(margin)
         kicad_pcb.mounting_holes_update(kicad_mounting_holes)
-        kicad_pcb.polygon_append(master_pcb_polygon[0], margin, 0.05)
-        # kicad_pcb.polygon_append(bantam_exterior, edge_cuts, 0.05)
         kicad_pcb.save()
 
         # TODO: Make into a method:
@@ -2184,7 +2170,6 @@ class MasterBoard:
 
         # Create the 6 PCB modules:
         master_pcb_module: Module3D = master_pcb.scad_program_append(scad_program, "Yellow")
-        master_pcb_module = master_pcb_module
         center_pcb_module: Module3D = center_pcb.scad_program_append(scad_program, "Gray")
         ne_pcb_module: Module3D = ne_pcb.scad_program_append(scad_program, "Blue")
         nw_pcb_module: Module3D = nw_pcb.scad_program_append(scad_program, "Orange")
@@ -2206,8 +2191,13 @@ class MasterBoard:
                                       translated_st_link]))
         scad_program.append(module)
         scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
-        # master_board: MasterBoard = self
         self.module: Module3D = module
+        self.master_pcb_module: Module3D = master_pcb_module
+        self.center_pcb_module: Module3D = center_pcb_module
+        self.ne_pcb_module: Module3D = ne_pcb_module
+        self.nw_pcb_module: Module3D = nw_pcb_module
+        self.se_pcb_module: Module3D = se_pcb_module
+        self.sw_pcb_module: Module3D = nw_pcb_module
 
         # Wrap up any requested *tracing*:
         if tracing:
