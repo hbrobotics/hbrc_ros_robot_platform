@@ -229,14 +229,15 @@ class Footprint:
             footprint_text: str = '\n'.join(lines + [")", ""])
             with open(footprint_path, "w") as footprint_file:
                 footprint_file.write(footprint_text)
-            print("write out new")
+            # print("write out new")
         elif touch_required:
             # Write out the *previous_text* to force the file system timestamp to be updated.
             with open(footprint_path, "w") as footprint_file:
                 footprint_file.write(previous_text)
-            print("write out previous")
+            # print("write out previous")
         else:
-            print("do nothing")
+            # print("do nothing")
+            pass
 
     # KiCadFootprint.thru_hole_pad():
     def thru_hole_pad(self, name: str, center: P2D,
