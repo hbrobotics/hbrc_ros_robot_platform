@@ -37,6 +37,169 @@ from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
 
+# Connectors:
+class Connectors:
+    """Represents a bunch of connectors."""
+
+    # Connectors.__init__():
+    def __init__(self, scad_program: ScadProgram) -> None:
+        """Generate a bunch of common connectors."""
+        # print("=>Connectors.__init__()")
+
+        # Some constants:
+        pins_dx_dy: float = 2.56  # = .1in
+        pcb_pin_height: float = 2.79
+        # female_insulation_height: float = 8.85
+        female_insulation_height: float = 6.00
+        male_insulation_height: float = pins_dx_dy
+
+        # Common 1x2 connectors:
+        m1x2: RectangularConnector = RectangularConnector(
+            "M1x2", scad_program,
+            1, 2, pins_dx_dy, pcb_pin_height,
+            insulation_color="Maroon", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x2: RectangularConnector = RectangularConnector(
+            "F1x2", scad_program, 1, 2, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Common 1x3 connectors:
+        m1x3: RectangularConnector = RectangularConnector(
+            "M1x3", scad_program, 1, 3, pins_dx_dy, pcb_pin_height,
+            insulation_color="Maroon", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        # Digikey: 2057-PH1RB-03-UA-ND (Adam Tech):
+        m1x3ra: RectangularConnector = RectangularConnector(
+            "M1x3RA", scad_program, 1, 3, pins_dx_dy, pcb_pin_height,
+            insulation_color="Cyan", male_pin_height=6.00,
+            right_angle_length=(3.05 + 0.127),
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x3: RectangularConnector = RectangularConnector(
+            "F1x3", scad_program, 1, 3, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Common 1x4 connectors:
+        m1x4: RectangularConnector = RectangularConnector(
+            "M1x4", scad_program, 1, 4, pins_dx_dy, pcb_pin_height,
+            insulation_color="Maroon", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        # HCSR04 Right angle:
+        m1x4ra: RectangularConnector = RectangularConnector(
+            "M1x4RA", scad_program, 1, 4, pins_dx_dy, pcb_pin_height,
+            insulation_color="Cyan", male_pin_height=6.00,
+            right_angle_length=3.00 - 0.127,  # <=calipers / schematic=>6.00 + 0.127
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x4: RectangularConnector = RectangularConnector(
+            "F1x4", scad_program, 1, 4, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        # High Insulation:
+        f1x4h: RectangularConnector = RectangularConnector(
+            "F1x4H", scad_program, 1, 4, female_insulation_height + 2.0,
+            pcb_pin_height, insulation_color="Fuchsia",
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Common 1x5 connectors:
+        f1x5ra: RectangularConnector = RectangularConnector(
+            "F1x5RA", scad_program, 1, 5, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            right_angle_length=3.00 - 0.127,  # <=calipers / schematic=>6.00 + 0.127
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Common 1x6 connectors:
+        m1x6: RectangularConnector = RectangularConnector(
+            "M1x6", scad_program, 1, 6, pins_dx_dy, pcb_pin_height,
+            insulation_color="Maroon", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x6: RectangularConnector = RectangularConnector(
+            "F1x6", scad_program, 1, 6, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Common 2x2 male jumper:
+        m2x2: RectangularConnector = RectangularConnector(
+            "M2x2", scad_program, 2, 2, pins_dx_dy, pcb_pin_height,
+            insulation_color="Fuchsia", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Standard 2x20 RaspberryPi connectors
+        m2x20: RectangularConnector = RectangularConnector(
+            "M2x20", scad_program, 2, 20, pins_dx_dy, male_insulation_height,
+            insulation_color="Maroon", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f2x20: RectangularConnector = RectangularConnector(
+            "F2x20", scad_program, 2, 20, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia", cut_out=True,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Mating connector for Nucleo144 CN11 and CN12 connectors:
+        # Nucleo144 Morpho CN11 and CN12 connectors:
+        m2x35_long: RectangularConnector = RectangularConnector(
+            "M2x35Long", scad_program, 2, 35, pins_dx_dy, pcb_pin_height,
+            insulation_color="Maroon", male_pin_height=8.08,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f2x35: RectangularConnector = RectangularConnector(
+            "F2x35", scad_program, 2, 35, female_insulation_height, pcb_pin_height,
+            insulation_color="Maroon", cut_out=True,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Nucleo144 CN7 Zio Connector:
+        f2x10_long: RectangularConnector = RectangularConnector(
+            "F2x10_Long", scad_program, 2, 10,
+            female_insulation_height, female_insulation_height,
+            insulation_color="SlateBlue", cut_out=True,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Nucleo144 CN8 Zio Connector:
+        f2x8_long: RectangularConnector = RectangularConnector(
+            "F2x8_Long", scad_program, 2, 8,
+            female_insulation_height, female_insulation_height,
+            insulation_color="SlateBlue", cut_out=True,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Nucleo144 CN9 Zio Connector:
+        f2x15_long: RectangularConnector = RectangularConnector(
+            "F2x15_Long", scad_program, 2, 15,
+            female_insulation_height, female_insulation_height,
+            insulation_color="SlateBlue", cut_out=True,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Nucleo144 CN10 Zio Connector:
+        f2x17_long:  RectangularConnector = RectangularConnector(
+            "F2x17_Long", scad_program, 2, 17,
+            female_insulation_height, female_insulation_height,
+            insulation_color="SlateBlue", cut_out=True,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Load up *connectors* (i.e. *self*)
+        # connectors: Connectors = self
+        self.m1x2: RectangularConnector = m1x2
+        self.f1x2: RectangularConnector = f1x2
+        self.m1x3: RectangularConnector = m1x3
+        self.m1x3ra: RectangularConnector = m1x3ra
+        self.f1x3: RectangularConnector = f1x3
+        self.m1x4: RectangularConnector = m1x4
+        self.m1x4ra: RectangularConnector = m1x4ra
+        self.f1x4: RectangularConnector = f1x4
+        self.f1x4h: RectangularConnector = f1x4h
+        self.f1x5ra: RectangularConnector = f1x5ra
+        self.m1x6: RectangularConnector = m1x6
+        self.f1x6: RectangularConnector = f1x6
+        self.m2x2: RectangularConnector = m2x2
+        self.m2x20: RectangularConnector = m2x20
+        self.f2x20: RectangularConnector = f2x20
+        self.m2x35_long: RectangularConnector = m2x35_long
+        self.f2x35: RectangularConnector = f2x35
+        self.f2x10_long: RectangularConnector = f2x10_long
+        self.f2x8_long: RectangularConnector = f2x8_long
+        self.f2x15_long: RectangularConnector = f2x15_long
+        self.f2x17_long:  RectangularConnector = f2x17_long
+
+        # print("<=Connectors.__init__()")
+
+
 # DXF:
 class DXF:
     """Represents a .DXF file for getting dimensions from.
@@ -1081,6 +1244,54 @@ class PCB:
         pcb_polygon.append(simple_polygon)
 
 
+class PCBChunk:
+    """Represents a chunk of stuff that can be put on a PCB."""
+
+    # PCBChunk.__init__():
+    def __init__(self, name: str, pads: List[Pad], scads: List[Scad3D],
+                 artworks: List[SimplePolygon] = [], cuts: List[SimplePolygon] = []) -> None:
+        """Return an initialized PCB Chunk.
+
+        Args:
+            * *name* (*str*):
+              The name of the *PCBChunk*.
+            * *pads* (*List*[*Pad*]*):
+              A list of *Pad* to placed.  Besides the landing that is
+              goes into a foot print, the associated hole is generated
+              as well.
+            * *scads*: (*List*[*Scad3D*]):
+              A list of *Scad3d*'s to render in the visual model.
+            * *holes*: (*List*[*SimplePolygon*]):
+              A list of holes to render in the visual model.
+            * *artworks*: (*List[*SimplePolygon*]):
+              A list of artwork polygons to draw.
+            * *cuts*: (*List[*SimplePolygon*]):
+              A list of PCB cut holes to be placed into the PCB.
+
+        """
+        # Load up *pcb_chunk* (i.e. *self*):
+        # pcb_chunk: PCBChunk = self
+        self.name: str = name
+        self.pads: List[Pad] = pads
+        self.scads: List[Scad3D] = scads
+        self.artworks: List[SimplePolygon] = cuts
+        self.cuts: List[SimplePolygon] = cuts
+
+    # PCBChunk.__str__():
+    def __str__(self) -> str:
+        """Return the a summary of PCBChunk."""
+        # Unpack some values from *PCBChunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        name: str = pcb_chunk.name
+        pads: List[Pad] = pcb_chunk.pads
+        scads: List[Scad3D] = pcb_chunk.scads
+        artworks: List[SimplePolygon] = pcb_chunk.artworks
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
+
+        return (f"PCBChunk('{name}', P:{len(pads)}, S:{len(scads)}, "
+                f"A:{len(artworks)}, C:{len(cuts)})")
+
+
 # PCBGroup:
 class PCBGroup:
     """A helper class to catagorize PCB stuff into sub-groups."""
@@ -1945,9 +2156,9 @@ class Nucleo144:
         # Create the 2 morpho connectors and 2 associated ground connectors:
         # # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
         # # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
-        nucleo_pcb.module3d_place("M2x35_Long", {"morpho"}, "bx", origin, degrees90,
+        nucleo_pcb.module3d_place("M2x35Long", {"morpho"}, "bx", origin, degrees90,
                                   cn11_morpho_center, pads_base=1100, tracing=next_tracing)
-        nucleo_pcb.module3d_place("M2x35_Long", {"morpho"}, "bx", origin, degrees90,
+        nucleo_pcb.module3d_place("M2x35Long", {"morpho"}, "bx", origin, degrees90,
                                   cn12_morpho_center, pads_base=1200)
         nucleo_pcb.module3d_place("M1x2", {"ground"}, "bx", origin, 0.0,
                                   P2D(cn11_morpho_center_x, ground_south_y))
@@ -5734,116 +5945,6 @@ class SRF02:
         self.module: Module3D = module
 
 
-def connectors_create(scad_program: ScadProgram):
-    """Generate a bunch of common connectors."""
-    # print("=>connectors_create()")
-    pins_dx_dy: float = 2.56  # = .1in
-    pcb_pin_height: float = 2.79
-    # female_insulation_height: float = 8.85
-    female_insulation_height: float = 6.00
-    male_insulation_height: float = pins_dx_dy
-
-    # Common 1x2 connectors:
-    RectangularConnector("M1x2", scad_program, 1, 2, pins_dx_dy, pcb_pin_height,
-                         insulation_color="Maroon", male_pin_height=4.04,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    RectangularConnector("F1x2", scad_program, 1, 2, female_insulation_height, pcb_pin_height,
-                         insulation_color="Fuchsia",
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Common 1x3 connectors:
-    RectangularConnector("M1x3", scad_program, 1, 3, pins_dx_dy, pcb_pin_height,
-                         insulation_color="Maroon", male_pin_height=4.04,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    # Digikey: 2057-PH1RB-03-UA-ND (Adam Tech):
-    RectangularConnector("M1x3RA", scad_program, 1, 3, pins_dx_dy, pcb_pin_height,
-                         insulation_color="Cyan", male_pin_height=6.00,
-                         right_angle_length=(3.05 + 0.127),
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    RectangularConnector("F1x3", scad_program, 1, 3, female_insulation_height, pcb_pin_height,
-                         insulation_color="Fuchsia",
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Common 1x4 connectors:
-    RectangularConnector("M1x4", scad_program, 1, 4, pins_dx_dy, pcb_pin_height,
-                         insulation_color="Maroon", male_pin_height=4.04,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    # HCSR04 Right angle:
-    RectangularConnector("M1x4RA", scad_program, 1, 4, pins_dx_dy, pcb_pin_height,
-                         insulation_color="Cyan", male_pin_height=6.00,
-                         right_angle_length=3.00 - 0.127,  # <=calipers / schematic=>6.00 + 0.127
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    RectangularConnector("F1x4", scad_program, 1, 4, female_insulation_height, pcb_pin_height,
-                         insulation_color="Fuchsia",
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    # High Insulation
-    RectangularConnector("F1x4H", scad_program, 1, 4, female_insulation_height + 2.0,
-                         pcb_pin_height, insulation_color="Fuchsia",
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Common 1x5 connectors:
-    RectangularConnector("F1x5RA", scad_program, 1, 5, female_insulation_height, pcb_pin_height,
-                         insulation_color="Fuchsia",
-                         right_angle_length=3.00 - 0.127,  # <=calipers / schematic=>6.00 + 0.127
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Common 1x6 connectors:
-    RectangularConnector("M1x6", scad_program, 1, 6, pins_dx_dy, pcb_pin_height,
-                         insulation_color="Maroon", male_pin_height=4.04,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    RectangularConnector("F1x6", scad_program, 1, 6, female_insulation_height, pcb_pin_height,
-                         insulation_color="Fuchsia",
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Common 2x2 male jumper:
-    RectangularConnector("M2x2", scad_program, 2, 2, pins_dx_dy, pcb_pin_height,
-                         insulation_color="Fuchsia", male_pin_height=4.04,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Standard 2x20 RaspberryPi connectors
-    RectangularConnector("M2x20", scad_program, 2, 20, pins_dx_dy, male_insulation_height,
-                         insulation_color="Maroon", male_pin_height=4.04,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    RectangularConnector("F2x20", scad_program, 2, 20, female_insulation_height, pcb_pin_height,
-                         insulation_color="Fuchsia", cut_out=True,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Mating connector for Nucleo144 CN11 and CN12 connectors:
-    # Nucleo144 Morpho CN11 and CN12 connectors:
-    RectangularConnector("M2x35_Long", scad_program, 2, 35, pins_dx_dy, pcb_pin_height,
-                         insulation_color="Maroon", male_pin_height=8.08,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-    RectangularConnector("F2x35", scad_program, 2, 35, female_insulation_height, pcb_pin_height,
-                         insulation_color="Maroon", cut_out=True,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Nucleo144 CN7 Zio Connector:
-    RectangularConnector("F2x10_Long", scad_program, 2, 10,
-                         female_insulation_height, female_insulation_height,
-                         insulation_color="SlateBlue", cut_out=True,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Nucleo144 CN8 Zio Connector:
-    RectangularConnector("F2x8_Long", scad_program, 2, 8,
-                         female_insulation_height, female_insulation_height,
-                         insulation_color="SlateBlue", cut_out=True,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Nucleo144 CN9 Zio Connector:
-    RectangularConnector("F2x15_Long", scad_program, 2, 15,
-                         female_insulation_height, female_insulation_height,
-                         insulation_color="SlateBlue", cut_out=True,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # Nucleo144 CN10 Zio Connector:
-    RectangularConnector("F2x17_Long", scad_program, 2, 17,
-                         female_insulation_height, female_insulation_height,
-                         insulation_color="SlateBlue", cut_out=True,
-                         footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
-
-    # print("<=connectors_create()")
-
-
 def main() -> int:  # pragma: no cover
     """Generate the openscand file."""
     # print("hr2_models.main() called")
@@ -5868,7 +5969,9 @@ def main() -> int:  # pragma: no cover
     # The list of *VALID_NAME*'s can be found near the bottom of `README.md`.
     # scad_program.append(Variable2D("Name", "name", '"hr2_arm_assembly"'))
 
-    connectors_create(scad_program)
+    # Create the various shared connectors:
+    connectors: Connectors = Connectors(scad_program)
+    connectors = connectors
 
     # Update the `README.md` file:
     read_me_text: str = ""
