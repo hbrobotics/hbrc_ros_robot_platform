@@ -1311,7 +1311,8 @@ class Encoder:
     """Represents a motor encoder board."""
 
     # Encoder.__init__():
-    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, tracing: str = "") -> None:
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF,
+                 connectors: Connectors, tracing: str = "") -> None:
         """Initialize the Encoder and append to ScadProgram."""
         # Perform any requested *tracing*:
         # next_tracing: str = tracing + " " if tracing else ""
@@ -1650,7 +1651,7 @@ class HR2BaseAssembly:
     """Represents the HR2 base with motor holders and spacers."""
 
     # HR2BaseAssembly.__init__():
-    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF,
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, connectors: Connectors,
                  pi_board_z: float, master_board_z: float, arm_z: float) -> None:
         """Initialize a HR2BaseAssembly."""
         # Grab some Z values via *base_dxf*:
@@ -1785,7 +1786,8 @@ class HR2MasterAssembly:
 
     # HR2MasterAssembly.__init__():
     def __init__(self,
-                 scad_program: ScadProgram, hr2_pi_assembly: "HR2PiAssembly", base_dxf: BaseDXF,
+                 scad_program: ScadProgram, connectors: Connectors,
+                 hr2_pi_assembly: "HR2PiAssembly", base_dxf: BaseDXF,
                  pi_board_z, master_board_z: float, nucleo_board_z: float, arm_z: float,
                  pi_offset2d: P2D, nucleo_offset2d: P2D, st_link_offset2d: P2D,
                  encoder: "Encoder", raspi3b: "RaspberryPi3", nucleo144: "Nucleo144",
@@ -1819,7 +1821,8 @@ class HR2NucleoAssembly:
     """Represents the HR2 up to the Nucleo144."""
 
     # HR2NucleoAssembly.__init__():
-    def __init__(self, scad_program: ScadProgram, hr2_wheel_assembly: "HR2WheelAssembly",
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors,
+                 hr2_wheel_assembly: "HR2WheelAssembly",
                  nucleo144: "Nucleo144", nucleo_board_z: float, nucleo_offset2d: P2D) -> None:
         """Initialize the HR2NucleoAssembly."""
         # Create *module*, append to *scad_program* and save into *hr2_nucleo_assembly*
@@ -1851,7 +1854,7 @@ class HR2PiAssembly:
 
     # HR2PiAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, hr2_base_assembly: HR2BaseAssembly,
-                 raspi3b: "RaspberryPi3", st_link: "STLink",
+                 connectors: Connectors, raspi3b: "RaspberryPi3", st_link: "STLink",
                  pi_board_z: float, pi_offset2d: P2D, st_link_offset: P2D) -> None:
         """Initialize the HR2BaseAssembly."""
         # Define some constants
@@ -1891,9 +1894,14 @@ class HR2Robot:
 
     def __init__(self, scad_program: ScadProgram) -> None:
         """Initialize an HR2Robot."""
+        # Create the various shared *connectors* first:
+        connectors: Connectors = Connectors(scad_program)
+
+        # Build the *encoder8:
         base_dxf: BaseDXF = BaseDXF()
-        # base_top_z: float = base_dxf.z_locate(-2.701374)
-        encoder: Encoder = Encoder(scad_program, base_dxf)
+        encoder: Encoder = Encoder(scad_program, base_dxf, connectors)
+
+        # The various critical board heights are based off of the *encoder_bottom_z*:
         encoder_bottom_z: float = encoder.bottom_z
         master_board_z: float = encoder_bottom_z - 0.2  # Leave .2mm slop between encoder connectors
         pi_board_z: float = master_board_z - 10.250
@@ -1910,7 +1918,7 @@ class HR2Robot:
         # pi_slot_sw: Tuple[Any, ...] = romi_base_keys_table["LEFT: LOWER Small Hex Slot (3, 0)"]
         # pi_x: float = (pi_slot_se[2] + pi_slot_sw[2]) / 2.0
         # pi_y: float = (pi_slot_ne[3] + pi_slot_se[3]) / 2.0
-        #
+
         # It turns out that the code above computes the origin, so we'll just *pi_x* and
         # *pi_y* to 0.0.
         # *pi_dz* is selected to make all the master pcb pins fit:
@@ -1928,13 +1936,14 @@ class HR2Robot:
         nucleo_board_z: float = master_board_z + 15.00
         arm_z: float = master_board_z + 26.00
 
-        raspi3b: RaspberryPi3 = RaspberryPi3(scad_program)
-        st_link: STLink = STLink(scad_program)
+        # Now create the *raspi3b* and the *st_link*
+        raspi3b: RaspberryPi3 = RaspberryPi3(scad_program, connectors)
+        st_link: STLink = STLink(scad_program, connectors)
 
         # Create the *nucleo144* before *master_board* so it can be passed in:
         nucleo_offset2d: P2D = P2D(pi_x + 8.5, pi_y - 1.0)
         # print(f"HR2PiAssembly:nucleo_offset2d:{nucleo_offset2d}")
-        nucleo144: Nucleo144 = Nucleo144(scad_program)
+        nucleo144: Nucleo144 = Nucleo144(scad_program, connectors)
 
         # Create the *romi_expansion_plate* before *master_board* so it can be passed in:
         romi_expansion_plate: RomiExpansionPlate = RomiExpansionPlate(scad_program)
@@ -1942,26 +1951,25 @@ class HR2Robot:
 
         # Create the *hr2_base_assembly* object that can accept the various PCB's and assemblies
         # that go on top of it:
-        hr2_base_assembly: HR2BaseAssembly = HR2BaseAssembly(scad_program, base_dxf,
+        hr2_base_assembly: HR2BaseAssembly = HR2BaseAssembly(scad_program, base_dxf, connectors,
                                                              pi_board_z, master_board_z, arm_z)
         hr2_pi_assembly: HR2PiAssembly = HR2PiAssembly(scad_program, hr2_base_assembly,
-                                                       raspi3b, st_link, pi_board_z,
+                                                       connectors, raspi3b, st_link, pi_board_z,
                                                        pi_offset2d, st_link_offset2d)
         romi_base_keys: List[Tuple[Any, ...]] = hr2_base_assembly.romi_base_keys_get()
         hr2_master_assembly: HR2MasterAssembly = HR2MasterAssembly(
-            scad_program, hr2_pi_assembly, base_dxf,
+            scad_program, connectors, hr2_pi_assembly, base_dxf,
             pi_board_z, master_board_z, nucleo_board_z, arm_z,
             pi_offset2d, nucleo_offset2d, st_link_offset2d,
             encoder, raspi3b, nucleo144, st_link,
             romi_base_keys, romi_expansion_plate_keys)
         hr2_wheel_assembly: HR2WheelAssembly = HR2WheelAssembly(scad_program, hr2_master_assembly,
+                                                                connectors,
                                                                 base_dxf, encoder)
 
-        hr2_nucleo_assembly: HR2NucleoAssembly = HR2NucleoAssembly(scad_program,
-                                                                   hr2_wheel_assembly,
-                                                                   nucleo144,
-                                                                   nucleo_board_z,
-                                                                   nucleo_offset2d)
+        hr2_nucleo_assembly: HR2NucleoAssembly = HR2NucleoAssembly(
+            scad_program, connectors, hr2_wheel_assembly, nucleo144,
+            nucleo_board_z, nucleo_offset2d)
         hr2_arm_assembly: HR2ArmAssembly = HR2ArmAssembly(scad_program, hr2_nucleo_assembly,
                                                           romi_expansion_plate, arm_z)
         hr2_arm_assembly = hr2_arm_assembly
@@ -1974,6 +1982,7 @@ class HR2WheelAssembly:
     # HR2WheelAssemlby.__init__():
     def __init__(self, scad_program: ScadProgram,
                  hr2_master_assembly: HR2MasterAssembly,
+                 connectors: Connectors,
                  base_dxf: BaseDXF, encoder: Encoder) -> None:
         """Initialzie HR2WheelAssembly."""
         # Create the *west_romi_wheel_assembly* and associated *UseModule3D*:
@@ -2006,7 +2015,8 @@ class Nucleo144:
     """Represents a STM32 Nucleo-144 development board."""
 
     # Nucleo144.__init__():
-    def __init__(self, scad_program: ScadProgram, tracing: str = "") -> None:
+    def __init__(self, scad_program: ScadProgram,
+                 connectors: Connectors, tracing: str = "") -> None:
         """Initialize Nucleo144 and append to ScadProgram."""
         # Define various constants, particularly the various X/Y/Z coordinates of component
         # position on the Nucleo144.  The ethernet RJ45 connector locations are done using
@@ -3066,7 +3076,7 @@ class RaspberryPi3:
     """Represents a Raspberry Pi 3B+."""
 
     # RaspberryPi3.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors) -> None:
         """Initialize RaspberryPi3 and append to ScadProgram."""
         # Define the board dimensions:
         pcb_dx: float = 85.00
@@ -3364,6 +3374,7 @@ class RectangularConnector:
                                              insulation_dx, insulation_dy)
         insulation_polygon.append(insulation_exterior)
         pads_group: PadsGroup = PadsGroup()
+        pads: List[Pad] = []
 
         # Create each *colored_pin* (and optional *colored_right_angle_pin*) and
         # append to *connector_pins*.
@@ -3477,6 +3488,7 @@ class RectangularConnector:
                     pad: Pad = Pad(f"{pin_number}", footprint_pad_diameter, footprint_pad_diameter,
                                    footprint_drill_diameter, hole_center)
                     pads_group.insert(pad)
+                    pads.append(pad)
                     footprint.thru_hole_pad(f"{pin_number}", hole_center,
                                             footprint_pad_diameter, footprint_drill_diameter)
 
@@ -3584,9 +3596,11 @@ class RectangularConnector:
 
         # Construct *connector_module*, append to *scad_program*:
         connector_module: Module3D = Module3D(name, [recentered_connector])
+        pcb_chunk: PCBChunk = PCBChunk(name, pads, [recentered_connector])
         connector_module.tag_insert("PadsGroup", pads_group)
         scad_program.append(connector_module)
         self.module: Module3D = connector_module
+        self.pcb_chunk: PCBChunk = pcb_chunk
 
 
 # RomiBase:
@@ -5742,7 +5756,7 @@ class Spacer:
 class STLink:
     """Represents the STLink portion of a Nucleo144."""
 
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors) -> None:
         """Initialize the STLink object."""
         # The mechanical drawing in the Nucleo144 User Manual does not give very much dimensional
         # information.  So much of the numbers below are measured with calipers:
@@ -5968,10 +5982,6 @@ def main() -> int:  # pragma: no cover
     #
     # The list of *VALID_NAME*'s can be found near the bottom of `README.md`.
     # scad_program.append(Variable2D("Name", "name", '"hr2_arm_assembly"'))
-
-    # Create the various shared connectors:
-    connectors: Connectors = Connectors(scad_program)
-    connectors = connectors
 
     # Update the `README.md` file:
     read_me_text: str = ""
