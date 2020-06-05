@@ -1291,6 +1291,71 @@ class PCBChunk:
         return (f"PCBChunk('{name}', P:{len(pads)}, S:{len(scads)}, "
                 f"A:{len(artworks)}, C:{len(cuts)})")
 
+    # PCBChunk.merge():
+    def merge(self, merged_name: str, pcb_chunks: List["PCBChunk"]) -> "PCBChunk":
+        """Merge a bunch of PCBChunks together into one."""
+        # Use *pcb_chunk* instead of *self*:
+        pcb_chunk: PCBChunk = self
+
+        # Create the empty lists needed for the merged results:
+        merged_pads: List[Pad] = []
+        merged_scads: List[Scad3D] = []
+        merged_artworks: List[SimplePolygon] = []
+        merged_cuts: List[SimplePolygon] = []
+
+        # Iterate across *all_pcb_chunks* to build the merged lists:
+        all_pcb_chunks: List[PCBChunk] = [pcb_chunk] + pcb_chunks[:]
+        one_pcb_chunk: PCBChunk
+        for one_pcb_chunk in all_pcb_chunks:
+            merged_pads.extend(one_pcb_chunk.pads)
+            merged_scads.extend(one_pcb_chunk.scads)
+            merged_artworks.extend(one_pcb_chunk.artworks)
+            merged_artworks.extend(one_pcb_chunk.cuts)
+
+        # Create the final *merged_pcb_chunk* and return it:
+        merged_pcb_chunk: PCBChunk = PCBChunk(merged_name, merged_pads,
+                                              merged_scads, merged_artworks, merged_cuts)
+        return merged_pcb_chunk
+
+    # PCBChunk.reposition():
+    def reposition(self, name: str, center: P2D, rotate: float, translate: P2D):
+        """Return a repositioned PCBChunk."""
+        # Unpack some values *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        pads: List[Pad] = pcb_chunk.pads
+        scads: List[Scad3D] = pcb_chunk.scads
+        artworks: List[SimplePolygon] = pcb_chunk.artworks
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
+
+        # Create some 3D values:
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        center3d: P3D = P3D(center.x, center.y, 0.0)
+        translate3d: P3D = P3D(translate.x, translate.y, 0.0)
+
+        # Create the *merged_pads*:
+        pad: Pad
+        pad_index: int
+        merged_pads: List[Pad] = [pad.reposition("", center, rotate, translate)
+                                  for pad_index, pad in enumerate(pads)]
+
+        # Create the *merged_scads*:
+        scad: Scad3D
+        scad_index: int
+        merged_scads: List[Scad3D] = [scad.reposition(f"{name}[{scad_index}]",
+                                                      center3d, z_axis, rotate, translate3d)
+                                      for scad_index, scad in enumerate(scads)]
+        artwork: SimplePolygon
+        merged_artworks: List[SimplePolygon] = [artwork.reposition(center, rotate, translate)
+                                                for artwork in artworks]
+        cut: SimplePolygon
+        merged_cuts: List[SimplePolygon] = [cut.reposition(center, rotate, translate)
+                                            for cut in cuts]
+
+        # Create the final *merged_pcb_chunk* and return it:
+        merged_pcb_chunk: PCBChunk = PCBChunk(name, merged_pads, merged_scads,
+                                              merged_artworks, merged_cuts)
+        return merged_pcb_chunk
+
 
 # PCBGroup:
 class PCBGroup:
