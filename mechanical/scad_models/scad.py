@@ -115,9 +115,9 @@ class P3D:
         """Convert a p3d to a string."""
         # Use *p3d* instead of *self*:
         p3d: P3D = self
-        x_text: str = "{0:.3f}".format(p3d.x)
-        y_text: str = "{0:.3f}".format(p3d.y)
-        z_text: str = "{0:.3f}".format(p3d.z)
+        x_text: str = "{0:.5f}".format(p3d.x)
+        y_text: str = "{0:.5f}".format(p3d.y)
+        z_text: str = "{0:.5f}".format(p3d.z)
         x_text = "0.000" if x_text == "-0.000" else x_text
         y_text = "0.000" if y_text == "-0.000" else y_text
         z_text = "0.000" if z_text == "-0.000" else z_text
@@ -219,8 +219,8 @@ class P2D:
         """Convert a P2D to a string."""
         # Use *p2d* instead of *self*:
         p2d: P2D = self
-        x_text: str = "{0:.3f}".format(p2d.x)
-        y_text: str = "{0:.3f}".format(p2d.y)
+        x_text: str = "{0:.5f}".format(p2d.x)
+        y_text: str = "{0:.5f}".format(p2d.y)
         x_text = "0.000" if x_text == "-0.000" else x_text
         y_text = "0.000" if y_text == "-0.000" else y_text
         return f"P2D({x_text},{y_text})"
@@ -238,6 +238,13 @@ class P2D:
         center_x: float = 0.0 if center is None else center.x
         center_y: float = 0.0 if center is None else center.y
         return atan2(p2d.y - center_y, p2d.x - center_x)
+
+    # P2D.is_close():
+    def is_close(self, p2d2: "P2D") -> bool:
+        """Determine if two points are close to one another."""
+        # Rename *self* to *p2d1*:
+        p2d1: P2D = self
+        return abs(p2d1.x - p2d2.x) + abs(p2d1.y - p2d2.y) < .0000001
 
     # P2D.distance():
     def distance(self, p2d2: "P2D") -> float:
@@ -693,7 +700,7 @@ class Scad:
     @staticmethod
     def float_format(value: float) -> str:
         """Convert a float into a string."""
-        value_text: str = "{0:.3f}".format(value)
+        value_text: str = "{0:.5f}".format(value)
         value_text = "0.000" if value_text == "-0.000" else value_text
         return value_text
 
@@ -884,7 +891,7 @@ class ScadProgram:
         module2d: Module2D = module2d_table[trimmed_name]
         return module2d
 
-    # ScadProgram.use_module3d_get():
+    # ScadProgram.module3d_get():
     def module3d_get(self, name: str) -> "Module3D":
         """Lookup a use module by name."""
         # Unpack some values from *scad_program* (i.e. *self*):
@@ -1566,6 +1573,46 @@ class Polygon(Scad2D):
         simple_polygons: List[SimplePolygon] = polygon.simple_polygons
         simple_polygons.append(simple_polygon)
 
+    # Polygon.duplicates_find():
+    def duplicates_find(self) -> List[List["SimplePolygon"]]:
+        """Return simple polygons list that have same bounding boxes."""
+        # Unpack some values from *polygon* (i.e. *self*):
+        polygon: Polygon = self
+        simple_polygons: List[SimplePolygon] = polygon.simple_polygons
+
+        # Iterate over *simple_polygons* and populate *unique_bounding_boxes*:
+        # The tuple has (sw_corner, ne_corner, List[matches]):
+        bounding_box: Tuple[P2D, P2D, List[SimplePolygon]]
+        bounding_boxes: List[Tuple[P2D, P2D, List[SimplePolygon]]] = []
+        simple_polygon: SimplePolygon
+        for simple_polygon in simple_polygons:
+            current_sw_corner: P2D
+            current_ne_corner: P2D
+            current_sw_corner, current_ne_corner = simple_polygon.bounding_box_get()
+
+            # Sweep through *bounding_boxes* looking for a match:
+            for bounding_box in bounding_boxes:
+                # Unpack *bounding_box*:
+                sw_corner: P2D
+                ne_corner: P2D
+                matches: List[SimplePolygon]
+                sw_corner, ne_corner, matches = bounding_box
+                if current_sw_corner.is_close(sw_corner) and current_ne_corner.is_close(ne_corner):
+                    # We have a match, so append this to the current bounding box:
+                    matches.append(simple_polygon)
+                    break
+            else:
+                # No match, create a new entry:
+                bounding_boxes.append((current_sw_corner, current_ne_corner, [simple_polygon]))
+
+        # Sweep through *bounding_boxes* and generate the *final_duplicates* list:
+        final_duplicates: List[List[SimplePolygon]] = []
+        for bounding_box in bounding_boxes:
+            duplicate_simple_polygons: List[SimplePolygon] = bounding_box[2]
+            if len(duplicate_simple_polygons) > 1:
+                final_duplicates.append(duplicate_simple_polygons)
+        return final_duplicates
+
     # Polygon.extend():
     def extend(self, additional_simple_polygons: "List[SimplePolygon]") -> None:
         """Append a list of SimplePolygon's to the Polygon.
@@ -1806,17 +1853,17 @@ class SimplePolygon(Scad2D):
         if tracing:  # pragma: no cover
             print("=>SimplePolygon.arc_edge_corner_append()")
             print(f"center:{center}")
-            print(f"arc_radius:{arc_radius:.3f}")
-            print(f"arc_angle:{(arc_angle * 180.0 / pi):.3f}")
+            print(f"arc_radius:{arc_radius:.5f}")
+            print(f"arc_angle:{(arc_angle * 180.0 / pi):.5f}")
             print(f"edge_flags:'{edge_flags}'")
-            print(f"corner_radius:{corner_radius:.3f}")
+            print(f"corner_radius:{corner_radius:.5f}")
 
         # Compute the location of S:
         sharp_x: float = arc_radius * cos(arc_angle)
         sharp_y: float = arc_radius * sin(arc_angle)
         sharp: P2D = P2D(sharp_x, sharp_y)
         if tracing:  # pragma: no cover
-            print(f"sharp: [{sharp_x:.3f}, {sharp_y:.3f}]")
+            print(f"sharp: [{sharp_x:.5f}, {sharp_y:.5f}]")
 
         # Unpack *edge_flags* into *edge_first*, *is_vertical*, *positive_offset*,
         # and *offset_sign*:
@@ -1883,13 +1930,13 @@ class SimplePolygon(Scad2D):
                               else center2)
         if tracing:  # pragma: no cover
             print(f"corner_center:[{corner_center}")
-            print(f"edge_angle:{(edge_angle * 180.0 / pi):.3f}")
+            print(f"edge_angle:{(edge_angle * 180.0 / pi):.5f}")
 
         # Now we can compute *corner_center_angle* and the associated point on the
         # large arc circle where that line intersects the *corner_center* (i.e. (Cx, Cy) .):
         corner_angle: float = atan2(corner_center.y, corner_center.x)
         if tracing:  # pragma: no cover
-            print(f"corner_angle:{(corner_angle * 180.0 / pi):.3f}")
+            print(f"corner_angle:{(corner_angle * 180.0 / pi):.5f}")
 
         # Finally we can select *begin_angle* and *end_angle*:
         begin_angle: float = edge_angle if edge_first else corner_angle
@@ -1917,19 +1964,43 @@ class SimplePolygon(Scad2D):
             begin_angle -= degrees360
             end_angle -= degrees360
         if tracing:  # pragma: no cover
-            print(f"begin_angle:{(begin_angle * 180.0 / pi):.3f}")
-            print(f"end_angle:{(end_angle * 180.0 / pi):.3f}")
+            print(f"begin_angle:{(begin_angle * 180.0 / pi):.5f}")
+            print(f"end_angle:{(end_angle * 180.0 / pi):.5f}")
 
         # Append the corner arc to *polygon* (i.e. *self*):
         polygon: SimplePolygon = self
         polygon.arc_append(corner_center, corner_radius, begin_angle, end_angle, 0.0)
         if tracing:  # pragma: no cover
-            print(f"arc_append({corner_center}, {corner_radius:.3f}, "
-                  f"{(begin_angle * 180.0 / pi):.3f}"
-                  f"{(end_angle * 180.0 / pi):.3f})")
+            print(f"arc_append({corner_center}, {corner_radius:.5f}, "
+                  f"{(begin_angle * 180.0 / pi):.5f}"
+                  f"{(end_angle * 180.0 / pi):.5f})")
             print(f"<=SimplePolygon.arc_edge_corner_append()={corner_angle * 180.0 / pi}")
         return corner_angle
 
+    # SimplePolygon.bounding_box_get():
+    def bounding_box_get(self) -> Tuple[P2D, P2D]:
+        """Return the minimum and maximum corners for SimplePolygon."""
+        # Grab some values from *simple_polygon* (i.e. *self*):
+        simple_polygon: SimplePolygon = self
+        points: List[P2D] = simple_polygon.points
+        if len(points) == 0:
+            raise ValueError(f"Can not get bounding box of empty SimplePolygon")
+        point0: P2D = points[0]
+        minimum_x: float = point0.x
+        maximum_x: float = minimum_x
+        minimum_y: float = point0.y
+        maximum_y: float = minimum_y
+        point: P2D
+        for point in points:
+            x: float = point.x
+            y: float = point.y
+            minimum_x = min(minimum_x, x)
+            maximum_x = max(maximum_x, x)
+            minimum_y = min(minimum_y, y)
+            maximum_y = max(maximum_y, y)
+        return P2D(minimum_x, minimum_y), P2D(maximum_x, maximum_y)
+
+    # SimplePolygon.corner_arc_append():
     def corner_arc_append(self, corner: P2D, corner_radius: float,
                           flags: str, tracing: bool = False) -> None:
         """Append a rounded corner to the polygon.
@@ -1987,8 +2058,8 @@ class SimplePolygon(Scad2D):
         start_angle, start_offset = flags_table[start_flag]
         end_angle, end_offset = flags_table[end_flag]
         if tracing:  # pragma: no cover
-            print(f"start_angle:{degrees(start_angle):.3f} deg")
-            print(f"end_angle:{degrees(end_angle):.3f} deg")
+            print(f"start_angle:{degrees(start_angle):.5f} deg")
+            print(f"end_angle:{degrees(end_angle):.5f} deg")
             print(f"start_offset:{start_offset}")
             print(f"end_offset:{end_offset}")
 
@@ -2008,8 +2079,8 @@ class SimplePolygon(Scad2D):
         # always perpendicular to the entry and exit edges.  It turns out that swapping
         # the two angles performs the correct 90 degree rotation.
         if tracing:  # pragma: no cover
-            print(f"end_angle={degrees(end_angle):.3f} deg")
-            print(f"start_angle={degrees(start_angle):.3f} deg")
+            print(f"end_angle={degrees(end_angle):.5f} deg")
+            print(f"start_angle={degrees(start_angle):.5f} deg")
 
         # Finally perform the *arc_append*:
         external_polygon: SimplePolygon = self
@@ -2169,8 +2240,8 @@ class SimplePolygon(Scad2D):
                 point_texts: List[str] = []
                 slice_point: P2D
                 for slice_point in slice_points:
-                    x_text: str = "{0:.3f}".format(slice_point.x)
-                    y_text: str = "{0:.3f}".format(slice_point.y)
+                    x_text: str = "{0:.5f}".format(slice_point.x)
+                    y_text: str = "{0:.5f}".format(slice_point.y)
                     x_text = "0.000" if x_text == "-0.000" else x_text
                     y_text = "0.000" if y_text == "-0.000" else y_text
                     point_texts.append(f"[{x_text}, {y_text}]")
