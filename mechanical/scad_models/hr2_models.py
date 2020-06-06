@@ -570,6 +570,62 @@ class Pad:
                                     reposition_pad_center, pad_rotate + rotate)
         return repositioned_pad
 
+    # Pad.x_mirror():
+    def x_mirror(self) -> "Pad":
+        """Return a pad mirrored around X axis."""
+        # Unpack some values from *pad* (i.e. *self*):
+        pad: Pad = self
+        name: str = pad.name
+        pad_center: P2D = pad.pad_center
+        drill_diameter: float = pad.drill_diameter
+        pad_dx: float = pad.pad_dx
+        pad_dy: float = pad.pad_dy
+        pad_rotate: float = pad.pad_rotate
+
+        # Normalize *pad_rotate* to be between 180 and -180 degerees:
+        degrees180: float = pi
+        degrees360: float = 2 * degrees180
+        while pad_rotate > degrees360:
+            pad_rotate -= degrees360
+        while pad_rotate <= -degrees180:
+            pad_rotate += degrees360
+
+        # Compute the *x_mirrored_pad* and return it.
+        x_mirrored_pad_rotate: float = -pad_rotate
+        x_mirrored_pad_center: P2D = P2D(pad_center.x, -pad_center.y)
+        x_mirrored_pad: Pad = Pad(name, pad_dx, pad_dy, drill_diameter,
+                                  x_mirrored_pad_center, x_mirrored_pad_rotate)
+        return x_mirrored_pad
+
+    # Pad.y_mirror():
+    def Y_mirror(self) -> "Pad":
+        """Return a pad mirrored around Y axis."""
+        # Unpack some values from *pad* (i.e. *self*):
+        pad: Pad = self
+        name: str = pad.name
+        pad_center: P2D = pad.pad_center
+        drill_diameter: float = pad.drill_diameter
+        pad_dx: float = pad.pad_dx
+        pad_dy: float = pad.pad_dy
+        pad_rotate: float = pad.pad_rotate
+
+        # The math rotating about the Y axis is angle' = -(angle - d90) + d90 = d180 - angle:
+        degrees180: float = pi
+        degrees360: float = 2 * degrees180
+        y_mirrored_pad_rotate: float = degrees360 - pad_rotate
+
+        # Normalize *y_mirrored_pad_rotate* to be between 180 and -180 degerees:
+        while y_mirrored_pad_rotate > degrees360:
+            y_mirrored_pad_rotate -= degrees360
+        while y_mirrored_pad_rotate <= -degrees180:
+            y_mirrored_pad_rotate += degrees360
+
+        # Compute the *y_mirrored_pad* and return it.
+        y_mirrored_pad_center: P2D = P2D(-pad_center.x, pad_center.y)
+        y_mirrored_pad: Pad = Pad(name, pad_dx, pad_dy, drill_diameter,
+                                  y_mirrored_pad_center, y_mirrored_pad_rotate)
+        return y_mirrored_pad
+
 
 # PadsGroup:
 class PadsGroup:
@@ -1274,7 +1330,7 @@ class PCBChunk:
         self.name: str = name
         self.pads: List[Pad] = pads
         self.scads: List[Scad3D] = scads
-        self.artworks: List[SimplePolygon] = cuts
+        self.artworks: List[SimplePolygon] = artworks
         self.cuts: List[SimplePolygon] = cuts
 
     # PCBChunk.__str__():
@@ -1316,6 +1372,44 @@ class PCBChunk:
         merged_pcb_chunk: PCBChunk = PCBChunk(merged_name, merged_pads,
                                               merged_scads, merged_artworks, merged_cuts)
         return merged_pcb_chunk
+
+    # PCBChunk.pads_x_mirror():
+    def pads_x_mirror(self) -> "PCBChunk":
+        """Return a PCBChunk with pads mirrored around the X axis."""
+        # Unpack some valued from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        name: str = pcb_chunk.name
+        pads: List[Pad] = pcb_chunk.pads
+        scads: List[Scad3D] = pcb_chunk.scads
+        artworks: List[SimplePolygon] = pcb_chunk.artworks
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
+
+        # Mirror each *pad* in *pads* around the X axis:
+        pad: Pad
+        x_mirrored_pads = [pad.x_mirror() for pad in pads]
+
+        # Return the *x_mirrored_pcb_chunk*:
+        x_mirrored_pcb_chunk: PCBChunk = PCBChunk(name, x_mirrored_pads, scads, artworks, cuts)
+        return x_mirrored_pcb_chunk
+
+    # PCBChunk.pads_x_mirror():
+    def pads_y_mirror(self) -> "PCBChunk":
+        """Return a PCBChunk with pads mirrored around the X axis."""
+        # Unpack some valued from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        name: str = pcb_chunk.name
+        pads: List[Pad] = pcb_chunk.pads
+        scads: List[Scad3D] = pcb_chunk.scads
+        artworks: List[SimplePolygon] = pcb_chunk.artworks
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
+
+        # Mirror each *pad* in *pads* around the Y axis:
+        pad: Pad
+        y_mirrored_pads = [pad.x_mirror() for pad in pads]
+
+        # Return the *x_mirrored_pcb_chunk*:
+        y_mirrored_pcb_chunk: PCBChunk = PCBChunk(name, y_mirrored_pads, scads, artworks, cuts)
+        return y_mirrored_pcb_chunk
 
     # PCBChunk.reposition():
     def reposition(self, name: str, center: P2D, rotate: float, translate: P2D):
