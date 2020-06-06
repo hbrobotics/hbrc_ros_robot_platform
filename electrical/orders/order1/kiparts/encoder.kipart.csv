@@ -1,0 +1,10 @@
+HR2_Encoder;HR2Encoder,CN,FOOTPRINT,,HR2 Encoder,HR2 Encoder
+Pin,Name,Type,Side,Unit,Style,Hidden
+1,VCC,pwr_in,right,1,,
+2,GND,pwr_in,right,1,,
+3,MOTOR+,passive,right,1,,
+4,MOTOR-,passive,right,1,,
+5,QUADA,out,right,1,,
+6,QUADB,out,right,1,,
+,,,,,,
+
