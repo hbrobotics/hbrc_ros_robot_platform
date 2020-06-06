@@ -1,0 +1,3 @@
+[console_scripts]
+scad_models = scad_models.scad_models:main
+
