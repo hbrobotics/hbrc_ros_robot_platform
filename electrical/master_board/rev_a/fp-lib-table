@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name master_board)(type KiCad)(uri ${KIPRJMOD}/pretty)(options "")(descr "Custom Footprints for HR2 Robot"))
+)
