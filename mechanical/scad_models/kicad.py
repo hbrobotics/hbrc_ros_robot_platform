@@ -67,7 +67,7 @@ class Footprint:
         timestamp: int = int(time.time())
         lines: List[str] = [f"(module {library_name}:{footprint_name} "
                             f"(layer F.Cu) (tedit {timestamp:08X})"]
-        print(f"lines={lines}")
+        # print(f"lines={lines}")
 
         # Save *name* and *lines* into *footprint* (i.e. *self*):
         # footprint: FootPrint = self
@@ -95,10 +95,18 @@ class Footprint:
         return match
 
     # Footprint.hole():
-    def hole(self, name: str, center: P2D, pad_dx: float, pad_dy: float, drill: float) -> None:
+    def hole(self, name: str, center: P2D, pad_dx: float, pad_dy: float, drill: float,
+             tracing: str = "") -> None:
         """Append a hole to a footprint."""
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Footprint.hole(*, '{name}', {center}, {pad_dx}, {pad_dy}, {drill})")
+
+        # Unpack some values from *footprint* (i.e. *self*):
         footprint: Footprint = self
         lines: List[str] = footprint.lines
+
+        # Construct *line* based on the argument values:
         line: str
         if pad_dx == 0.0 or pad_dy == 0.0:
             line = (f"  (pad \"{name}\" np_thru_hole circle "
@@ -126,7 +134,13 @@ class Footprint:
                         f"(size {pad_dx:.1f} {pad_dy:.1f}) "
                         f"(drill oval {drill_dx:.1f} {drill_dy:.1f}) "
                         "(layers *.Cu *.Mask))")
+        if tracing:
+            print(f"{tracing}Footprint.hole:'{line}'")
         lines.append(line)
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=Footprint.hole(*, '{name}', {center}, {pad_dx}, {pad_dy}, {drill})")
 
     # Footprint.library_get():
     def librarty_get(self) -> str:
@@ -256,7 +270,7 @@ class Footprint:
         write_required: bool = 'w' in flags
         touch_required: bool = 't' in flags
         # print(f"write:{write_required} matches:{previous_file_matches} touch:{touch_required}")
-        print(f"footprint_path={footprint_path}")
+        # print(f"footprint_path={footprint_path}")
         if write_required or not previous_file_matches:
             # We need to write out *footprint* to *footprint_path* with any new content
             # and a new `tedit` timestamp.
@@ -321,44 +335,96 @@ class KicadPCB:
             lines = kicad_pcb_text.split('\n')
             # print(f"KicadPcb.__init__('{file_name}') read in {len(lines)} lines")
 
+        # Sweep through *lines* and strip out cut lines:
+        removed_cut_lines: List[str] = []
+        line: str
+        for line in lines:
+            if line.startswith("  (gr_line") and line.find("(layer Edge.Cuts)") > 0:
+                # Have a cut line that will *NOT* be copied over.
+                pass
+            else:
+                # We do *NOT* have a cut line and we copy it over:
+                removed_cut_lines.append(line)
+        lines = removed_cut_lines
+
         # Save values into *kicad_pcb* (i.e. *self*):
         # kicad_pcb: KicadPcb = self
-        self.cut_lines_insert_index: int = -1
         self.file_name: Path = file_name
         self.lines: List[str] = lines
         self.offset: P2D = offset
 
-    # KicadPcb.line_append():
-    def line_append(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
-        """Append a line cut."""
-        # Grab some values from self:
+    # KicadPCB.cuts_update():
+    def cuts_update(self, cuts: List[SimplePolygon], tracing: str = ""):
+        """Update the cuts in in a KicadPCB."""
+        # Perform any request *tracing*:
+        if tracing:
+            print(f"{tracing}=>KicadPCB.cuts_update(len(cuts)={len(cuts)})")
+
+        # Grab some values from *kicad_pcb* (i.e. *self*):
         kicad_pcb: KicadPCB = self
-        cut_lines_insert_index: int = kicad_pcb.cut_lines_insert_index
-        lines: List[str] = kicad_pcb.lines
         offset: P2D = kicad_pcb.offset
+        lines: List[str] = kicad_pcb.lines
 
-        # Make sure we know where to insert cut lines:
-        if cut_lines_insert_index < 0:
-            line: str
+        # Construct *cut_lines* from *cuts*:
+        offset_x = offset.x
+        offset_y = offset.y
+        width: float = 0.05
+        layer: str = "Edge.Cuts"
+        cut_lines: List[str] = []
+        cut: SimplePolygon
+        for cut in cuts:
+            cut_size: int = len(cut)
             index: int
-            net_class_default_found: bool = False
-            for index, line in enumerate(lines):
-                # print(f"[{index}]:'{line}'")
-                if line.startswith("  (net_class Default"):
-                    net_class_default_found = True
-                if net_class_default_found and line.startswith("  )"):
-                    cut_lines_insert_index = index + 2
-                    kicad_pcb.cut_lines_insert_index = cut_lines_insert_index
+            for index in range(cut_size):
+                point1: P2D = cut[index]
+                point2: P2D = cut[(index + 1) % cut_size]
+                cut_line: str = ("  (gr_line "
+                                 f"(start {offset_x + point1.x:.6f} {offset_y - point1.y:.5f}) "
+                                 f"(end {offset_x + point2.x:.6f} {offset_y - point2.y:.5f}) "
+                                 f"(layer {layer}) "
+                                 f"(width {width:1.2f}))")
+                cut_lines.append(cut_line)
 
-        # Create the *cut_line_text* into *lines*:
-        cut_line_text: str = (
-            "  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
-            "(layer {4}) (width {5:1.2f}))").format(
-                offset.x + point1.x, offset.y - point1.y,
-                offset.x + point2.x, offset.y - point2.y, layer, width)
-        lines.insert(cut_lines_insert_index, cut_line_text)
+        # Now insert *cut_lines* into *lines* 2 lines back:
+        assert len(lines) >= 2
+        lines[-2:-2] = cut_lines
 
-    # KicadPcb.layer_remove():
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=KicadPCB.cuts_update(len(cuts)={len(cuts)})")
+
+    # # KicadPcb.line_append():
+    # def line_append(self, point1: P2D, point2: P2D, layer: str, width:
+    #                 float) -> None:
+    #     """Append a line cut."""
+    #     # Grab some values from *kicad_pcb* (i.e. *self*):
+    #     kicad_pcb: KicadPCB = self
+    #     cut_lines_insert_index: int = kicad_pcb.cut_lines_insert_index
+    #     lines: List[str] = kicad_pcb.lines
+    #     offset: P2D = kicad_pcb.offset
+    #
+    #     # Make sure we know where to insert cut lines:
+    #     if cut_lines_insert_index < 0:
+    #         line: str
+    #         index: int
+    #         net_class_default_found: bool = False
+    #         for index, line in enumerate(lines):
+    #             # print(f"[{index}]:'{line}'")
+    #             if line.startswith("  (net_class Default"):
+    #                 net_class_default_found = True
+    #             if net_class_default_found and line.startswith("  )"):
+    #                 cut_lines_insert_index = index + 2
+    #                 kicad_pcb.cut_lines_insert_index = cut_lines_insert_index
+    #
+    #     # Create the *cut_line_text* into *lines*:
+    #     cut_line_text: str = (
+    #         "  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
+    #         "(layer {4}) (width {5:1.2f}))").format(
+    #             offset.x + point1.x, offset.y - point1.y,
+    #             offset.x + point2.x, offset.y - point2.y, layer, width)
+    #     lines.insert(cut_lines_insert_index, cut_line_text)
+
+    # KicadPcb.layer_remove():a
     def layer_remove(self, layer: str) -> None:
         """Remove the a layer."""
         # Grab some values from *kicad_pcb* (i.e. *self*):
@@ -472,7 +538,7 @@ class KicadPCB:
 
         # Iterate through *references_table* looking for modules that have not been placed:
         for reference_name in references_table.keys():
-            if reference not in references_found_table:
+            if reference_name not in references_found_table:
                 print(f"Reference '{reference}' is not currently placed in the PCB.")
 
         # Wrap up any requested *tracing*:
@@ -483,13 +549,14 @@ class KicadPCB:
     def simple_polygon_append(self, simple_polygon: "SimplePolygon",
                               layer: str, width: float) -> None:
         """Append a SimpelePolygon to a PCB."""
-        kicad_pcb: KicadPCB = self
-        simple_polygon_size: int = len(simple_polygon)
-        index: int
-        for index in range(simple_polygon_size):
-            point1: P2D = simple_polygon[index]
-            point2: P2D = simple_polygon[(index + 1) % simple_polygon_size]
-            kicad_pcb.line_append(point1, point2, layer, width)
+        # kicad_pcb: KicadPCB = self
+        # simple_polygon_size: int = len(simple_polygon)
+        # index: int
+        # for index in range(simple_polygon_size):
+        #     point1: P2D = simple_polygon[index]
+        #     point2: P2D = simple_polygon[(index + 1) % simple_polygon_size]
+        #     kicad_pcb.line_append(point1, point2, layer, width)
+        pass
 
     # KicadPcb.save():
     def save(self):

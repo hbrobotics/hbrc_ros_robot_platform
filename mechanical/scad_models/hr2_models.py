@@ -492,6 +492,23 @@ class Pad:
         self.pad_dy: float = pad_dy
         self.pad_rotate: float = pad_rotate
 
+    # Pad.__str__():
+    def __str__(self) -> str:
+        """Return a string representation of a Pad."""
+        # Unpack some values from *pad* (i.e. *self*):
+        pad: Pad = self
+        drill_diameter: float = pad.drill_diameter
+        name: str = pad.name
+        pad_center: P2D = pad.pad_center
+        pad_dx: float = pad.pad_dx
+        pad_dy: float = pad.pad_dy
+        pad_rotate: float = pad.pad_rotate
+
+        # Create and return the string:
+        text: str = (f"Pad('{name}', dd:{drill_diameter:.2f} c:{pad_center}, "
+                     f"dx:{pad_dx:.2f} dy:{pad_dy:.2f} rotate:{degrees(pad_rotate)}:.2f)")
+        return text
+
     # Pad.copy():
     def copy(self) -> "Pad":
         """Return a copy of a Pad."""
@@ -1444,8 +1461,11 @@ class PCBChunk:
         footprint.reference(P2D(0.0, 0.0))
 
         # Iterate over each *pad* in the *pads*:
-        for pad in pads:
+        index: int
+        pad: Pad
+        for index, pad in enumerate(pads):
             # Output a pad defintion:
+            # print(f"footprint_generate[{index}]:{pad}")
             footprint.hole(pad.name, pad.pad_center, pad.pad_dx, pad.pad_dy, pad.drill_diameter)
 
         # Save the *footprint* into the file system:
@@ -1498,6 +1518,36 @@ class PCBChunk:
         rebased_pcb_chunk.pads = rebased_pads
         return rebased_pcb_chunk
 
+    # PCBChunk.references_show():
+    def references_show(self, prefix: str = "") -> None:
+        """Show the pads."""
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
+
+        index: int
+        reference: Tuple[str, bool, P2D, float]
+        for index, reference in enumerate(references):
+            name: str
+            side: bool
+            position: P2D
+            rotation: float
+            name, side, position, rotation = reference
+            print(f"{prefix}Reference[{index}]: "
+                  f"Reference('{name}' {side} {position} {degrees(rotation)})")
+
+    # PCBChunk.pads_show():
+    def pads_show(self, prefix: str = "") -> None:
+        """Show the pads."""
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        pads: List[Pad] = pcb_chunk.pads
+
+        index: int
+        pad: Pad
+        for index, pad in enumerate(pads):
+            print(f"{prefix}Pad[{index}]: {pad}")
+
     # PCBChunk.pads_x_mirror():
     def pads_x_mirror(self) -> "PCBChunk":
         """Return a PCBChunk with pads mirrored around the X axis."""
@@ -1526,9 +1576,11 @@ class PCBChunk:
 
     # PCBChunk.pcb_generate():
     def pcb_generate(self, scad_program: "ScadProgram", dz: float, pcb_exterior: SimplePolygon,
-                     color: str, kicad_pcb_path: Path = Path(""), tracing: str = "") -> Module3D:
+                     color: str, kicad_pcb_path: Path,
+                     references: List[Tuple[str, bool, P2D, float]],
+                     tracing: str = "") -> Module3D:
         """Generate a PCB."""
-        # Perform any requested *tracing*:
+        # Perform any requested *tracing*:a
         next_tracing: str = tracing + " " if tracing else ""
         if tracing:
             print(f"{tracing}=>pcb_generate(*, {dz:.1f}, '{color}', '{kicad_pcb_path}')")
@@ -1541,9 +1593,8 @@ class PCBChunk:
         # front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
         front_scads: List[Scad3D] = pcb_chunk.front_scads
         name: str = pcb_chunk.name
-        print(f"PCBChunk.pcb_generate(): name:'{name}'")
+        # print(f"PCBChunk.pcb_generate(): name:'{name}'")
         pads: List[Pad] = pcb_chunk.pads
-        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
 
         # Create the *board_polygon* fill it with *pads* and *cuts*:
         board_polygon: Polygon = Polygon(f"{name} Board Polygon", [pcb_exterior], lock=False)
@@ -1568,11 +1619,11 @@ class PCBChunk:
         # Now open the KiCad file for updating:
         kicad_pcb: KicadPCB = KicadPCB(kicad_pcb_path, P2D(100.0, 100.0))
 
-        # Place all of the cuts:
-        pass  # Fixme!!!
-
         # Update the positions of all of the references:
         kicad_pcb.modules_update(references, tracing=next_tracing)
+
+        # Place all of the cuts:
+        kicad_pcb.cuts_update([pcb_exterior] + cuts, tracing=next_tracing)
 
         # Save *kicad_pcb* to disk:
         kicad_pcb.save()
@@ -1650,6 +1701,8 @@ class PCBChunk:
         pads: List[Pad] = pcb_chunk.pads
         references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
         assert len(references) == 0, "References should never be repositioned."
+        if reference_name:
+            assert False, f"reference_name:'{reference_name}' translate={translate}"
 
         # Create some 3D values:
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
@@ -1831,18 +1884,20 @@ class Encoder:
 
         # Create *encoder_pcb_chunk* and *master_pcb_chunk*" (for master board):
         m1x3ra_pcb_chunk: PCBChunk = connectors.m1x3ra.pcb_chunk
+        # m1x3ra_pcb_chunk.pads_show("m1x3ra_pcb:")
+        # print(f"north_header_center2d:{north_header_center2d}")
         m1x3ra_pcb_chunk_north: PCBChunk = (m1x3ra_pcb_chunk.
                                             sides_swap().
                                             pads_rebase(3).
                                             pads_y_mirror().
                                             scads_y_flip().
                                             reposition(origin2d, degrees90, north_header_center2d))
+        # m1x3ra_pcb_chunk_north.pads_show("m1x3ra_chunks_north:")
         m1x3ra_pcb_chunk_south: PCBChunk = (m1x3ra_pcb_chunk.
                                             sides_swap().
                                             pads_y_mirror().
                                             scads_y_flip().
-                                            reposition(origin2d, degrees90, south_header_center2d,
-                                                       reference_name="CN1"))
+                                            reposition(origin2d, degrees90, south_header_center2d))
 
         # Create *motor_slots_pcb_chunk* (put "8" before "7" because the footprint looks better):
         north_motor_pad: Pad = Pad("8", pcb_pad_dx, pcb_pad_dy,
@@ -1852,11 +1907,6 @@ class Encoder:
         motor_slots_pcb_chunk: PCBChunk = PCBChunk("motor_slots",
                                                    [north_motor_pad, south_motor_pad], [])
 
-        # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
-        encoder_pcb_chunk: PCBChunk = PCBChunk.join("XEncoder", [m1x3ra_pcb_chunk_north,
-                                                                 m1x3ra_pcb_chunk_south,
-                                                                 motor_slots_pcb_chunk])
-
         # Figure out *encoder_pcb_directory* and *encoder_pcb_pretty_directory*:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
@@ -1864,11 +1914,18 @@ class Encoder:
         encoder_pcb_pretty_directory: Path = encoder_pcb_directory / "pretty"
         encoder_pcb_path: Path = encoder_pcb_directory / "encoder.kicad_pcb"
 
-        xencoder_module: Module3D = encoder_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path)
-        xencoder_module = xencoder_module
-
+        # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
+        encoder_pcb_chunk: PCBChunk = PCBChunk.join("XEncoder", [m1x3ra_pcb_chunk_north,
+                                                                 m1x3ra_pcb_chunk_south,
+                                                                 motor_slots_pcb_chunk])
         encoder_pcb_chunk.footprint_generate(encoder_pcb_pretty_directory, "Encoder", "CN")
+        # encoder_pcb_chunk.pads_show("encoder_pcb_chunk:")
+        # encoder_pcb_chunk.references_show("encoder_pcb_chunk:")
+
+        references: List[Tuple[str, bool, P2D, float]] = [("CN1", True, P2D(0.0, 0.0), 0.0)]
+        xencoder_module: Module3D = encoder_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path, references)
+        xencoder_module = xencoder_module
 
         encoder_pcb.pad_append("7", {"motors"}, "",
                                pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_north_slot_center)
@@ -3597,13 +3654,13 @@ class RaspberryPi3:
         # Install the header connectors:
         origin2d: P2D = P2D(0.0, 0.0)
         # The main Pi 2x20 header:
-        raspi3b_pcb.show("", "B:")
+        # raspi3b_pcb.show("", "B:")
         connector2x20_center: P2D = P2D((57.90 + 7.10) / 2.0, 52.50)
         raspi3b_pcb.module3d_place("M2x20", {"connector"}, "",
                                    origin2d, 0.0, connector2x20_center - holes_center)
         raspi3b_pcb.module3d_place("F2x20", {"connector_mate"}, "bxnN",
                                    origin2d, 0.0, connector2x20_center - holes_center)
-        raspi3b_pcb.show("", "A:")
+        # raspi3b_pcb.show("", "A:")
 
         # A 2x2 jumper header:
         connector2x2_center: P2D = P2D((58.918 + 64.087) / 2.0, (44.005 + 48.727) / 2.0)
