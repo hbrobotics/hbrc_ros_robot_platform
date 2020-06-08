@@ -28,11 +28,12 @@
 """Code that generates an OpenSCAD model for HR2 (HBRC ROS Robot)."""
 
 from scad_models.scad import (
-    Circle, Color, CornerCube, Cube, Cylinder, If2D, Difference2D, LinearExtrude,  # KicadPCB,
+    Circle, Color, CornerCube, Cube, Cylinder, If2D, Difference2D, LinearExtrude,
     Module2D, Module3D, P2D, P3D, Polygon, Rotate3D, Scad2D, Scad3D, SimplePolygon, ScadProgram,
     Square, Translate3D, UseModule2D, UseModule3D, Union3D)
+import os
 from pathlib import Path
-from scad_models.kicad import Footprint
+from scad_models.kicad import Footprint, KicadPCB
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -491,6 +492,22 @@ class Pad:
         self.pad_dy: float = pad_dy
         self.pad_rotate: float = pad_rotate
 
+    # Pad.copy():
+    def copy(self) -> "Pad":
+        """Return a copy of a Pad."""
+        # Unpack some values from *pad* (i.e. *self*):
+        pad: Pad = self
+        drill_diameter: float = pad.drill_diameter
+        name: str = pad.name
+        pad_center: P2D = pad.pad_center
+        pad_dx: float = pad.pad_dx
+        pad_dy: float = pad.pad_dy
+        pad_rotate: float = pad.pad_rotate
+
+        # Create *copied_pad* and return it:
+        copied_pad: Pad = Pad(name, pad_dx, pad_dy, drill_diameter, pad_center, pad_rotate)
+        return copied_pad
+
     # Pad.hole_append():
     def hole_append(self, polygon: Polygon) -> None:
         """Append the Pad drill holes to a Polygon."""
@@ -525,6 +542,25 @@ class Pad:
                                           pad_center, pad_rotate, corner_radius, 5))
                 else:
                     assert False, "Unhandled hole condition in Pad.hole_append()."
+
+    # Pad.rebase():
+    def rebase(self, delta: int) -> "Pad":
+        """Return a Pad with a rebased name."""
+        # Unpack some values from *Pad* (i.e. *self*):
+        pad: Pad = self
+        name: str = pad.name
+
+        # Compute *rebased_name* by adding *delta* to it:
+        rebased_name: str = ""
+        try:
+            rebased_name = str(int(name) + delta)
+        except ValueError:
+            raise ValueError(f"Pad '{name}' is not a number and can not be rebased by {delta}.")
+
+        # Create *rebased_pad*, update the name, and return it:
+        rebased_pad: Pad = pad.copy()
+        rebased_pad.name = rebased_name
+        return rebased_pad
 
     # Pad.reposition():
     def reposition(self, flags: str, center: P2D, rotate: float,
@@ -598,7 +634,7 @@ class Pad:
         return x_mirrored_pad
 
     # Pad.y_mirror():
-    def Y_mirror(self) -> "Pad":
+    def y_mirror(self) -> "Pad":
         """Return a pad mirrored around Y axis."""
         # Unpack some values from *pad* (i.e. *self*):
         pad: Pad = self
@@ -747,7 +783,7 @@ class PCB:
         pcb_groups: Dict[str, PCBGroup] = pcb.pcb_groups
 
         # Now start the *footprint*:
-        footprint: Footprint = Footprint(base_name)
+        footprint: Footprint = Footprint("HR2", base_name)
         footprint.reference(P2D(0.0, 0.0))
 
         # Iterate through all of the *group_names* whose content is to be pushed into *footprint*:
@@ -1304,8 +1340,10 @@ class PCBChunk:
     """Represents a chunk of stuff that can be put on a PCB."""
 
     # PCBChunk.__init__():
-    def __init__(self, name: str, pads: List[Pad], scads: List[Scad3D],
-                 artworks: List[SimplePolygon] = [], cuts: List[SimplePolygon] = []) -> None:
+    def __init__(self, name: str, pads: List[Pad], front_scads: List[Scad3D],
+                 front_artworks: List[SimplePolygon] = [], cuts: List[SimplePolygon] = [],
+                 back_artworks: List[SimplePolygon] = [], back_scads: List[Scad3D] = [],
+                 references: List[Tuple[str, bool, P2D, float]] = []) -> None:
         """Return an initialized PCB Chunk.
 
         Args:
@@ -1315,140 +1353,352 @@ class PCBChunk:
               A list of *Pad* to placed.  Besides the landing that is
               goes into a foot print, the associated hole is generated
               as well.
-            * *scads*: (*List*[*Scad3D*]):
+            * *front_scads*: (*List*[*Scad3D*]):
               A list of *Scad3d*'s to render in the visual model.
-            * *holes*: (*List*[*SimplePolygon*]):
+            * *front_artworks*: (*List[*SimplePolygon*]) (Optional: default is []):
+              A list of front artwork polygons to draw.
+            * *cuts*: (*List*[*SimplePolygon*]) (Optional: default is []):
               A list of holes to render in the visual model.
-            * *artworks*: (*List[*SimplePolygon*]):
-              A list of artwork polygons to draw.
-            * *cuts*: (*List[*SimplePolygon*]):
-              A list of PCB cut holes to be placed into the PCB.
+            * *back_artworks*: (*List[*SimplePolygon*]) (Optional: default is []):
+              A list of front artwork polygons to draw.
+            * *back_scads*: (*List*[*Scad3D*]) (Optional: default is []):
+              A list of *Scad3d*'s to render on the back side of the PCB.
 
         """
         # Load up *pcb_chunk* (i.e. *self*):
         # pcb_chunk: PCBChunk = self
         self.name: str = name
-        self.pads: List[Pad] = pads
-        self.scads: List[Scad3D] = scads
-        self.artworks: List[SimplePolygon] = artworks
-        self.cuts: List[SimplePolygon] = cuts
+        self.back_artworks: List[SimplePolygon] = back_artworks[:]
+        self.back_scads: List[Scad3D] = back_scads[:]
+        self.cuts: List[SimplePolygon] = cuts[:]
+        self.front_artworks: List[SimplePolygon] = front_artworks[:]
+        self.front_scads: List[Scad3D] = front_scads[:]
+        self.pads: List[Pad] = pads[:]
+        self.references: List[Tuple[str, bool, P2D, float]] = references[:]
 
     # PCBChunk.__str__():
     def __str__(self) -> str:
         """Return the a summary of PCBChunk."""
         # Unpack some values from *PCBChunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
+        back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        back_scads: List[Scad3D] = pcb_chunk.back_scads
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
+        front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        front_scads: List[Scad3D] = pcb_chunk.front_scads
         name: str = pcb_chunk.name
         pads: List[Pad] = pcb_chunk.pads
-        scads: List[Scad3D] = pcb_chunk.scads
-        artworks: List[SimplePolygon] = pcb_chunk.artworks
-        cuts: List[SimplePolygon] = pcb_chunk.cuts
+        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
 
-        return (f"PCBChunk('{name}', P:{len(pads)}, S:{len(scads)}, "
-                f"A:{len(artworks)}, C:{len(cuts)})")
+        return (f"PCBChunk('{name}', C:{len(cuts)}, "
+                f"BA:(P:{len(back_artworks)}, BS:{len(back_scads)}, C:{len(cuts)}, "
+                f"FA:{len(front_artworks)}, FS:{len(front_scads)} P:{len(pads)} "
+                f"R:{len(references)}")
+        return ""
 
-    # PCBChunk.merge():
-    def merge(self, merged_name: str, pcb_chunks: List["PCBChunk"]) -> "PCBChunk":
-        """Merge a bunch of PCBChunks together into one."""
-        # Use *pcb_chunk* instead of *self*:
+    # PCBChunk.copy():
+    def copy(self) -> "PCBChunk":
+        """Return a copy of a PCBChunk."""
+        # Unpack some values from *PCBChunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
+        back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        back_scads: List[Scad3D] = pcb_chunk.back_scads
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
+        front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        front_scads: List[Scad3D] = pcb_chunk.front_scads
+        name: str = pcb_chunk.name
+        pads: List[Pad] = pcb_chunk.pads
+        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
 
-        # Create the empty lists needed for the merged results:
-        merged_pads: List[Pad] = []
-        merged_scads: List[Scad3D] = []
-        merged_artworks: List[SimplePolygon] = []
-        merged_cuts: List[SimplePolygon] = []
+        # Create the *copied_pcb_chunk* and return it.
+        # (Note, PCB_Chunk always makes shallow copies of the lists):
+        copied_pcb_chunk: PCBChunk = PCBChunk(name, pads, front_scads,
+                                              front_artworks=front_artworks, cuts=cuts,
+                                              back_artworks=back_artworks, back_scads=back_scads,
+                                              references=references)
+        return copied_pcb_chunk
 
-        # Iterate across *all_pcb_chunks* to build the merged lists:
-        all_pcb_chunks: List[PCBChunk] = [pcb_chunk] + pcb_chunks[:]
-        one_pcb_chunk: PCBChunk
-        for one_pcb_chunk in all_pcb_chunks:
-            merged_pads.extend(one_pcb_chunk.pads)
-            merged_scads.extend(one_pcb_chunk.scads)
-            merged_artworks.extend(one_pcb_chunk.artworks)
-            merged_artworks.extend(one_pcb_chunk.cuts)
+    # PCBChunk.footprint_generate():
+    def footprint_generate(self, directory: Path, base_name: str, reference_prefix: str) -> None:
+        """Generate a footprint from PCBChunk.
 
-        # Create the final *merged_pcb_chunk* and return it:
-        merged_pcb_chunk: PCBChunk = PCBChunk(merged_name, merged_pads,
-                                              merged_scads, merged_artworks, merged_cuts)
+        Args:
+            * *base_name* (*str*):
+              The base name of the footprint without the `.kicad_mod`
+              suffix.
+            * *directory* (*Path*):
+              The directory to store the footprint into.
+            * *reference_prefix* (*str*):
+              The default reference prefix to put into the footprint.
+
+        """
+        # Unpack some values from *PCBChunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        # back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        # front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        # name: str = pcb_chunk.name
+        pads: List[Pad] = pcb_chunk.pads
+
+        # Now start the *footprint*:
+        footprint: Footprint = Footprint("HR2", base_name)
+        footprint.reference(P2D(0.0, 0.0))
+
+        # Iterate over each *pad* in the *pads*:
+        for pad in pads:
+            # Output a pad defintion:
+            footprint.hole(pad.name, pad.pad_center, pad.pad_dx, pad.pad_dy, pad.drill_diameter)
+
+        # Save the *footprint* into the file system:
+        full_base_name = base_name + ".kicad_mod"
+        footprint.save(directory / full_base_name, "t")
+
+    @staticmethod
+    # PCBChunk.join():
+    def join(name: str, pcb_chunks: List["PCBChunk"]) -> "PCBChunk":
+        """Return a merged set of PCBChunk's."""
+        # Create *merged_pcb_chunk* with empty values and unpack them all:
+        merged_pcb_chunk: PCBChunk = PCBChunk(name, [], [], front_artworks=[], cuts=[],
+                                              back_artworks=[], back_scads=[])
+        merged_back_artworks: List[SimplePolygon] = merged_pcb_chunk.back_artworks
+        merged_back_scads: List[Scad3D] = merged_pcb_chunk.back_scads
+        merged_cuts: List[SimplePolygon] = merged_pcb_chunk.cuts
+        merged_front_artworks: List[SimplePolygon] = merged_pcb_chunk.front_artworks
+        merged_front_scads: List[Scad3D] = merged_pcb_chunk.front_scads
+        merged_pads: List[Pad] = merged_pcb_chunk.pads
+        merged_references: List[Tuple[str, bool, P2D, float]] = merged_pcb_chunk.references
+
+        # Sweep through each *pcb_chunk* in *pcb_chunks* and merge the values in:
+        index: int
+        pcb_chunk: PCBChunk
+        for index, pcb_chunk in enumerate(pcb_chunks):
+            merged_back_artworks.extend(pcb_chunk.back_artworks)
+            merged_back_scads.extend(pcb_chunk.back_scads)
+            merged_cuts.extend(pcb_chunk.cuts)
+            merged_front_artworks.extend(pcb_chunk.front_artworks)
+            merged_front_scads.extend(pcb_chunk.front_scads)
+            merged_pads.extend(pcb_chunk.pads)
+            merged_references.extend(pcb_chunk.references)
+
+        # Wrap up and and return *merged_pcb_chunk*:
         return merged_pcb_chunk
+
+    # PCBChunk.pads_rebase():
+    def pads_rebase(self, delta: int) -> "PCBChunk":
+        """Return a PadsChunk with rebased Pad names."""
+        # Unpack some values PCBChunk (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        pads: List[Pad] = pcb_chunk.pads
+
+        # Create *rebased_pads*:
+        pad: Pad
+        rebased_pads: List[Pad] = [pad.rebase(delta) for pad in pads]
+
+        # Create *rebased_pcb_chunk*, stuff in the updated *rebased_pads* and return it:
+        rebased_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        rebased_pcb_chunk.pads = rebased_pads
+        return rebased_pcb_chunk
 
     # PCBChunk.pads_x_mirror():
     def pads_x_mirror(self) -> "PCBChunk":
         """Return a PCBChunk with pads mirrored around the X axis."""
-        # Unpack some valued from *pcb_chunk* (i.e. *self*):
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
-        name: str = pcb_chunk.name
         pads: List[Pad] = pcb_chunk.pads
-        scads: List[Scad3D] = pcb_chunk.scads
-        artworks: List[SimplePolygon] = pcb_chunk.artworks
-        cuts: List[SimplePolygon] = pcb_chunk.cuts
 
-        # Mirror each *pad* in *pads* around the X axis:
+        # Create *x_mirrored_pcb_chunk*, update the pads with X axis mirrored ones, and return it:
+        x_mirrored_pcb_chunk: PCBChunk = pcb_chunk.copy()
         pad: Pad
-        x_mirrored_pads = [pad.x_mirror() for pad in pads]
-
-        # Return the *x_mirrored_pcb_chunk*:
-        x_mirrored_pcb_chunk: PCBChunk = PCBChunk(name, x_mirrored_pads, scads, artworks, cuts)
+        x_mirrored_pcb_chunk.pads = [pad.x_mirror() for pad in pads]
         return x_mirrored_pcb_chunk
 
-    # PCBChunk.pads_x_mirror():
+    # PCBChunk.pads_y_mirror():
     def pads_y_mirror(self) -> "PCBChunk":
         """Return a PCBChunk with pads mirrored around the X axis."""
-        # Unpack some valued from *pcb_chunk* (i.e. *self*):
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
-        name: str = pcb_chunk.name
         pads: List[Pad] = pcb_chunk.pads
-        scads: List[Scad3D] = pcb_chunk.scads
-        artworks: List[SimplePolygon] = pcb_chunk.artworks
-        cuts: List[SimplePolygon] = pcb_chunk.cuts
 
-        # Mirror each *pad* in *pads* around the Y axis:
+        # Create *y_mirrored_pcb_chunk*, update the pads with Y axis  mirrored ones, and return it:
+        y_mirrored_pcb_chunk: PCBChunk = pcb_chunk.copy()
         pad: Pad
-        y_mirrored_pads = [pad.x_mirror() for pad in pads]
-
-        # Return the *x_mirrored_pcb_chunk*:
-        y_mirrored_pcb_chunk: PCBChunk = PCBChunk(name, y_mirrored_pads, scads, artworks, cuts)
+        y_mirrored_pcb_chunk.pads = [pad.y_mirror() for pad in pads]
         return y_mirrored_pcb_chunk
 
+    # PCBChunk.pcb_generate():
+    def pcb_generate(self, scad_program: "ScadProgram", dz: float, pcb_exterior: SimplePolygon,
+                     color: str, kicad_pcb_path: Path = Path(""), tracing: str = "") -> Module3D:
+        """Generate a PCB."""
+        # Perform any requested *tracing*:
+        next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>pcb_generate(*, {dz:.1f}, '{color}', '{kicad_pcb_path}')")
+
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        # back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        back_scads: List[Scad3D] = pcb_chunk.back_scads
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
+        # front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        front_scads: List[Scad3D] = pcb_chunk.front_scads
+        name: str = pcb_chunk.name
+        print(f"PCBChunk.pcb_generate(): name:'{name}'")
+        pads: List[Pad] = pcb_chunk.pads
+        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
+
+        # Create the *board_polygon* fill it with *pads* and *cuts*:
+        board_polygon: Polygon = Polygon(f"{name} Board Polygon", [pcb_exterior], lock=False)
+        pad: Pad
+        for pad in pads:
+            pad.hole_append(board_polygon)
+        cut: SimplePolygon
+        for cut in cuts:
+            board_polygon.append(cut)
+        board_polygon.lock()
+
+        # Extrude and *color* the *board_polygon*:
+        extruded_pcb: LinearExtrude = LinearExtrude(f"Extruded {name} PCB", board_polygon, dz)
+        colored_pcb: Color = Color(f"Colored {name} PCB", extruded_pcb, color)
+
+        # Group all of the *front_scads* into a *front_union* and construct *module*:
+        front_union: Union3D = Union3D(f"{name} Front Union", front_scads)
+        module: Module3D = Module3D(f"{name}_pcb", [colored_pcb, front_union] + back_scads)
+        scad_program.append(module)
+        scad_program.if3d.name_match_append(f"{name.lower()}_board", module, [f"{name} Board"])
+
+        # Now open the KiCad file for updating:
+        kicad_pcb: KicadPCB = KicadPCB(kicad_pcb_path, P2D(100.0, 100.0))
+
+        # Place all of the cuts:
+        pass  # Fixme!!!
+
+        # Update the positions of all of the references:
+        kicad_pcb.modules_update(references, tracing=next_tracing)
+
+        # Save *kicad_pcb* to disk:
+        kicad_pcb.save()
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=pcb_generate(*, {dz:.1f}, '{color}', '{kicad_pcb_path}')=>*")
+
+        # Stuff *module* into *pcb_chunk* (i.e. *self*) and return it:
+        self.module: Module3D = module
+        return module
+
+    # PCBChunk.scads_x_flip():
+    def scads_x_flip(self) -> "PCBChunk":
+        """Return a PCBChunk with scads fliped around the X axis."""
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        back_scads: List[Scad3D] = pcb_chunk.back_scads
+        front_scads: List[Scad3D] = pcb_chunk.front_scads
+        name: str = pcb_chunk.name
+
+        # Create *x_mirrored_pcb_chunk*, update the pads with X axis mirrored ones, and return it:
+        x_flipped_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        scad: Scad3D
+        x_flipped_pcb_chunk.back_scads = [scad.x_flip(f"X Flipped {name}") for scad in back_scads]
+        x_flipped_pcb_chunk.front_scads = [scad.x_flip(f"X Flipped {name}") for scad in front_scads]
+        return x_flipped_pcb_chunk
+
+    # PCBChunk.scads_y_flip():
+    def scads_y_flip(self) -> "PCBChunk":
+        """Return a PCBChunk with scads fliped around the Y axis."""
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        back_scads: List[Scad3D] = pcb_chunk.back_scads
+        front_scads: List[Scad3D] = pcb_chunk.front_scads
+        name: str = pcb_chunk.name
+
+        # Create *y_mirrored_pcb_chunk*, update the pads with Y axis mirrored ones, and return it:
+        y_flipped_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        scad: Scad3D
+        y_flipped_pcb_chunk.back_scads = [scad.y_flip(f"Y Flipped {name}") for scad in back_scads]
+        y_flipped_pcb_chunk.front_scads = [scad.y_flip(f"Y Flipped {name}") for scad in front_scads]
+        return y_flipped_pcb_chunk
+
+    # PCBChunk.sides_swap():
+    def sides_swap(self) -> "PCBChunk":
+        """Swap from the artworks and scads from front to back."""
+        # Unpack some values from *PCBChunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        back_scads: List[Scad3D] = pcb_chunk.back_scads
+        front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        front_scads: List[Scad3D] = pcb_chunk.front_scads
+
+        # Create *side_changed_pcb_chunk* with front and backs scad/artworks swapped and return it:
+        side_changed_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        side_changed_pcb_chunk.back_artworks = front_artworks[:]
+        side_changed_pcb_chunk.back_scads = front_scads[:]
+        side_changed_pcb_chunk.front_artworks = back_artworks[:]
+        side_changed_pcb_chunk.front_scads = back_scads[:]
+        return side_changed_pcb_chunk
+
     # PCBChunk.reposition():
-    def reposition(self, name: str, center: P2D, rotate: float, translate: P2D):
+    def reposition(self, center: P2D, rotate: float, translate: P2D,
+                   reference_name: str = "") -> "PCBChunk":
         """Return a repositioned PCBChunk."""
         # Unpack some values *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
-        pads: List[Pad] = pcb_chunk.pads
-        scads: List[Scad3D] = pcb_chunk.scads
-        artworks: List[SimplePolygon] = pcb_chunk.artworks
+        back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        back_scads: List[Scad3D] = pcb_chunk.back_scads
         cuts: List[SimplePolygon] = pcb_chunk.cuts
+        front_scads: List[Scad3D] = pcb_chunk.front_scads
+        front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        name: str = pcb_chunk.name
+        pads: List[Pad] = pcb_chunk.pads
+        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
+        assert len(references) == 0, "References should never be repositioned."
 
         # Create some 3D values:
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
         center3d: P3D = P3D(center.x, center.y, 0.0)
         translate3d: P3D = P3D(translate.x, translate.y, 0.0)
 
-        # Create the *merged_pads*:
-        pad: Pad
-        pad_index: int
-        merged_pads: List[Pad] = [pad.reposition("", center, rotate, translate)
-                                  for pad_index, pad in enumerate(pads)]
+        # Create all of the repositioned values:
+        back_artwork: SimplePolygon
+        repositioned_back_artworks: List[SimplePolygon] = [
+            back_artwork.reposition(center, rotate, translate)
+            for back_artwork in back_artworks]
 
-        # Create the *merged_scads*:
-        scad: Scad3D
-        scad_index: int
-        merged_scads: List[Scad3D] = [scad.reposition(f"{name}[{scad_index}]",
-                                                      center3d, z_axis, rotate, translate3d)
-                                      for scad_index, scad in enumerate(scads)]
-        artwork: SimplePolygon
-        merged_artworks: List[SimplePolygon] = [artwork.reposition(center, rotate, translate)
-                                                for artwork in artworks]
+        back_scad: Scad3D
+        repositioned_back_scads: List[Scad3D] = [
+            back_scad.reposition(name, center3d, z_axis, rotate, translate3d)
+            for back_scad in back_scads]
+
         cut: SimplePolygon
-        merged_cuts: List[SimplePolygon] = [cut.reposition(center, rotate, translate)
-                                            for cut in cuts]
+        repositioned_cuts: List[SimplePolygon] = [
+            cut.reposition(center, rotate, translate)
+            for cut in cuts]
 
-        # Create the final *merged_pcb_chunk* and return it:
-        merged_pcb_chunk: PCBChunk = PCBChunk(name, merged_pads, merged_scads,
-                                              merged_artworks, merged_cuts)
-        return merged_pcb_chunk
+        front_artwork: SimplePolygon
+        repositioned_front_artworks: List[SimplePolygon] = [
+            front_artwork.reposition(center, rotate, translate)
+            for front_artwork in front_artworks]
+
+        front_scad: Scad3D
+        repositioned_front_scads: List[Scad3D] = [
+            front_scad.reposition(name, center3d, z_axis, rotate, translate3d)
+            for front_scad in front_scads]
+
+        pad: Pad
+        repositioned_pads: List[Pad] = [
+            pad.reposition("", center, rotate, translate)
+            for pad_index, pad in enumerate(pads)]
+
+        references = []
+        if reference_name != "":
+            reference: Tuple[str, bool, P2D, float] = (reference_name, False, translate, rotate)
+            references = [reference]
+
+        # Create *repositioned_pcb_chunk* and return it:
+        repositioned_pcb_chunk: PCBChunk = PCBChunk(
+            name, repositioned_pads, repositioned_front_scads,
+            front_artworks=repositioned_front_artworks, cuts=repositioned_cuts,
+            back_artworks=repositioned_back_artworks, back_scads=repositioned_back_scads,
+            references=references)
+        return repositioned_pcb_chunk
 
 
 # PCBGroup:
@@ -1505,7 +1755,7 @@ class Encoder:
         motor_shaft_diameter: float = (motor_shaft_north_y + motor_shaft_south_y) / 2.0
         motor_shaft_z: float = motor_casing_bottom_z + motor_casing_dz / 2.0
 
-        # Some random comments:
+        # Some random constants:
         degrees90: float = pi / 2.0
         origin2d: P2D = P2D(0.0, 0.0)
 
@@ -1578,6 +1828,61 @@ class Encoder:
         header_offset: float = 2.0 * 2.54
         north_header_center2d: P2D = P2D(pcb_west_x + 0.5 * 2.54, pcb_north_y - header_offset)
         south_header_center2d: P2D = P2D(pcb_west_x + 0.5 * 2.54, pcb_south_y + header_offset)
+
+        # Create *encoder_pcb_chunk* and *master_pcb_chunk*" (for master board):
+        m1x3ra_pcb_chunk: PCBChunk = connectors.m1x3ra.pcb_chunk
+        m1x3ra_pcb_chunk_north: PCBChunk = (m1x3ra_pcb_chunk.
+                                            sides_swap().
+                                            pads_rebase(3).
+                                            pads_y_mirror().
+                                            scads_y_flip().
+                                            reposition(origin2d, degrees90, north_header_center2d))
+        m1x3ra_pcb_chunk_south: PCBChunk = (m1x3ra_pcb_chunk.
+                                            sides_swap().
+                                            pads_y_mirror().
+                                            scads_y_flip().
+                                            reposition(origin2d, degrees90, south_header_center2d,
+                                                       reference_name="CN1"))
+
+        # Create *motor_slots_pcb_chunk* (put "8" before "7" because the footprint looks better):
+        north_motor_pad: Pad = Pad("8", pcb_pad_dx, pcb_pad_dy,
+                                   pcb_drill_diameter, pcb_north_slot_center)
+        south_motor_pad: Pad = Pad("7", pcb_pad_dx,
+                                   pcb_pad_dy, pcb_drill_diameter, pcb_south_slot_center)
+        motor_slots_pcb_chunk: PCBChunk = PCBChunk("motor_slots",
+                                                   [north_motor_pad, south_motor_pad], [])
+
+        # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
+        encoder_pcb_chunk: PCBChunk = PCBChunk.join("XEncoder", [m1x3ra_pcb_chunk_north,
+                                                                 m1x3ra_pcb_chunk_south,
+                                                                 motor_slots_pcb_chunk])
+
+        # Figure out *encoder_pcb_directory* and *encoder_pcb_pretty_directory*:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        encoder_pcb_directory: Path = hr2_directory / "electrical" / "encoder" / "rev_a"
+        encoder_pcb_pretty_directory: Path = encoder_pcb_directory / "pretty"
+        encoder_pcb_path: Path = encoder_pcb_directory / "encoder.kicad_pcb"
+
+        xencoder_module: Module3D = encoder_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path)
+        xencoder_module = xencoder_module
+
+        encoder_pcb_chunk.footprint_generate(encoder_pcb_pretty_directory, "Encoder", "CN")
+
+        encoder_pcb.pad_append("7", {"motors"}, "",
+                               pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_north_slot_center)
+        encoder_pcb.pad_append("8", {"motors"}, "",
+                               pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_south_slot_center)
+
+        encoder_pcb_chunk = encoder_pcb_chunk
+
+        # f1x3_pcb_chunk_north: PCBChunk = f1x3.reposition(origin2d, degrees90, degrees)
+        # f1x3_pcb_chunk_south: PCBChunk = f1x3.reposition(origin2d,
+        #                                                  degrees90, south_header_center_2d)
+        # master_pcb_chunk: PCB_Chunk = PCBCHunk.Join(
+        #     "Encoder_Master", [f1x3_pcb_chunk_north])  # , f1x3_pcb_chunk_south])
+        # master_pcb_chunk = master_pcb_chunk
 
         # Install the connectors to the encoder board:
         encoder_pcb.module3d_place("M1x3RA", {"connectors"}, "bx",
@@ -3381,7 +3686,7 @@ class RectangularConnector:
                  cut_out: bool = False,
                  pcb_polygon: Optional[Polygon] = None, pcb_hole_diameter: float = 0.0,
                  insulation_color: str = "Black", pin_color: str = "Gold",
-                 footprint: Footprint = Footprint(""), footprint_pin_number: int = 1,
+                 footprint: Footprint = Footprint("", ""), footprint_pin_number: int = 1,
                  footprint_pad_diameter: float = 0.0, footprint_drill_diameter: float = 0.0,
                  footprint_flags: str = "") -> None:
         """Initialize RectangularConnector and append to ScadProgram.

@@ -349,6 +349,9 @@ Description: <!--
           * `wheel_assembly`:
             Wheel Assembly
         
+          * `xencoder_board`:
+            XEncoder Board
+        
           <!-- NAME list ends here. -->
           After you run `openscad`, use your mouse to select `[Design]`=>`[Preveiw]` and `openscad`
           will show the resulting model.

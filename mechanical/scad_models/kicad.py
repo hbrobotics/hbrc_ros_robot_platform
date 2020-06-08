@@ -26,11 +26,28 @@
 # ##################################################################################################
 # <======================================= 100 characters =======================================> #
 
-"""KiCad."""
+"""KiCad.
 
-from typing import Any, IO, List
+This KiCAd module provides an interface to the KiCad file formats.  In
+particular it supports:
+
+* Footprints:
+  A KiCad footprint has a suffix of `.kicad_mod` and contains the
+  locations of the various pads with their names (both through hole and
+  surface mount), mounting holes, additional PCB cut outs and both top
+  and bottom artwork.
+* Printed Circuit Boards:
+  A Kicad printed circuit board has a suffix of `.kicad_pcb` and
+  contains everything needed for the PCB.  Of interest to this module
+  is the ability to insert cut-lines, artwork, footprints.  Each
+  footprint has a name, side (front or back), position (X, Y), and
+  and an orientation (0-360 degrees).
+
+"""
+
+from typing import Any, Dict, IO, List, Tuple
 from pathlib import Path
-from scad_models.scad import P2D
+from scad_models.scad import P2D, SimplePolygon
 import time
 
 
@@ -39,7 +56,7 @@ class Footprint:
     """Footprint represents a KiCad footprint file."""
 
     # Footprint.__init__():
-    def __init__(self, name: str) -> None:
+    def __init__(self, library_name: str, footprint_name: str) -> None:
         """Initialize a footprint."""
         # Note to print the current time in seconds from 1970 use the following command:
         #     date +%s
@@ -48,12 +65,15 @@ class Footprint:
         #     time_stamp = int(time.time())
         # Create *lines* and start with the module line:
         timestamp: int = int(time.time())
-        lines: List[str] = [f"(module {name} (layer F.Cu) (tedit {timestamp:08X})"]
+        lines: List[str] = [f"(module {library_name}:{footprint_name} "
+                            f"(layer F.Cu) (tedit {timestamp:08X})"]
+        print(f"lines={lines}")
 
         # Save *name* and *lines* into *footprint* (i.e. *self*):
         # footprint: FootPrint = self
         self.lines: List[str] = lines
-        self.name: str = name
+        self.library_name: str = library_name
+        self.footprint_name: str = footprint_name
 
     def header_match(self, previous_header: str) -> bool:
         """See whether a previous header matches the current one."""
@@ -108,10 +128,16 @@ class Footprint:
                         "(layers *.Cu *.Mask))")
         lines.append(line)
 
+    # Footprint.library_get():
+    def librarty_get(self) -> str:
+        """Return the name of the library."""
+        # Use *footprint* instead of *self*:
+        footprint: Footprint = self
+        return footprint.library_name
+
     # Footprint.line():
     def line(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
         """Append a line to a footprint."""
-        pass
         footprint: Footprint = self
         lines: List[str] = footprint.lines
         x1: float = point1.x
@@ -125,8 +151,9 @@ class Footprint:
     # Footprint.name_get():
     def name_get(self) -> str:
         """Return the name of the footprint."""
+        # Use *footprint* instead of *self*:
         footprint: Footprint = self
-        return footprint.name
+        return footprint.footprint_name
 
     # Footprint.rectangle():
     def rectangle(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
@@ -152,6 +179,16 @@ class Footprint:
         lines.append(f"  (fp_text reference REF** (at {x:.2f} {-y:.2f}) (layer F.SilkS)")
         lines.append("    (effects (font (size 1 1) (thickness 0.2)))")
         lines.append("  )")
+        # If value is not specified, KiCad currently defaults to putting it into the F.SilkS layer.
+        # KiCad completely ignores whatever text that is supplied.  The solution seems to be to put
+        # it into the F.Fab layer and you can disable seeing that layer.  Kind of silly, but
+        # it works.  Ship it!:
+        lines.append(f"  (fp_text value VALUE (at {x:.2f} {-y-2.0:.2f}) (layer F.Fab)")
+        lines.append("    (effects (font (size 1 1) (thickness 0.2)))")
+        lines.append("  )")
+        # lines.append(f"  (fp_text user USER (at {x:.2f} {-y+2.0+2.0:.2f}) (layer B.SilkS)")
+        # lines.append("    (effects (font (size 1 1) (thickness 0.2)))")
+        # lines.append("  )")
 
     # KiCadFootprint.save():
     def save(self, footprint_path: Path, flags: str) -> None:
@@ -219,6 +256,7 @@ class Footprint:
         write_required: bool = 'w' in flags
         touch_required: bool = 't' in flags
         # print(f"write:{write_required} matches:{previous_file_matches} touch:{touch_required}")
+        print(f"footprint_path={footprint_path}")
         if write_required or not previous_file_matches:
             # We need to write out *footprint* to *footprint_path* with any new content
             # and a new `tedit` timestamp.
@@ -253,12 +291,220 @@ class Footprint:
     # KiCadFootprint.value():
     def value(self, center: P2D, hide: bool) -> None:
         """Append a value to a footprint."""
+        # Unpack some values from *footprint* (i.e. *self*):
         footprint: Footprint = self
         lines: List[str] = footprint.lines
-        name: str = footprint.name
+        footprint_name: str = footprint.footprint_name
+
+        # Now append some lines to *lines*:
         x: float = center.x
         y: float = center.y
         hide_text: str = " hide" if hide else ""
-        lines.append(f"  (fp_text value {name} (at {x:.2f} {-y:.2f}) (layer F.SilkS) {hide_text}")
+        lines.append(f"  (fp_text value {footprint_name} (at {x:.2f} {-y:.2f}) "
+                     f"(layer F.Fab) {hide_text}")
         lines.append("    (effects (font (size 1 1) (thickness 0.2)))")
         lines.append("  )")
+
+
+# KicadPCB:
+class KicadPCB:
+    """Represents a KiCAD PCB."""
+
+    # KicadPcb.__init__():
+    def __init__(self, file_name: Path, offset: P2D) -> None:
+        """Bind to a .kicad_pcb file."""
+        # Read in *file_name* and split into *lines*:
+        kicad_pcb_file: IO[Any]
+        lines: List[str]
+        with open(file_name, "r") as kicad_pcb_file:
+            kicad_pcb_text: str = kicad_pcb_file.read()
+            lines = kicad_pcb_text.split('\n')
+            # print(f"KicadPcb.__init__('{file_name}') read in {len(lines)} lines")
+
+        # Save values into *kicad_pcb* (i.e. *self*):
+        # kicad_pcb: KicadPcb = self
+        self.cut_lines_insert_index: int = -1
+        self.file_name: Path = file_name
+        self.lines: List[str] = lines
+        self.offset: P2D = offset
+
+    # KicadPcb.line_append():
+    def line_append(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
+        """Append a line cut."""
+        # Grab some values from self:
+        kicad_pcb: KicadPCB = self
+        cut_lines_insert_index: int = kicad_pcb.cut_lines_insert_index
+        lines: List[str] = kicad_pcb.lines
+        offset: P2D = kicad_pcb.offset
+
+        # Make sure we know where to insert cut lines:
+        if cut_lines_insert_index < 0:
+            line: str
+            index: int
+            net_class_default_found: bool = False
+            for index, line in enumerate(lines):
+                # print(f"[{index}]:'{line}'")
+                if line.startswith("  (net_class Default"):
+                    net_class_default_found = True
+                if net_class_default_found and line.startswith("  )"):
+                    cut_lines_insert_index = index + 2
+                    kicad_pcb.cut_lines_insert_index = cut_lines_insert_index
+
+        # Create the *cut_line_text* into *lines*:
+        cut_line_text: str = (
+            "  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
+            "(layer {4}) (width {5:1.2f}))").format(
+                offset.x + point1.x, offset.y - point1.y,
+                offset.x + point2.x, offset.y - point2.y, layer, width)
+        lines.insert(cut_lines_insert_index, cut_line_text)
+
+    # KicadPcb.layer_remove():
+    def layer_remove(self, layer: str) -> None:
+        """Remove the a layer."""
+        # Grab some values from *kicad_pcb* (i.e. *self*):
+        kicad_pcb: KicadPCB = self
+        lines: List[str] = kicad_pcb.lines
+        new_lines: List[str] = []
+        pattern: str = f"(layer {layer})"
+        line: str
+        for line in lines:
+            if line.find(pattern) < 0:
+                # Not a layer we care about, copy it over:
+                new_lines.append(line)
+
+        # Save *new_lines* back into *kicad*:
+        kicad_pcb.lines = new_lines
+
+    # KicadPcb.modules_update():
+    def modules_update(self, references: List[Tuple[str, bool, P2D, float]],
+                       tracing: str = "") -> None:
+        """Update the module positions."""
+        # Perform any requested *tracing*:
+        # next_tracing: str = tracing + " " if tracing else ""
+        assert isinstance(tracing, str)
+        if tracing:
+            print("********************************************************")
+            print(f"{tracing}=>KicadPCB.modules_update()")
+
+        # Grab some values from *kicad_pcb*:
+        kicad_pcb: KicadPCB = self
+        lines: List[str] = kicad_pcb.lines
+        offset: P2D = kicad_pcb.offset
+
+        # Define some variables and constants:
+        line_number: int
+        line: str
+        at_line_index: int
+        reference_line_index: int
+        reference_prefix: str = "    (fp_text reference "
+        reference_prefix_size: int = len(reference_prefix)
+
+        # Construct *references_table* from *referneces*:
+        references_table: Dict[str, Tuple[str, bool, P2D, float]] = {}
+        reference_name: str
+        reference: Tuple[str, bool, P2D, float]
+        for reference in references:
+            reference_name = reference[0]
+            references_table[reference_name] = reference
+
+        # Sweep through *lines* looking for modules:
+        references_found_table: Dict[str, bool] = {}
+        in_module: bool = False
+        for line_index, line in enumerate(lines):
+            if line.startswith("  (module "):
+                # Beginning of mounting hole:
+                if tracing:
+                    print(f"{tracing}Module start found:{line_index}")
+                in_module = True
+                at_line_index = -1
+                reference_line_index = -1
+            elif line.startswith("  )") and in_module:
+                # We have reached the module end:
+                if tracing:
+                    print(f"{tracing}Module End found:{line_index}")
+                if at_line_index < 0 or reference_line_index < 0:
+                    # The module is not well formatted:
+                    print(f"Incomplete module: at:{at_line_index} "
+                          f"reference:{reference_line_index}")  # pragma: no cover
+                else:
+                    # Grab the hole label from label_line:
+                    reference_line: str = lines[reference_line_index]
+                    at_index: int = reference_line.find(" (at ")
+                    assert at_index > reference_prefix_size
+                    reference_name = reference_line[reference_prefix_size:at_index]
+                    # print(f"Module Referenec: '{reference}'")
+
+                    # Look up the *reference* from *references_table* and stuff updated location
+                    # back into *lines* at *position_index*:
+                    if reference_name in references_table:
+                        # Unpack the *reference* information from *references_table*:
+                        name: str
+                        side: bool
+                        position: P2D
+                        orientation: float
+                        name, side, position, orientation = references_table[reference_name]
+                        # FIXME: Add orientation!!!
+                        at_text: str = (f"    (at "
+                                        f"{offset.x + position.x:0.6f} "
+                                        f"{offset.y - position.y:0.6f})")  # KiCad inverts Y axis!
+                        if tracing:
+                            print(f"{tracing}Found '{reference_name}' in table.")
+                            print(f"{tracing}Old: '{lines[at_line_index]}'")
+                            print(f"{tracing}New: '{at_text}'")
+                        lines[at_line_index] = at_text
+                        references_found_table[reference_name] = True
+
+                # Reset all of the values:
+                in_module = False
+                at_line_index = -1
+                reference_line_index = -1
+                if tracing:
+                    print(f"{tracing}Module Pocessed; line indices reset")
+            elif in_module:
+                if line.startswith("    (at "):
+                    at_line_index = line_index
+                    if tracing:
+                        print(f"{tracing}at_line_index={at_line_index}")
+                elif line.startswith("    (fp_text reference "):
+                    reference_line_index = line_index
+                    if tracing:
+                        print(f"{tracing}reference_line_index={reference_line_index}")
+
+        # Iterate through *references_table* looking for modules that have not been placed:
+        for reference_name in references_table.keys():
+            if reference not in references_found_table:
+                print(f"Reference '{reference}' is not currently placed in the PCB.")
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>KicadPCB.modules_update()")
+
+    # KicadPcb.simple_polygon_append():
+    def simple_polygon_append(self, simple_polygon: "SimplePolygon",
+                              layer: str, width: float) -> None:
+        """Append a SimpelePolygon to a PCB."""
+        kicad_pcb: KicadPCB = self
+        simple_polygon_size: int = len(simple_polygon)
+        index: int
+        for index in range(simple_polygon_size):
+            point1: P2D = simple_polygon[index]
+            point2: P2D = simple_polygon[(index + 1) % simple_polygon_size]
+            kicad_pcb.line_append(point1, point2, layer, width)
+
+    # KicadPcb.save():
+    def save(self):
+        """Save contents back file."""
+        # Grab some values from *kicad_pcb* (i.e. *self*):
+        kicad_pcb: KicadPCB = self
+        file_name: str = kicad_pcb.file_name
+        lines: List[str] = kicad_pcb.lines
+
+        # Delete blank lines from the end of the file:
+        while len(lines) > 0 and lines[-1] == "":
+            del lines[-1]
+
+        # Write *kicad_lines* out to *kicad_file_name*:
+        kicad_pcb_text: str = '\n'.join(lines) + '\n'
+        kicad_pcb_file: IO[Any]
+        with open(file_name, "w") as kicad_pcb_file:
+            kicad_pcb_file.write(kicad_pcb_text)
