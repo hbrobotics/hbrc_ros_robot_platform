@@ -4061,8 +4061,27 @@ class RectangularConnector:
             dy: float = abs(y_maximum - y_minimum)
             x_center: float = (x_maximum + x_minimum) / 2.0
             y_center: float = (y_maximum + y_minimum) / 2.0
+            # original_y_center: float = y_center
+            if have_right_angle:
+                y_center -= right_angle_length
             square: Square = Square("name", dx, dy, P2D(x_center, y_center))
             front_artworks.append(square)
+            if have_right_angle:
+                column: int
+                first_pin_x: float = -float(columns - 1) * columns_pitch / 2.0
+                for column in range(columns):
+                    pin_x: float = first_pin_x + float(column) * columns_pitch
+                    line: SimplePolygon = SimplePolygon(
+                        f"{name}:{column} Artwork Pin",
+                        [P2D(pin_x, min(y1, y2) - footprint_pad_diameter / 2.0),
+                         P2D(pin_x, y_center + dy / 2.0)])
+                    front_artworks.append(line)
+            # Draw the pin1 circle:
+            circle: Circle = Circle("{name} Pin 1 circle",  0.2, 8,
+                                    P2D(x1 - 0.75 * columns_pitch,
+                                        max(y1, y2) + 0.75 * rows_pitch))
+            front_artworks.append(circle)
+
         insulation_polygon.lock()
 
         # Deal with *cut-out* that trims some insulation away from connector to see

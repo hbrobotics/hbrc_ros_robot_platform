@@ -1543,7 +1543,7 @@ class SimplePolygon(Scad2D):
                 a reasonable initial guess to occur.
 
         """
-        # Stuff values into *simpl_polygon* (i.e. *self*):
+        # Stuff values into *simple_polygon* (i.e. *self*):
         # simple_polygon: SimplePolygon = self
         self.locked: bool = lock
         self.name: str = name

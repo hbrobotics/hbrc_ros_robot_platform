@@ -315,12 +315,22 @@ class Footprint:
             print(f"{tracing}=>Footprint.simplepolygon(*, *, '{layer}', {width}")
 
         # Extract adjacent point pair from *simple_polygon* and draw a line:
+        point1: P2D
+        point2: P2D
         simple_polygon_size: int = len(simple_polygon)
-        index: int
-        for index in range(simple_polygon_size):
-            point1: P2D = simple_polygon[index]
-            point2: P2D = simple_polygon[(index + 1) % simple_polygon_size]
+        if 1 <= simple_polygon_size <= 2:
+            # Draw circle or a line:
+            point1 = simple_polygon[0]
+            # Trigger a circle of diameter *width* by drawing a really, really short line:
+            point2 = simple_polygon[1] if simple_polygon_size == 2 else point1 + P2D(0.0, 0.001)
             footprint.line(point1, point2, layer, width, tracing=next_tracing)
+        else:
+            # Iterate through *simplepoly* drawing a close loop from point-to-point:
+            index: int
+            for index in range(simple_polygon_size):
+                point1 = simple_polygon[index]
+                point2 = simple_polygon[(index + 1) % simple_polygon_size]
+                footprint.line(point1, point2, layer, width, tracing=next_tracing)
 
         # Wrap up any requested *tracing*:
         if tracing:
