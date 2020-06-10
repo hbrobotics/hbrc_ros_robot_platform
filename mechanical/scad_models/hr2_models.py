@@ -780,7 +780,7 @@ class PCB:
 
     # PCB.footprint_generate():
     def footprint_generate(self, directory: Path, base_name: str, group_names: Set[str],
-                           reference_prefix: str) -> None:
+                           reference_prefix: str, tracing: str = "") -> None:
         """Generate a footprint from PCB.
 
         Args:
@@ -1408,9 +1408,9 @@ class PCBChunk:
         references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
 
         return (f"PCBChunk('{name}', C:{len(cuts)}, "
-                f"BA:(P:{len(back_artworks)}, BS:{len(back_scads)}, C:{len(cuts)}, "
+                f"BA:P:{len(back_artworks)}, BS:{len(back_scads)}, C:{len(cuts)}, "
                 f"FA:{len(front_artworks)}, FS:{len(front_scads)} P:{len(pads)} "
-                f"R:{len(references)}")
+                f"R:{len(references)})")
         return ""
 
     # PCBChunk.copy():
@@ -1436,7 +1436,8 @@ class PCBChunk:
         return copied_pcb_chunk
 
     # PCBChunk.footprint_generate():
-    def footprint_generate(self, directory: Path, base_name: str, reference_prefix: str) -> None:
+    def footprint_generate(self, directory: Path, base_name: str, reference_prefix: str,
+                           tracing: str = "") -> None:
         """Generate a footprint from PCBChunk.
 
         Args:
@@ -1449,10 +1450,16 @@ class PCBChunk:
               The default reference prefix to put into the footprint.
 
         """
+        # Perform any reqested *tracing*:
+        next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>PCBChunk.footprint_generate('{directory}', "
+                  f"'{base_name}', '{reference_prefix}')")
+
         # Unpack some values from *PCBChunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
-        # back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
-        # front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
         # name: str = pcb_chunk.name
         pads: List[Pad] = pcb_chunk.pads
 
@@ -1468,9 +1475,22 @@ class PCBChunk:
             # print(f"footprint_generate[{index}]:{pad}")
             footprint.hole(pad.name, pad.pad_center, pad.pad_dx, pad.pad_dy, pad.drill_diameter)
 
+        back_artwork: SimplePolygon
+        for back_artwork in back_artworks:
+            footprint.simple_polygon(back_artwork, "B.SilkS", 0.2, tracing=next_tracing)
+
+        front_artwork: SimplePolygon
+        for front_artwork in front_artworks:
+            footprint.simple_polygon(front_artwork, "F.SilkS", 0.2, tracing=next_tracing)
+
         # Save the *footprint* into the file system:
         full_base_name = base_name + ".kicad_mod"
         footprint.save(directory / full_base_name, "t")
+
+        # Wrap up any reqested *tracing*:
+        if tracing:
+            print(f"{tracing}<=PCBChunk.footprint_generate('{directory}', "
+                  f"'{base_name}', '{reference_prefix}')")
 
     @staticmethod
     # PCBChunk.join():
@@ -1815,10 +1835,11 @@ class Encoder:
         # The PCB is designed in a flat orientation with the motor shaft in the center aligned
         # with the Z-axis and then rotated on end and translated into position.  This tends to
         # swap X and Z coordinates.  Thus the constants below are *VERY* confusing:
-        pcb_west_x: float = -motor_casing_dz / 2.0 - 3.0  # Note the X/Z coordinate swap
+        pcb_west_x: float = -14.0  # Trail and error
+        pcb_connector_x: float = -motor_casing_dz / 2.0 - 3.0   # Note the X/Z coordinate swap
         pcb_east_x: float = motor_casing_dz / 2.0
-        pcb_header_dx: float = 6.5
-        pcb_corner_x: float = pcb_west_x + pcb_header_dx
+        pcb_header_dx: float = 6.5  # Trial and error
+        pcb_corner_x: float = -2.5  # Trial and error
         pcb_dy_extra: float = 9.0 * 2.54
         pcb_dz: float = 1.0  # mm
         pcb_north_y: float = (motor_casing_dy + pcb_dy_extra) / 2.0
@@ -1879,8 +1900,8 @@ class Encoder:
         # Create *north_header* and *south_header* for (Digikey: 2057-PH1RB-03-UA-ND (Adam Tech))
         # and make sure the header pin holes are appended to *pcb_polygon*:
         header_offset: float = 2.0 * 2.54
-        north_header_center2d: P2D = P2D(pcb_west_x + 0.5 * 2.54, pcb_north_y - header_offset)
-        south_header_center2d: P2D = P2D(pcb_west_x + 0.5 * 2.54, pcb_south_y + header_offset)
+        north_header_center2d: P2D = P2D(pcb_connector_x + 0.5 * 2.54, pcb_north_y - header_offset)
+        south_header_center2d: P2D = P2D(pcb_connector_x + 0.5 * 2.54, pcb_south_y + header_offset)
 
         # Create *encoder_pcb_chunk* and *master_pcb_chunk*" (for master board):
         m1x3ra_pcb_chunk: PCBChunk = connectors.m1x3ra.pcb_chunk
@@ -1919,6 +1940,7 @@ class Encoder:
                                                                  m1x3ra_pcb_chunk_south,
                                                                  motor_slots_pcb_chunk])
         encoder_pcb_chunk.footprint_generate(encoder_pcb_pretty_directory, "Encoder", "CN")
+
         # encoder_pcb_chunk.pads_show("encoder_pcb_chunk:")
         # encoder_pcb_chunk.references_show("encoder_pcb_chunk:")
 
@@ -3745,7 +3767,8 @@ class RectangularConnector:
                  insulation_color: str = "Black", pin_color: str = "Gold",
                  footprint: Footprint = Footprint("", ""), footprint_pin_number: int = 1,
                  footprint_pad_diameter: float = 0.0, footprint_drill_diameter: float = 0.0,
-                 footprint_flags: str = "") -> None:
+                 footprint_flags: str = "",
+                 artwork: bool = True) -> None:
         """Initialize RectangularConnector and append to ScadProgram.
 
         Create a rectangular mail header with through hole PCB pins.
@@ -3816,16 +3839,20 @@ class RectangularConnector:
                 Sets the color of the insultation.
             *pin_color* (*str*): (Optional: defaults to "Gold")
                 Sets the color of the pin.
-            *footprint* (*Footprint*): (Optional: defaults to an footprint with an empty name)
+            *footprint* (*Footprint*):
+                (Optional: defaults to an footprint with an empty name)
                 Specifies a footprint to draw pads into.
             *footprint_pin_number* (*int*): (Optional: defaults to 1)
                 Specifies the starting pin number for a footprint.
             *footprint_pad_diameter* (*float*): (Optional: defaults to 0.0)
                 Specifies the footprint pad diameter.
-            *footprint_pad_drill* (*float*): (Optional: defaults to 0.0)
+            *footprint_pad_drill* (*float*): (Optional: defaults to 0.0):
                 Specifies the through hole drill diameter.
-            *footprint_flags* (*str*): (Optional: defaults to "")
+            *footprint_flags* (*str*): (Optional: defaults to ""):
                 Specifies and flags needed to adjust the footprint output (TBD.)
+            *artwork* (*bool*):
+                (Optional: defaults to *False*)
+                Specifies whether to supply artwork for the connector.
 
         """
         # Stuff all of the values into *rectangular_connector* (i.e. *self*):
@@ -4014,7 +4041,9 @@ class RectangularConnector:
                                             footprint_pad_diameter, footprint_drill_diameter)
 
         # Write out an artwork rectangle around the connector:
-        if footprint.name_get() != "":
+        front_artworks: List[SimplePolygon] = []
+        # if footprint.name_get() != "":
+        if artwork:
             x1: float = first_footprint_pin.x
             y1: float = first_footprint_pin.y
             x2: float = last_footprint_pin.x
@@ -4028,6 +4057,12 @@ class RectangularConnector:
             corner1: P2D = P2D(x_minimum, y_minimum)
             corner2: P2D = P2D(x_maximum, y_maximum)
             footprint.rectangle(corner1, corner2, "F.SilkS", 0.2)
+            dx: float = abs(x_maximum - x_minimum)
+            dy: float = abs(y_maximum - y_minimum)
+            x_center: float = (x_maximum + x_minimum) / 2.0
+            y_center: float = (y_maximum + y_minimum) / 2.0
+            square: Square = Square("name", dx, dy, P2D(x_center, y_center))
+            front_artworks.append(square)
         insulation_polygon.lock()
 
         # Deal with *cut-out* that trims some insulation away from connector to see
@@ -4117,7 +4152,8 @@ class RectangularConnector:
 
         # Construct *connector_module*, append to *scad_program*:
         connector_module: Module3D = Module3D(name, [recentered_connector])
-        pcb_chunk: PCBChunk = PCBChunk(name, pads, [recentered_connector])
+        pcb_chunk: PCBChunk = PCBChunk(name, pads, [recentered_connector],
+                                       front_artworks=front_artworks)
         connector_module.tag_insert("PadsGroup", pads_group)
         scad_program.append(connector_module)
         self.module: Module3D = connector_module

@@ -150,17 +150,28 @@ class Footprint:
         return footprint.library_name
 
     # Footprint.line():
-    def line(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
+    def line(self, point1: P2D, point2: P2D, layer: str, width: float, tracing: str = "") -> None:
         """Append a line to a footprint."""
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Footprint.line({point1}, {point2}, '{layer}', {width}")
+
+        # Extract some values from *footprint* (i.e. *self*)
         footprint: Footprint = self
         lines: List[str] = footprint.lines
         x1: float = point1.x
         y1: float = point1.y
         x2: float = point2.x
         y2: float = point2.y
+
+        # Create the *line* and append to *lines*:
         line: str = (f"  (fp_line (start {x1:.4f} {-y1:.4f}) (end {x2:.4f} {-y2:.4f}) "
                      f"(layer {layer}) (width {width:.1f}))")
         lines.append(line)
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=Footprint.line({point1}, {point2}, '{layer}', {width}")
 
     # Footprint.name_get():
     def name_get(self) -> str:
@@ -291,10 +302,34 @@ class Footprint:
             # print("do nothing")
             pass
 
-    # KiCadFootprint.thru_hole_pad():
+    # Footprint.simple_polygon_append():
+    def simple_polygon(self, simple_polygon: "SimplePolygon", layer: str, width: float,
+                       tracing: str = "") -> None:
+        """Append a SimpelePolygon to a Footprint."""
+        # Use *footprint* instead of *self*:
+        footprint: Footprint = self
+
+        # Perform any requested *tracing*:
+        next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>Footprint.simplepolygon(*, *, '{layer}', {width}")
+
+        # Extract adjacent point pair from *simple_polygon* and draw a line:
+        simple_polygon_size: int = len(simple_polygon)
+        index: int
+        for index in range(simple_polygon_size):
+            point1: P2D = simple_polygon[index]
+            point2: P2D = simple_polygon[(index + 1) % simple_polygon_size]
+            footprint.line(point1, point2, layer, width, tracing=next_tracing)
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Footprint.simplepolygon(*, *, '{layer}', {width}")
+
+    # Footprint.thru_hole_pad():
     def thru_hole_pad(self, name: str, center: P2D,
                       pad_diameter: float, drill_diameter: float) -> None:
-        """Append a circular through hole pad to a footprint."""
+        """Append a circular through hole pad to a Footprint."""
         footprint: Footprint = self
         lines: List[str] = footprint.lines
         line: str = (f"  (pad {name} thru_hole circle (at {center.x:.4f} {-center.y:.4f}) "
@@ -302,9 +337,9 @@ class Footprint:
                      f"(drill {drill_diameter:.3f}) (layers *.Cu *.Mask))")
         lines.append(line)
 
-    # KiCadFootprint.value():
+    # Footprint.value():
     def value(self, center: P2D, hide: bool) -> None:
-        """Append a value to a footprint."""
+        """Append a value to a Footprint."""
         # Unpack some values from *footprint* (i.e. *self*):
         footprint: Footprint = self
         lines: List[str] = footprint.lines

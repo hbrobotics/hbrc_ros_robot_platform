@@ -2170,6 +2170,19 @@ class SimplePolygon(Scad2D):
         # `polygon` command:
         super().polygon_scad_lines_append([simple_polygon], scad_lines, indent)
 
+    # SimplePolygon.show():
+    def show(self, prefix: str = "") -> None:
+        """Show each point of a SimplePolygon."""
+        # Unpack some values from *simple_polygon* (i.e. *self*):
+        simple_polygon: SimplePolygon = self
+        points: List[P2D] = simple_polygon.points
+
+        # Printout each point.
+        index: int
+        point: P2D
+        for index, point in enumerate(points):
+            print(f"{prefix}Point[Index]:{point}")
+
     # SimplePolygon.reposition():
     def reposition(self, center: P2D, rotate_angle: float,
                    translate: P2D, lock: bool = True) -> "SimplePolygon":
