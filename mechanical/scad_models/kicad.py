@@ -110,18 +110,18 @@ class Footprint:
         line: str
         if pad_dx == 0.0 or pad_dy == 0.0:
             line = (f"  (pad \"{name}\" np_thru_hole circle "
-                    f"(at {center.x:.4f} {-center.y:.4f}) "
-                    f"(size {drill:.1f} {drill:.1f}) "
-                    f"(drill {drill:.1f}) "
+                    f"(at {center.x:.2f} {-center.y:.2f}) "
+                    f"(size {drill:.2f} {drill:.2f}) "
+                    f"(drill {drill:.2f}) "
                     "(layers *.Cu *.Mask))")
         else:
             small_distance: float = 0.0000001
             if abs(pad_dx - pad_dy) < small_distance:
                 # Do a simple circular pad:
                 line = (f"  (pad \"{name}\" thru_hole circle "
-                        f"(at {center.x:.4f} {-center.y:.4f}) "
-                        f"(size {pad_dx:.1f} {pad_dy:.1f}) "
-                        f"(drill {drill:.1f}) "
+                        f"(at {center.x:.2f} {-center.y:.2f}) "
+                        f"(size {pad_dx:.2f} {pad_dy:.2f}) "
+                        f"(drill {drill:.2f}) "
                         "(layers *.Cu *.Mask))")
             else:
                 # Do an oval pad:
@@ -130,9 +130,9 @@ class Footprint:
                 drill_dx: float = pad_dx - pad_extra
                 drill_dy: float = pad_dy - pad_extra
                 line = (f"  (pad \"{name}\" thru_hole oval "
-                        f"(at {center.x:.4f} {-center.y:.4f}) "
-                        f"(size {pad_dx:.1f} {pad_dy:.1f}) "
-                        f"(drill oval {drill_dx:.1f} {drill_dy:.1f}) "
+                        f"(at {center.x:.2f} {-center.y:.2f}) "
+                        f"(size {pad_dx:.2f} {pad_dy:.2f}) "
+                        f"(drill oval {drill_dx:.2f} {drill_dy:.2f}) "
                         "(layers *.Cu *.Mask))")
         if tracing:
             print(f"{tracing}Footprint.hole:'{line}'")
@@ -165,8 +165,8 @@ class Footprint:
         y2: float = point2.y
 
         # Create the *line* and append to *lines*:
-        line: str = (f"  (fp_line (start {x1:.4f} {-y1:.4f}) (end {x2:.4f} {-y2:.4f}) "
-                     f"(layer {layer}) (width {width:.1f}))")
+        line: str = (f"  (fp_line (start {x1:.2f} {-y1:.2f}) (end {x2:.2f} {-y2:.2f}) "
+                     f"(layer {layer}) (width {width:.2f}))")
         lines.append(line)
 
         # Wrap up any requested *tracing*:
@@ -342,9 +342,9 @@ class Footprint:
         """Append a circular through hole pad to a Footprint."""
         footprint: Footprint = self
         lines: List[str] = footprint.lines
-        line: str = (f"  (pad {name} thru_hole circle (at {center.x:.4f} {-center.y:.4f}) "
-                     f" (size {pad_diameter:.4f} {pad_diameter:.4f}) "
-                     f"(drill {drill_diameter:.3f}) (layers *.Cu *.Mask))")
+        line: str = (f"  (pad {name} thru_hole circle (at {center.x:.2f} {-center.y:.2f}) "
+                     f" (size {pad_diameter:.2f} {pad_diameter:.2f}) "
+                     f"(drill {drill_diameter:.2f}) (layers *.Cu *.Mask))")
         lines.append(line)
 
     # Footprint.value():
@@ -424,8 +424,8 @@ class KicadPCB:
                 point1: P2D = cut[index]
                 point2: P2D = cut[(index + 1) % cut_size]
                 cut_line: str = ("  (gr_line "
-                                 f"(start {offset_x + point1.x:.6f} {offset_y - point1.y:.5f}) "
-                                 f"(end {offset_x + point2.x:.6f} {offset_y - point2.y:.5f}) "
+                                 f"(start {offset_x + point1.x:.2f} {offset_y - point1.y:.2f}) "
+                                 f"(end {offset_x + point2.x:.2f} {offset_y - point2.y:.2f}) "
                                  f"(layer {layer}) "
                                  f"(width {width:1.2f}))")
                 cut_lines.append(cut_line)
@@ -463,7 +463,7 @@ class KicadPCB:
     #
     #     # Create the *cut_line_text* into *lines*:
     #     cut_line_text: str = (
-    #         "  (gr_line (start {0:.6f} {1:.6f}) (end {2:.6f} {3:.6f}) "
+    #         "  (gr_line (start {0:.2f} {1:.2f}) (end {2:.2f} {3:.2f}) "
     #         "(layer {4}) (width {5:1.2f}))").format(
     #             offset.x + point1.x, offset.y - point1.y,
     #             offset.x + point2.x, offset.y - point2.y, layer, width)
@@ -556,8 +556,8 @@ class KicadPCB:
                         name, side, position, orientation = references_table[reference_name]
                         # FIXME: Add orientation!!!
                         at_text: str = (f"    (at "
-                                        f"{offset.x + position.x:0.6f} "
-                                        f"{offset.y - position.y:0.6f})")  # KiCad inverts Y axis!
+                                        f"{offset.x + position.x:0.2f} "
+                                        f"{offset.y - position.y:0.2f})")  # KiCad inverts Y axis!
                         if tracing:
                             print(f"{tracing}Found '{reference_name}' in table.")
                             print(f"{tracing}Old: '{lines[at_line_index]}'")

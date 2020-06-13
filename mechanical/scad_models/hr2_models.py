@@ -2085,6 +2085,67 @@ class HCSR04:
         self.right_angle_pin_dy: float = 3.00 - 0.127  # Pin tips to PCB edge; caliper measurement
 
 
+# HeatSink:
+class HeatSink:
+    """Represents a finned heat sink."""
+
+    def __init__(self, scad_program: ScadProgram, name: str, dx: float, dy: float, dz: float,
+                 base_dz: float, fin_dx: float, fin_count: int, color: str) -> None:
+        """Initialize a HeatSink 3D model."""
+        fin_spacing: float = float(fin_count - 1) * fin_dx
+        start_x: float = -(dx / 2.0 - fin_dx / 2.0)
+        # Note that outline is in X/Y plane, so Z is mapped to Y:
+        top_y: float = dz
+        middle_y: float = base_dz
+        bottom_y: float = 0
+
+        # Crude ASCII art of what is desired:
+        #
+        #     B--C   B--C   B--C   B--C   B--C
+        #     |  |   |  |   |  |   |  |   |  |
+        #     |  |   |  |   |  |   |  |   |  |
+        #     |  |   |  |   |  |   |  |   |  |
+        #     A  D---A  D---A  D---A  D---A  D
+        #     |                              |
+        #     a------------------------------d
+
+        # Create the end *profile* as show immediately above:
+        heat_sink_points: List[P2D] = []
+        index: int
+        x: float
+        for index in range(fin_count):
+            x = start_x + float(index) * fin_spacing
+            x1: float = x - fin_dx / 2.0
+            x2: float = x + fin_dx / 2.0
+            start_y: float = bottom_y if index == 0 else middle_y  # a or A
+            end_y: float = bottom_y if index == fin_count - 1 else middle_y  # d or D
+            heat_sink_points.append(P2D(start_y, x1))  # A or a (pick "a" for index == first)
+            heat_sink_points.append(P2D(top_y, x1))    # B
+            heat_sink_points.append(P2D(top_y, x2))    # C
+            heat_sink_points.append(P2D(end_y, x2))    # D or d (pick "d" for index == last)
+        heat_sink_profile: SimplePolygon = SimplePolygon(f"{name} Outline",
+                                                         heat_sink_points, lock=True)
+
+        # Now make *extruded_heat_sink*:
+        extruded_heat_sink: LinearExtrude = LinearExtrude(f"Extruded {name}", heat_sink_profile, dy)
+
+        # Now rotate and translate to get a new *repositioned_heat_sink* that is origin centered:
+        x_axis: P3D = P3D(1.0, 0.0, 0.0)
+        bottom_center: P3D = P3D(0.0, 0.0, dz / 2.0)
+        origin3d: P3D = P3D(0.0, 0.0, 0.0)
+        degrees90: float = pi / 2.0
+        repositioned_heat_sink: Scad3D = extruded_heat_sink.reposition(
+            f"Repositioned {name}", bottom_center, x_axis, degrees90, origin3d)
+        repositioned_heat_sink = repositioned_heat_sink
+        heat_sink_module: Module3D = Module3D(f"{name} Module", [repositioned_heat_sink])
+        scad_program.append(heat_sink_module)
+        scad_program.if3d.name_match_append(name, heat_sink_module, ["name"])
+
+        # Load values into *heat_sink* (i.e. *self*):
+        # heat_sink: HeatSink = self
+        self.module: Module3D = heat_sink_module
+
+
 # MMM1x4:
 class F1x4LP:
     """Represents a Mill-Max F1x4LP low profile connector."""
@@ -3692,6 +3753,80 @@ class RaspberryPi3:
         connector1x2_center: P2D = P2D((58.90 + 64.10) / 2.0, (38.91 + 41.11) / 2.0)
         raspi3b_pcb.module3d_place("M1x2", {"jumpers"}, "",
                                    origin2d, 0.0, connector1x2_center - holes_center)
+
+        # The nominal selected heat sinks are the Seeed Studio 110991327 which contains
+        # 4 heat sinks for raspberry pi 4.  The Digi-Key Part number is 1597-110991327-ND.
+        # The numbers below are all origined in the lower left corner of the board.
+        #
+        # The following values were read off the Raspberry Pi 4B `.dxf` file.
+        #
+        # Heat sinks X x Y (fins) Rasp .dxf min/max X/Y
+        # 14.30 x 14.10 (7 fins)  X:21.75,36.75     Y:24.9,40.1  Processor
+        # 14.30 x 9.90 (7 fins)   X:38.95,50.65     Y:24.9,40.1  SDRAM
+        # 8.80 x 8.90 (5 fins)    X:55.5, 61.5      Y:35,41      Ethernet
+        # 8.80 x 8.90 (f fins)    X:55.1, 63.5      Y:20,28      USB
+
+        # Find the heat sink centers with the origin in lower left corner of Raspberry Pi 4 board:
+        processor_ne2d: P2D = P2D(36.75, 40.1)
+        processor_sw2d: P2D = P2D(21.75, 24.9)
+        processor_center2d: P2D = (processor_sw2d + processor_ne2d) / 2.0
+        processor_center3d: P3D = P3D(processor_center2d.x, processor_center2d.y, 0.0)
+        sdram_ne2d: P2D = P2D(50.65, 40.1)
+        sdram_sw2d: P2D = P2D(38.95, 24.9)
+        sdram_center2d: P2D = (sdram_sw2d + sdram_ne2d) / 2.0
+        sdram_center3d: P3D = P3D(sdram_center2d.x, sdram_center2d.y, 0.0)
+        ethernet_ne2d: P2D = P2D(61.5, 41.0)
+        ethernet_sw2d: P2D = P2D(55.5, 35.0)
+        ethernet_center2d: P2D = (ethernet_sw2d + ethernet_ne2d) / 2.0
+        ethernet_center3d: P3D = P3D(ethernet_center2d.x, ethernet_center2d.y, 0.0)
+        usb_ne2d: P2D = P2D(55.5, 28.0)
+        usb_sw2d: P2D = P2D(55.1, 20.0)
+        usb_center2d: P2D = (usb_sw2d + usb_ne2d) / 2.0
+        usb_center3d: P3D = P3D(usb_center2d.x, usb_center2d.y, 0.0)
+
+        # Construct the heat sinks:
+        heat_sink_dz: float = 8.0
+        heat_sink_base_dz: float = 2.5
+        fin_dx: float = 2.5
+        processor_heat_sink: HeatSink = HeatSink(
+            scad_program, "RPi4 Processor Heat Sink",
+            14.30, 14.10, heat_sink_dz, heat_sink_base_dz, fin_dx, 7, "Silver")
+        sdram_heat_sink: HeatSink = HeatSink(
+            scad_program, "RPi4 SDRam Heat Sink",
+            14.30, 9.90, heat_sink_dz, heat_sink_base_dz, fin_dx, 7, "Silver")
+        ethernet_heat_sink: HeatSink = HeatSink(
+            scad_program, "RPi4 Ethernet Heat Sink",
+            8.80, 8.90, heat_sink_dz, heat_sink_base_dz, fin_dx, 5, "Silver")
+        usb_heat_sink: HeatSink = HeatSink(
+            scad_program, "RPi4 USB Heat Sink",
+            8.80, 8.90, heat_sink_dz, heat_sink_base_dz, fin_dx, 5, "Silver")
+
+        center_offset: P3D = P3D(0.0, 0.0, 0.0)
+        origin3d: P3D = P3D(0.0, 0.0, 0.0)
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        repositioned_processor_heat_sink: Scad3D = (
+            processor_heat_sink.module.use_module_get().
+            reposition("Repositioned RPi4 Processor Heat Sink",
+                       origin3d, z_axis, 0.0, processor_center3d + center_offset))
+        repositioned_sdram_heat_sink: Scad3D = (
+            sdram_heat_sink.module.use_module_get().
+            reposition("Repositioned RPi4 SDRAM Heat Sink",
+                       origin3d, z_axis, 0.0, sdram_center3d + center_offset))
+        repositioned_ethernet_heat_sink: Scad3D = (
+            ethernet_heat_sink.module.use_module_get().
+            reposition("Repositioned RPi4 Ethernet Heat Sink",
+                       origin3d, z_axis, 0.0, ethernet_center3d + center_offset))
+        repositioned_usb_heat_sink: Scad3D = (
+            usb_heat_sink.module.use_module_get().
+            reposition("Repositioned RPi4 UBB Heat Sink",
+                       origin3d, z_axis, 0.0, usb_center3d + center_offset))
+
+        heatsinks_union: Union3D = Union3D("Heatsinks", [
+            repositioned_processor_heat_sink,
+            repositioned_sdram_heat_sink,
+            repositioned_ethernet_heat_sink,
+            repositioned_usb_heat_sink])
+        heatsinks_union = heatsinks_union
 
         # Now place various cubes to represent the other connectors:
         raspi3b_pcb.scad3d_place(Color("Silver RJ45 Connector",
