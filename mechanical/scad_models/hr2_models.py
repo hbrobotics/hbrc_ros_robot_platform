@@ -2927,14 +2927,62 @@ class MasterBoard:
         scad_program.append(module)
         scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
 
+        # Create the *PCBChunk*'s for all 6 boards:
+        master_pcb_chunk: PCBChunk = PCBChunk("Master", [], [])
+        center_pcb_chunk: PCBChunk = PCBChunk("Center", [], [])
+        ne_pcb_chunk: PCBChunk = PCBChunk("NE", [], [])
+        nw_pcb_chunk: PCBChunk = PCBChunk("NW", [], [])
+        se_pcb_chunk: PCBChunk = PCBChunk("SE", [], [])
+        sw_pcb_chunk: PCBChunk = PCBChunk("SW", [], [])
+
+        # Squirt everything into the associated KiCad PCB's:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        master_board_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
+        master_kicad_pcb_path: Path = master_board_directory / "master.kicad_pcb"
+        xmaster_module: Module3D = master_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, master_pcb.pcb_exterior, "Yellow", master_kicad_pcb_path, [])
+        xmaster_module = xmaster_module
+
+        center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
+        xcenter_module: Module3D = center_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, center_pcb.pcb_exterior, "Tan", center_kicad_pcb_path, [])
+        xcenter_module = xcenter_module
+
+        ne_kicad_pcb_path: Path = master_board_directory / "ne.kicad_pcb"
+        xne_module: Module3D = ne_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, ne_pcb.pcb_exterior, "Green", ne_kicad_pcb_path, [])
+        xne_module = xne_module
+
+        nw_kicad_pcb_path: Path = master_board_directory / "nw.kicad_pcb"
+        xnw_module: Module3D = nw_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, nw_pcb.pcb_exterior, "Orange", nw_kicad_pcb_path, [])
+        xnw_module = xnw_module
+
+        se_kicad_pcb_path: Path = master_board_directory / "se.kicad_pcb"
+        xse_module: Module3D = se_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, se_pcb.pcb_exterior, "Purple", se_kicad_pcb_path, [])
+        xse_module = xse_module
+
+        sw_kicad_pcb_path: Path = master_board_directory / "sw.kicad_pcb"
+        xsw_module: Module3D = sw_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, sw_pcb.pcb_exterior, "Red", sw_kicad_pcb_path, [])
+        xsw_module = xsw_module
+
         # Stuff some values into *master_board* (i.e. *self*):
         # master_board: MasterBoard = self
         self.module: Module3D = module
+        self.master_pcb_chunk: PCBChunk = master_pcb_chunk
         self.master_pcb_module: Module3D = master_pcb_module
+        self.center_pcb_chunk: PCBChunk = center_pcb_chunk
         self.center_pcb_module: Module3D = center_pcb_module
+        self.ne_pcb_chunk: PCBChunk = ne_pcb_chunk
         self.ne_pcb_module: Module3D = ne_pcb_module
+        self.nw_pcb_chunk: PCBChunk = nw_pcb_chunk
         self.nw_pcb_module: Module3D = nw_pcb_module
+        self.se_pcb_chunk: PCBChunk = se_pcb_chunk
         self.se_pcb_module: Module3D = se_pcb_module
+        self.sw_pcb_chunk: PCBChunk = sw_pcb_chunk
         self.sw_pcb_module: Module3D = nw_pcb_module
 
         # Wrap up any requested *tracing*:
