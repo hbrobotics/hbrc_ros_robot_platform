@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 
 # HBRC ROS Robot Electical Issues
 
+{Wayne: This text is a bit out of date...}
+
 The organization of this directory is organized around PCB's (Printed Circuit Boards) and
 orders (PCB/Part orders.)  The KiCad printed circuit board software is exclusively used.
 Each PCB is given PCB specific sub-directory (e.g. `master_board` or `encoder`).  Furthermore,
