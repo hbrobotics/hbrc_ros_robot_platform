@@ -1,4 +1,4 @@
 (sym_lib_table
-  (lib (name master_board)(type Legacy)(uri ${KIPRJMOD}/master_board.lib)(options "")(descr "Symbols for master_board"))
-  (lib (name master_board-rescue)(type Legacy)(uri ${KIPRJMOD}/master_board-rescue.lib)(options "")(descr "Rescue symbols for master_board")(disabled))
+  (lib (name hr2)(type Legacy)(uri ${KIPRJMOD}/hr2.lib)(options "")(descr "Symbols for master_board"))
+  (lib (name hr2-rescue)(type Legacy)(uri ${KIPRJMOD}/hr2-rescue.lib)(options "")(descr "Rescue symbols for master_board")(disabled))
 )

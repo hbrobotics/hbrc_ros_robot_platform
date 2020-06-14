@@ -478,8 +478,13 @@ class Pad:
 
     # Pad.__init__():
     def __init__(self, name: str, pad_dx: float, pad_dy: float, drill_diameter: float,
-                 pad_center: "P2D", pad_rotate: float = 0.0) -> None:
+                 pad_center: "P2D", pad_rotate: float = 0.0, tracing: str = "") -> None:
         """Create a PAD."""
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Pad.__init__('{name}', pdx:{pad_dx:.2f} pad_dy:{pad_dy:.2f} "
+                  f"center:{pad_center} dd:{drill_diameter:.2f} pr:{degrees(pad_rotate)})")
+
         # Verify argument types:
         assert name != ""
         assert drill_diameter >= 0.0
@@ -494,6 +499,11 @@ class Pad:
         self.pad_dx: float = pad_dx
         self.pad_dy: float = pad_dy
         self.pad_rotate: float = pad_rotate
+
+        # Wrap-up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=Pad.__init__('{name}', pdx:{pad_dx:.2f} pad_dy:{pad_dy:.2f} "
+                  f"center:{pad_center} dd:{drill_diameter:.2f} pr:{degrees(pad_rotate)})")
 
     # Pad.__str__():
     def __str__(self) -> str:
@@ -1605,8 +1615,7 @@ class PCBChunk:
 
     # PCBChunk.pcb_generate():
     def pcb_generate(self, scad_program: "ScadProgram", dz: float, pcb_exterior: SimplePolygon,
-                     color: str, kicad_pcb_path: Path,
-                     references: List[Reference],
+                     color: str, kicad_pcb_path: Optional[Path], references: List[Reference],
                      tracing: str = "") -> Module3D:
         """Generate a PCB."""
         # Perform any requested *tracing*:
@@ -1647,17 +1656,12 @@ class PCBChunk:
         scad_program.append(module)
         scad_program.if3d.name_match_append(f"{name.lower()}_board", module, [f"{name} Board"])
 
-        # Now open the KiCad file for updating:
-        kicad_pcb: KicadPCB = KicadPCB(kicad_pcb_path, P2D(100.0, 100.0))
-
-        # Update the positions of all of the references:
-        kicad_pcb.modules_update(references, tracing=next_tracing)
-
-        # Place all of the cuts:
-        kicad_pcb.cuts_update([pcb_exterior] + cuts, tracing=next_tracing)
-
-        # Save *kicad_pcb* to disk:
-        kicad_pcb.save()
+        # Update the `.kicad_pcb` file specified by *kicad_pcb_path* (if not *None*):
+        if isinstance(kicad_pcb_path, Path):
+            kicad_pcb: KicadPCB = KicadPCB(kicad_pcb_path, P2D(100.0, 100.0))
+            kicad_pcb.modules_update(references, tracing=next_tracing)
+            kicad_pcb.cuts_update([pcb_exterior] + cuts, tracing=next_tracing)
+            kicad_pcb.save()
 
         # Wrap up any requested *tracing*:
         if tracing:
@@ -1741,13 +1745,13 @@ class PCBChunk:
         if isinstance(parent, PCBChunk):
             parent.sides_swap()
 
-        # Create *side_changed_pcb_chunk* with front and backs scad/artworks swapped and return it:
-        side_changed_pcb_chunk: PCBChunk = pcb_chunk.copy()
-        side_changed_pcb_chunk.back_artworks = front_artworks[:]
-        side_changed_pcb_chunk.back_scads = front_scads[:]
-        side_changed_pcb_chunk.front_artworks = back_artworks[:]
-        side_changed_pcb_chunk.front_scads = back_scads[:]
-        return side_changed_pcb_chunk
+        # Create *side_swapped_pcb_chunk* with front/back scad/artworks swapped and return it:
+        side_swapped_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        side_swapped_pcb_chunk.back_artworks = front_artworks
+        side_swapped_pcb_chunk.back_scads = front_scads
+        side_swapped_pcb_chunk.front_artworks = back_artworks
+        side_swapped_pcb_chunk.front_scads = back_scads
+        return side_swapped_pcb_chunk
 
     # PCBChunk.reposition():
     def reposition(self, center: P2D, rotate: float, translate: P2D,
@@ -2086,7 +2090,7 @@ class HCSR04:
         mount_hole_sw: P2D = -mount_hole_ne
         pcb_dy: float = 20.00  # mm
         pcb_dx: float = 45.00  # mm
-        pcb_dz: float = 1.50   # mm
+        pcb_dz: float = 1.60   # mm
         connector_center: P2D = P2D(0.0, pcb_dy / 2.0 - 4.0 * 2.54 / 2.0)
         transducer_pitch: float = 26.00  # mm
         transducer_diameter: float = 16.00  # mm
@@ -2097,12 +2101,11 @@ class HCSR04:
         transducer_right_center: P2D = P2D(transducer_right_x, 0.0)
 
         # *center_y* is Y center line value:
-        center_y: float = 0.0  # pcb_dy / 2.0
+        center_y: float = 0.0
 
         # Create the *sonar_pcb*:
         sonar_exterior: Square = Square("HCSR04 PCB", pcb_dx, pcb_dy, center=P2D(0.0, center_y))
         sonar_pcb: PCB = PCB("HCSR04", scad_program, pcb_dz, sonar_exterior)
-        # sonar_pcb_chunk: PCBChunk = PCBChunk("XHCSR04", )
 
         # Create the *colored_transducer* and place two of them on *sonar_pcb*:
         transducer_start: P3D = P3D(0.0, center_y, 0.0)
@@ -2124,6 +2127,73 @@ class HCSR04:
         # Wrap up *sonar_pcb*:
         sonar_module: Module3D = sonar_pcb.scad_program_append(scad_program, "LightGreen")
 
+        # Do all of the sonar *PCBChunk* stuff now:
+
+        # Compute the tie down hole *Pad*'s, which are mechanical only (i.e. no copper pads.):
+        # The "miniture" nylon ties are 2.5mm wide.  The hole should be a little larger:
+        tie_down_hole_diameter: float = 2.5 + 0.2  # mm
+        tie_down_hole_e_x: float = 3 * 2.54
+        tie_down_hole_w_x: float = -tie_down_hole_e_x
+        tie_down_hole_y: float = 2.54 / 2.0  # mm
+        tie_down_hole_center_e: P2D = P2D(tie_down_hole_e_x, tie_down_hole_y)
+        tie_down_hole_center_w: P2D = P2D(tie_down_hole_w_x, tie_down_hole_y)
+        tie_down_hole_pad_e: Pad = Pad("HCSR04 East Tie Down Hole",
+                                       0.0, 0.0, tie_down_hole_diameter, tie_down_hole_center_e)
+        tie_down_hole_pad_w: Pad = Pad("HCSR04 West Tie Down Hole",
+                                       0.0, 0.0, tie_down_hole_diameter, tie_down_hole_center_w)
+        tie_down_hole_pads: List[Pad] = [tie_down_hole_pad_e, tie_down_hole_pad_w]
+        tie_down_hole_pads_pcb_chunk: PCBChunk = PCBChunk("HCSR4 Tie Down Holes",
+                                                          tie_down_hole_pads, [])
+
+        # Construct the 3 female mate connector *PCBChunk*s:
+        f1x4_mate: PCBChunk = PCBChunk.join("HCSR04_F1x4", [connectors.f1x4.pcb_chunk,
+                                                            tie_down_hole_pads_pcb_chunk])
+        f1x4h_mate: PCBChunk = PCBChunk.join("HCSR04_F1x4H", [connectors.f1x4h.pcb_chunk,
+                                                              tie_down_hole_pads_pcb_chunk])
+        f1x4lp_mate: PCBChunk = PCBChunk.join("HCSR04_F1x4LP", [connectors.f1x4lp.pcb_chunk,
+                                                                tie_down_hole_pads_pcb_chunk])
+
+        # Generate the 3 female mate connector footprints:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        hr2_pretty_directory: Path = (hr2_directory /
+                                      "electrical" / "master_board" / "rev_a" / "pretty")
+        f1x4_mate.footprint_generate(hr2_pretty_directory, "HCSR04_F1x4_MATE", "CN")
+        f1x4h_mate.footprint_generate(hr2_pretty_directory, "HCSR04_F1x4H_MATE", "CN")
+        f1x4lp_mate.footprint_generate(hr2_pretty_directory, "HCSR04_F1x4LP_MATE", "CN")
+
+        # Construct the *hcsr04_cpcb_chunk*:
+        origin3d: P3D = P3D(0.0, 0.0, 0.0)
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        hcsr04_transducer_module: Module3D = Module3D("HCSR04 Transducer", [colored_transducer])
+        hcsr04_transducer_use_module: UseModule3D = hcsr04_transducer_module.use_module_get()
+        left_transducer: Scad3D = hcsr04_transducer_use_module.reposition(
+            "HCSR04 Left Transducer", origin3d, z_axis, 0.0,
+            P3D(transducer_left_center.x, transducer_left_center.y, 0.0))
+        right_transducer: Scad3D = hcsr04_transducer_use_module.reposition(
+            "HCSR04 Right Transducer", origin3d, z_axis, 0.0,
+            P3D(transducer_right_center.x, transducer_right_center.y, 0.0))
+        hcsr04_transducers: PCBChunk = PCBChunk("HCSR04 Transducers",
+                                                [], [left_transducer, right_transducer])
+
+        # The standard pin number is with pin 1 on the left when viewed from the top.
+        # The right-angle connector is installed on the back side so we swap sides
+        # without swapping pad numbering:
+        m1x4ra: PCBChunk = connectors.m1x4ra.pcb_chunk
+        sides_swapped_m1x4ra: PCBChunk = m1x4ra.sides_swap()
+        repositioned_m1x4: PCBChunk = sides_swapped_m1x4ra.reposition(origin2d, 0.0,
+                                                                      connector_center)
+        centered_hcsr04: PCBChunk = PCBChunk.join("Centered HCSR04",
+                                                  [hcsr04_transducers, repositioned_m1x4])
+        edge_center: P2D = P2D(0.0, pcb_dy / 2.0)
+        hcsr04_pcb_chunk: PCBChunk = centered_hcsr04.reposition(origin2d, 0.0, edge_center)
+        edge_sonar_exterior: SimplePolygon = sonar_exterior.reposition(origin2d, 0.0, edge_center)
+
+        # Generate the *hrsr04_module* but there is no assocaited `.kicad_pcb`):
+        hcsr04_module: Module3D = hcsr04_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, edge_sonar_exterior, "LightGreen", None, [])
+        hcsr04_module = hcsr04_module  # Eventual this will be used.
+
         # Stuff some values into *hrcsr04* (i.e. *self*):
         # hcsr04: HCSR04 = self
         self.module: Module3D = sonar_module
@@ -2132,6 +2202,8 @@ class HCSR04:
         self.pcb_dy: float = pcb_dy
         self.pcb_dz: float = pcb_dz
         self.right_angle_pin_dy: float = 3.00 - 0.127  # Pin tips to PCB edge; caliper measurement
+        self.f1x4_mate_pcb_chunk: PCBChunk = f1x4_mate
+        self.f1x4h_mate_pcb_chunk: PCBChunk = f1x4_mate
 
 
 # HeatSink:
@@ -2257,7 +2329,7 @@ class F1x4LP:
         for index, x_pitch_fraction in enumerate([-1.5, -0.5, 0.5, 1.5]):
             # Create a *pad* and stuff it into *pads_group*:
             x: float = x_pitch_fraction * pin_pitch
-            pad: Pad = Pad(f"{index}", pad_diameter, pad_diameter, drill_diameter, P2D(x, 0.0))
+            pad: Pad = Pad(f"{index + 1}", pad_diameter, pad_diameter, drill_diameter, P2D(x, 0.0))
             pads_group.insert(pad)
             pads.append(pad)
 
@@ -2291,8 +2363,15 @@ class F1x4LP:
         scad_program.if3d.name_match_append("f1x4lp", f1x4lp_module,
                                             ["Female 1x4 Low Profile Cnnector"])
 
+        # Create some *front_artworks*:
+        front_artwork_rectangle: Square = Square("F1x4LP Rectangle", 4.2 * 2.54, 1.2 * 2.54)
+        front_artwork_pin1_circle: Circle = Circle("F1x4LP Pin 1 Circle", 0.2, 8,
+                                                   P2D(-2.25 * 2.54, + 0.75 * 2.54))
+        front_artworks: List[SimplePolygon] = [front_artwork_rectangle, front_artwork_pin1_circle]
+
         # Now create the *pcb_chunk*:
-        pcb_chunk: PCBChunk = PCBChunk("F1x4lp", pads, [f1x4lp_union])
+        pcb_chunk: PCBChunk = PCBChunk("F1x4lp", pads, [f1x4lp_union],
+                                       front_artworks=front_artworks)
 
         # Now insert *pads_group* into *f1x4lp_module*:
         f1x4lp_module.tag_insert("PadsGroup", pads_group)
@@ -4029,6 +4108,12 @@ class RaspberryPi3:
 class RectangularConnector:
     """RectangularConnector represents an NxM connector."""
 
+    # Note:
+    # This code is now needlessly complicated.  Is supports all sorts of transforms that
+    # are no longer used.  Really all it needs to do is produce male/female straight/right angle
+    # rectangular connectors centered on the origin.  All transforms are now performed
+    # down stream by the *PCBChunk* module.
+
     # RectangularConnector.__init__():
     def __init__(self, name: str, scad_program: ScadProgram, rows: int, columns: int,
                  insulation_height: float, pcb_pin_height: float, male_pin_height: float = 0.0,
@@ -4046,7 +4131,8 @@ class RectangularConnector:
                  footprint: Footprint = Footprint("", ""), footprint_pin_number: int = 1,
                  footprint_pad_diameter: float = 0.0, footprint_drill_diameter: float = 0.0,
                  footprint_flags: str = "",
-                 artwork: bool = True) -> None:
+                 artwork: bool = True,
+                 tracing: str = "") -> None:
         """Initialize RectangularConnector and append to ScadProgram.
 
         Create a rectangular mail header with through hole PCB pins.
@@ -4133,6 +4219,12 @@ class RectangularConnector:
                 Specifies whether to supply artwork for the connector.
 
         """
+        # Perform any requested *tracing*:
+        next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>RectangularConnector('{name}', R:{rows}, C:{columns} "
+                  f"VR:{degrees(vertical_rotate)})")
+
         # Stuff all of the values into *rectangular_connector* (i.e. *self*):
         # rectangular_connector: RectangularConnector = self
         self.name: str = name
@@ -4297,22 +4389,24 @@ class RectangularConnector:
                         first_footprint_pin = hole_center
                     else:
                         last_footprint_pin = hole_center
-                    swap_row_index: bool = False
-                    swap_column_index: bool = True
-                    transpose_rows_columns: bool = False
-                    footprint_row_index: int = (rows - row_index - 1
-                                                if swap_row_index else row_index)
-                    footprint_column_index: int = (columns - column_index - 1
-                                                   if swap_column_index else column_index)
-                    pin_number: int
-                    if transpose_rows_columns:
-                        pin_number = footprint_pin_number + (footprint_row_index * columns +
-                                                             columns - footprint_column_index - 1)
-                    else:
-                        pin_number = footprint_pin_number + (footprint_column_index * rows +
-                                                             rows - footprint_row_index - 1)
+                    # swap_row_index: bool = False
+                    # swap_column_index: bool = True
+                    # transpose_rows_columns: bool = False
+                    # footprint_row_index: int = (rows - row_index - 1
+                    #                             if swap_row_index else row_index)
+                    # footprint_column_index: int = (columns - column_index - 1
+                    #                                if swap_column_index else column_index)
+                    #                                if swap_column_index else column_index)
+                    pin_number: int = (footprint_pin_number +
+                                       column_index + 1 + row_index * columns)
+                    # if transpose_rows_columns:
+                    #    assert False
+                    #    pin_number = footprint_pin_number + (footprint_row_index * columns +
+                    #                                         columns - footprint_column_index - 1)
+                    # else:
+                    pin_number = 1 + column_index + row_index * columns
                     pad: Pad = Pad(f"{pin_number}", footprint_pad_diameter, footprint_pad_diameter,
-                                   footprint_drill_diameter, hole_center)
+                                   footprint_drill_diameter, hole_center, tracing=next_tracing)
                     pads_group.insert(pad)
                     pads.append(pad)
                     footprint.thru_hole_pad(f"{pin_number}", hole_center,
@@ -4355,7 +4449,7 @@ class RectangularConnector:
                          P2D(pin_x, y_center + dy / 2.0)])
                     front_artworks.append(line)
             # Draw the pin1 circle:
-            circle: Circle = Circle("{name} Pin 1 circle",  0.2, 8,
+            circle: Circle = Circle("{name} Pin 1 Circle",  0.2, 8,
                                     P2D(x1 - 0.75 * columns_pitch,
                                         max(y1, y2) + 0.75 * rows_pitch))
             front_artworks.append(circle)
@@ -4455,6 +4549,11 @@ class RectangularConnector:
         scad_program.append(connector_module)
         self.module: Module3D = connector_module
         self.pcb_chunk: PCBChunk = pcb_chunk
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>RectangularConnector('{name}', R:{rows}, C:{columns})"
+                  f"VR:{degrees(vertical_rotate)})")
 
 
 # RomiBase:
