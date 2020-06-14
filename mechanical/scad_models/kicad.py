@@ -45,7 +45,7 @@ particular it supports:
 
 """
 
-from typing import Any, Dict, IO, List, Tuple
+from typing import Any, Dict, IO, List
 from pathlib import Path
 from scad_models.scad import P2D, SimplePolygon
 import time
@@ -487,8 +487,7 @@ class KicadPCB:
         kicad_pcb.lines = new_lines
 
     # KicadPcb.modules_update():
-    def modules_update(self, references: List[Tuple[str, bool, P2D, float]],
-                       tracing: str = "") -> None:
+    def modules_update(self, references: List["Reference"], tracing: str = "") -> None:
         """Update the module positions."""
         # Perform any requested *tracing*:
         # next_tracing: str = tracing + " " if tracing else ""
@@ -511,12 +510,10 @@ class KicadPCB:
         reference_prefix_size: int = len(reference_prefix)
 
         # Construct *references_table* from *referneces*:
-        references_table: Dict[str, Tuple[str, bool, P2D, float]] = {}
-        reference_name: str
-        reference: Tuple[str, bool, P2D, float]
+        references_table: Dict[str, Reference] = {}
+        reference: Reference
         for reference in references:
-            reference_name = reference[0]
-            references_table[reference_name] = reference
+            references_table[reference.name] = reference
 
         # Sweep through *lines* looking for modules:
         references_found_table: Dict[str, bool] = {}
@@ -542,18 +539,18 @@ class KicadPCB:
                     reference_line: str = lines[reference_line_index]
                     at_index: int = reference_line.find(" (at ")
                     assert at_index > reference_prefix_size
-                    reference_name = reference_line[reference_prefix_size:at_index]
-                    # print(f"Module Referenec: '{reference}'")
+                    reference_name: str = reference_line[reference_prefix_size:at_index]
+                    # print(f"Module Reference Name: '{reference_name}'")
 
                     # Look up the *reference* from *references_table* and stuff updated location
                     # back into *lines* at *position_index*:
                     if reference_name in references_table:
                         # Unpack the *reference* information from *references_table*:
-                        name: str
-                        side: bool
-                        position: P2D
-                        orientation: float
-                        name, side, position, orientation = references_table[reference_name]
+                        reference = references_table[reference_name]
+                        # name: str = reference.name
+                        # is_front: bool = reference.is_front
+                        position: P2D = reference.position
+                        # rotate: float = reference.rotate
                         # FIXME: Add orientation!!!
                         at_text: str = (f"    (at "
                                         f"{offset.x + position.x:0.2f} "
@@ -620,3 +617,18 @@ class KicadPCB:
         kicad_pcb_file: IO[Any]
         with open(file_name, "w") as kicad_pcb_file:
             kicad_pcb_file.write(kicad_pcb_text)
+
+
+# Reference:
+class Reference:
+    """Represents a reference from a schematic to a PCB footprint."""
+
+    # Reference.__init__():
+    def __init__(self, name: str, is_front: bool, position: P2D, rotate: float) -> None:
+        """Initialize a Reference."""
+        # Load values into *reference* (i.e. *self*):
+        # reference: Reference = self
+        self.name: str = name
+        self.is_front: bool = is_front
+        self.position: P2D = position
+        self.rotate: float = rotate

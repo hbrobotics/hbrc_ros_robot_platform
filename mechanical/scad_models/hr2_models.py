@@ -33,7 +33,7 @@ from scad_models.scad import (
     Square, Translate3D, UseModule2D, UseModule3D, Union3D)
 import os
 from pathlib import Path
-from scad_models.kicad import Footprint, KicadPCB
+from scad_models.kicad import Footprint, KicadPCB, Reference
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
 
@@ -1364,7 +1364,7 @@ class PCBChunk:
                  front_artworks: List[SimplePolygon] = [], cuts: List[SimplePolygon] = [],
                  back_artworks: List[SimplePolygon] = [], back_scads: List[Scad3D] = [],
                  parent: Optional["PCBChunk"] = None,
-                 references: List[Tuple[str, bool, P2D, float]] = []) -> None:
+                 references: List[Reference] = []) -> None:
         """Return an initialized PCB Chunk.
 
         Args:
@@ -1396,7 +1396,7 @@ class PCBChunk:
         self.front_scads: List[Scad3D] = front_scads[:]
         self.pads: List[Pad] = pads[:]
         self.parent: Optional[PCBChunk] = parent
-        self.references: List[Tuple[str, bool, P2D, float]] = references[:]
+        self.references: List[Reference] = references[:]
 
     # PCBChunk.__str__():
     def __str__(self) -> str:
@@ -1411,7 +1411,7 @@ class PCBChunk:
         name: str = pcb_chunk.name
         pads: List[Pad] = pcb_chunk.pads
         parent: Optional[PCBChunk] = pcb_chunk.parent
-        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
+        references: List[Reference] = pcb_chunk.references
 
         parent_text: str = f"'{parent.name}'" if isinstance(parent, PCBChunk) else "None"
         return (f"PCBChunk('{name}', C:{len(cuts)}, "
@@ -1433,7 +1433,7 @@ class PCBChunk:
         name: str = pcb_chunk.name
         pads: List[Pad] = pcb_chunk.pads
         parent: Optional[PCBChunk] = pcb_chunk.parent
-        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
+        references: List[Reference] = pcb_chunk.references
 
         # Create the *copied_pcb_chunk* and return it.
         # (Note, PCB_Chunk always makes shallow copies of the lists):
@@ -1517,7 +1517,7 @@ class PCBChunk:
         merged_front_artworks: List[SimplePolygon] = merged_pcb_chunk.front_artworks
         merged_front_scads: List[Scad3D] = merged_pcb_chunk.front_scads
         merged_pads: List[Pad] = merged_pcb_chunk.pads
-        merged_references: List[Tuple[str, bool, P2D, float]] = merged_pcb_chunk.references
+        merged_references: List[Reference] = merged_pcb_chunk.references
 
         # Sweep through each *pcb_chunk* in *pcb_chunks* and merge the values in:
         merged_parent: Optional[PCBChunk] = None
@@ -1606,7 +1606,7 @@ class PCBChunk:
     # PCBChunk.pcb_generate():
     def pcb_generate(self, scad_program: "ScadProgram", dz: float, pcb_exterior: SimplePolygon,
                      color: str, kicad_pcb_path: Path,
-                     references: List[Tuple[str, bool, P2D, float]],
+                     references: List[Reference],
                      tracing: str = "") -> Module3D:
         """Generate a PCB."""
         # Perform any requested *tracing*:
@@ -1672,18 +1672,17 @@ class PCBChunk:
         """Show the pads."""
         # Unpack some values from *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
-        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
+        references: List[Reference] = pcb_chunk.references
 
         index: int
-        reference: Tuple[str, bool, P2D, float]
+        reference: Reference
         for index, reference in enumerate(references):
-            name: str
-            side: bool
-            position: P2D
-            rotation: float
-            name, side, position, rotation = reference
+            name: str = reference.name
+            is_front: bool = reference.is_front
+            position: P2D = reference.position
+            rotate: float = reference.rotate
             print(f"{prefix}Reference[{index}]: "
-                  f"Reference('{name}' {side} {position} {degrees(rotation)})")
+                  f"Reference('{name}' {is_front} {position} {degrees(rotate)})")
 
     # PCBChunk.scads_x_flip():
     def scads_x_flip(self) -> "PCBChunk":
@@ -1764,7 +1763,7 @@ class PCBChunk:
         name: str = pcb_chunk.name
         pads: List[Pad] = pcb_chunk.pads
         parent: Optional[PCBChunk] = pcb_chunk.parent
-        references: List[Tuple[str, bool, P2D, float]] = pcb_chunk.references
+        references: List[Reference] = pcb_chunk.references
         assert len(references) == 0, "References should never be repositioned."
         if reference_name:
             assert False, f"reference_name:'{reference_name}' translate={translate}"
@@ -1811,7 +1810,7 @@ class PCBChunk:
 
         references = []
         if reference_name != "":
-            reference: Tuple[str, bool, P2D, float] = (reference_name, False, translate, rotate)
+            reference: Reference = Reference(reference_name, False, translate, rotate)
             references = [reference]
 
         # Create *repositioned_pcb_chunk* and return it:
@@ -1993,7 +1992,7 @@ class Encoder:
         # encoder_pcb_chunk.pads_show("encoder_pcb_chunk:")
         # encoder_pcb_chunk.references_show("encoder_pcb_chunk:")
 
-        references: List[Tuple[str, bool, P2D, float]] = [("CN1", True, P2D(0.0, 0.0), 0.0)]
+        references: List[Reference] = [Reference("CN1", True, P2D(0.0, 0.0), 0.0)]
         xencoder_module: Module3D = encoder_pcb_chunk.pcb_generate(
             scad_program, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path, references)
         xencoder_module = xencoder_module
