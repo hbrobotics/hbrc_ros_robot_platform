@@ -54,6 +54,8 @@ class Connectors:
         female_insulation_height: float = 6.00
         male_insulation_height: float = pins_dx_dy
 
+        f1x4lp: F1x4LP = F1x4LP(scad_program)
+
         # Common 1x2 connectors:
         m1x2: RectangularConnector = RectangularConnector(
             "M1x2", scad_program,
@@ -182,6 +184,7 @@ class Connectors:
         self.m1x3ra: RectangularConnector = m1x3ra
         self.f1x3: RectangularConnector = f1x3
         self.m1x4: RectangularConnector = m1x4
+        self.f1x4lp: F1x4LP = f1x4lp
         self.m1x4ra: RectangularConnector = m1x4ra
         self.f1x4: RectangularConnector = f1x4
         self.f1x4h: RectangularConnector = f1x4h
@@ -2073,7 +2076,7 @@ class HCSR04:
     """Represents an HC-SR04 sonar module."""
 
     # HCSR04.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors) -> None:
         """Initialize an HCSR04."""
         # Define some constants:
         #   https://www.makerguides.com/wp-content/uploads/2019/02/HC-SR04-Dimensions-964x1024.jpg
@@ -2100,6 +2103,7 @@ class HCSR04:
         # Create the *sonar_pcb*:
         sonar_exterior: Square = Square("HCSR04 PCB", pcb_dx, pcb_dy, center=P2D(0.0, center_y))
         sonar_pcb: PCB = PCB("HCSR04", scad_program, pcb_dz, sonar_exterior)
+        # sonar_pcb_chunk: PCBChunk = PCBChunk("XHCSR04", )
 
         # Create the *colored_transducer* and place two of them on *sonar_pcb*:
         transducer_start: P3D = P3D(0.0, center_y, 0.0)
@@ -2192,7 +2196,7 @@ class HeatSink:
         self.module: Module3D = heat_sink_module
 
 
-# MMM1x4:
+# F11x4LP:
 class F1x4LP:
     """Represents a Mill-Max F1x4LP low profile connector."""
 
@@ -2246,6 +2250,7 @@ class F1x4LP:
                                               [insulation_square], lock=False)
 
         # Start place in the *translate_pin*'s into the *f1x4lp_union*:
+        pads: List[Pad] = []
         pads_group: PadsGroup = PadsGroup()
         f1x4lp_union: Union3D = Union3D("F1x4LP Union", [], lock=False)
         index: int
@@ -2255,6 +2260,7 @@ class F1x4LP:
             x: float = x_pitch_fraction * pin_pitch
             pad: Pad = Pad(f"{index}", pad_diameter, pad_diameter, drill_diameter, P2D(x, 0.0))
             pads_group.insert(pad)
+            pads.append(pad)
 
             # Place each *translated_pin* into the *f1x4lp_union*:
             pin_position: P3D = P3D(x, 0.0, 0.0)
@@ -2280,11 +2286,14 @@ class F1x4LP:
         f1x4lp_union.append(colored_insulation)
         f1x4lp_union.lock()
 
-        # Now create the module:
+        # Now create the *f1x41lp_module*:
         f1x4lp_module: Module3D = Module3D("F1x4LP", [f1x4lp_union])
         scad_program.append(f1x4lp_module)
         scad_program.if3d.name_match_append("f1x4lp", f1x4lp_module,
                                             ["Female 1x4 Low Profile Cnnector"])
+
+        # Now create the *pcb_chunk*:
+        pcb_chunk: PCBChunk = PCBChunk("F1x4lp", pads, [f1x4lp_union])
 
         # Now insert *pads_group* into *f1x4lp_module*:
         f1x4lp_module.tag_insert("PadsGroup", pads_group)
@@ -2292,8 +2301,9 @@ class F1x4LP:
         # Stuff some values into *f1x4lp* (i.e. *self*):
         # f1x4lp: F1x4LP = self
         self.module: Module3D = f1x4lp_module
-        self.top_z: float = top_z
+        self.pcb_chunk: PCBChunk = pcb_chunk
         self.pin_bottom_z: float = pin_bottom_z
+        self.top_z: float = top_z
 
 
 # HR2BaseAssembly:
@@ -2446,7 +2456,7 @@ class HR2MasterAssembly:
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the HR2MasterAssembly."""
         # print(f"HR2MasterAssembly: nucleo_offset2d:{nucleo_offset2d}")
-        master_board: MasterBoard = MasterBoard(scad_program, base_dxf,
+        master_board: MasterBoard = MasterBoard(scad_program, base_dxf, connectors,
                                                 encoder, raspi3b, nucleo144, st_link,
                                                 pi_offset2d, nucleo_offset2d, st_link_offset2d,
                                                 master_board_z, nucleo_board_z, arm_z,
@@ -2865,7 +2875,7 @@ class MasterBoard:
     """Represents Master PCB that the various Pi boards mount to."""
 
     # MasterBoard.__init__():
-    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF,
+    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, connectors: Connectors,
                  encoder: "Encoder", raspi3b: "RaspberryPi3", nucleo144: "Nucleo144",
                  st_link: "STLink", pi_offset: P2D, nucleo_offset: P2D, st_link_offset: P2D,
                  master_board_bottom_z: float, nucleo_board_z: float, arm_z: float,
@@ -2930,8 +2940,13 @@ class MasterBoard:
         nucleo144_spacers: List[Scad3D] = []
 
         # Create and install all of the sonars:
-        master_board.sonar_modules_create(scad_program)
-        master_board.sonars_install(center_pcb, ne_pcb, nw_pcb, tracing=next_tracing)
+        master_board.sonar_modules_create(scad_program, connectors)
+        center_sonars_pcb_chunk: PCBChunk
+        ne_sonars_pcb_chunk: PCBChunk
+        nw_sonars_pcb_chunk: PCBChunk
+        center_sonars_pcb_chunk, ne_sonars_pcb_chunk, nw_sonars_pcb_chunk = (
+            master_board.sonars_install(connectors, center_pcb, ne_pcb, nw_pcb,
+                                        tracing=next_tracing))
 
         # This is where we *st_link_use_modle* and translate it to the desired location:
         st_link_use_module: UseModule3D = st_link.module.use_module_get()
@@ -2973,47 +2988,59 @@ class MasterBoard:
         scad_program.append(module)
         scad_program.if3d.name_match_append("master_board", module, ["Master Board"])
 
-        # Create the *PCBChunk*'s for all 6 boards:
-        master_pcb_chunk: PCBChunk = PCBChunk("Master", [], [])
-        center_pcb_chunk: PCBChunk = PCBChunk("Center", [], [])
-        ne_pcb_chunk: PCBChunk = PCBChunk("NE", [], [])
-        nw_pcb_chunk: PCBChunk = PCBChunk("NW", [], [])
-        se_pcb_chunk: PCBChunk = PCBChunk("SE", [], [])
-        sw_pcb_chunk: PCBChunk = PCBChunk("SW", [], [])
-
         # Squirt everything into the associated KiCad PCB's:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
         master_board_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
         master_kicad_pcb_path: Path = master_board_directory / "master.kicad_pcb"
-        xmaster_module: Module3D = master_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, master_pcb.pcb_exterior, "Yellow", master_kicad_pcb_path, [])
-        xmaster_module = xmaster_module
 
+        center_pcb_chunk: PCBChunk = PCBChunk.join("XCenter", [
+            center_sonars_pcb_chunk,
+        ])
         center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
         xcenter_module: Module3D = center_pcb_chunk.pcb_generate(
             scad_program, pcb_dz, center_pcb.pcb_exterior, "Tan", center_kicad_pcb_path, [])
         xcenter_module = xcenter_module
 
+        ne_pcb_chunk: PCBChunk = PCBChunk.join("XNE", [
+            ne_sonars_pcb_chunk,
+        ])
         ne_kicad_pcb_path: Path = master_board_directory / "ne.kicad_pcb"
         xne_module: Module3D = ne_pcb_chunk.pcb_generate(
             scad_program, pcb_dz, ne_pcb.pcb_exterior, "Green", ne_kicad_pcb_path, [])
         xne_module = xne_module
 
+        nw_pcb_chunk: PCBChunk = PCBChunk.join("XNW", [
+            nw_sonars_pcb_chunk,
+        ])
         nw_kicad_pcb_path: Path = master_board_directory / "nw.kicad_pcb"
         xnw_module: Module3D = nw_pcb_chunk.pcb_generate(
             scad_program, pcb_dz, nw_pcb.pcb_exterior, "Orange", nw_kicad_pcb_path, [])
         xnw_module = xnw_module
 
+        se_pcb_chunk: PCBChunk = PCBChunk.join("XSE", [])
         se_kicad_pcb_path: Path = master_board_directory / "se.kicad_pcb"
         xse_module: Module3D = se_pcb_chunk.pcb_generate(
             scad_program, pcb_dz, se_pcb.pcb_exterior, "Purple", se_kicad_pcb_path, [])
         xse_module = xse_module
 
+        sw_pcb_chunk: PCBChunk = PCBChunk.join("XSW", [])
         sw_kicad_pcb_path: Path = master_board_directory / "sw.kicad_pcb"
         xsw_module: Module3D = sw_pcb_chunk.pcb_generate(
             scad_program, pcb_dz, sw_pcb.pcb_exterior, "Red", sw_kicad_pcb_path, [])
         xsw_module = xsw_module
+
+        # Create the *PCBChunk*'s for all 6 boards:
+        master_pcb_chunk: PCBChunk = PCBChunk.join("Master", [
+            center_pcb_chunk,
+            ne_pcb_chunk,
+            nw_pcb_chunk,
+            se_pcb_chunk,
+            sw_pcb_chunk])
+
+        xmaster_module: Module3D = master_pcb_chunk.pcb_generate(
+            scad_program, pcb_dz, master_pcb.pcb_exterior, "Yellow", master_kicad_pcb_path, [])
+        xmaster_module = xmaster_module
 
         # Stuff some values into *master_board* (i.e. *self*):
         # master_board: MasterBoard = self
@@ -3438,14 +3465,14 @@ class MasterBoard:
         return master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb, sw_pcb
 
     # MasterBoard.sonar_modules_create():
-    def sonar_modules_create(self, scad_program: ScadProgram) -> None:
+    def sonar_modules_create(self, scad_program: ScadProgram, connectors: Connectors) -> None:
         """Create all of the sonar modules."""
         # Create "F1x4LP" low profile 1x4 .1in female connector:
-        f1x4lp: F1x4LP = F1x4LP(scad_program)
+        f1x4lp: F1x4LP = connectors.f1x4lp
         f1x4lp_top_z: float = f1x4lp.top_z
 
         # Create the *hcsr04_module* and grab some values out of it:
-        hcsr04: HCSR04 = HCSR04(scad_program)
+        hcsr04: HCSR04 = HCSR04(scad_program, connectors)
         hcsr04_pcb_dy: float = hcsr04.pcb_dy
         hcsr04_module: Module3D = hcsr04.module
         hcsr04_use_module: UseModule3D = hcsr04_module.use_module_get()
@@ -3496,7 +3523,8 @@ class MasterBoard:
         #                                     ["Repositioned HC-SR04 sonar"])
 
     # MasterBoard.sonars_install():
-    def sonars_install(self, center_pcb: PCB, ne_pcb: PCB, nw_pcb: PCB, tracing: str = "") -> None:
+    def sonars_install(self, connectors: Connectors, center_pcb: PCB, ne_pcb: PCB, nw_pcb: PCB,
+                       tracing: str = "") -> Tuple[PCBChunk, PCBChunk, PCBChunk]:
         """Install all of the sonars."""
         # Perform any requestd *tracing*:
         # next_tracing: str = ""
@@ -3517,29 +3545,37 @@ class MasterBoard:
         # * *on_bottom*: A flag that is *True* if the sonar is on the PCB bottom.
         sonars_radius: float = 62.0
         degrees2radians: float = pi / 180.0
-        sonar_poses: List[Tuple[str, str, PCB, float, float, float, bool]] = [
-            ("Rear Left Sonar", "high", ne_pcb,
+        center_pcb_chunks: List[PCBChunk] = []
+        ne_pcb_chunks: List[PCBChunk] = []
+        nw_pcb_chunks: List[PCBChunk] = []
+        sonar_poses: List[Tuple[str, str, PCB, List[PCBChunk], float, float, float, bool]] = [
+            ("Rear Left Sonar", "high", ne_pcb, ne_pcb_chunks,
              (90.0 - 1.8 * 22.5) * degrees2radians,               # Trial and error to fit iniside
              (90.0 + 0.5 * 22.5) * degrees2radians, 5.0, False),  # robot perimeter and miss spacer.
-            ("Rear Right Sonar", "high", nw_pcb,
+            ("Rear Right Sonar", "high", nw_pcb, nw_pcb_chunks,
              (90.0 + 1.8 * 22.5) * degrees2radians,               # Same Trial and error as above.
              (90.0 - 0.5 * 22.5) * degrees2radians, 5.0, False),
-            ("Front Right Top Sonar", "medium", center_pcb,
+            ("Front Right Top Sonar", "medium", center_pcb, center_pcb_chunks,
              (270.0 - 2 * 22.5 + 2.5) * degrees2radians,
              (270.0 - 2 * 22.5) * degrees2radians, 0.0, False),
-            ("Front Right Bottom Sonar", "low", center_pcb,
+            ("Front Right Bottom Sonar", "low", center_pcb, center_pcb_chunks,
              (270.0 - 1 * 22.5 - 2.5) * degrees2radians,
              (270.0 - 1 * 22.5) * degrees2radians, 0.0, True),
-            ("Front Center Sonar", "low", center_pcb,
+            ("Front Center Sonar", "low", center_pcb, center_pcb_chunks,
              (270.0) * degrees2radians,
              (270.0) * degrees2radians, 23.0, False),
-            ("Front Left Center Sonar", "low", center_pcb,
+            ("Front Left Center Sonar", "low", center_pcb, center_pcb_chunks,
              (270.0 + 1 * 22.5 + 2.5) * degrees2radians,
              (270.0 + 1 * 22.5) * degrees2radians, 0.0, True),
-            ("Front Right Center Sonar", "high", center_pcb,
+            ("Front Right Center Sonar", "high", center_pcb, center_pcb_chunks,
              (270.0 + 2 * 22.5 - 2.5) * degrees2radians,
              (270.0 + 2 * 22.5) * degrees2radians, 0.0, False),
         ]
+
+        # Grab the 3 different female *PCBChunk*'s:
+        f1x4lp_pcb_chunk: PCBChunk = connectors.f1x4lp.pcb_chunk
+        f1x4_pcb_chunk: PCBChunk = connectors.f1x4.pcb_chunk
+        f1x4h_pcb_chunk: PCBChunk = connectors.f1x4h.pcb_chunk
 
         # Iterate across all of the sonars in *sonar_poses*:
         origin2d: P2D = P2D(0.0, 0.0)
@@ -3547,37 +3583,51 @@ class MasterBoard:
         sonar_name: str
         height: str
         pcb: PCB
+        pcb_chunks: List[PCBChunk]
         rim_angle: float
         beam_angle: float
         radius_offset: float
         on_bottom: bool
-        for sonar_name, height, pcb, rim_angle, beam_angle, sonar_offset, on_bottom in sonar_poses:
+        for (sonar_name, height, pcb, pcb_chunks,
+             rim_angle, beam_angle, sonar_offset, on_bottom) in sonar_poses:
             sonar_radius: float = sonars_radius - sonar_offset - 1.27
             sonar_x: float = sonar_radius * cos(rim_angle)
             sonar_y: float = sonar_radius * sin(rim_angle)
             sonar_flags: str = "byY" if on_bottom else ""
             sonar_translate: P2D = P2D(sonar_x, sonar_y)
+            connector_pcb_chunk: PCBChunk
             if height == "low":
                 pcb.module3d_place("F1x4LP", {"sonar_connectors"}, sonar_flags,
                                    origin2d, beam_angle + degrees90, sonar_translate)
                 pcb.module3d_place("HCSR04Low", {"sonars"}, sonar_flags,
                                    origin2d, beam_angle + degrees90, sonar_translate)
+                connector_pcb_chunk = f1x4lp_pcb_chunk
             elif height == "medium":
                 pcb.module3d_place("F1x4", {"sonar_connectors"}, sonar_flags,
                                    origin2d, beam_angle + degrees90, sonar_translate)
                 pcb.module3d_place("HCSR04Medium", {"sonars"}, sonar_flags,
                                    origin2d, beam_angle + degrees90, sonar_translate)
+                connector_pcb_chunk = f1x4_pcb_chunk
             elif height == "high":
                 pcb.module3d_place("F1x4H", {"sonar_connectors"}, sonar_flags,
                                    origin2d, beam_angle + degrees90, sonar_translate)
                 pcb.module3d_place("HCSR04High", {"sonars"}, sonar_flags,
                                    origin2d, beam_angle + degrees90, sonar_translate)
+                connector_pcb_chunk = f1x4h_pcb_chunk
             else:
                 assert False, f"'{height}' is not one of 'high', 'medium', or 'low'."
+            repostioned_connector_pcb_chunk: PCBChunk = connector_pcb_chunk.reposition(
+                origin2d, beam_angle + degrees90, sonar_translate)
+            pcb_chunks.append(repostioned_connector_pcb_chunk)
+
+        center_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", center_pcb_chunks)
+        ne_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", ne_pcb_chunks)
+        nw_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", nw_pcb_chunks)
 
         # Wrap up any requested *tracing*:
         if tracing:
             print(f"{tracing}<=MasterBoard.sonars_install(*, *, *)")
+        return center_sonar_pcb_chunk, ne_sonar_pcb_chunk, nw_sonar_pcb_chunk
 
     # MasterBoard.spacer_mounts_append():
     def spacer_mounts_append(self, center_pcb: PCB, ne_pcb: PCB, nw_pcb: PCB,
