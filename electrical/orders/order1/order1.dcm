@@ -24,6 +24,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP HR2_EncoderMate;HR2EncoderMate
+D HR2 Encoder Mating Connector
+K ~
+F 
+$ENDCMP
+#
 $CMP STLINKCN2;F1X2
 D ST-Link Ground Pins
 K ~

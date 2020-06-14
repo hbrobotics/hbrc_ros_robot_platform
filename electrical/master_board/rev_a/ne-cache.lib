@@ -1,4 +1,23 @@
 EESchema-LIBRARY Version 2.4
 #encoding utf-8
 #
+# hr2_HR2_EncoderMate;HR2EncoderMate
+#
+DEF hr2_HR2_EncoderMate;HR2EncoderMate CN 0 40 Y Y 1 L N
+F0 "CN" 200 250 60 H V L CNN
+F1 "hr2_HR2_EncoderMate;HR2EncoderMate" 200 150 60 H V L CNN
+F2 "FOOTPRINT" 200 50 60 H I L CNN
+F3 "HR2 Encoder Mating Connector" 200 -150 60 H I L CNN
+F4 "HR2 Encoder Mating Connector" 200 -250 60 H I L CNN "Field5"
+DRAW
+S 200 100 700 -600 1 1 12 f
+X VCC 1 900 0 200 L 50 50 1 1 W
+X GND 2 900 -100 200 L 50 50 1 1 W
+X MOTORIN+ 3 900 -200 200 L 50 50 1 1 P
+X MOTORIN- 4 900 -300 200 L 50 50 1 1 P
+X QUADA 5 900 -400 200 L 50 50 1 1 I
+X QUADB 6 900 -500 200 L 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
 #End Library
