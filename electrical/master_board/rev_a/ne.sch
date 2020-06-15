@@ -13,23 +13,21 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+NoConn ~ 5500 3250
+NoConn ~ 5500 3350
+NoConn ~ 5500 3450
+NoConn ~ 5500 3550
 $Comp
-L hr2:HR2_EncoderMate;HR2EncoderMate CN60
-U 1 1 5EE634C8
-P 3700 2900
-F 0 "CN60" H 4256 3190 60  0000 C CNN
-F 1 "HR2_EncoderMate;HR2EncoderMate" H 4256 3084 60  0000 C CNN
-F 2 "FOOTPRINT" H 3900 2950 60  0001 L CNN
-F 3 "HR2 Encoder Mating Connector" H 3900 2750 60  0001 L CNN
-F 4 "HR2 Encoder Mating Connector" H 3900 2650 60  0001 L CNN "Field5"
-	1    3700 2900
+L HR2:HCSR04H;F1X4 CN60
+U 1 1 5EE6BF38
+P 4800 3250
+F 0 "CN60" H 5050 3400 50  0000 C CNN
+F 1 "HCSR04H;F1X4" H 5150 2800 50  0000 C CNN
+F 2 "HR2:HCSR04_F1x4H_MATE" H 5000 3300 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5000 3100 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5000 3200 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (High Profile Receptacle)" H 5000 3000 60  0001 L CNN "Field5"
+	1    4800 3250
 	1    0    0    -1  
 $EndComp
-NoConn ~ 4600 2900
-NoConn ~ 4600 3000
-NoConn ~ 4600 3100
-NoConn ~ 4600 3200
-NoConn ~ 4600 3300
-NoConn ~ 4600 3400
-NoConn ~ 4500 2750
 $EndSCHEMATC
