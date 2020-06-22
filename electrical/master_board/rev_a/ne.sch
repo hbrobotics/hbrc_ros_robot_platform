@@ -22,7 +22,7 @@ L HR2:HCSR04H;F1X4 CN60
 U 1 1 5EE6BF38
 P 4800 3250
 F 0 "CN60" H 5100 3400 50  0000 C CNN
-F 1 "HCSR04;F1X4H" H 5150 2800 50  0000 C CNN
+F 1 "HCSR04;F1x4H" H 5150 2800 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4H" H 5000 3300 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5000 3100 60  0001 L CNN
 F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5000 3200 60  0001 L CNN "manf#"
