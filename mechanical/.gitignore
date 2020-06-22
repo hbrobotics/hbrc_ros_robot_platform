@@ -5,6 +5,7 @@ dxf
 .coverage
 .mypy_cache
 build
+scad_models.egg-info/SOURCES.txt
 scad_models.egg-info/PKG-INFO
 MT8385-PPi_Rev_A.JPG
 MT8385-PPi_Rev_A.step

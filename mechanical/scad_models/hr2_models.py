@@ -32,10 +32,13 @@ from scad_models.scad import (
     Module2D, Module3D, P2D, P3D, Polygon, Rotate3D, Scad2D, Scad3D, SimplePolygon, ScadProgram,
     Square, Translate3D, UseModule2D, UseModule3D, Union3D)
 import os
+import time
 from pathlib import Path
-from scad_models.kicad import Footprint, KicadPCB, Reference
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
 from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
+
+# Can not do this at the top level since it forms a circular import dependency loop:
+# from scad_models.kicad import Footprint, KicadPCB
 
 
 # Connectors:
@@ -519,7 +522,7 @@ class Pad:
 
         # Create and return the string:
         text: str = (f"Pad('{name}', dd:{drill_diameter:.2f} c:{pad_center}, "
-                     f"dx:{pad_dx:.2f} dy:{pad_dy:.2f} rotate:{degrees(pad_rotate)}:.2f)")
+                     f"dx:{pad_dx:.2f} dy:{pad_dy:.2f} rotate:{degrees(pad_rotate):.2f})")
         return text
 
     # Pad.copy():
@@ -635,6 +638,79 @@ class Pad:
         repositioned_pad: Pad = Pad(new_pad_name, pad_dx, pad_dy, drill_diameter,
                                     reposition_pad_center, pad_rotate + rotate)
         return repositioned_pad
+
+    # Pad.kicad_line():
+    def kicad_line(self, prefix: str, pcb_origin: P2D, tracing: str = "") -> str:
+        """Return a kicad pad S-experession as a line of text."""
+        # Unpack some values from *pad* (i.e. *self*):
+        pad: Pad = self
+        name: str = pad.name
+        pad_center: P2D = pad.pad_center
+        drill_diameter: float = pad.drill_diameter
+        pad_dx: float = pad.pad_dx
+        pad_dy: float = pad.pad_dy
+        pad_rotate: float = pad.pad_rotate
+
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Pad.kicad_line(*, '{pad.name}', '{prefix}', {pcb_origin})")
+            print(f"{tracing}pad={pad}")
+
+        origin_x: float = pcb_origin.x
+        origin_y: float = pcb_origin.y
+
+        # Using *pad_dx*, *pad_dy* and *drill_diameter*, figure out the
+        # *shape_kind* (i.e. one of "oval", "circle", or "rect") and the
+        # hole kind (i.e. one of "np_thru_hole" or "thru_hole":
+        is_oval: bool = abs(pad_dx - pad_dy) > .0000001
+        drill_text: str = ""
+        shape_kind: str
+        hole_kind: str
+        if drill_diameter > 0.0:
+            drill_dx: float = drill_diameter
+            drill_dy: float = drill_diameter
+            if is_oval:
+                # Compute *drill_dx* and *drill_dy*:
+                min_pad_dx_dy: float = min(pad_dx, pad_dy)
+                copper_minimum: float = min_pad_dx_dy - drill_diameter
+                drill_dx = pad_dx - copper_minimum
+                drill_dy = pad_dy - copper_minimum
+                drill_text = (f"(drill oval {KicadPCB.number(drill_dx, 2)} "
+                              f"{KicadPCB.number(drill_dy, 2)}) ")
+                shape_kind = "oval"
+            else:  # Circular
+                shape_kind = "circle"
+                drill_text = f"(drill {KicadPCB.number(drill_diameter, 2)}) "
+            if pad_dx < drill_diameter or pad_dy < drill_diameter:
+                # Mechancal non-plated through hole:
+                hole_kind = "np_thru_hole"
+                # The pad size in the `.kicad_mod` module matches the drill size,
+                # even though there is no pad.  Go figure.
+                pad_dx = drill_dx
+                pad_dy = drill_dy
+            else:
+                # Plated through hole:a
+                hole_kind = "thru_hole"
+        else:
+            # No drill => round pad or rectangular pad:
+            shape_kind = "rect" if is_oval else "circle"
+            assert False, "Surface pad hole_kind not defined yet"
+            hole_kind = "???"  # FIXME: Surface Pad.
+
+        # Circle pads do not need to be rotated:
+        rotate_text: str = (f" {KicadPCB.number(degrees(pad_rotate), 1)}"
+                            if pad_rotate != 0.0 and shape_kind != "circle" else "")
+        line: str = (
+            f"{prefix}  (pad {KicadPCB.string(name)} {hole_kind} {shape_kind} "
+            f"(at {KicadPCB.number(origin_x + pad_center.x, 4)} "
+            f"{KicadPCB.number(origin_y - pad_center.y, 4)}{rotate_text}) "
+            f"(size {KicadPCB.number(pad_dx, 2)} {KicadPCB.number(pad_dy, 2)}) "
+            f"{drill_text}(layers *.Cu *.Mask))")
+
+        # Wrap up any requested *tracing* and return *line*:
+        if tracing:
+            print(f"{tracing}<=Pad.kicad_line(*, '{pad.name}', '{prefix}', {pcb_origin})=>'{line}'")
+        return line
 
     # Pad.x_mirror():
     def x_mirror(self) -> "Pad":
@@ -1366,6 +1442,54 @@ class PCB:
         pcb_polygon.append(simple_polygon)
 
 
+# Reference:
+class Reference:
+    """Represents a reference from a schematic to a PCB footprint."""
+
+    # Reference.__init__():
+    def __init__(self, name: str, is_front: bool, rotate: float, position: P2D,
+                 pcb_chunk: "PCBChunk", value: str) -> None:
+        """Initialize a Reference."""
+        # Load values into *reference* (i.e. *self*):
+        # reference: Reference = self
+        self.is_front: bool = is_front
+        self.name: str = name
+        self.pcb_chunk: PCBChunk = pcb_chunk
+        self.position: P2D = position
+        self.rotate: float = rotate
+        self.value: str = value
+
+    # Reference.__str__():
+    def __str__(self) -> str:
+        """Return a string representation of a Reference."""
+        # Unload values from *reference* (i.e. *self*):
+        reference: Reference = self
+        name: str = reference.name
+        is_front: bool = reference.is_front
+        position: P2D = reference.position
+        rotate: float = reference.rotate
+        value: str = reference.value
+        return f"Reference('{name}', {is_front}, {position}, {degrees(rotate)}deg, '{value}')"
+
+    # Reference.reposition():
+    def reposition(self, rotate_adjust: float, translate: P2D) -> "Reference":
+        """Reposition Reference to a new location and orientation."""
+        # Unload values from *reference* (i.e. *self*):
+        reference: Reference = self
+        name: str = reference.name
+        is_front: bool = reference.is_front
+        position: P2D = reference.position
+        rotate: float = reference.rotate
+        pcb_chunk: PCBChunk = reference.pcb_chunk
+        value: str = reference.value
+
+        # Create *repositioned_reference* and return it:
+        repostioned_reference: Reference = Reference(
+            name, is_front, rotate + rotate_adjust, position + translate, pcb_chunk, value)
+        return repostioned_reference
+
+
+# PCBChunk
 class PCBChunk:
     """Represents a chunk of stuff that can be put on a PCB."""
 
@@ -1373,8 +1497,8 @@ class PCBChunk:
     def __init__(self, name: str, pads: List[Pad], front_scads: List[Scad3D],
                  front_artworks: List[SimplePolygon] = [], cuts: List[SimplePolygon] = [],
                  back_artworks: List[SimplePolygon] = [], back_scads: List[Scad3D] = [],
-                 parent: Optional["PCBChunk"] = None,
-                 references: List[Reference] = []) -> None:
+                 references: List[Reference] = [], value: str = "",
+                 parent: Optional["PCBChunk"] = None) -> None:
         """Return an initialized PCB Chunk.
 
         Args:
@@ -1386,14 +1510,23 @@ class PCBChunk:
               as well.
             * *front_scads*: (*List*[*Scad3D*]):
               A list of *Scad3d*'s to render in the visual model.
-            * *front_artworks*: (*List[*SimplePolygon*]) (Optional: default is []):
+            * *front_artworks*: (*List[*SimplePolygon*])
+              (Optional: default is []):
               A list of front artwork polygons to draw.
-            * *cuts*: (*List*[*SimplePolygon*]) (Optional: default is []):
+            * *cuts*: (*List*[*SimplePolygon*])
+              (Optional: default is []):
               A list of holes to render in the visual model.
-            * *back_artworks*: (*List[*SimplePolygon*]) (Optional: default is []):
+            * *back_artworks*: (*List[*SimplePolygon*])
+              (Optional: default is []):
               A list of front artwork polygons to draw.
-            * *back_scads*: (*List*[*Scad3D*]) (Optional: default is []):
-              A list of *Scad3d*'s to render on the back side of the PCB.
+            * *back_scads*: (*List*[*Scad3D*])
+              (Optional: default is []):
+              A list of *Scad3D*'s to render on back side of the PCB.
+            * *references*: (*List*[*Reference*]):
+              A list of *Reference*'s  associated with the PCBChunk.
+            * *value*: (*str*)
+              (Optional: default is ""):
+              A value string for a PCB footprint.
 
         """
         # Load up *pcb_chunk* (i.e. *self*):
@@ -1407,6 +1540,7 @@ class PCBChunk:
         self.pads: List[Pad] = pads[:]
         self.parent: Optional[PCBChunk] = parent
         self.references: List[Reference] = references[:]
+        self.value: str = value
 
     # PCBChunk.__str__():
     def __str__(self) -> str:
@@ -1422,13 +1556,50 @@ class PCBChunk:
         pads: List[Pad] = pcb_chunk.pads
         parent: Optional[PCBChunk] = pcb_chunk.parent
         references: List[Reference] = pcb_chunk.references
+        value: str = pcb_chunk.value
 
         parent_text: str = f"'{parent.name}'" if isinstance(parent, PCBChunk) else "None"
         return (f"PCBChunk('{name}', C:{len(cuts)}, "
                 f"BA::{len(back_artworks)}, BS:{len(back_scads)}, C:{len(cuts)}, "
                 f"FA:{len(front_artworks)}, FS:{len(front_scads)} P:{len(pads)} "
-                f"R:{len(references)} P:{parent_text})")
+                f"R:{len(references)} P:{parent_text} V:'{value}')")
         return ""
+
+    # PCBChunk.artworks_x_mirror():
+    def artworks_x_mirror(self) -> "PCBChunk":
+        """Return a PCBChunk with pads mirrored around the X axis."""
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+
+        # Create *x_mirrored_pcb_chunk*, update the pads with X axis mirrored ones, and return it:
+        x_mirrored_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        back_artwork: SimplePolygon
+        x_mirrored_pcb_chunk.back_artworks = [back_artwork.x_mirror("X Mirrored Back Artwork")
+                                              for back_artwork in back_artworks]
+        front_artwork: SimplePolygon
+        x_mirrored_pcb_chunk.front_artworks = [front_artwork.x_mirror("X Mirrored Front Artwork")
+                                               for front_artwork in front_artworks]
+        return x_mirrored_pcb_chunk
+
+    # PCBChunk.artworks_y_mirror():
+    def artworks_y_mirror(self) -> "PCBChunk":
+        """Return a PCBChunk with pads mirrored around the Y axis."""
+        # Unpack some values from *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+
+        # Create *y_mirrored_pcb_chunk*, update the pads with Y axis mirrored ones, and return it:
+        y_mirrored_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        back_artwork: SimplePolygon
+        y_mirrored_pcb_chunk.back_artworks = [back_artwork.y_mirror("Y Mirrored Back Artwork")
+                                              for back_artwork in back_artworks]
+        front_artwork: SimplePolygon
+        y_mirrored_pcb_chunk.front_artworks = [front_artwork.y_mirror("Y Mirrored Front Artwork")
+                                               for front_artwork in front_artworks]
+        return y_mirrored_pcb_chunk
 
     # PCBChunk.copy():
     def copy(self) -> "PCBChunk":
@@ -1444,83 +1615,273 @@ class PCBChunk:
         pads: List[Pad] = pcb_chunk.pads
         parent: Optional[PCBChunk] = pcb_chunk.parent
         references: List[Reference] = pcb_chunk.references
+        value: str = pcb_chunk.value
 
         # Create the *copied_pcb_chunk* and return it.
         # (Note, PCB_Chunk always makes shallow copies of the lists):
         copied_pcb_chunk: PCBChunk = PCBChunk(name, pads, front_scads,
                                               front_artworks=front_artworks, cuts=cuts,
                                               back_artworks=back_artworks, back_scads=back_scads,
-                                              references=references, parent=parent)
+                                              references=references, parent=parent, value=value)
         return copied_pcb_chunk
 
-    # PCBChunk.footprint_generate():
-    def footprint_generate(self, directory: Path, base_name: str, reference_prefix: str,
-                           tracing: str = "") -> None:
-        """Generate a footprint from PCBChunk.
+    # PBChunk.header_line_generate():
+    def footprint_header_line_generate(self, prefix: str, library_name: str, footprint_name: str,
+                                       layer: str, edit_timestamp: int, create_timestamp) -> str:
+        """Return the first line of KiCad footprint file."""
+        # Do first line:
+        full_footprint_name: str = f"{library_name}:{footprint_name}"
+        header_line: str = f"{prefix}(module {KicadPCB.string(full_footprint_name)} (layer {layer})"
+        if edit_timestamp != 0:
+            header_line += f" (tedit {edit_timestamp:08X})"
+        if create_timestamp != 0:
+            header_line += f" (tstamp {create_timestamp:08X})"
+        return header_line
 
-        Args:
-            * *base_name* (*str*):
-              The base name of the footprint without the `.kicad_mod`
-              suffix.
-            * *directory* (*Path*):
-              The directory to store the footprint into.
-            * *reference_prefix* (*str*):
-              The default reference prefix to put into the footprint.
-
-        """
-        # Perform any reqested *tracing*:
-        next_tracing: str = tracing + " " if tracing else ""
-        if tracing:
-            print(f"{tracing}=>PCBChunk.footprint_generate('{directory}', "
-                  f"'{base_name}', '{reference_prefix}')")
+    # PCBChunk.footprint_body_lines_generate():
+    def footprint_body_lines_generate(self, prefix: str, pcb_origin: P2D,
+                                      footprint_name: str, reference_name: str, value_name: str,
+                                      path_id: int, rotate: float, position: P2D,
+                                      pads_reverse: bool, tracing: str = "") -> List[str]:
+        """Generate a list of corresponding to a footprint."""
+        def polygon_lines(pcb_origin: P2D, polygon: SimplePolygon, layer: str) -> List[str]:
+            lines: List[str] = []
+            size = len(polygon)
+            if size == 1:
+                lines.append(KicadPCB.fp_line(prefix, pcb_origin, polygon[0], polygon[0], layer))
+            elif size == 2:
+                lines.append(KicadPCB.fp_line(prefix, pcb_origin, polygon[0], polygon[1], layer))
+            else:
+                for index in range(size):
+                    start_point: P2D = polygon[index]
+                    end_point: P2D = polygon[(index + 1) % size]
+                    lines.append(
+                        KicadPCB.fp_line(prefix, pcb_origin, start_point, end_point, layer))
+                    # print(f"[{index}]: {start_point} {end_point}")
+            return lines
 
         # Unpack some values from *PCBChunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
         back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        # back_scads: List[Scad3D] = pcb_chunk.back_scads
+        # cuts: List[SimplePolygon] = pcb_chunk.cuts
         front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
-        # name: str = pcb_chunk.name
+        # front_scads: List[Scad3D] = pcb_chunk.front_scads
+        name: str = pcb_chunk.name
         pads: List[Pad] = pcb_chunk.pads
-        parent: Optional[PCBChunk] = pcb_chunk.parent
+        # parent: Optional[PCBChunk] = pcb_chunk.parent
+        # references: List[Reference] = pcb_chunk.references
+
+        # Perform any requested *tracing*:
+        next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>PCBChunk.body_lines_generate('{name}', '{prefix}', "
+                  f"{pcb_origin}, '{footprint_name}', '{reference_name}', '{value_name}'"
+                  f"{path_id:08X}, {degrees(rotate)}deg, {position})")
+
+        # Extract *origin_x* and *origin_y* from *pcb_origin*.
+        # Note that KiCad has the Y axis inverted, so there are minus signs on coversion.
+        pcb_origin_x: float = pcb_origin.x
+        pcb_origin_y: float = pcb_origin.y
+        footprint_origin: P2D = P2D(0.0, 0.0)
+        origin_x: float = footprint_origin.x
+        origin_y: float = footprint_origin.y
+        if tracing:
+            print(f"{tracing}pcb_origin={pcb_origin} footprint_origin={footprint_origin}")
+
+        lines: List[str] = []
+        rotate_text: str = "" if rotate == 0.0 else f" {KicadPCB.number(degrees(rotate), 1)}"
+        if tracing:
+            print(f"{tracing}rotate_text: '{rotate_text}'")
+
+        # If appropriate add a ...(at ...) line:
+        if position.x != 0.0 or position.y != 0.0 or rotate != 0.0:
+            lines.append(f"{prefix}  (at {KicadPCB.number(pcb_origin_x + position.x, 4)} "
+                         f"{KicadPCB.number(pcb_origin_y - position.y, 4)}{rotate_text})")
+
+        # If appropriate add a ...(path /XXXXX) line:
+        if path_id != 0:
+            lines.append(f"{prefix}  (path /{path_id:08X})")
+
+        # Do a ...(fp_text reference ...) line:
+        footprint_mode: bool = True
+        tail_parenthesis: str = "" if footprint_mode else ")"
+        reference_position: P2D = P2D(0.0, 2.0)
+        reference_layer: str = "F.SilkS"
+        line = f"{prefix}  (fp_text reference {KicadPCB.string(reference_name)}"
+        line += f" (at {KicadPCB.number(origin_x + reference_position.x, 4)} "
+        line += f"{KicadPCB.number(origin_y - reference_position.y, 4)}{rotate_text})"
+        line += f" (layer {reference_layer})"
+        lines.append(line)
+        lines.append(f"{prefix}    (effects (font (size 1 1) (thickness 0.2))){tail_parenthesis}")
+        if footprint_mode:
+            lines.append(f"{prefix}  )")
+
+        # Do a ...(fp_text value ...) line:
+        value_position: P2D = P2D(0.0, 0.0)
+        value_layer: str = "F.Fab"
+        if value_name == "":
+            value_name = "NO_VALUE"
+        line = f"{prefix}  (fp_text value {KicadPCB.string(value_name)}"
+        line += f" (at {KicadPCB.number(origin_x + value_position.x, 4)} "
+        line += f"{KicadPCB.number(origin_y - value_position.y, 4)}{rotate_text})"
+        line += f" (layer {value_layer})"
+        lines.append(line)
+        lines.append(f"{prefix}    (effects (font (size 1 1) (thickness 0.2))){tail_parenthesis}")
+        if footprint_mode:
+            lines.append(f"{prefix}  )")
+
+        # Add all of the artwork to *lines*:
+        polygon: SimplePolygon
+        for polygon in front_artworks:
+            lines.extend(polygon_lines(footprint_origin, polygon, "F.SilkS"))
+        for polygon in back_artworks:
+            lines.extend(polygon_lines(footprint_origin, polygon, "B.SilkS"))
+
+        # Add all of the *pads* to *lines*.  The pads seem to get reversed when they copied from
+        # the `.kicad_mod` file over to the `.kicad_pcb file`; hence the *pads_reverse_flag*:
+        pad: Pad
+        if pads_reverse:
+            for pad in reversed(pads):
+                lines.append(pad.kicad_line(prefix, footprint_origin, tracing=next_tracing))
+        else:
+            for pad in pads:
+                lines.append(pad.kicad_line(prefix, footprint_origin, tracing=next_tracing))
+
+        # Add the closing parenthesis and return the resulting *lines*:
+        lines.append(f"{prefix})")
+
+        if tracing:
+            print(f"{tracing}<=PCBChunk.body_lines_generate('{name}', '{prefix}', "
+                  f"{pcb_origin}, '{footprint_name}', '{reference_name}', '{value_name}'"
+                  f"{path_id:08X}, {degrees(rotate)}deg, {position})")
+        return lines
+
+    # PCBChunk.footprint_generate():
+    def footprint_generate(self, library_name: str, directory: Path, tracing: str = "") -> None:
+        """Generate a footprint from PCBChunk.
+
+        Args:
+            * *directory* (*Path*):
+              The directory to store the footprint into.
+
+        """
+        # Perform any reqested *tracing*:
+        # next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>PCBChunk.footprint_generate('library_name', '{directory.name}')")
+
+        # Unpack some values from *PCBChunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        # back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        # front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        name: str = pcb_chunk.name
+        # pads: List[Pad] = pcb_chunk.pads
+        # parent: Optional[PCBChunk] = pcb_chunk.parent
+        value: str = pcb_chunk.value
+        if tracing:
+            print(f"{tracing}value:'{value}'")
+
+        # Create the *footprint_path* file name path:
+        footprint_path: Path = directory / (name + ".kicad_mod")
+
+        # Preread any previous version of *footprint_path* to find any previous *create_timestamp*,
+        # *edit_timestamp*, and *previous_body_lines*:
+        create_timestamp: int = 0
+        edit_timestamp: int = 0
+        previous_body_lines: List[str] = []
+        footprint_file: IO[Any]
+        if footprint_path.is_file():
+            # Read in *previous_footprint_lines*:
+            with open(footprint_path, "r") as footprint_file:
+                previous_footprint_lines = footprint_file.read().splitlines()
+            if len(previous_footprint_lines) >= 1:
+                # There is a *first_line*, extract the two timestamps if possible:
+                first_line: str = previous_footprint_lines[0]
+                tedit_index: int = first_line.find("(tedit ")
+                if tedit_index >= 0:
+                    edit_timestamp_text: str = first_line[tedit_index+7:tedit_index+7+8]
+                    try:
+                        edit_timestamp = int(edit_timestamp_text, 16)
+                    except ValueError:
+                        assert False, f"Edit '{edit_timestamp_text}' from '{first_line}'"
+                tstamp_index: int = first_line.find("(tstamp ")
+                if tstamp_index >= 0:
+                    create_timestamp_text: str = first_line[tstamp_index+8:tstamp_index+8+8]
+                    try:
+                        create_timestamp = int(create_timestamp_text, 16)
+                    except ValueError:
+                        assert False, f"Create '{create_timestamp_text}' from '{first_line}'"
+                previous_body_lines = previous_footprint_lines[1:]
+
+        # Create the *new_body_lines*:
+        origin2d: P2D = P2D(0.0, 0.0)
+        prefix: str = ""
+        path_id: int = 0  # No *path_id*'s in a footprint.
+        new_body_lines: List[str] = pcb_chunk.footprint_body_lines_generate(
+            prefix, origin2d, name, "REF**", value, path_id, 0.0, origin2d, False)
+
+        # It is really important to create the *create_timestamp* only once and always resuse it.
+        # The *edit_timestamp* needs to be changed anytime the file content changes.
+        if create_timestamp == 0:
+            create_timestamp = int(time.time())
+        if edit_timestamp < create_timestamp:
+            edit_timestamp = create_timestamp
+        if previous_body_lines != new_body_lines:
+            # Footprint content changed:
+            edit_timestamp = int(time.time())
+
+        # Always write out the file, even if the content has not changed so that the modification
+        # timestamp of the file is updated for make dependency checking:
+        new_header_line: str = pcb_chunk.footprint_header_line_generate(
+            prefix, library_name, name, "F.Cu", edit_timestamp, create_timestamp)
+        new_footprint_lines: List[str] = [new_header_line] + new_body_lines
+        if tracing:
+            print(f"{tracing}Writing footprint out to {footprint_path.name}")
+        with open(footprint_path, "w") as footprint_file:
+            footprint_text: str = '\n'.join(new_footprint_lines + [""])
+            footprint_file.write(footprint_text)
+
+        # This stuff is OLD and nees to be eventually deleted:
+        # footprint_path = directory / (name + ".kicad_mod")
 
         # Now start the *footprint*:
-        footprint: Footprint = Footprint("HR2", base_name)
-        footprint.reference(P2D(0.0, 0.0))
+        # footprint: Footprint = Footprint("HR2", name)
+        # footprint.reference(P2D(0.0, 0.0))
 
         # Iterate over each *pad* in the *pads*:
-        index: int
-        pad: Pad
-        for index, pad in enumerate(pads):
-            # Output a pad defintion:
-            # print(f"footprint_generate[{index}]:{pad}")
-            footprint.hole(pad.name, pad.pad_center, pad.pad_dx, pad.pad_dy, pad.drill_diameter)
+        # index: int
+        # pad: Pad
+        # for index, pad in enumerate(pads):
+        #     # Output a pad defintion:
+        #     # print(f"footprint_generate[{index}]:{pad}")
+        #     footprint.hole(pad.name, pad.pad_center, pad.pad_dx, pad.pad_dy, pad.drill_diameter)
 
-        back_artwork: SimplePolygon
-        for back_artwork in back_artworks:
-            footprint.simple_polygon(back_artwork, "B.SilkS", 0.2, tracing=next_tracing)
+        # back_artwork: SimplePolygon
+        # for back_artwork in back_artworks:
+        #     footprint.simple_polygon(back_artwork, "B.SilkS", 0.2, tracing=next_tracing)
 
-        front_artwork: SimplePolygon
-        for front_artwork in front_artworks:
-            footprint.simple_polygon(front_artwork, "F.SilkS", 0.2, tracing=next_tracing)
+        # front_artwork: SimplePolygon
+        # for front_artwork in front_artworks:
+        #     footprint.simple_polygon(front_artwork, "F.SilkS", 0.2, tracing=next_tracing)
 
         # Save the *footprint* into the file system:
-        full_base_name = base_name + ".kicad_mod"
-        footprint.save(directory / full_base_name, "t")
+        # footprint.save(footprint_path, "t")
 
         # For now do not mirror this operation up to the *parent*:
-        parent = parent
+        # parent = parent
 
         # Wrap up any reqested *tracing*:
         if tracing:
-            print(f"{tracing}<=PCBChunk.footprint_generate('{directory}', "
-                  f"'{base_name}', '{reference_prefix}')")
+            print(f"{tracing}<=PCBChunk.footprint_generate('library_name', '{directory.name}')")
 
     @staticmethod
     # PCBChunk.join():
-    def join(name: str, pcb_chunks: List["PCBChunk"]) -> "PCBChunk":
+    def join(name: str, pcb_chunks: List["PCBChunk"], value: str = "") -> "PCBChunk":
         """Return a merged set of PCBChunk's."""
         # Create *merged_pcb_chunk* with empty values and unpack them all:
         merged_pcb_chunk: PCBChunk = PCBChunk(name, [], [], front_artworks=[], cuts=[],
-                                              back_artworks=[], back_scads=[])
+                                              back_artworks=[], back_scads=[], value=value)
         merged_back_artworks: List[SimplePolygon] = merged_pcb_chunk.back_artworks
         merged_back_scads: List[Scad3D] = merged_pcb_chunk.back_scads
         merged_cuts: List[SimplePolygon] = merged_pcb_chunk.cuts
@@ -1613,15 +1974,17 @@ class PCBChunk:
         assert pcb_chunk.parent is None, "Parent already set"
         pcb_chunk.parent = parent
 
-    # PCBChunk.pcb_generate():
-    def pcb_generate(self, scad_program: "ScadProgram", dz: float, pcb_exterior: SimplePolygon,
-                     color: str, kicad_pcb_path: Optional[Path], references: List[Reference],
-                     tracing: str = "") -> Module3D:
+    # PCBChunk.pcb_update():
+    def pcb_update(self, scad_program: "ScadProgram", pcb_origin: P2D, dz: float,
+                   pcb_exterior: SimplePolygon, color: str,
+                   kicad_pcb_path: Optional[Path], more_references: List[Reference],
+                   tracing: str = "") -> Module3D:
         """Generate a PCB."""
         # Perform any requested *tracing*:
+        path_name: str = kicad_pcb_path.name if isinstance(kicad_pcb_path, Path) else "None"
         next_tracing: str = tracing + " " if tracing else ""
         if tracing:
-            print(f"{tracing}=>pcb_generate(*, {dz:.1f}, '{color}', '{kicad_pcb_path}')")
+            print(f"{tracing}=>PCBChunk.pcb_update(*, {dz:.1f}, '{color}', '{path_name}')")
 
         # Note: this operation does *NOT* get mirrored to a parent.
 
@@ -1633,8 +1996,12 @@ class PCBChunk:
         # front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
         front_scads: List[Scad3D] = pcb_chunk.front_scads
         name: str = pcb_chunk.name
-        # print(f"PCBChunk.pcb_generate(): name:'{name}'")
+        # print(f"PCBChunk.pcb_update(): name:'{name}'")
         pads: List[Pad] = pcb_chunk.pads
+        references: List[Reference] = pcb_chunk.references
+
+        # all_references: List[Reference] = references + more_references
+        all_cuts: List[SimplePolygon] = cuts + [pcb_exterior]
 
         # Create the *board_polygon* fill it with *pads* and *cuts*:
         board_polygon: Polygon = Polygon(f"{name} Board Polygon", [pcb_exterior], lock=False)
@@ -1652,24 +2019,104 @@ class PCBChunk:
 
         # Group all of the *front_scads* into a *front_union* and construct *module*:
         front_union: Union3D = Union3D(f"{name} Front Union", front_scads)
-        module: Module3D = Module3D(f"{name}_pcb", [colored_pcb, front_union] + back_scads)
-        scad_program.append(module)
-        scad_program.if3d.name_match_append(f"{name.lower()}_board", module, [f"{name} Board"])
+        module3d: Module3D = Module3D(f"{name}_xpcb", [colored_pcb, front_union] + back_scads)
+        scad_program.append(module3d)
+        scad_program.if3d.name_match_append(f"{name.lower()}_board", module3d, [f"{name} Board"])
+
+        # Read in the *previous_pcb_lines* associated with *kicad_pcb_path*:
+        if isinstance(kicad_pcb_path, Path):
+            assert kicad_pcb_path.is_file(), f"'{kicad_pcb_path}' does not exist."
+            previous_pcb_text: str
+            kicad_pcb_file: IO[Any]
+            with open(kicad_pcb_path, "r") as kicad_pcb_file:
+                previous_pcb_text = kicad_pcb_file.read()
+            previous_pcb_lines: List[str] = previous_pcb_text.splitlines()
+
+            # Extract the *pcb_modules_table* and *ordered_pcb_modules* from *previous_pcb_lines*:
+            pcb_modules_table: Dict[str, PCBModule]
+            ordered_pcb_modules: List[PCBModule]
+            pcb_modules_table, ordered_pcb_modules = PCBModule.modules_extract(previous_pcb_lines)
+            reassembled_lines: List[str] = PCBModule.generate_lines(ordered_pcb_modules)
+            assert reassembled_lines == previous_pcb_lines
+
+            # Remove the cut lines:
+            for pcb_module in ordered_pcb_modules:
+                pcb_module.cut_lines_strip()
+
+            # Sweep through all of *references*:
+            reference: Reference
+            for reference in references:
+                # Unpack some values from *reference*:
+                reference_is_front: bool = reference.is_front
+                reference_name: str = reference.name
+                reference_position: P2D = reference.position
+                reference_rotate: float = reference.rotate
+                reference_value: str = reference.value
+                reference_rotate = 0.0  # Kludge for now.
+                reference_layer: str = "F.Cu" if reference_is_front else "B.Cu"
+                reference_pcb_chunk: PCBChunk = reference.pcb_chunk
+                if tracing:
+                    print(f"{tracing}Ref: name:'{reference_name}' postion:{reference_position} "
+                          f"rotate:{degrees(reference_rotate)} is_front:{reference_is_front} "
+                          f"layer:{reference_layer}")
+
+                # Make sure that there is *reference_pcb_module* that match *reference_name*:
+                if reference_name in pcb_modules_table:
+                    # We have a match; now unpack some values form *reference_pcb_module*:
+                    reference_pcb_module: PCBModule = pcb_modules_table[reference_name]
+                    create_timestamp: int = reference_pcb_module.create_timestamp
+                    edit_timestamp: int = reference_pcb_module.edit_timestamp
+                    footprint_name: str = reference.pcb_chunk.name
+                    path_id: int = reference_pcb_module.path_id
+                    module_prefix: str = reference_pcb_module.module_prefix
+
+                    # Create the *footprint_header_line*:
+                    library_name: str = "HR2"  # Kludge!
+                    if tracing:
+                        print(f"{tracing}Ref '{reference_name}' for '{path_name}'")
+                    footprint_header_line: str = (
+                        reference_pcb_chunk.footprint_header_line_generate(
+                            module_prefix, library_name, footprint_name, reference_layer,
+                            edit_timestamp, create_timestamp))
+
+                    # Create the *footprint_body_lines*:
+                    footprint_body_lines: List[str] = (
+                        reference_pcb_chunk.footprint_body_lines_generate(
+                            module_prefix, pcb_origin, f"{library_name}:{footprint_name}",
+                            reference_name, reference_value, path_id, reference_rotate,
+                            reference_position, True, tracing=next_tracing))
+                    footprint_lines: List[str] = [footprint_header_line] + footprint_body_lines
+                    reference_pcb_module.module_lines = footprint_lines
+                else:
+                    # Obviously something is wrong:
+                    if tracing:
+                        print(f"{tracing}Reference '{reference_name}' not for '{kicad_pcb_path}'")
+
+            # Insert the cuts into the *final_pcb_module*:
+            final_pcb_module: PCBModule = ordered_pcb_modules[-1]
+            final_pcb_module.cut_lines_insert(all_cuts, pcb_origin)
+
+            # Create *final_assembled_lines* and write them out:
+            final_reassembled_lines = PCBModule.generate_lines(ordered_pcb_modules)
+            with open(kicad_pcb_path, "w") as kicad_pcb_file:
+                kicad_pcb_file.write('\n'.join(final_reassembled_lines + [""]))
+
+        # OLD CODE to be removed:
 
         # Update the `.kicad_pcb` file specified by *kicad_pcb_path* (if not *None*):
-        if isinstance(kicad_pcb_path, Path):
-            kicad_pcb: KicadPCB = KicadPCB(kicad_pcb_path, P2D(100.0, 100.0))
-            kicad_pcb.modules_update(references, tracing=next_tracing)
-            kicad_pcb.cuts_update([pcb_exterior] + cuts, tracing=next_tracing)
-            kicad_pcb.save()
+        # if isinstance(kicad_pcb_path, Path):
+        #     kicad_pcb: KicadPCB = KicadPCB(kicad_pcb_path, P2D(100.0, 100.0))
+        #     kicad_pcb.modules_update(all_references, tracing=next_tracing)
+        #     kicad_pcb.cuts_update([pcb_exterior] + cuts, tracing=next_tracing)
+        #    kicad_pcb.save()
 
         # Wrap up any requested *tracing*:
         if tracing:
-            print(f"{tracing}<=pcb_generate(*, {dz:.1f}, '{color}', '{kicad_pcb_path}')=>*")
+            print(f"{tracing}<=PCBChunk.pcb_update(*, {dz:.1f}, '{color}', '{path_name}')")
 
         # Stuff *module* into *pcb_chunk* (i.e. *self*) and return it:
-        self.module: Module3D = module
-        return module
+        self.module: Module3D = module3d
+        return module3d
 
     # PCBChunk.references_show():
     def references_show(self, prefix: str = "") -> None:
@@ -1754,8 +2201,7 @@ class PCBChunk:
         return side_swapped_pcb_chunk
 
     # PCBChunk.reposition():
-    def reposition(self, center: P2D, rotate: float, translate: P2D,
-                   reference_name: str = "") -> "PCBChunk":
+    def reposition(self, center: P2D, rotate: float, translate: P2D) -> "PCBChunk":
         """Return a repositioned PCBChunk."""
         # Unpack some values *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
@@ -1769,12 +2215,10 @@ class PCBChunk:
         parent: Optional[PCBChunk] = pcb_chunk.parent
         references: List[Reference] = pcb_chunk.references
         assert len(references) == 0, "References should never be repositioned."
-        if reference_name:
-            assert False, f"reference_name:'{reference_name}' translate={translate}"
 
         # Mirror any operation to the *parent*:
         if isinstance(parent, PCBChunk):
-            parent.reposition(center, rotate, translate, reference_name=reference_name)
+            parent.reposition(center, rotate, translate)
 
         # Create some 3D values:
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
@@ -1812,17 +2256,16 @@ class PCBChunk:
             pad.reposition("", center, rotate, translate)
             for pad_index, pad in enumerate(pads)]
 
-        references = []
-        if reference_name != "":
-            reference: Reference = Reference(reference_name, False, translate, rotate)
-            references = [reference]
+        repositioned_references: List[Reference] = [
+            reference.reposition(rotate, translate)
+            for reference in references]
 
         # Create *repositioned_pcb_chunk* and return it:
         repositioned_pcb_chunk: PCBChunk = PCBChunk(
             name, repositioned_pads, repositioned_front_scads,
             front_artworks=repositioned_front_artworks, cuts=repositioned_cuts,
             back_artworks=repositioned_back_artworks, back_scads=repositioned_back_scads,
-            references=references)
+            references=repositioned_references)
         return repositioned_pcb_chunk
 
 
@@ -1840,13 +2283,193 @@ class PCBGroup:
         self.scad3ds: List[Scad3D] = []
 
 
+# PCBModule:
+class PCBModule:
+    """Represents a module in `.kicad_pcb` file."""
+
+    # Module.__init__():
+    def __init__(self, reference_name: str, preceeding_lines: List[str],
+                 module_lines: List[str], edit_timestamp: int, create_timestamp: int,
+                 path_id: int, module_prefix: str) -> None:
+        """Initialize a Module."""
+        # Stuff values into *module* (i.e *self*):
+        # module: Module = self
+        self.create_timestamp: int = create_timestamp
+        self.edit_timestamp: int = edit_timestamp
+        self.module_lines: List[str] = module_lines
+        self.module_prefix: str = module_prefix
+        self.path_id: int = path_id
+        self.preceeding_lines: List[str] = preceeding_lines
+        self.reference_name: str = reference_name
+
+    # Module.modules_extract():
+    @staticmethod
+    def modules_extract(pcb_lines: List[str]) -> Tuple[Dict[str, "PCBModule"], List["PCBModule"]]:
+        """Extract a table and list of Module's from some PCB lines."""
+        # Create *modules_table* and *ordered_modules*:
+        pcb_modules_table: Dict[str, PCBModule] = {}
+        ordered_pcb_modules: List[PCBModule] = []
+
+        # State machine to extract *Modules*'s:
+        create_timestamp: int = 0
+        edit_timestamp: int = 0
+        in_module: bool = False
+        index: int
+        module_end: str = ""
+        module_lines: List[str] = []
+        module_prefix: str = ""
+        path_id: int = 0
+        path_pattern: str = "(path /"
+        pcb_line: str
+        pcb_module: PCBModule
+        preceeding_lines: List[str] = []
+        reference_name: str = ""
+        reference_pattern: str = "(fp_text reference "
+        for index, pcb_line in enumerate(pcb_lines):
+            if in_module:
+                module_lines.append(pcb_line)
+                path_index: int = pcb_line.find(path_pattern)
+                reference_index: int = pcb_line.find(reference_pattern)
+                if reference_index >= 0:
+                    # We found the reference:
+                    assert reference_name == "", "Duplicate reference?"
+                    reference_start_index: int = reference_index + len(reference_pattern)
+                    reference_end_index: int = pcb_line[reference_start_index:].find(' ')
+                    assert reference_end_index >= 0, "Bad reference"
+                    reference_end_index += reference_start_index
+                    reference_name = pcb_line[reference_start_index:reference_end_index]
+                elif path_index >= 0:
+                    # We found "...(path /XXXXXXXX)"
+                    path_str: str = pcb_line[path_index+len(path_pattern):-1]
+                    try:
+                        path_id = int(path_str, 16)
+                    except ValueError:
+                        assert False, f"'{path_str}' in 'pcb_line' is not a hex number"
+                elif pcb_line == module_end:
+                    # We found the end of the module:
+                    assert reference_name != "", "No reference in module"
+                    pcb_module = PCBModule(reference_name, preceeding_lines, module_lines,
+                                           edit_timestamp, create_timestamp, path_id, module_prefix)
+                    pcb_modules_table[reference_name] = pcb_module
+                    ordered_pcb_modules.append(pcb_module)
+
+                    # Reset everything to search for another module:
+                    in_module = False
+                    module_lines = []
+                    preceeding_lines = []
+                    reference_name = ""
+                    module_prefix = ""
+                    module_end = ""
+                    path_id = 0
+                    edit_timestamp = 0
+                    create_timestamp = 0
+            else:
+                # Search for "...(module..."):
+                module_index: int = pcb_line.find("(module ")
+                if module_index >= 0:
+                    # Found it; extract the timestamps:
+                    assert not in_module, "Nested module?"
+                    tedit_index: int = pcb_line.find("(tedit ")
+                    if tedit_index >= 0:
+                        edit_timestamp_text: str = pcb_line[tedit_index+7:tedit_index+7+8]
+                        try:
+                            edit_timestamp = int(edit_timestamp_text, 16)
+                        except ValueError:
+                            assert False, f"'{edit_timestamp_text}' from '{pcb_line}' is not hex"
+                    tstamp_index: int = pcb_line.find("(tstamp ")
+                    if tstamp_index >= 0:
+                        create_timestamp_text: str = pcb_line[tstamp_index+8:tstamp_index+8+8]
+                        try:
+                            create_timestamp = int(create_timestamp_text, 16)
+                        except ValueError:
+                            assert False, f"'{create_timestamp_text}' from '{pcb_line}' is not hex"
+                    module_prefix = pcb_line[:module_index]
+                    module_end = module_prefix + ")"
+                    in_module = True
+                    module_lines = [pcb_line]
+                else:
+                    preceeding_lines.append(pcb_line)
+
+        # Create one last *final_module* to contain the remaining lines and return everything:
+        final_pcb_module: PCBModule = PCBModule("", preceeding_lines, module_lines, 0, 0, 0, "")
+        ordered_pcb_modules.append(final_pcb_module)
+        return pcb_modules_table, ordered_pcb_modules
+
+    # PCBModule.generate_lines():
+    @staticmethod
+    def generate_lines(ordered_modules: List["PCBModule"]) -> List[str]:
+        """Return the lines associated with a list of PCBModule's."""
+        # Sweep through *ordered_modules*, create *reassembled_lines* and return them:
+        reassembled_lines: List[str] = []
+        for module in ordered_modules:
+            reassembled_lines.extend(module.preceeding_lines)
+            reassembled_lines.extend(module.module_lines)
+        return reassembled_lines
+
+    # PCBModule.cut_lines_strip():
+    def cut_lines_strip(self) -> None:
+        """Remove cut-lines from a PCBModule."""
+        # Grab some values from *pcb_module* (i.e. *self*):
+        pcb_module: PCBModule = self
+        preceeding_lines: List[str] = pcb_module.preceeding_lines
+        stripped_pcb_lines: List[str] = []
+        pcb_line: str
+        for pcb_line in preceeding_lines:
+            if pcb_line.find("(gr_line ") < 0 or pcb_line.find("(layer Edge.Cuts)") < 0:
+                stripped_pcb_lines.append(pcb_line)
+        pcb_module.preceeding_lines = stripped_pcb_lines
+
+    # PCBModule.cuts_insert():
+    def cut_lines_insert(self, cuts: List[SimplePolygon], offset: P2D):
+        """Insert some cut lines at the end of a ModulePCB."""
+        # Grab some values from *pcb_module* (i.e. *self*):
+        pcb_module: PCBModule = self
+        reference_name: str = pcb_module.reference_name
+        preceeding_lines: List[str] = pcb_module.preceeding_lines
+
+        # Require that this be the last *PCBModule" (i.e. empty reference name):
+        assert reference_name == ""
+
+        # Since this is the last *PCBModule* *preceeding_lines* is actually *final_lines*:
+        final_lines: List[str] = preceeding_lines
+
+        # Remove the last two lines (probably a blank line followed by the closing parenthesis):
+        last_line: str = final_lines.pop()
+        next_to_last_line: str = final_lines.pop()
+
+        # Append the cut lines from *cuts* to *final_lines*:
+        offset_x = offset.x
+        offset_y = offset.y
+        width: float = 0.05
+        layer: str = "Edge.Cuts"
+        cut: SimplePolygon
+        for cut in cuts:
+            cut_size: int = len(cut)
+            index: int
+            for index in range(cut_size):
+                point1: P2D = cut[index]
+                point2: P2D = cut[(index + 1) % cut_size]
+                cut_line: str = ("  (gr_line "
+                                 f"(start {KicadPCB.number(offset_x + point1.x, 2)} "
+                                 f"{KicadPCB.number(offset_y - point1.y, 2)}) "
+                                 f"(end {KicadPCB.number(offset_x + point2.x, 2)} "
+                                 f"{KicadPCB.number(offset_y - point2.y, 2)}) "
+                                 f"(layer {layer}) "
+                                 f"(width {KicadPCB.number(width, 2)}))")
+                final_lines.append(cut_line)
+
+        # Restore the final two lines:
+        final_lines.append(next_to_last_line)
+        final_lines.append(last_line)
+
+
 # Encoder:
 class Encoder:
     """Represents a motor encoder board."""
 
     # Encoder.__init__():
     def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF,
-                 connectors: Connectors, tracing: str = "") -> None:
+                 connectors: Connectors, pcb_origin: P2D, tracing: str = "") -> None:
         """Initialize the Encoder and append to ScadProgram."""
         # Perform any requested *tracing*:
         # next_tracing: str = tracing + " " if tracing else ""
@@ -1988,25 +2611,25 @@ class Encoder:
         encoder_pcb_path: Path = encoder_pcb_directory / "encoder.kicad_pcb"
 
         # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
-        encoder_pcb_chunk: PCBChunk = PCBChunk.join("XEncoder", [m1x3ra_pcb_chunk_north,
-                                                                 m1x3ra_pcb_chunk_south,
-                                                                 motor_slots_pcb_chunk])
-        encoder_pcb_chunk.footprint_generate(encoder_pcb_pretty_directory, "Encoder", "CN")
+        encoder_pcb_chunk: PCBChunk = PCBChunk.join(
+            "Encoder", [m1x3ra_pcb_chunk_north, m1x3ra_pcb_chunk_south, motor_slots_pcb_chunk])
+        encoder_pcb_chunk.footprint_generate("HR2", encoder_pcb_pretty_directory)
+        encoder_pcb_chunk.pcb_update(scad_program, pcb_origin, 1.6, encoder_exterior, "Purple",
+                                     encoder_pcb_path, [])
 
         # encoder_pcb_chunk.pads_show("encoder_pcb_chunk:")
         # encoder_pcb_chunk.references_show("encoder_pcb_chunk:")
 
-        references: List[Reference] = [Reference("CN1", True, P2D(0.0, 0.0), 0.0)]
-        xencoder_module: Module3D = encoder_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path, references)
-        xencoder_module = xencoder_module
+        # references: List[Reference] = [Reference(
+        #     "CN1", True, 0.0, P2D(0.0, 0.0), encoder_pcb_chunk)]  # pcb_chunk is bogus; no matter!
+        # xencoder_module: Module3D = encoder_pcb_chunk.pcb_update(
+        #     scad_program, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path, references)
+        # xencoder_module = xencoder_module
 
         encoder_pcb.pad_append("7", {"motors"}, "",
                                pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_north_slot_center)
         encoder_pcb.pad_append("8", {"motors"}, "",
                                pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_south_slot_center)
-
-        encoder_pcb_chunk = encoder_pcb_chunk
 
         # f1x3_pcb_chunk_north: PCBChunk = f1x3.reposition(origin2d, degrees90, degrees)
         # f1x3_pcb_chunk_south: PCBChunk = f1x3.reposition(origin2d,
@@ -2033,10 +2656,10 @@ class Encoder:
                                pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_south_slot_center)
 
         # Digikey: 2057-PH1RB-03-UA-ND (Adam Tech):
-        encoder_pcb.footprint_generate(Path("/tmp"), "ENCODER",
-                                       {"connectors", "motors", "shaft"}, "U")
-        encoder_pcb.footprint_generate(Path("/tmp"), "ENCODER_MATE",
-                                       {"connectors"}, "U")
+        # encoder_pcb.footprint_generate(Path("/tmp"), "En",
+        #                                {"connectors", "motors", "shaft"}, "U")
+        # encoder_pcb.footprint_generate(Path("/tmp"), "ENCODER_MATE",
+        #                                {"connectors"}, "U")
 
         # Wrap up the *encoder_pcb*:
 
@@ -2079,7 +2702,7 @@ class HCSR04:
     """Represents an HC-SR04 sonar module."""
 
     # HCSR04.__init__():
-    def __init__(self, scad_program: ScadProgram, connectors: Connectors) -> None:
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors, pcb_origin: P2D) -> None:
         """Initialize an HCSR04."""
         # Define some constants:
         #   https://www.makerguides.com/wp-content/uploads/2019/02/HC-SR04-Dimensions-964x1024.jpg
@@ -2131,8 +2754,10 @@ class HCSR04:
 
         # Compute the tie down hole *Pad*'s, which are mechanical only (i.e. no copper pads.):
         # The "miniture" nylon ties are 2.5mm wide.  The hole should be a little larger:
-        tie_down_hole_diameter: float = 2.5 + 0.2  # mm
-        tie_down_hole_e_x: float = 3 * 2.54
+        tie_down_hole_diameter: float = 2.5 + 0.05  # mm
+        tie_down_hole_radius: float = tie_down_hole_diameter / 2.0
+        tie_down_hole_x_extra: float = 0.2
+        tie_down_hole_e_x: float = 2.0 * 2.54 + tie_down_hole_radius + tie_down_hole_x_extra
         tie_down_hole_w_x: float = -tie_down_hole_e_x
         tie_down_hole_y: float = 2.54 / 2.0  # mm
         tie_down_hole_center_e: P2D = P2D(tie_down_hole_e_x, tie_down_hole_y)
@@ -2146,21 +2771,30 @@ class HCSR04:
                                                           tie_down_hole_pads, [])
 
         # Construct the 3 female mate connector *PCBChunk*s:
-        f1x4_mate: PCBChunk = PCBChunk.join("HCSR04_F1x4", [connectors.f1x4.pcb_chunk,
-                                                            tie_down_hole_pads_pcb_chunk])
-        f1x4h_mate: PCBChunk = PCBChunk.join("HCSR04_F1x4H", [connectors.f1x4h.pcb_chunk,
-                                                              tie_down_hole_pads_pcb_chunk])
-        f1x4lp_mate: PCBChunk = PCBChunk.join("HCSR04_F1x4LP", [connectors.f1x4lp.pcb_chunk,
-                                                                tie_down_hole_pads_pcb_chunk])
+        y_mirrored_f1x4_pcb_chunk: PCBChunk = (
+            connectors.f1x4.pcb_chunk.pads_y_mirror().artworks_y_mirror())
+        y_mirrored_f1x4h_pcb_chunk: PCBChunk = (
+            connectors.f1x4h.pcb_chunk.pads_y_mirror().artworks_y_mirror())
+        y_mirrored_f1x4lp_pcb_chunk: PCBChunk = (
+            connectors.f1x4lp.pcb_chunk.pads_y_mirror().artworks_y_mirror())
+        f1x4_mate: PCBChunk = PCBChunk.join(
+            "HCSR04_F1x4",
+            [y_mirrored_f1x4_pcb_chunk, tie_down_hole_pads_pcb_chunk], value="HCSR04;F1x4")
+        f1x4h_mate: PCBChunk = PCBChunk.join(
+            "HCSR04_F1x4H",
+            [y_mirrored_f1x4h_pcb_chunk, tie_down_hole_pads_pcb_chunk], value="HCSR04;F1x4H")
+        f1x4lp_mate: PCBChunk = PCBChunk.join(
+            "HCSR04_F1x4LP",
+            [y_mirrored_f1x4lp_pcb_chunk, tie_down_hole_pads_pcb_chunk], value="HCSR04;F1x4LP")
 
         # Generate the 3 female mate connector footprints:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
         hr2_pretty_directory: Path = (hr2_directory /
                                       "electrical" / "master_board" / "rev_a" / "pretty")
-        f1x4_mate.footprint_generate(hr2_pretty_directory, "HCSR04_F1x4_MATE", "CN")
-        f1x4h_mate.footprint_generate(hr2_pretty_directory, "HCSR04_F1x4H_MATE", "CN")
-        f1x4lp_mate.footprint_generate(hr2_pretty_directory, "HCSR04_F1x4LP_MATE", "CN")
+        f1x4_mate.footprint_generate("HR2", hr2_pretty_directory)
+        f1x4h_mate.footprint_generate("HR2", hr2_pretty_directory)
+        f1x4lp_mate.footprint_generate("HR2", hr2_pretty_directory)
 
         # Construct the *hcsr04_cpcb_chunk*:
         origin3d: P3D = P3D(0.0, 0.0, 0.0)
@@ -2190,8 +2824,8 @@ class HCSR04:
         edge_sonar_exterior: SimplePolygon = sonar_exterior.reposition(origin2d, 0.0, edge_center)
 
         # Generate the *hrsr04_module* but there is no assocaited `.kicad_pcb`):
-        hcsr04_module: Module3D = hcsr04_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, edge_sonar_exterior, "LightGreen", None, [])
+        hcsr04_module: Module3D = hcsr04_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, edge_sonar_exterior, "LightGreen", None, [])
         hcsr04_module = hcsr04_module  # Eventual this will be used.
 
         # Stuff some values into *hrcsr04* (i.e. *self*):
@@ -2203,7 +2837,8 @@ class HCSR04:
         self.pcb_dz: float = pcb_dz
         self.right_angle_pin_dy: float = 3.00 - 0.127  # Pin tips to PCB edge; caliper measurement
         self.f1x4_mate_pcb_chunk: PCBChunk = f1x4_mate
-        self.f1x4h_mate_pcb_chunk: PCBChunk = f1x4_mate
+        self.f1x4h_mate_pcb_chunk: PCBChunk = f1x4h_mate
+        self.f1x4lp_mate_pcb_chunk: PCBChunk = f1x4lp_mate
 
 
 # HeatSink:
@@ -2524,7 +3159,7 @@ class HR2MasterAssembly:
 
     # HR2MasterAssembly.__init__():
     def __init__(self,
-                 scad_program: ScadProgram, connectors: Connectors,
+                 scad_program: ScadProgram, pcb_origin: P2D, connectors: Connectors,
                  hr2_pi_assembly: "HR2PiAssembly", base_dxf: BaseDXF,
                  pi_board_z, master_board_z: float, nucleo_board_z: float, arm_z: float,
                  pi_offset2d: P2D, nucleo_offset2d: P2D, st_link_offset2d: P2D,
@@ -2534,7 +3169,7 @@ class HR2MasterAssembly:
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the HR2MasterAssembly."""
         # print(f"HR2MasterAssembly: nucleo_offset2d:{nucleo_offset2d}")
-        master_board: MasterBoard = MasterBoard(scad_program, base_dxf, connectors,
+        master_board: MasterBoard = MasterBoard(scad_program, pcb_origin, base_dxf, connectors,
                                                 encoder, raspi3b, nucleo144, st_link,
                                                 pi_offset2d, nucleo_offset2d, st_link_offset2d,
                                                 master_board_z, nucleo_board_z, arm_z,
@@ -2630,14 +3265,14 @@ class HR2PiAssembly:
 class HR2Robot:
     """Represents the entire HR2 robot."""
 
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, pcb_origin: P2D) -> None:
         """Initialize an HR2Robot."""
         # Create the various shared *connectors* first:
         connectors: Connectors = Connectors(scad_program)
 
         # Build the *encoder8:
         base_dxf: BaseDXF = BaseDXF()
-        encoder: Encoder = Encoder(scad_program, base_dxf, connectors)
+        encoder: Encoder = Encoder(scad_program, base_dxf, connectors, pcb_origin)
 
         # The various critical board heights are based off of the *encoder_bottom_z*:
         encoder_bottom_z: float = encoder.bottom_z
@@ -2696,7 +3331,7 @@ class HR2Robot:
                                                        pi_offset2d, st_link_offset2d)
         romi_base_keys: List[Tuple[Any, ...]] = hr2_base_assembly.romi_base_keys_get()
         hr2_master_assembly: HR2MasterAssembly = HR2MasterAssembly(
-            scad_program, connectors, hr2_pi_assembly, base_dxf,
+            scad_program, pcb_origin, connectors, hr2_pi_assembly, base_dxf,
             pi_board_z, master_board_z, nucleo_board_z, arm_z,
             pi_offset2d, nucleo_offset2d, st_link_offset2d,
             encoder, raspi3b, nucleo144, st_link,
@@ -2953,16 +3588,16 @@ class MasterBoard:
     """Represents Master PCB that the various Pi boards mount to."""
 
     # MasterBoard.__init__():
-    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, connectors: Connectors,
-                 encoder: "Encoder", raspi3b: "RaspberryPi3", nucleo144: "Nucleo144",
-                 st_link: "STLink", pi_offset: P2D, nucleo_offset: P2D, st_link_offset: P2D,
-                 master_board_bottom_z: float, nucleo_board_z: float, arm_z: float,
-                 romi_base_keys: List[Tuple[Any, ...]],
+    def __init__(self, scad_program: ScadProgram, pcb_origin: P2D, base_dxf: BaseDXF,
+                 connectors: Connectors, encoder: "Encoder", raspi3b: "RaspberryPi3",
+                 nucleo144: "Nucleo144", st_link: "STLink", pi_offset: P2D, nucleo_offset: P2D,
+                 st_link_offset: P2D, master_board_bottom_z: float, nucleo_board_z: float,
+                 arm_z: float, romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]], tracing: str = "") -> None:
         """Initialize the MasterBoard."""
         master_board: MasterBoard = self
 
-        next_tracing: str = ""
+        next_tracing: str = tracing + " " if tracing else ""
         if tracing:
             next_tracing = tracing + " "
             print(f"{tracing}=>MasterBoard.__init__(...)")
@@ -3018,12 +3653,13 @@ class MasterBoard:
         nucleo144_spacers: List[Scad3D] = []
 
         # Create and install all of the sonars:
-        master_board.sonar_modules_create(scad_program, connectors)
+        hcsr04: HCSR04 = HCSR04(scad_program, connectors, pcb_origin)
+        master_board.sonar_modules_create(scad_program, hcsr04, connectors)
         center_sonars_pcb_chunk: PCBChunk
         ne_sonars_pcb_chunk: PCBChunk
         nw_sonars_pcb_chunk: PCBChunk
         center_sonars_pcb_chunk, ne_sonars_pcb_chunk, nw_sonars_pcb_chunk = (
-            master_board.sonars_install(connectors, center_pcb, ne_pcb, nw_pcb,
+            master_board.sonars_install(hcsr04, center_pcb, ne_pcb, nw_pcb,
                                         tracing=next_tracing))
 
         # This is where we *st_link_use_modle* and translate it to the desired location:
@@ -3076,36 +3712,38 @@ class MasterBoard:
             center_sonars_pcb_chunk,
         ])
         center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
-        xcenter_module: Module3D = center_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, center_pcb.pcb_exterior, "Tan", center_kicad_pcb_path, [])
+        xcenter_module: Module3D = center_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz,
+            center_pcb.pcb_exterior, "Tan", center_kicad_pcb_path, [])
         xcenter_module = xcenter_module
 
         ne_pcb_chunk: PCBChunk = PCBChunk.join("XNE", [
             ne_sonars_pcb_chunk,
         ])
         ne_kicad_pcb_path: Path = master_board_directory / "ne.kicad_pcb"
-        xne_module: Module3D = ne_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, ne_pcb.pcb_exterior, "Green", ne_kicad_pcb_path, [])
+        xne_module: Module3D = ne_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, ne_pcb.pcb_exterior, "Green", ne_kicad_pcb_path, [],
+            tracing=next_tracing)
         xne_module = xne_module
 
         nw_pcb_chunk: PCBChunk = PCBChunk.join("XNW", [
             nw_sonars_pcb_chunk,
         ])
         nw_kicad_pcb_path: Path = master_board_directory / "nw.kicad_pcb"
-        xnw_module: Module3D = nw_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, nw_pcb.pcb_exterior, "Orange", nw_kicad_pcb_path, [])
+        xnw_module: Module3D = nw_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, nw_pcb.pcb_exterior, "Orange", nw_kicad_pcb_path, [])
         xnw_module = xnw_module
 
         se_pcb_chunk: PCBChunk = PCBChunk.join("XSE", [])
         se_kicad_pcb_path: Path = master_board_directory / "se.kicad_pcb"
-        xse_module: Module3D = se_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, se_pcb.pcb_exterior, "Purple", se_kicad_pcb_path, [])
+        xse_module: Module3D = se_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, se_pcb.pcb_exterior, "Purple", se_kicad_pcb_path, [])
         xse_module = xse_module
 
         sw_pcb_chunk: PCBChunk = PCBChunk.join("XSW", [])
         sw_kicad_pcb_path: Path = master_board_directory / "sw.kicad_pcb"
-        xsw_module: Module3D = sw_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, sw_pcb.pcb_exterior, "Red", sw_kicad_pcb_path, [])
+        xsw_module: Module3D = sw_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, sw_pcb.pcb_exterior, "Red", sw_kicad_pcb_path, [])
         xsw_module = xsw_module
 
         # Create the *PCBChunk*'s for all 6 boards:
@@ -3116,8 +3754,9 @@ class MasterBoard:
             se_pcb_chunk,
             sw_pcb_chunk])
 
-        xmaster_module: Module3D = master_pcb_chunk.pcb_generate(
-            scad_program, pcb_dz, master_pcb.pcb_exterior, "Yellow", master_kicad_pcb_path, [])
+        xmaster_module: Module3D = master_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, master_pcb.pcb_exterior,
+            "Yellow", master_kicad_pcb_path, [])
         xmaster_module = xmaster_module
 
         # Stuff some values into *master_board* (i.e. *self*):
@@ -3543,14 +4182,14 @@ class MasterBoard:
         return master_pcb, center_pcb, ne_pcb, nw_pcb, se_pcb, sw_pcb
 
     # MasterBoard.sonar_modules_create():
-    def sonar_modules_create(self, scad_program: ScadProgram, connectors: Connectors) -> None:
+    def sonar_modules_create(self, scad_program: ScadProgram,
+                             hcsr04: HCSR04, connectors: Connectors) -> None:
         """Create all of the sonar modules."""
         # Create "F1x4LP" low profile 1x4 .1in female connector:
         f1x4lp: F1x4LP = connectors.f1x4lp
         f1x4lp_top_z: float = f1x4lp.top_z
 
         # Create the *hcsr04_module* and grab some values out of it:
-        hcsr04: HCSR04 = HCSR04(scad_program, connectors)
         hcsr04_pcb_dy: float = hcsr04.pcb_dy
         hcsr04_module: Module3D = hcsr04.module
         hcsr04_use_module: UseModule3D = hcsr04_module.use_module_get()
@@ -3601,7 +4240,7 @@ class MasterBoard:
         #                                     ["Repositioned HC-SR04 sonar"])
 
     # MasterBoard.sonars_install():
-    def sonars_install(self, connectors: Connectors, center_pcb: PCB, ne_pcb: PCB, nw_pcb: PCB,
+    def sonars_install(self, hcsr04: HCSR04, center_pcb: PCB, ne_pcb: PCB, nw_pcb: PCB,
                        tracing: str = "") -> Tuple[PCBChunk, PCBChunk, PCBChunk]:
         """Install all of the sonars."""
         # Perform any requestd *tracing*:
@@ -3624,36 +4263,47 @@ class MasterBoard:
         sonars_radius: float = 62.0
         degrees2radians: float = pi / 180.0
         center_pcb_chunks: List[PCBChunk] = []
+        center_references: List[Reference] = []
         ne_pcb_chunks: List[PCBChunk] = []
+        ne_references: List[Reference] = []
         nw_pcb_chunks: List[PCBChunk] = []
-        sonar_poses: List[Tuple[str, str, PCB, List[PCBChunk], float, float, float, bool]] = [
-            ("Rear Left Sonar", "high", ne_pcb, ne_pcb_chunks,
+        nw_references: List[Reference] = []
+        sonar_poses: List[Tuple[str, str, PCB, List[PCBChunk], List[Reference], str,
+                                float, float, float, bool]] = [
+            ("Rear Left Sonar", "high", ne_pcb, ne_pcb_chunks, ne_references, "CN60",
              (90.0 - 1.8 * 22.5) * degrees2radians,               # Trial and error to fit iniside
              (90.0 + 0.5 * 22.5) * degrees2radians, 5.0, False),  # robot perimeter and miss spacer.
-            ("Rear Right Sonar", "high", nw_pcb, nw_pcb_chunks,
+            ("Rear Right Sonar", "high", nw_pcb, nw_pcb_chunks, nw_references, "CN70",
              (90.0 + 1.8 * 22.5) * degrees2radians,               # Same Trial and error as above.
              (90.0 - 0.5 * 22.5) * degrees2radians, 5.0, False),
-            ("Front Right Top Sonar", "medium", center_pcb, center_pcb_chunks,
+            ("Front Right Top Sonar", "medium", center_pcb,
+             center_pcb_chunks, center_references, "CN50",
              (270.0 - 2 * 22.5 + 2.5) * degrees2radians,
              (270.0 - 2 * 22.5) * degrees2radians, 0.0, False),
-            ("Front Right Bottom Sonar", "low", center_pcb, center_pcb_chunks,
+            ("Front Right Bottom Sonar", "low", center_pcb,
+             center_pcb_chunks, center_references, "CN51",
              (270.0 - 1 * 22.5 - 2.5) * degrees2radians,
              (270.0 - 1 * 22.5) * degrees2radians, 0.0, True),
-            ("Front Center Sonar", "low", center_pcb, center_pcb_chunks,
+            ("Front Center Sonar", "low", center_pcb,
+             center_pcb_chunks, center_references, "CN52",
              (270.0) * degrees2radians,
              (270.0) * degrees2radians, 23.0, False),
-            ("Front Left Center Sonar", "low", center_pcb, center_pcb_chunks,
+            ("Front Left Center Sonar", "low", center_pcb,
+             center_pcb_chunks, center_references, "CN53",
              (270.0 + 1 * 22.5 + 2.5) * degrees2radians,
              (270.0 + 1 * 22.5) * degrees2radians, 0.0, True),
-            ("Front Right Center Sonar", "high", center_pcb, center_pcb_chunks,
+            ("Front Right Center Sonar", "high", center_pcb,
+             center_pcb_chunks, center_references, "CN54",
              (270.0 + 2 * 22.5 - 2.5) * degrees2radians,
              (270.0 + 2 * 22.5) * degrees2radians, 0.0, False),
         ]
 
         # Grab the 3 different female *PCBChunk*'s:
-        f1x4lp_pcb_chunk: PCBChunk = connectors.f1x4lp.pcb_chunk
-        f1x4_pcb_chunk: PCBChunk = connectors.f1x4.pcb_chunk
-        f1x4h_pcb_chunk: PCBChunk = connectors.f1x4h.pcb_chunk
+        f1x4lp_mate_pcb_chunk: PCBChunk = hcsr04.f1x4lp_mate_pcb_chunk
+        f1x4_mate_pcb_chunk: PCBChunk = hcsr04.f1x4_mate_pcb_chunk
+        f1x4h_mate_pcb_chunk: PCBChunk = hcsr04.f1x4h_mate_pcb_chunk
+        if tracing:
+            print(f"{tracing}f1x4h_mate_pcb_chunk.pads[0]={f1x4h_mate_pcb_chunk.pads[0]}")
 
         # Iterate across all of the sonars in *sonar_poses*:
         origin2d: P2D = P2D(0.0, 0.0)
@@ -3662,11 +4312,13 @@ class MasterBoard:
         height: str
         pcb: PCB
         pcb_chunks: List[PCBChunk]
+        foot_print_name: str
+        references: List[Reference]
         rim_angle: float
         beam_angle: float
         radius_offset: float
         on_bottom: bool
-        for (sonar_name, height, pcb, pcb_chunks,
+        for (sonar_name, height, pcb, pcb_chunks, references, reference_name,
              rim_angle, beam_angle, sonar_offset, on_bottom) in sonar_poses:
             sonar_radius: float = sonars_radius - sonar_offset - 1.27
             sonar_x: float = sonar_radius * cos(rim_angle)
@@ -3674,33 +4326,56 @@ class MasterBoard:
             sonar_flags: str = "byY" if on_bottom else ""
             sonar_translate: P2D = P2D(sonar_x, sonar_y)
             connector_pcb_chunk: PCBChunk
+            rotate: float = beam_angle + degrees90
+            on_top: bool = not on_bottom
             if height == "low":
                 pcb.module3d_place("F1x4LP", {"sonar_connectors"}, sonar_flags,
-                                   origin2d, beam_angle + degrees90, sonar_translate)
+                                   origin2d, rotate, sonar_translate)
                 pcb.module3d_place("HCSR04Low", {"sonars"}, sonar_flags,
-                                   origin2d, beam_angle + degrees90, sonar_translate)
-                connector_pcb_chunk = f1x4lp_pcb_chunk
+                                   origin2d, rotate, sonar_translate)
+                connector_pcb_chunk = f1x4lp_mate_pcb_chunk
+                footprint_name = "HCSR04;F1x4LP"
             elif height == "medium":
                 pcb.module3d_place("F1x4", {"sonar_connectors"}, sonar_flags,
-                                   origin2d, beam_angle + degrees90, sonar_translate)
+                                   origin2d, rotate, sonar_translate)
                 pcb.module3d_place("HCSR04Medium", {"sonars"}, sonar_flags,
-                                   origin2d, beam_angle + degrees90, sonar_translate)
-                connector_pcb_chunk = f1x4_pcb_chunk
+                                   origin2d, rotate, sonar_translate)
+                connector_pcb_chunk = f1x4_mate_pcb_chunk
+                footprint_name = "HCSR04;F1x4"
             elif height == "high":
                 pcb.module3d_place("F1x4H", {"sonar_connectors"}, sonar_flags,
-                                   origin2d, beam_angle + degrees90, sonar_translate)
+                                   origin2d, rotate, sonar_translate)
                 pcb.module3d_place("HCSR04High", {"sonars"}, sonar_flags,
-                                   origin2d, beam_angle + degrees90, sonar_translate)
-                connector_pcb_chunk = f1x4h_pcb_chunk
+                                   origin2d, rotate, sonar_translate)
+                connector_pcb_chunk = f1x4h_mate_pcb_chunk
+                footprint_name = "HCSR04;F1x4H"
             else:
                 assert False, f"'{height}' is not one of 'high', 'medium', or 'low'."
+            reference: Reference = Reference(reference_name, on_top, rotate, sonar_translate,
+                                             connector_pcb_chunk, footprint_name)
+            references.append(reference)
+            if tracing:
+                print(f"{tracing}'{sonar_name}': reference:{reference}")
+                print(f"{tracing}'{sonar_name}Pad[0]': reference:{reference.pcb_chunk.pads[0]}")
+
             repostioned_connector_pcb_chunk: PCBChunk = connector_pcb_chunk.reposition(
                 origin2d, beam_angle + degrees90, sonar_translate)
             pcb_chunks.append(repostioned_connector_pcb_chunk)
 
-        center_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", center_pcb_chunks)
-        ne_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", ne_pcb_chunks)
-        nw_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", nw_pcb_chunks)
+        center_references_pcb_chunk: PCBChunk = PCBChunk("Center References", [], [],
+                                                         references=center_references)
+        center_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", center_pcb_chunks +
+                                                         [center_references_pcb_chunk])
+
+        if tracing:
+            print(f"{tracing}f1x4h_mate_pcb_chunk.pads[0]={f1x4h_mate_pcb_chunk.pads[0]}")
+        ne_references_pcb_chunk: PCBChunk = PCBChunk("NE References", [], [],
+                                                     references=ne_references)
+        ne_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", ne_pcb_chunks + [ne_references_pcb_chunk])
+
+        nw_references_pcb_chunk: PCBChunk = PCBChunk("NW References", [], [],
+                                                     references=nw_references)
+        nw_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", nw_pcb_chunks + [nw_references_pcb_chunk])
 
         # Wrap up any requested *tracing*:
         if tracing:
@@ -4128,7 +4803,8 @@ class RectangularConnector:
                  cut_out: bool = False,
                  pcb_polygon: Optional[Polygon] = None, pcb_hole_diameter: float = 0.0,
                  insulation_color: str = "Black", pin_color: str = "Gold",
-                 footprint: Footprint = Footprint("", ""), footprint_pin_number: int = 1,
+                 # footprint: Footprint = Footprint("", ""),  # Old functionality
+                 footprint_pin_number: int = 1,
                  footprint_pad_diameter: float = 0.0, footprint_drill_diameter: float = 0.0,
                  footprint_flags: str = "",
                  artwork: bool = True,
@@ -4245,7 +4921,7 @@ class RectangularConnector:
         self.is_top: bool = is_top
         self.insulation_color: str = insulation_color
         self.pin_color: str = pin_color
-        self.footprint: Footprint = footprint
+        # self.footprint: Footprint = footprint
         self.footprint_pin_number: int = footprint_pin_number
         self.footprint_pad_diameter: float = footprint_pad_diameter
         self.footprint_drill_diameter: float = footprint_drill_diameter
@@ -4409,8 +5085,8 @@ class RectangularConnector:
                                    footprint_drill_diameter, hole_center, tracing=next_tracing)
                     pads_group.insert(pad)
                     pads.append(pad)
-                    footprint.thru_hole_pad(f"{pin_number}", hole_center,
-                                            footprint_pad_diameter, footprint_drill_diameter)
+                    # footprint.thru_hole_pad(f"{pin_number}", hole_center,
+                    #                         footprint_pad_diameter, footprint_drill_diameter)
 
         # Write out an artwork rectangle around the connector:
         front_artworks: List[SimplePolygon] = []
@@ -4426,9 +5102,9 @@ class RectangularConnector:
             x_minimum: float = min(x1, x2) - columns_extra
             y_maximum: float = max(y1, y2) + rows_extra
             y_minimum: float = min(y1, y2) - rows_extra
-            corner1: P2D = P2D(x_minimum, y_minimum)
-            corner2: P2D = P2D(x_maximum, y_maximum)
-            footprint.rectangle(corner1, corner2, "F.SilkS", 0.2)
+            # corner1: P2D = P2D(x_minimum, y_minimum)
+            # corner2: P2D = P2D(x_maximum, y_maximum)
+            # footprint.rectangle(corner1, corner2, "F.SilkS", 0.2)
             dx: float = abs(x_maximum - x_minimum)
             dy: float = abs(y_maximum - y_minimum)
             x_center: float = (x_maximum + x_minimum) / 2.0
@@ -4438,6 +5114,7 @@ class RectangularConnector:
                 y_center -= right_angle_length
             square: Square = Square("name", dx, dy, P2D(x_center, y_center))
             front_artworks.append(square)
+            circle: Circle
             if have_right_angle:
                 column: int
                 first_pin_x: float = -float(columns - 1) * columns_pitch / 2.0
@@ -4448,10 +5125,12 @@ class RectangularConnector:
                         [P2D(pin_x, min(y1, y2) - footprint_pad_diameter / 2.0),
                          P2D(pin_x, y_center + dy / 2.0)])
                     front_artworks.append(line)
-            # Draw the pin1 circle:
-            circle: Circle = Circle("{name} Pin 1 Circle",  0.2, 8,
-                                    P2D(x1 - 0.75 * columns_pitch,
-                                        max(y1, y2) + 0.75 * rows_pitch))
+                circle = Circle("{name} Pin 1 Circle",  0.2, 8,
+                                P2D(x1 - 0.75 * columns_pitch, max(y1, y2) - 0.50 * rows_pitch))
+            else:
+                # Draw the pin1 circle:
+                circle = Circle("{name} Pin 1 Circle",  0.2, 8,
+                                P2D(x1 - 0.50 * columns_pitch, max(y1, y2) + 0.75 * rows_pitch))
             front_artworks.append(circle)
 
         insulation_polygon.lock()
@@ -6941,7 +7620,8 @@ def main() -> int:  # pragma: no cover
     read_me_file: IO[Any]
     with open("README.md") as read_me_file:
         read_me_text = read_me_file.read()
-    hr2_robot: HR2Robot = HR2Robot(scad_program)
+    pcb_origin: P2D = P2D(100.0, 100.0)
+    hr2_robot: HR2Robot = HR2Robot(scad_program, pcb_origin)
     hr2_robot = hr2_robot
 
     scad_comment_lines: List[str]
@@ -6965,6 +7645,640 @@ def main() -> int:  # pragma: no cover
         scad_file.write(scad_text)
 
     return 0
+
+
+# Footprint:
+class Footprint:
+    """Footprint represents a KiCad footprint file."""
+
+    # Footprint.__init__():
+    def __init__(self, library_name: str, footprint_name: str) -> None:
+        """Initialize a footprint."""
+        # Note to print the current time in seconds from 1970 use the following command:
+        #     date +%s
+        # The *time.time()* method returns the time in seconds as a float.
+        # if time_stamp == 0:
+        #     time_stamp = int(time.time())
+        # Create *lines* and start with the module line:
+        timestamp: int = int(time.time())
+        lines: List[str] = [f"(module {library_name}:{footprint_name} "
+                            f"(layer F.Cu) (tedit {timestamp:08X})"]
+        # print(f"lines={lines}")
+
+        # Save *name* and *lines* into *footprint* (i.e. *self*):
+        # footprint: FootPrint = self
+        self.lines: List[str] = lines
+        self.library_name: str = library_name
+        self.footprint_name: str = footprint_name
+
+    def header_match(self, previous_header: str) -> bool:
+        """See whether a previous header matches the current one."""
+        footprint: Footprint = self
+        lines: List[str] = footprint.lines
+        assert len(lines) >= 1
+        header: str = lines[0]
+        # The tail end of the header looks like "... (tedit XXXXXXXX)", where "XXXXXXXX"
+        # is an eight digit upper case hex number.  We want to identically match everything
+        # *except* the hex number:
+        # print(f"len(header):{len(header)}")
+        # print(f"len(previoius_header):{len(previous_header)}")
+        # print(f"last characters match:{header[-1:] == previous_header[-1:]}")
+        # print(f"front characters match:{header[:-9] == previous_header[:-9]}")
+        match: bool = (len(header) == len(previous_header) and
+                       header[-1:] == previous_header[-1:] and
+                       header[:-9] == previous_header[:-9])
+        # print(f"match:{match}")
+        return match
+
+    # Footprint.hole():
+    def hole(self, name: str, center: P2D, pad_dx: float, pad_dy: float, drill: float,
+             tracing: str = "") -> None:
+        """Append a hole to a footprint."""
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Footprint.hole(*, '{name}', {center}, {pad_dx}, {pad_dy}, {drill})")
+
+        # Unpack some values from *footprint* (i.e. *self*):
+        footprint: Footprint = self
+        lines: List[str] = footprint.lines
+
+        # Construct *line* based on the argument values:
+        line: str
+        if pad_dx == 0.0 or pad_dy == 0.0:
+            line = (f"  (pad \"{name}\" np_thru_hole circle "
+                    f"(at {center.x:.2f} {-center.y:.2f}) "
+                    f"(size {drill:.2f} {drill:.2f}) "
+                    f"(drill {drill:.2f}) "
+                    "(layers *.Cu *.Mask))")
+        else:
+            small_distance: float = 0.0000001
+            if abs(pad_dx - pad_dy) < small_distance:
+                # Do a simple circular pad:
+                line = (f"  (pad \"{name}\" thru_hole circle "
+                        f"(at {center.x:.2f} {-center.y:.2f}) "
+                        f"(size {pad_dx:.2f} {pad_dy:.2f}) "
+                        f"(drill {drill:.2f}) "
+                        "(layers *.Cu *.Mask))")
+            else:
+                # Do an oval pad:
+                pad_dx_dy_minimum: float = min(pad_dx, pad_dy)
+                pad_extra: float = pad_dx_dy_minimum - drill
+                drill_dx: float = pad_dx - pad_extra
+                drill_dy: float = pad_dy - pad_extra
+                line = (f"  (pad \"{name}\" thru_hole oval "
+                        f"(at {center.x:.2f} {-center.y:.2f}) "
+                        f"(size {pad_dx:.2f} {pad_dy:.2f}) "
+                        f"(drill oval {drill_dx:.2f} {drill_dy:.2f}) "
+                        "(layers *.Cu *.Mask))")
+        if tracing:
+            print(f"{tracing}Footprint.hole:'{line}'")
+        lines.append(line)
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=Footprint.hole(*, '{name}', {center}, {pad_dx}, {pad_dy}, {drill})")
+
+    # Footprint.library_get():
+    def librarty_get(self) -> str:
+        """Return the name of the library."""
+        # Use *footprint* instead of *self*:
+        footprint: Footprint = self
+        return footprint.library_name
+
+    # Footprint.line():
+    def line(self, point1: P2D, point2: P2D, layer: str, width: float, tracing: str = "") -> None:
+        """Append a line to a footprint."""
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Footprint.line({point1}, {point2}, '{layer}', {width}")
+
+        # Extract some values from *footprint* (i.e. *self*)
+        footprint: Footprint = self
+        lines: List[str] = footprint.lines
+        x1: float = point1.x
+        y1: float = point1.y
+        x2: float = point2.x
+        y2: float = point2.y
+
+        # Create the *line* and append to *lines*:
+        line: str = (f"  (fp_line (start {x1:.2f} {-y1:.2f}) (end {x2:.2f} {-y2:.2f}) "
+                     f"(layer {layer}) (width {width:.2f}))")
+        lines.append(line)
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=Footprint.line({point1}, {point2}, '{layer}', {width}")
+
+    # Footprint.name_get():
+    def name_get(self) -> str:
+        """Return the name of the footprint."""
+        # Use *footprint* instead of *self*:
+        footprint: Footprint = self
+        return footprint.footprint_name
+
+    # Footprint.rectangle():
+    def rectangle(self, point1: P2D, point2: P2D, layer: str, width: float) -> None:
+        """Append a rectangle to a footprint."""
+        footprint: Footprint = self
+        x1: float = point1.x
+        y1: float = point1.y
+        x2: float = point2.x
+        y2: float = point2.y
+        point3: P2D = P2D(x1, y2)
+        point4: P2D = P2D(x2, y1)
+        footprint.line(point1, point3, layer, width)
+        footprint.line(point3, point2, layer, width)
+        footprint.line(point2, point4, layer, width)
+        footprint.line(point4, point1, layer, width)
+
+    # Footprint.reference():
+    def reference(self, center: P2D) -> None:
+        """Append a reference to a footprint."""
+        footprint: Footprint = self
+        lines: List[str] = footprint.lines
+        x: float = center.x
+        y: float = center.y
+        lines.append(f"  (fp_text reference REF** (at {x:.2f} {-y:.2f}) (layer F.SilkS)")
+        lines.append("    (effects (font (size 1 1) (thickness 0.2)))")
+        lines.append("  )")
+        # If value is not specified, KiCad currently defaults to putting it into the F.SilkS layer.
+        # KiCad completely ignores whatever text that is supplied.  The solution seems to be to put
+        # it into the F.Fab layer and you can disable seeing that layer.  Kind of silly, but
+        # it works.  Ship it!:
+        lines.append(f"  (fp_text value VALUE (at {x:.2f} {-y-2.0:.2f}) (layer F.Fab)")
+        lines.append("    (effects (font (size 1 1) (thickness 0.2)))")
+        lines.append("  )")
+        # lines.append(f"  (fp_text user USER (at {x:.2f} {-y+2.0+2.0:.2f}) (layer B.SilkS)")
+        # lines.append("    (effects (font (size 1 1) (thickness 0.2)))")
+        # lines.append("  )")
+
+    # KiCadFootprint.save():
+    def save(self, footprint_path: Path, flags: str) -> None:
+        """Save a footprint to a file.
+
+        Args:
+            * *footprint_path* (*Path*):
+              The path to the file to write.  Any specified directores
+              must already be present.
+            * *flags* (*str*):
+              Single character flags that control behavior:
+              * 'w':
+                Aways overwrite the previous file with a new embedded
+                KiCad timestamp.
+              * 't':
+                Always the update file system timestamp for the file.
+                If the new content matches the previous content except
+                excluding the `tedit` field, the previous content is
+                used so that the `tedit` field does not change.
+                This is useful for files that are tracked by `git` which
+                always matches the file content, but not file system
+                timestamp.  The 'w' option takes precedence over this
+                option.
+
+        """
+        # Grab the *lines* from *footprint* (i.e. *self*):
+        footprint: Footprint = self
+        lines: List[str] = footprint.lines
+
+        # Figure out if there the *previous_file_matches*:
+        previous_text: str
+        previous_file_matches: bool = False
+        footprint_file: Any[IO]
+        if footprint_path.exists():
+            # print("file_exists")
+            with open(footprint_path, "r") as footprint_file:
+                previous_text = footprint_file.read()
+                previous_lines: List[str] = previous_text.split('\n')
+                # print(f"len(previous_lines):{len(previous_lines)}")
+                # print(f"len(lines):{len(lines)}")
+                # The +/- 2is because the last two lines have not been tacked onto *lines* yet:
+                line_lengths_match: bool = (len(previous_lines) - 2 == len(lines))
+                contents_match: bool = (previous_lines[1:-2] == lines[1:])
+                header_match: bool = footprint.header_match(previous_lines[0])
+                # print(f"line_lengths_match:{line_lengths_match}")
+                # print(f"header_match:{header_match}")
+                # print(f"contents_match:{contents_match}")
+                previous_file_matches = (line_lengths_match and contents_match and header_match)
+
+        #   write    matches  touch  operation
+        #   0        0        0      write new
+        #   0        0        1      write new
+        #   0        1        0      do nothing
+        #   0        1        1      write previous
+        #   1        0        0      write new
+        #   1        0        1      write new
+        #   1        1        0      write new
+        #   1        1        1      write new
+        #
+        #   1        x        x      write new
+        #   x        0        x      write new
+        #   0        1        1      write previous
+        #   0        1        0      do nothing
+
+        write_required: bool = 'w' in flags
+        touch_required: bool = 't' in flags
+        # print(f"write:{write_required} matches:{previous_file_matches} touch:{touch_required}")
+        # print(f"footprint_path={footprint_path}")
+        if write_required or not previous_file_matches:
+            # We need to write out *footprint* to *footprint_path* with any new content
+            # and a new `tedit` timestamp.
+            #
+            # Convert *lines* into *footprint_text*.  We do this by tacking on a closing
+            # parenthesis and an empty line to ensure we get the final new-line character
+            # at the end of the file:
+            footprint_text: str = '\n'.join(lines + [")", ""])
+            with open(footprint_path, "w") as footprint_file:
+                footprint_file.write(footprint_text)
+            # print("write out new")
+        elif touch_required:
+            # Write out the *previous_text* to force the file system timestamp to be updated.
+            with open(footprint_path, "w") as footprint_file:
+                footprint_file.write(previous_text)
+            # print("write out previous")
+        else:
+            # print("do nothing")
+            pass
+
+    # Footprint.simple_polygon_append():
+    def simple_polygon(self, simple_polygon: "SimplePolygon", layer: str, width: float,
+                       tracing: str = "") -> None:
+        """Append a SimpelePolygon to a Footprint."""
+        # Use *footprint* instead of *self*:
+        footprint: Footprint = self
+
+        # Perform any requested *tracing*:
+        next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>Footprint.simplepolygon(*, *, '{layer}', {width}")
+
+        # Extract adjacent point pair from *simple_polygon* and draw a line:
+        point1: P2D
+        point2: P2D
+        simple_polygon_size: int = len(simple_polygon)
+        if 1 <= simple_polygon_size <= 2:
+            # Draw circle or a line:
+            point1 = simple_polygon[0]
+            # Trigger a circle of diameter *width* by drawing a really, really short line:
+            point2 = simple_polygon[1] if simple_polygon_size == 2 else point1 + P2D(0.0, 0.001)
+            footprint.line(point1, point2, layer, width, tracing=next_tracing)
+        else:
+            # Iterate through *simplepoly* drawing a close loop from point-to-point:
+            index: int
+            for index in range(simple_polygon_size):
+                point1 = simple_polygon[index]
+                point2 = simple_polygon[(index + 1) % simple_polygon_size]
+                footprint.line(point1, point2, layer, width, tracing=next_tracing)
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Footprint.simplepolygon(*, *, '{layer}', {width}")
+
+    # Footprint.thru_hole_pad():
+    def thru_hole_pad(self, name: str, center: P2D,
+                      pad_diameter: float, drill_diameter: float) -> None:
+        """Append a circular through hole pad to a Footprint."""
+        footprint: Footprint = self
+        lines: List[str] = footprint.lines
+        line: str = (f"  (pad {name} thru_hole circle (at {center.x:.2f} {-center.y:.2f}) "
+                     f" (size {pad_diameter:.2f} {pad_diameter:.2f}) "
+                     f"(drill {drill_diameter:.2f}) (layers *.Cu *.Mask))")
+        lines.append(line)
+
+    # Footprint.value():
+    def value(self, center: P2D, hide: bool) -> None:
+        """Append a value to a Footprint."""
+        # Unpack some values from *footprint* (i.e. *self*):
+        footprint: Footprint = self
+        lines: List[str] = footprint.lines
+        footprint_name: str = footprint.footprint_name
+
+        # Now append some lines to *lines*:
+        x: float = center.x
+        y: float = center.y
+        hide_text: str = " hide" if hide else ""
+        lines.append(f"  (fp_text value {footprint_name} (at {x:.2f} {-y:.2f}) "
+                     f"(layer F.Fab) {hide_text}")
+        lines.append("    (effects (font (size 1 1) (thickness 0.2)))")
+        lines.append("  )")
+
+
+# KicadPCB:
+class KicadPCB:
+    """Represents a KiCAD PCB."""
+
+    # KicadPCB.__init__():
+    def __init__(self, file_name: Path, offset: P2D) -> None:
+        """Bind to a .kicad_pcb file."""
+        # Read in *file_name* and split into *lines*:
+        kicad_pcb_file: IO[Any]
+        lines: List[str]
+        with open(file_name, "r") as kicad_pcb_file:
+            kicad_pcb_text: str = kicad_pcb_file.read()
+            lines = kicad_pcb_text.split('\n')
+            # print(f"KicadPcb.__init__('{file_name}') read in {len(lines)} lines")
+
+        # Sweep through *lines* and strip out cut lines:
+        removed_cut_lines: List[str] = []
+        line: str
+        for line in lines:
+            if line.startswith("  (gr_line") and line.find("(layer Edge.Cuts)") > 0:
+                # Have a cut line that will *NOT* be copied over.
+                pass
+            else:
+                # We do *NOT* have a cut line and we copy it over:
+                removed_cut_lines.append(line)
+        lines = removed_cut_lines
+
+        # Save values into *kicad_pcb* (i.e. *self*):
+        # kicad_pcb: KicadPcb = self
+        self.file_name: Path = file_name
+        self.lines: List[str] = lines
+        self.offset: P2D = offset
+
+    # KicadPCB.cuts_update():
+    def cuts_update(self, cuts: List[SimplePolygon], tracing: str = ""):
+        """Update the cuts in in a KicadPCB."""
+        # Perform any request *tracing*:
+        if tracing:
+            print(f"{tracing}=>KicadPCB.cuts_update(len(cuts)={len(cuts)})")
+
+        # Grab some values from *kicad_pcb* (i.e. *self*):
+        kicad_pcb: KicadPCB = self
+        offset: P2D = kicad_pcb.offset
+        lines: List[str] = kicad_pcb.lines
+
+        # Construct *cut_lines* from *cuts*:
+        offset_x = offset.x
+        offset_y = offset.y
+        width: float = 0.05
+        layer: str = "Edge.Cuts"
+        cut_lines: List[str] = []
+        cut: SimplePolygon
+        for cut in cuts:
+            cut_size: int = len(cut)
+            index: int
+            for index in range(cut_size):
+                point1: P2D = cut[index]
+                point2: P2D = cut[(index + 1) % cut_size]
+                cut_line: str = ("  (gr_line "
+                                 f"(start {offset_x + point1.x:.2f} {offset_y - point1.y:.2f}) "
+                                 f"(end {offset_x + point2.x:.2f} {offset_y - point2.y:.2f}) "
+                                 f"(layer {layer}) "
+                                 f"(width {width:1.2f}))")
+                cut_lines.append(cut_line)
+
+        # Now insert *cut_lines* into *lines* 2 lines back:
+        assert len(lines) >= 2
+        lines[-2:-2] = cut_lines
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=KicadPCB.cuts_update(len(cuts)={len(cuts)})")
+
+    # # KicadPCB.line_append():
+    # def line_append(self, point1: P2D, point2: P2D, layer: str, width:
+    #                 float) -> None:
+    #     """Append a line cut."""
+    #     # Grab some values from *kicad_pcb* (i.e. *self*):
+    #     kicad_pcb: KicadPCB = self
+    #     cut_lines_insert_index: int = kicad_pcb.cut_lines_insert_index
+    #     lines: List[str] = kicad_pcb.lines
+    #     offset: P2D = kicad_pcb.offset
+    #
+    #     # Make sure we know where to insert cut lines:
+    #     if cut_lines_insert_index < 0:
+    #         line: str
+    #         index: int
+    #         net_class_default_found: bool = False
+    #         for index, line in enumerate(lines):
+    #             # print(f"[{index}]:'{line}'")
+    #             if line.startswith("  (net_class Default"):
+    #                 net_class_default_found = True
+    #             if net_class_default_found and line.startswith("  )"):
+    #                 cut_lines_insert_index = index + 2
+    #                 kicad_pcb.cut_lines_insert_index = cut_lines_insert_index
+    #
+    #     # Create the *cut_line_text* into *lines*:
+    #     cut_line_text: str = (
+    #         "  (gr_line (start {0:.2f} {1:.2f}) (end {2:.2f} {3:.2f}) "
+    #         "(layer {4}) (width {5:1.2f}))").format(
+    #             offset.x + point1.x, offset.y - point1.y,
+    #             offset.x + point2.x, offset.y - point2.y, layer, width)
+    #     lines.insert(cut_lines_insert_index, cut_line_text)
+
+    # KicadPCB.layer_remove():
+    def layer_remove(self, layer: str) -> None:
+        """Remove the a layer."""
+        # Grab some values from *kicad_pcb* (i.e. *self*):
+        kicad_pcb: KicadPCB = self
+        lines: List[str] = kicad_pcb.lines
+        new_lines: List[str] = []
+        pattern: str = f"(layer {layer})"
+        line: str
+        for line in lines:
+            if line.find(pattern) < 0:
+                # Not a layer we care about, copy it over:
+                new_lines.append(line)
+
+        # Save *new_lines* back into *kicad*:
+        kicad_pcb.lines = new_lines
+
+    # KicadPCB.modules_update():
+    def modules_update(self, references: List["Reference"], tracing: str = "") -> None:
+        """Update the module positions."""
+        # Avoid circular import loop by importing inside of this method:
+        from scad_models.hr2_models import Reference
+
+        # Perform any requested *tracing*:
+        # next_tracing: str = tracing + " " if tracing else ""
+        assert isinstance(tracing, str)
+        if tracing:
+            print("********************************************************")
+            print(f"{tracing}=>KicadPCB.modules_update()")
+
+        # Grab some values from *kicad_pcb*:
+        kicad_pcb: KicadPCB = self
+        lines: List[str] = kicad_pcb.lines
+        offset: P2D = kicad_pcb.offset
+
+        # Define some variables and constants:
+        line_number: int
+        line: str
+        at_line_index: int
+        reference_line_index: int
+        reference_prefix: str = "    (fp_text reference "
+        reference_prefix_size: int = len(reference_prefix)
+
+        # Construct *references_table* from *referneces*:
+        references_table: Dict[str, Reference] = {}
+        reference: Reference
+        for reference in references:
+            if tracing:
+                print(f"{tracing}reference_table['{reference.name}] = {reference}")
+            references_table[reference.name] = reference
+
+        # KiCad basically copies the entire footprint (e.g. `.kicad_mod`) into the PCB file
+        # (e.g. `.kicad_pcb`.)  So far so good.  The first `(at ...)` is the position and
+        # orientation of the footprint.  The footprint basically consists of three classes
+        # of declarations:
+        #
+        # * *pad*: This is a pad:
+        #
+        #   (pad "Name" SHAPE (at X Y ROTATE) (size DX DY) (drill DIAM)(layers *.Cu *.Mask))
+        #
+        #   Where SHAPE is one of "np_thru_hole", "circle", or "oval" and the remaining values
+        #   are a rotation (ROTATE), pad size (DX and dY), and a drill diameter (DIAM).
+        #
+        # * *fp_line*: This i
+
+        # Sweep through *lines* looking for modules:
+        references_found_table: Dict[str, bool] = {}
+        in_module: bool = False
+        for line_index, line in enumerate(lines):
+            if line.startswith("  (module "):
+                # Beginning of mounting hole:
+                if tracing:
+                    print(f"{tracing}Module start found:{line_index}")
+                in_module = True
+                at_line_index = -1
+                reference_line_index = -1
+            elif line.startswith("  )") and in_module:
+                # We have reached the module end:
+                if tracing:
+                    print(f"{tracing}Module End found:{line_index}")
+                if at_line_index < 0 or reference_line_index < 0:
+                    # The module is not well formatted:
+                    print(f"Incomplete module: at:{at_line_index} "
+                          f"reference:{reference_line_index}")  # pragma: no cover
+                else:
+                    # Grab the hole label from label_line:
+                    reference_line: str = lines[reference_line_index]
+                    at_index: int = reference_line.find(" (at ")
+                    assert at_index > reference_prefix_size
+                    reference_name: str = reference_line[reference_prefix_size:at_index]
+                    if tracing:
+                        print(f"{tracing}Module Reference Name: '{reference_name}'")
+
+                    # Look up the *reference* from *references_table* and stuff updated location
+                    # back into *lines* at *position_index*:
+                    if reference_name in references_table:
+                        # Unpack the *reference* information from *references_table*:
+                        reference = references_table[reference_name]
+                        # name: str = reference.name
+                        # is_front: bool = reference.is_front
+                        position: P2D = reference.position
+                        # rotate: float = reference.rotate
+                        # FIXME: Add orientation!!!
+                        at_text: str = (f"    (at "
+                                        f"{offset.x + position.x:0.2f} "
+                                        f"{offset.y - position.y:0.2f})")  # KiCad inverts Y axis!
+                        if tracing:
+                            print(f"{tracing}Found '{reference_name}' in table.")
+                            print(f"{tracing}Old: '{lines[at_line_index]}'")
+                            print(f"{tracing}New: '{at_text}'")
+                        lines[at_line_index] = at_text
+                        references_found_table[reference_name] = True
+
+                # Reset all of the values:
+                in_module = False
+                at_line_index = -1
+                reference_line_index = -1
+                if tracing:
+                    print(f"{tracing}Module Pocessed; line indices reset")
+            elif in_module:
+                if line.startswith("    (at "):
+                    at_line_index = line_index
+                    if tracing:
+                        print(f"{tracing}at_line_index={at_line_index}")
+                elif line.startswith("    (fp_text reference "):
+                    reference_line_index = line_index
+                    if tracing:
+                        print(f"{tracing}reference_line_index={reference_line_index}")
+
+        # Iterate through *references_table* looking for modules that have not been placed:
+        for reference_name in references_table.keys():
+            if reference_name not in references_found_table:
+                print(f"Reference '{reference}' is not currently placed in the PCB.")
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>KicadPCB.modules_update()")
+
+    # KicadPCB.simple_polygon_append():
+    def simple_polygon_append(self, simple_polygon: "SimplePolygon",
+                              layer: str, width: float) -> None:
+        """Append a SimpelePolygon to a PCB."""
+        # kicad_pcb: KicadPCB = self
+        # simple_polygon_size: int = len(simple_polygon)
+        # index: int
+        # for index in range(simple_polygon_size):
+        #     point1: P2D = simple_polygon[index]
+        #     point2: P2D = simple_polygon[(index + 1) % simple_polygon_size]
+        #     kicad_pcb.line_append(point1, point2, layer, width)
+        pass
+
+    # KicadPCb.save():
+    def save(self):
+        """Save contents back file."""
+        # Grab some values from *kicad_pcb* (i.e. *self*):
+        kicad_pcb: KicadPCB = self
+        file_name: str = kicad_pcb.file_name
+        lines: List[str] = kicad_pcb.lines
+
+        # Delete blank lines from the end of the file:
+        while len(lines) > 0 and lines[-1] == "":
+            del lines[-1]
+
+        # Write *kicad_lines* out to *kicad_file_name*:
+        kicad_pcb_text: str = '\n'.join(lines) + '\n'
+        kicad_pcb_file: IO[Any]
+        with open(file_name, "w") as kicad_pcb_file:
+            kicad_pcb_file.write(kicad_pcb_text)
+
+    # KicadPCB.number():
+    @staticmethod
+    def number(value: float, maximum_fractional_digits: int) -> str:
+        """Convert value into KiCad style number."""
+        # KiCad numbers are trimmed of trailing zeros and optionally the end decimal point:
+        number_text: str = str(round(value, maximum_fractional_digits)).rstrip('0').rstrip('.')
+
+        # Convert "-0..." to "0...":
+        if len(number_text) >= 2 and number_text[:2] == "-0":
+            number_text = number_text[1:]
+        return number_text
+
+    # KicadPCB.string():
+    @staticmethod
+    def string(text: str) -> str:
+        """Convert a string into a Kicad style string."""
+        # This not a perfect conversion for S-expression atoms, but it is good enough:
+        assert text.isprintable() and all(ord(c) < 128 for c in text)  # Is ASCII.
+        has_space: bool = ' ' in text
+        has_double_quote: bool = '"' in text
+        has_single_quote: bool = "'" in text
+        has_open_parenthesis: bool = "(" in text
+        has_close_parenthesis: bool = ")" in text
+        is_empty: bool = len(text) == 0
+        needs_quotes: bool = (has_space or has_double_quote or has_single_quote or
+                              has_open_parenthesis or has_close_parenthesis) or is_empty
+        result_text: str = f'"{text}"' if needs_quotes else text
+        # print(f"KicadPCB.string('{text}') => '{result_text}'")
+        return result_text
+
+    # KicadPCB.fp_line():
+    @staticmethod
+    def fp_line(prefix: str, pcb_origin: P2D, start_point: P2D, end_point: P2D, layer: str) -> str:
+        """Return a KiCad fp_line S-expression."""
+        origin_x: float = pcb_origin.x
+        origin_y: float = pcb_origin.y
+        line: str = (
+            f"{prefix}  (fp_line "
+            f"(start {KicadPCB.number(origin_x + start_point.x, 2)} "
+            f"{KicadPCB.number(origin_y - start_point.y, 2)}) "
+            f"(end {KicadPCB.number(origin_x + end_point.x, 2)} "
+            f"{KicadPCB.number(origin_y - end_point.y, 2)}) "
+            f"(layer {layer}) (width 0.2))")
+        return line
 
 
 if __name__ == "__main__":    # pragma: no cover

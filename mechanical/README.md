@@ -224,11 +224,26 @@ The current (tentative) design decisions are:
   where NAME is one of:
   <!-- NAME list starts here. -->
 
+  * `RPi4 Ethernet Heat Sink`:
+    name
+
+  * `RPi4 Processor Heat Sink`:
+    name
+
+  * `RPi4 SDRam Heat Sink`:
+    name
+
+  * `RPi4 USB Heat Sink`:
+    name
+
   * `center_board`:
     Center Board
 
   * `center_pcb`:
     Center PCB
+
+  * `centered hcsr04_board`:
+    Centered HCSR04 Board
 
   * `encoder_board`:
     Encoder Board
@@ -241,6 +256,15 @@ The current (tentative) design decisions are:
 
   * `expansion_plate`:
     Romi Expansion Plate
+
+  * `f1x4lp`:
+    Female 1x4 Low Profile Cnnector
+
+  * `hcsr04_board`:
+    HCSR04 Board
+
+  * `hcsr04_pcb`:
+    HCSR04 PCB
 
   * `hr2_arm_assembly`:
     Romi Base with Arm
@@ -266,8 +290,8 @@ The current (tentative) design decisions are:
   * `master_board`:
     Master Board
 
-  * `master_pcb`:
-    Master PCB
+  * `master_board`:
+    Master Board
 
   * `master_pcb`:
     Master PCB
@@ -278,14 +302,11 @@ The current (tentative) design decisions are:
   * `ne_pcb`:
     NE PCB
 
-  * `nucleo144`:
+  * `nucleo144_board`:
     Nucleo144 Board
 
-  * `nucleo144x_board`:
-    NUCLEO144X Board
-
-  * `nucleo144x_pcb`:
-    NUCLEO144X PCB
+  * `nucleo144_pcb`:
+    Nucleo144 PCB
 
   * `nw_board`:
     NW Board
@@ -293,11 +314,11 @@ The current (tentative) design decisions are:
   * `nw_pcb`:
     NW PCB
 
-  * `other_pi`:
-    OtherPI SBC
+  * `otherpi_board`:
+    OtherPi Board
 
-  * `other_pi_pcb`:
-    Other Pi PCB
+  * `otherpi_pcb`:
+    OtherPi PCB
 
   * `raspi3b_board`:
     RasPi3B Board
@@ -314,14 +335,20 @@ The current (tentative) design decisions are:
   * `se_pcb`:
     SE PCB
 
-  * `sonar`:
-    HC-SR04 Sonar
+  * `st_link_adapter_board`:
+    ST_Link_Adapter Board
 
-  * `stlink`:
-    STLink
+  * `st_link_adapter_pcb`:
+    ST_Link_Adapter PCB
 
-  * `stlink_pcb`:
-    STLInk PCB
+  * `st_link_board`:
+    ST_Link Board
+
+  * `st_link_pcb`:
+    ST_Link PCB
+
+  * `st_link_sandwich`:
+    ST-Link Adapter Sandwich
 
   * `sw_board`:
     SW Board
@@ -331,6 +358,24 @@ The current (tentative) design decisions are:
 
   * `wheel_assembly`:
     Wheel Assembly
+
+  * `xcenter_board`:
+    XCenter Board
+
+  * `xencoder_board`:
+    XEncoder Board
+
+  * `xne_board`:
+    XNE Board
+
+  * `xnw_board`:
+    XNW Board
+
+  * `xse_board`:
+    XSE Board
+
+  * `xsw_board`:
+    XSW Board
 
   <!-- NAME list ends here. -->
   After you run `openscad`, use your mouse to select `[Design]`=>`[Preveiw]` and `openscad`
