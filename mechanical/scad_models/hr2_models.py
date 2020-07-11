@@ -7810,21 +7810,18 @@ def main() -> int:  # pragma: no cover
     # scad_program.append(Variable2D("Name", "name", '"hr2_arm_assembly"'))
 
     # Update the `README.md` file:
-    read_me_text: str = ""
-    read_me_file: IO[Any]
-    with open("README.md") as read_me_file:
-        read_me_text = read_me_file.read()
     pcb_origin: P2D = P2D(100.0, 100.0)
     hr2_robot: HR2Robot = HR2Robot(scad_program, pcb_origin)
     hr2_robot = hr2_robot
 
-    scad_comment_lines: List[str]
-    updated_read_me_text: str
-    updated_read_me_text, scad_comment_lines = scad_program.read_me_update(read_me_text)
-    if read_me_text != updated_read_me_text:
-        with open("README.md", "w") as read_me_file:
-            read_me_file.write(updated_read_me_text)
-    # print(f"scad_comment_lines={scad_comment_lines}")
+    # Create the `scad_show` program in the HR2 `bin` directory:
+    assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY enviroment variable is not set"
+    hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+    hr2_bin_directory: Path = hr2_directory / "bin"
+    scad_show: Path = hr2_bin_directory / "scad_show"
+    hr2_mechanical_directory: Path = hr2_directory / "mechancial"
+    hr2_models_scad: Path = hr2_mechanical_directory / "hr2_models.scad"
+    scad_program.scad_show_create(scad_show, hr2_models_scad)
 
     # Generate `hr2_models.scad`:
     scad_lines: List[str] = []
