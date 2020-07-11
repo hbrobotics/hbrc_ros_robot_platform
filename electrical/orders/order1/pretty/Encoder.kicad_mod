@@ -1,4 +1,4 @@
-(module HR2:Encoder (layer F.Cu) (tedit 5EEFC5D9) (tstamp 5EEE5A91)
+(module HR2:Encoder (layer F.Cu) (tedit 5EF78ADA) (tstamp 5EEE5A91)
   (fp_text reference REF** (at 0 -2) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.2)))
   )
