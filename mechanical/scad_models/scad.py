@@ -2240,8 +2240,7 @@ class SimplePolygon(Scad2D):
         # Compute *new_name* and *x_mirrored_points*:
         new_name: str = (name if replace is None
                          else simple_polygon_name.replace(name, replace))
-        point: P2D
-        x_mirrored_points: List[P2D] = [P2D(point.x, -point.y) for point in points]
+        x_mirrored_points: List[P2D] = [point.x_mirror() for point in points]
 
         # Construct the final *x_mirrored_simple_polygon* and return it.
         x_mirrored_simple_polygon: SimplePolygon = SimplePolygon(new_name,
@@ -2270,8 +2269,7 @@ class SimplePolygon(Scad2D):
         # Compute *new_name* and *y_mirrored_points*:
         new_name: str = (name if replace is None
                          else simple_polygon_name.replace(name, replace))
-        point: P2D
-        y_mirrored_points: List[P2D] = [P2D(-point.x, point.y) for point in points]
+        y_mirrored_points: List[P2D] = [point.y_mirror() for point in points]
 
         # Construct the final *y_mirrored_simple_polygon* and return it.
         y_mirrored_simple_polygon: SimplePolygon = SimplePolygon(new_name,
