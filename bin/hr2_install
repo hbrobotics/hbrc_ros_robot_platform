@@ -29,7 +29,7 @@
 
 # Shell scripts are notoriously difficult to read and debug.
 # To aid in reading/debugging this script, there are deliberately plenty of comments.
-# Speak of comments, the pronouns "we" and "you" are used liberally.
+# Speaking of comments, the pronouns "we" and "you" are used liberally.
 # The "we" pronoun refers to the people who develop/maintain this file
 # and the pronoun "you" to refers to you, the reader(s) of this code.
 
@@ -667,45 +667,52 @@ fi
 # the actual Python virtual environment and using it, that must be done at the end.
 if [ -n "$PYTHON_NEEDED" ]
 then
+    # What we really want is to get Python virtual environments installed.  Unfortunately,
+    # the standard way to do this is by using Python.  If you are running 18.04, python2
+    # is the default.  We want to be on Python3.  The solution to this problem is a bit
+    # ugly, but gets the job done.  We simply install a copy of the `virtualwrapper.sh`
+    # file into `$BIN_DIRECTORY`.  This gets rid of the chicken and egg problem of how
+    # to get the virtual wrappers installed.
+    
     # Force Python3 to be the default Python.  Python2 is the default Python until
     # Ubuntu 20.04 gets released.  We compute PYTHON_REALPATH and PYTHON3_REALPATH
     # and if they are not equal, we force an update.
-    PYTHON_PATH="$(which python)"
-    PYTHON3_PATH="$(which python3)"
-    PYTHON_REALPATH="$(realpath $PYTHON_PATH)"
-    PYTHON3_REALPATH="$(realpath $PYTHON3_PATH)"
-    if [ "$PYTHON_REALPATH" != "$PYTHON3_REALPATH" ]
-    then
-	echo "**************** Forcing Python3 to be the default Python ..."
-	sudo update-alternatives --install /usr/bin/python python $PYTHON3_REALPATH 2
-    else
-	echo "Python3 is already the default Python."
-    fi
+    # PYTHON_PATH="$(which python)"
+    # PYTHON3_PATH="$(which python3)"
+    # PYTHON_REALPATH="$(realpath $PYTHON_PATH)"
+    # PYTHON3_REALPATH="$(realpath $PYTHON3_PATH)"
+    # if [ "$PYTHON_REALPATH" != "$PYTHON3_REALPATH" ]
+    # then
+    #	echo "**************** Forcing Python3 to be the default Python ..."
+    #	sudo update-alternatives --install /usr/bin/python python $PYTHON3_REALPATH 2
+    # else
+    #	echo "Python3 is already the default Python."
+    # fi
 
     # Install Ubuntu python3_pip3 package:
-    if [ -z "#$(which pip3)" ]
-    then
-	echo "**************** Installing Ubuntu python3-pip package ..."
-	$APT_INSTALL python3-pip
-    else
-	echo "Ubuntu python3-pip package previously installed."
-    fi
+    # if [ -z "#$(which pip3)" ]
+    # then
+    #	echo "**************** Installing Ubuntu python3-pip package ..."
+    #	$APT_INSTALL python3-pip
+    # else
+    #	echo "Ubuntu python3-pip package previously installed."
+    # fi
 
     # Globally install Python virtual environments.  This is installation only, we do not use
     # them until much later on.  These means that we can leave debugging commands turned on for now.
-    if [ -z "`which virtualenvwrapper.sh`" ]
-    then
-	echo "**************** Globally Installing Python virtual environments ..."
-	$SUDO $PIP_INSTALL virtualenvwrapper
-	if [ -z "`which virtualenvwrapper.sh`" ]
-	then
-	    echo "For some reason \`virtualenvwrapper.sh\` was not installed."
-	    echo "There is no way to recover from this.  The script is stopping now."
-	    exit 1
-	fi
-    else
-	echo "Python virtual environments previously installed"
-    fi
+    # if [ -z "`which virtualenvwrapper.sh`" ]
+    # then
+    #	echo "**************** Globally Installing Python virtual environments ..."
+    #	$SUDO $PIP_INSTALL virtualenvwrapper
+    #	if [ -z "`which virtualenvwrapper.sh`" ]
+    #  	then
+    #	    echo "For some reason \`virtualenvwrapper.sh\` was not installed."
+    #	    echo "There is no way to recover from this.  The script is stopping now."
+    #	    exit 1
+    #	fi
+    # else
+    #	echo "Python virtual environments previously installed"
+    # fi
 
     # Modify ~/.bashrc to support virtual environments by appending the following to ~/.bashrc :
     #        export HR2_DIRECTORY=...
@@ -791,7 +798,7 @@ then
     echo "# Only add $BIN_DIRECTORY to PATH once:" >> $BASHRC
     echo "case \":$PATH:\" in" >> $BASHRC
     echo "  *:$BIN_DIRECTORY:*) ;; # Already in path, do nothing " >> $BASHRC
-    echo "  *) export PATH=\$PATH:$BIN_DIRECTORY ;; # Not in path, append it" >> $BASHRC
+    echo "  *) export PATH=$BIN_DIRECTORY:\$PATH ;; # Not in path, append it" >> $BASHRC
     echo "esac" >> $BASHRC
     echo "" >> $BASHRC
     SOURCE_BASHRC="yes"
@@ -987,7 +994,7 @@ then
     fi
 fi
 
-# Install the Python stuff for both ME and EE:
+# Install the Python stuff at the end for both ME and EE:
 if [ -n "$PYTHON_NEEDED" ]
 then
     if [ -z "`which virtualenvwrapper.sh`" ]
