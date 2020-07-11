@@ -58,6 +58,9 @@ The basic class tree is:
 # Import stuff from other libraries:
 from math import acos, atan2, ceil, cos, degrees, pi, sin, sqrt
 from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple
+from pathlib import Path
+import os
+import stat
 
 
 # P3D:
@@ -748,67 +751,101 @@ class ScadProgram:
         module3d: Module3D = module3d_table[trimmed_name]
         return module3d
 
-    # ScadProgram.read_me_update():
-    def read_me_update(self, read_me_text: str) -> Tuple[str, List[str]]:
-        """Update the README.md file with acceptable selecton names."""
+    # ScadProgram.scad_show_create():
+    def scad_show_create(self, scad_show_file_name: Path, scad_file_name: Path) -> None:
+        """Create the scad_show program."""
         # Grab some values from *scad_program* (i.e. *self*):
         scad_program: ScadProgram = self
         if2d: If2D = scad_program.if2d
         if3d: If3D = scad_program.if3d
 
-        # Construct and sort *all_named_mark_downs* from *if2d* and *if3d*:
-        all_named_mark_downs: List[Tuple[str, ...]] = if2d.named_mark_downs + if3d.named_mark_downs
-        all_named_mark_downs.sort()
+        # Create *scad_show_lines* and append the MIT License:
+        scad_show_lines: List[str] = [
+            "#!/bin/bash",
+            "# This file is licensed using the \"MIT License\" below:",
+            "#",
+            ("##################################################"
+             "##################################################"),
+            "#",
+            "# MIT License",
+            "#",
+            "# Copyright 2020 Home Brew Robotics Club",
+            "#",
+            ("# Permission is hereby granted, free of charge, "
+             "to any person obtaining a copy of this"),
+            ("# software and associated documentation files (the \"Software\"), "
+             "to deal in the Software"),
+            "# without restriction, including without limitation the rights to use, copy, modify,",
+            "# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to",
+            "# permit persons to whom the Software is furnished to do so, subject to the following",
+            "# conditions:",
+            "# ",
+            ("# The above copyright notice and this permission notice shall be "
+             "included in all copies"),
+            "# or substantial portions of the Software.",
+            "# ",
+            ("# THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, "
+             "EXPRESS OR IMPLIED,"),
+            ("# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, "
+             "FITNESS FOR A PARTICULAR"),
+            ("# PURPOSE AND NONINFRINGEMENT. "
+             "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE"),
+            ("# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, "
+             "TORT OR"),
+            ("# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE "
+             "OR THE USE OR OTHER"),
+            "# DEALINGS IN THE SOFTWARE.",
+            "#",
+            ("##################################################"
+             "##################################################"),
+            ("#<---------------------------------------- 100 Characters "
+             "---------------------------------------->#"),
+            "",
+            "function scad() {",
+            "    DQ='\"' # DQ == Double Quote",
+            "    FOO=\"name=$DQ$1$DQ\" # $1 == the value to set name to",
+            "    openscad \"$HR2_DIRECTORY/mechanical/hr2_models.scad\" -D $FOO",
+            "}",
+            ]
 
-        # Split *read_me_text* into *read_me_lines* and search for the markers that
-        # specify the *start_index* and *end_index* of where to insert the updates:
-        read_me_lines: List[str] = read_me_text.split('\n')
-        end_index: int = -1
-        start_index: int = -1
-        read_me_line_index: int
-        read_me_line: str
-        for read_me_line_index, read_me_line in enumerate(read_me_lines):
-            if read_me_line.endswith('>'):
-                if read_me_line.endswith("<!-- NAME list starts here. -->"):
-                    start_index = read_me_line_index + 1
-                elif read_me_line.endswith("<!-- NAME list ends here. -->"):
-                    end_index = read_me_line_index
-        assert start_index >= 0 and end_index >= 0, "README.md is broken"
+        # Construct and sort *all_named_descriptions* from *if2d* and *if3d*:
+        all_named_descriptions: List[Tuple[str, ...]] = (
+            if2d.named_descriptions + if3d.named_descriptions)
+        all_named_descriptions.sort()
 
-        # Extract *before_lines*, *previous_middle_lines*, and *after_lines*:
-        before_lines: List[str] = read_me_lines[:start_index]
-        # previous_middle_lines: List[str] = read_me_lines[start_index:end_index]
-        after_lines: List[str] = read_me_lines[end_index:]
+        # Output the primary case command:
+        scad_show_lines.append("case \"$1\" in")
+        named_description: Tuple[str, ...]
+        name: str
+        for named_description in all_named_descriptions:
+            name = named_description[0]
+            scad_show_lines.extend([
+                f"    \"{name}\")",            # "NAME")
+                f"\tscad \"{name}\"",              # scad "NAME"
+                "\t;;",                            # ;;
+                ])
 
-        # Construct *new_middle_lines*:
-        new_middle_lines: List[str] = []
-        scad_comment_lines: List[str] = [
-            "////////////////////////////////////////////////////////////////",
-            "//",
-            "// The following openscad command line options are supported:",
-            "//"
-        ]
-        named_mark_down: Tuple[str, ...]
-        for named_mark_down in all_named_mark_downs:
-            name: str = named_mark_down[0]
-            new_middle_lines.append("")
-            new_middle_lines.append(f"  * `{name}`:")
-            scad_comment_lines.append(f"// -D 'name=\"{name}\"'")
-            mark_down_line: str
-            for mark_down_line in named_mark_down[1:]:
-                new_middle_lines.append(f"    {mark_down_line}")
-                scad_comment_lines.append(f"//    {mark_down_line}")
-            scad_comment_lines.append("//")
+        # Now output the help message:
+        scad_show_lines.append("    *)")
+        for named_description in all_named_descriptions:
+            name = named_description[0]
+            scad_show_lines.append(f"\techo \"{name}\"")
+        scad_show_lines.append("\t;;")
 
-        new_middle_lines.append("")
-        scad_comment_lines.append("//")
-        scad_comment_lines.append(
-            "////////////////////////////////////////////////////////////////")
+        # Close up the case statement:
+        scad_show_lines.append("esac")
+        scad_show_lines.append("")
 
-        # Consturct *new_read_me_text* from *new_lines* and return it:
-        new_lines: List[str] = before_lines + new_middle_lines + after_lines
-        new_read_me_text: str = '\n'.join(new_lines)
-        return new_read_me_text, scad_comment_lines
+        # Write out the executable shell script:
+        scad_show_text: str = '\n'.join(scad_show_lines)
+        scad_show_file: IO[Any]
+        with open(scad_show_file_name, "w") as scad_show_file:
+            scad_show_file.write(scad_show_text)
+
+        # Set the executable bits:
+        executable_mode_bits: int = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        status_bits: int = os.stat(scad_show_file_name).st_mode
+        os.chmod(scad_show_file_name, status_bits | executable_mode_bits)
 
     # ScadProgram.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
@@ -2497,7 +2534,7 @@ class If2D(Scad2D):
         self.then_clauses: List[Tuple[str, List[Scad2D]]] = [then_clause]
         self.else_scad2ds: Optional[List[Scad2D]] = None
         self.locked: bool = lock
-        self.named_mark_downs: List[Tuple[str, ...]] = []
+        self.named_descriptions: List[Tuple[str, ...]] = []
 
     # If2D.__str__():
     def __str__(self) -> str:
@@ -2530,13 +2567,14 @@ class If2D(Scad2D):
         if2d.locked = True
 
     # If2D.name_match:
-    def name_match_append(self, name: str, module2d: Module2D, mark_down: List[str]) -> None:
+    def name_match_append(self, name: str, module2d: Module2D, descriptions: List[str]) -> None:
         """Append a then clause for mataching a name."""
         # Append a then clause to *if2d* (i.e. *self*) and remember the *mark_down*:
+        name = name.replace(' ', '_')
         if2d: If2D = self
         if2d.then_append(f'name == "{name}"', [UseModule2D(f"{name} Use Module", module2d)])
-        named_mark_down: Tuple[str, ...] = (name,) + tuple(mark_down)
-        if2d.named_mark_downs.append(named_mark_down)
+        named_descriptions: Tuple[str, ...] = (name,) + tuple(descriptions)
+        if2d.named_descriptions.append(named_descriptions)
 
     # If2D.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
@@ -3478,7 +3516,7 @@ class If3D(Scad3D):
         self.then_clauses: List[Tuple[str, List[Scad3D]]] = [then_clause]
         self.else_scad3ds: Optional[List[Scad3D]] = None
         self.locked: bool = lock
-        self.named_mark_downs: List[Tuple[str, ...]] = []
+        self.named_descriptions: List[Tuple[str, ...]] = []
 
     # If3D.__str__():
     def __str__(self) -> str:
@@ -3510,14 +3548,15 @@ class If3D(Scad3D):
         if3d: If3D = self
         if3d.locked = True
 
-    # If3D.name_match():
-    def name_match_append(self, name: str, module3d: "Module3D", mark_down: List[str]) -> None:
+    # If3D.name_match_append():
+    def name_match_append(self, name: str, module3d: "Module3D", descriptions: List[str]) -> None:
         """Append a then clause for mataching a name."""
-        # Append a then clause to *if3d* (i.e. *self*) and remember the *mark_down*:
+        # Append a then clause to *if3d* (i.e. *self*) and remember the *descriptions*:
         if3d: If3D = self
+        name = name.replace(' ', '_')
         if3d.then_append(f'name == "{name}"', [UseModule3D(f"{name} Use Module", module3d)])
-        named_mark_down: Tuple[str, ...] = (name,) + tuple(mark_down)
-        if3d.named_mark_downs.append(named_mark_down)
+        named_descriptions: Tuple[str, ...] = (name,) + tuple(descriptions)
+        if3d.named_descriptions.append(named_descriptions)
 
     # If3D.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:

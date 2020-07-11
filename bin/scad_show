@@ -1,0 +1,242 @@
+#!/bin/bash
+# This file is licensed using the "MIT License" below:
+#
+####################################################################################################
+#
+# MIT License
+#
+# Copyright 2020 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+####################################################################################################
+#<---------------------------------------- 100 Characters ---------------------------------------->#
+
+function scad() {
+    DQ='"' # DQ == Double Quote
+    FOO="name=$DQ$1$DQ" # $1 == the value to set name to
+    openscad "$HR2_DIRECTORY/mechanical/hr2_models.scad" -D $FOO
+}
+case "$1" in
+    "RPi4_Ethernet_Heat_Sink")
+	scad "RPi4_Ethernet_Heat_Sink"
+	;;
+    "RPi4_Processor_Heat_Sink")
+	scad "RPi4_Processor_Heat_Sink"
+	;;
+    "RPi4_SDRam_Heat_Sink")
+	scad "RPi4_SDRam_Heat_Sink"
+	;;
+    "RPi4_USB_Heat_Sink")
+	scad "RPi4_USB_Heat_Sink"
+	;;
+    "center_board")
+	scad "center_board"
+	;;
+    "center_pcb")
+	scad "center_pcb"
+	;;
+    "centered_hcsr04_board")
+	scad "centered_hcsr04_board"
+	;;
+    "encoder_board")
+	scad "encoder_board"
+	;;
+    "encoder_board")
+	scad "encoder_board"
+	;;
+    "encoder_pcb")
+	scad "encoder_pcb"
+	;;
+    "expansion_flat")
+	scad "expansion_flat"
+	;;
+    "expansion_plate")
+	scad "expansion_plate"
+	;;
+    "f1x4lp")
+	scad "f1x4lp"
+	;;
+    "hcsr04_board")
+	scad "hcsr04_board"
+	;;
+    "hcsr04_pcb")
+	scad "hcsr04_pcb"
+	;;
+    "hr2_arm_assembly")
+	scad "hr2_arm_assembly"
+	;;
+    "hr2_base_assembly")
+	scad "hr2_base_assembly"
+	;;
+    "hr2_master_assembly")
+	scad "hr2_master_assembly"
+	;;
+    "hr2_nucleo_assembly")
+	scad "hr2_nucleo_assembly"
+	;;
+    "hr2_pi_assembly")
+	scad "hr2_pi_assembly"
+	;;
+    "hr2_wheel_assembly")
+	scad "hr2_wheel_assembly"
+	;;
+    "master_board")
+	scad "master_board"
+	;;
+    "master_board")
+	scad "master_board"
+	;;
+    "master_board")
+	scad "master_board"
+	;;
+    "master_pcb")
+	scad "master_pcb"
+	;;
+    "ne_board")
+	scad "ne_board"
+	;;
+    "ne_pcb")
+	scad "ne_pcb"
+	;;
+    "nucleo144_board")
+	scad "nucleo144_board"
+	;;
+    "nucleo144_pcb")
+	scad "nucleo144_pcb"
+	;;
+    "nw_board")
+	scad "nw_board"
+	;;
+    "nw_pcb")
+	scad "nw_pcb"
+	;;
+    "otherpi_board")
+	scad "otherpi_board"
+	;;
+    "otherpi_pcb")
+	scad "otherpi_pcb"
+	;;
+    "raspi3b_board")
+	scad "raspi3b_board"
+	;;
+    "raspi3b_pcb")
+	scad "raspi3b_pcb"
+	;;
+    "romi_base")
+	scad "romi_base"
+	;;
+    "se_board")
+	scad "se_board"
+	;;
+    "se_pcb")
+	scad "se_pcb"
+	;;
+    "st_link_adapter_board")
+	scad "st_link_adapter_board"
+	;;
+    "st_link_adapter_pcb")
+	scad "st_link_adapter_pcb"
+	;;
+    "st_link_board")
+	scad "st_link_board"
+	;;
+    "st_link_pcb")
+	scad "st_link_pcb"
+	;;
+    "st_link_sandwich")
+	scad "st_link_sandwich"
+	;;
+    "sw_board")
+	scad "sw_board"
+	;;
+    "sw_pcb")
+	scad "sw_pcb"
+	;;
+    "wheel_assembly")
+	scad "wheel_assembly"
+	;;
+    "xcenter_board")
+	scad "xcenter_board"
+	;;
+    "xne_board")
+	scad "xne_board"
+	;;
+    "xnw_board")
+	scad "xnw_board"
+	;;
+    "xse_board")
+	scad "xse_board"
+	;;
+    "xsw_board")
+	scad "xsw_board"
+	;;
+    *)
+	echo "RPi4_Ethernet_Heat_Sink"
+	echo "RPi4_Processor_Heat_Sink"
+	echo "RPi4_SDRam_Heat_Sink"
+	echo "RPi4_USB_Heat_Sink"
+	echo "center_board"
+	echo "center_pcb"
+	echo "centered_hcsr04_board"
+	echo "encoder_board"
+	echo "encoder_board"
+	echo "encoder_pcb"
+	echo "expansion_flat"
+	echo "expansion_plate"
+	echo "f1x4lp"
+	echo "hcsr04_board"
+	echo "hcsr04_pcb"
+	echo "hr2_arm_assembly"
+	echo "hr2_base_assembly"
+	echo "hr2_master_assembly"
+	echo "hr2_nucleo_assembly"
+	echo "hr2_pi_assembly"
+	echo "hr2_wheel_assembly"
+	echo "master_board"
+	echo "master_board"
+	echo "master_board"
+	echo "master_pcb"
+	echo "ne_board"
+	echo "ne_pcb"
+	echo "nucleo144_board"
+	echo "nucleo144_pcb"
+	echo "nw_board"
+	echo "nw_pcb"
+	echo "otherpi_board"
+	echo "otherpi_pcb"
+	echo "raspi3b_board"
+	echo "raspi3b_pcb"
+	echo "romi_base"
+	echo "se_board"
+	echo "se_pcb"
+	echo "st_link_adapter_board"
+	echo "st_link_adapter_pcb"
+	echo "st_link_board"
+	echo "st_link_pcb"
+	echo "st_link_sandwich"
+	echo "sw_board"
+	echo "sw_pcb"
+	echo "wheel_assembly"
+	echo "xcenter_board"
+	echo "xne_board"
+	echo "xnw_board"
+	echo "xse_board"
+	echo "xsw_board"
+	;;
+esac
