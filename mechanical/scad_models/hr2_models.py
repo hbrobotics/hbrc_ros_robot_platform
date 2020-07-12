@@ -486,7 +486,7 @@ class Pad:
         # Perform any requested *tracing*:
         if tracing:
             print(f"{tracing}=>Pad.__init__('{name}', pdx:{pad_dx:.2f} pad_dy:{pad_dy:.2f} "
-                  f"center:{pad_center} dd:{drill_diameter:.2f} pr:{degrees(pad_rotate)})")
+                  f"center:{pad_center} dd:{drill_diameter:.2f} pr:{degrees(pad_rotate)})deg")
 
         # Verify argument types:
         assert name != ""
@@ -502,11 +502,12 @@ class Pad:
         self.pad_dx: float = pad_dx
         self.pad_dy: float = pad_dy
         self.pad_rotate: float = pad_rotate
+        self.trace: str = tracing  # Temporary
 
         # Wrap-up any requested *tracing*:
         if tracing:
             print(f"{tracing}<=Pad.__init__('{name}', pdx:{pad_dx:.2f} pad_dy:{pad_dy:.2f} "
-                  f"center:{pad_center} dd:{drill_diameter:.2f} pr:{degrees(pad_rotate)})")
+                  f"center:{pad_center} dd:{drill_diameter:.2f} pr:{degrees(pad_rotate)})deg")
 
     # Pad.__str__():
     def __str__(self) -> str:
@@ -542,7 +543,7 @@ class Pad:
         return copied_pad
 
     # Pad.hole_append():
-    def hole_append(self, polygon: Polygon) -> None:
+    def hole_append(self, polygon: Polygon, tracing: str = "") -> None:
         """Append the Pad drill holes to a Polygon."""
         # Unpack some values from *pad* (i.e. *self*):
         pad: Pad = self
@@ -553,17 +554,28 @@ class Pad:
         pad_dy: float = pad.pad_dy
         pad_rotate: float = pad.pad_rotate
 
+        # Perform any requested *tracing*:
+        tracing = tracing if tracing else pad.trace
+        if tracing:
+            print(f"{tracing}=>Pad.hole_append('{name}', *)")
+            print(f"{tracing}name='{name}' drill_diameter={drill_diameter:.2f} "
+                  f"pad_dx:{pad_dx:.2f} pad_dy:{pad_dy:.2f}")
+
         # Use a *Circle* for a round pad and a rounded *Square* for a "oval" pad:
         pad_dx_dy_minimum: float = min(pad_dx, pad_dy)
         small_distance: float = .0000001
         if pad_dx_dy_minimum < small_distance:
             # Round Mechanical hole only:
             polygon.append(Circle(f"{name} Hole", drill_diameter, 16, pad_center))
+            if tracing:
+                print(f"{tracing}Mechinical hole")
         else:
             # There is a pad as well.  The pad can be either circular or slotted.
             if abs(pad_dx - pad_dy) < small_distance:
                 # The pad is circular, use a *Circle* for a round hole:
-                polygon.append(Circle(f"{name} Hole", pad_dx, 16, pad_center))
+                polygon.append(Circle(f"{name} Hole", drill_diameter, 16, pad_center))
+                if tracing:
+                    print(f"{tracing}circular hole: {drill_diameter:.2f}")
             else:
                 # Use a rounded *Sqaure* to generate a slot hole:
                 pad_extra: float = pad_dx_dy_minimum - drill_diameter
@@ -573,8 +585,14 @@ class Pad:
                     polygon.append(Square(f"{name} Slot",
                                           pad_dx - pad_extra, pad_dy - pad_extra,
                                           pad_center, pad_rotate, corner_radius, 5))
+                    if tracing:
+                        print(f"{tracing}Oval hole: ...")
                 else:
                     assert False, "Unhandled hole condition in Pad.hole_append()."
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=Pad.hole_append('{name}', *)")
 
     # Pad.rebase():
     def rebase(self, delta: int) -> "Pad":
@@ -2055,8 +2073,15 @@ class PCBChunk:
         colored_pcb: Color = Color(f"Colored {name} PCB", extruded_pcb, color)
 
         # Group all of the *front_scads* into a *front_union* and construct *module*:
-        front_union: Union3D = Union3D(f"{name} Front Union", front_scads)
-        module3d: Module3D = Module3D(f"{name}_xpcb", [colored_pcb, front_union] + back_scads)
+        front_scads_union: Union3D = Union3D(f"{name} Front Union", front_scads)
+        translated_front_scads_union: Translate3D = Translate3D(
+            f"{name} Translated Front Scads Union", front_scads_union, P3D(0.0, 0.0, dz))
+        back_scads_union: Union3D = Union3D(f"{name} Back Scads Union", back_scads)
+        translated_back_scads_union: Translate3D = Translate3D(
+            f"{name} Translated Back Scads Union", back_scads_union, P3D(0.0, 0.0, 0.0))
+        module3d_scads: List[Scad3D] = [
+            colored_pcb, translated_front_scads_union, translated_back_scads_union]
+        module3d: Module3D = Module3D(f"{name}_xpcb", module3d_scads)
         scad_program.append(module3d)
         scad_program.if3d.name_match_append(f"{name.lower()}_board", module3d, [f"{name} Board"])
 
@@ -2953,7 +2978,7 @@ class HCSR04:
         tie_down_hole_pads_pcb_chunk: PCBChunk = PCBChunk("HCSR4 Tie Down Holes",
                                                           tie_down_hole_pads, [])
 
-        # Construct the 3 female mate connector *PCBChunk*s:
+        # Construct the 3 female connector *PCBChunk*s:
         y_mirrored_f1x4_pcb_chunk: PCBChunk = (
             connectors.f1x4.pcb_chunk.pads_y_mirror().artworks_y_mirror())
         y_mirrored_f1x4h_pcb_chunk: PCBChunk = (
@@ -3094,20 +3119,20 @@ class F1x4LP:
         # Define some constants for the Mill Max 315-87-164-41-003101 (low profile 64-pins).
         # Digikey: 1212-1125-ND
         inch2mm: float = 25.4
-        insulation_dx: float = 0.100 * inch2mm
-        insulation_dy: float = 0.100 * inch2mm
-        pin_diameter: float = 0.030 * inch2mm
+        insulation_dx: float = 2.54
+        insulation_dy: float = 2.54
+        pin_diameter: float = 0.78
         landing_diameter: float = 2 * pin_diameter  # Estimate.
-        drill_diameter: float = pin_diameter + 0.05
-        pad_diameter: float = drill_diameter + 1.00
+        drill_diameter: float = pin_diameter + .2
+        pad_diameter: float = drill_diameter + 1.00  # Guess
         pin_pitch: float = 0.100 * inch2mm
-        top_z: float = 0.095 * inch2mm
-        insulation_z: float = top_z - 0.071 * inch2mm
+        top_z: float = 2.41
+        insulation_z: float = top_z - 1.9
         insulation_dz: float = abs(top_z - insulation_z)
         landing_z: float = 0.0
         landing_dz: float = top_z - landing_z
         pin_bottom_z: float = top_z - 0.155 * inch2mm
-        bottom_z: float = top_z - (0.095 + 0.095) * inch2mm
+        bottom_z: float = landing_z - 2.42
 
         # First, create the *landing_tube* which contacts the top of the PCB and has an
         # opening that the pin fits into:
@@ -3899,6 +3924,8 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz,
             center_pcb.pcb_exterior, "Tan", center_kicad_pcb_path, [])
         xcenter_module = xcenter_module
+        scad_program.if3d.name_match_append("xcenter_xboard", xcenter_module, ["XCenterBoard"])
+        print(f"xcenter_module.name='{xcenter_module.name}'==================")
 
         ne_pcb_chunk: PCBChunk = PCBChunk.join("XNE", [
             ne_sonars_pcb_chunk,
@@ -4469,12 +4496,12 @@ class MasterBoard:
             ("Front Center Sonar", "low", center_pcb,
              center_pcb_chunks, center_references, "CN52",
              (270.0) * degrees2radians,
-             (270.0) * degrees2radians, 23.0, False),
+             (270.0) * degrees2radians, 23.0, True),
             ("Front Left Center Sonar", "low", center_pcb,
              center_pcb_chunks, center_references, "CN53",
              (270.0 + 1 * 22.5 + 2.5) * degrees2radians,
              (270.0 + 1 * 22.5) * degrees2radians, 0.0, False),
-            ("Front Right Center Sonar", "high", center_pcb,
+            ("Front Right Center Sonar", "medium", center_pcb,
              center_pcb_chunks, center_references, "CN54",
              (270.0 + 2 * 22.5 - 2.5) * degrees2radians,
              (270.0 + 2 * 22.5) * degrees2radians, 0.0, True),
@@ -4551,6 +4578,8 @@ class MasterBoard:
                 print(f"{tracing}'{sonar_name}': reference:{reference}")
                 print(f"{tracing}'{sonar_name}Pad[0]': reference:{reference.pcb_chunk.pads[0]}")
 
+            if not is_front:
+                connector_pcb_chunk = connector_pcb_chunk.scads_x_flip().sides_swap()
             repostioned_connector_pcb_chunk: PCBChunk = connector_pcb_chunk.reposition(
                 origin2d, beam_angle + degrees90, sonar_translate)
             pcb_chunks.append(repostioned_connector_pcb_chunk)
