@@ -2962,21 +2962,40 @@ class HCSR04:
 
         # Compute the tie down hole *Pad*'s, which are mechanical only (i.e. no copper pads.):
         # The "miniture" nylon ties are 2.5mm wide.  The hole should be a little larger:
+        # There are two tie down hole locations.  For the normal (F1X4) and low profile (F1X4LP)
+        # locations and the a high (F1X4H) locations.  We use *lp* and *h* to differentiate,
+        # *lp* is also used for the normal (F1X4) case.
         tie_down_hole_diameter: float = 2.5 + 0.05  # mm
         tie_down_hole_radius: float = tie_down_hole_diameter / 2.0
-        tie_down_hole_x_extra: float = 0.2
-        tie_down_hole_e_x: float = 2.0 * 2.54 + tie_down_hole_radius + tie_down_hole_x_extra
-        tie_down_hole_w_x: float = -tie_down_hole_e_x
-        tie_down_hole_y: float = 2.54 / 2.0  # mm
-        tie_down_hole_center_e: P2D = P2D(tie_down_hole_e_x, tie_down_hole_y)
-        tie_down_hole_center_w: P2D = P2D(tie_down_hole_w_x, tie_down_hole_y)
-        tie_down_hole_pad_e: Pad = Pad("HCSR04 East Tie Down Hole",
-                                       0.0, 0.0, tie_down_hole_diameter, tie_down_hole_center_e)
-        tie_down_hole_pad_w: Pad = Pad("HCSR04 West Tie Down Hole",
-                                       0.0, 0.0, tie_down_hole_diameter, tie_down_hole_center_w)
-        tie_down_hole_pads: List[Pad] = [tie_down_hole_pad_e, tie_down_hole_pad_w]
-        tie_down_hole_pads_pcb_chunk: PCBChunk = PCBChunk("HCSR4 Tie Down Holes",
-                                                          tie_down_hole_pads, [])
+        tie_down_hole_x_extra: float = 0.2  # mm
+        tie_down_hole_lp_e_x: float = 2.0 * 2.54 + tie_down_hole_radius + tie_down_hole_x_extra
+        tie_down_hole_lp_w_x: float = -tie_down_hole_lp_e_x
+        tie_down_hole_h_e_x: float = 1.00 * 2.54 + tie_down_hole_radius + tie_down_hole_x_extra
+        tie_down_hole_h_w_x: float = -tie_down_hole_h_e_x
+        tie_down_hole_lp_y: float = 1.50 * 2.54  # mm
+        tie_down_hole_h_y: float = -1.15 * 2.54  # mm
+        tie_down_hole_center_lp_e: P2D = P2D(tie_down_hole_lp_e_x, tie_down_hole_lp_y)
+        tie_down_hole_center_lp_w: P2D = P2D(tie_down_hole_lp_w_x, tie_down_hole_lp_y)
+        tie_down_hole_center_h_e: P2D = P2D(tie_down_hole_h_e_x, tie_down_hole_h_y)
+        tie_down_hole_center_h_w: P2D = P2D(tie_down_hole_h_w_x, tie_down_hole_h_y)
+        tie_down_hole_pad_lp_e: Pad = Pad("HCSR04 East Tie Down Hole (Normal/LP)",
+                                          0.0, 0.0, tie_down_hole_diameter,
+                                          tie_down_hole_center_lp_e)
+        tie_down_hole_pad_lp_w: Pad = Pad("HCSR04 West Tie Down Hole (Normal/LP)",
+                                          0.0, 0.0, tie_down_hole_diameter,
+                                          tie_down_hole_center_lp_w)
+        tie_down_hole_pad_h_e: Pad = Pad("HCSR04 East Tie Down Hole (Hight)",
+                                         0.0, 0.0, tie_down_hole_diameter,
+                                         tie_down_hole_center_h_e)
+        tie_down_hole_pad_h_w: Pad = Pad("HCSR04 West Tie Down Hole (High)",
+                                         0.0, 0.0, tie_down_hole_diameter,
+                                         tie_down_hole_center_h_w)
+        tie_down_hole_lp_pads: List[Pad] = [tie_down_hole_pad_lp_e, tie_down_hole_pad_lp_w]
+        tie_down_hole_h_pads: List[Pad] = [tie_down_hole_pad_h_e, tie_down_hole_pad_h_w]
+        tie_down_hole_pads_lp_pcb_chunk: PCBChunk = PCBChunk("HCSR4 Tie Down Holes (Normal/LP)",
+                                                             tie_down_hole_lp_pads, [])
+        tie_down_hole_pads_h_pcb_chunk: PCBChunk = PCBChunk("HCSR4 Tie Down Holes (High)",
+                                                            tie_down_hole_h_pads, [])
 
         # Construct the 3 female connector *PCBChunk*s:
         y_mirrored_f1x4_pcb_chunk: PCBChunk = (
@@ -2987,13 +3006,13 @@ class HCSR04:
             connectors.f1x4lp.pcb_chunk.pads_y_mirror().artworks_y_mirror())
         f1x4_mate: PCBChunk = PCBChunk.join(
             "HCSR04_F1x4",
-            [y_mirrored_f1x4_pcb_chunk, tie_down_hole_pads_pcb_chunk], value="HCSR04;F1x4")
+            [y_mirrored_f1x4_pcb_chunk, tie_down_hole_pads_lp_pcb_chunk], value="HCSR04;F1x4")
         f1x4h_mate: PCBChunk = PCBChunk.join(
             "HCSR04_F1x4H",
-            [y_mirrored_f1x4h_pcb_chunk, tie_down_hole_pads_pcb_chunk], value="HCSR04;F1x4H")
+            [y_mirrored_f1x4h_pcb_chunk, tie_down_hole_pads_h_pcb_chunk], value="HCSR04;F1x4H")
         f1x4lp_mate: PCBChunk = PCBChunk.join(
             "HCSR04_F1x4LP",
-            [y_mirrored_f1x4lp_pcb_chunk, tie_down_hole_pads_pcb_chunk], value="HCSR04;F1x4LP")
+            [y_mirrored_f1x4lp_pcb_chunk, tie_down_hole_pads_lp_pcb_chunk], value="HCSR04;F1x4LP")
 
         # Generate the 3 female mate connector footprints:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
