@@ -1,4 +1,4 @@
-HCSR04LP;F1X4,CN,HR2:HCSR04_F1x4LP_MATE,https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf,HC-SR04,HC-SR04 Sonar (Low Profile Receptacle)
+HCSR04LP;F1X4,CN,HR2:HCSR04_F1x4LP,https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf,HC-SR04,HC-SR04 Sonar (Low Profile Receptacle)
 Pin,Name,Type,Side,Unit,Style,Hidden
 1,VCC,pwr_in,right,1,,
 2,TRIG,in,right,1,,
