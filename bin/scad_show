@@ -168,6 +168,9 @@ case "$1" in
     "sw_pcb")
 	scad "sw_pcb"
 	;;
+    "vertical_sonar")
+	scad "vertical_sonar"
+	;;
     "wheel_assembly")
 	scad "wheel_assembly"
 	;;
@@ -235,6 +238,7 @@ case "$1" in
 	echo "st_link_sandwich"
 	echo "sw_board"
 	echo "sw_pcb"
+	echo "vertical_sonar"
 	echo "wheel_assembly"
 	echo "xcenter_board"
 	echo "xcenter_xboard"

@@ -1,0 +1,51 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP F767ZI;NUCLEO144
+D NUCLEO144-F767ZI
+K Nucleo144 STM32F767ZI
+F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
+$ENDCMP
+#
+$CMP HCSR04;F1X4
+D HC-SR04 Sonar (Normal Profile Receptacle)
+K ~
+F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+$CMP HCSR04H;F1X4
+D HC-SR04 Sonar (High Profile Receptacle)
+K ~
+F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+$CMP STLINKCN3;F1X2
+D ST-Link Ground Pins
+K ~
+F http://www.adam-tech.com/downloader.php?p=RS1-XX-G.pdf
+$ENDCMP
+#
+$CMP HCSR04LP;F1X4
+D HC-SR04 Sonar (Low Profile Receptacle)
+K ~
+F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+$CMP HR2_Encoder;HR2Encoder
+D HR2 Encoder
+K ~
+F 
+$ENDCMP
+#
+$CMP HR2_EncoderMate;HR2EncoderMate
+D HR2 Encoder Mating Connector
+K ~
+F 
+$ENDCMP
+#
+$CMP STLINKCN2;F1X2
+D ST-Link Ground Pins
+K ~
+F http://www.adam-tech.com/downloader.php?p=RS1-XX-G.pdf
+$ENDCMP
+#
+#End Doc Library

@@ -2958,6 +2958,24 @@ class HCSR04:
         # Wrap up *sonar_pcb*:
         sonar_module: Module3D = sonar_pcb.scad_program_append(scad_program, "LightGreen")
 
+        # Now create a *vertical_sonar_module* which is centered over the connector and points
+        # in +X direction:
+        sonar_use_module: UseModule3D = sonar_module.use_module_get()
+        recentered_sonar: Translate3D = Translate3D("Recentered HCSR04", sonar_use_module,
+                                                    P3D(0.0, -pcb_dy / 2.0, 0.5 * 2.54))
+        degrees180: float = pi
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        z_rotated_sonar: Rotate3D = Rotate3D("Z Rotated HCSR04", recentered_sonar,
+                                             degrees180, z_axis)
+        degrees90: float = degrees180 / 2.0
+        x_axis: P3D = P3D(1.0, 0.0, 0.0)
+        x_rotated_sonar: Rotate3D = Rotate3D("X Rotated HCS404", z_rotated_sonar,
+                                             degrees90, x_axis)
+        vertical_sonar_module: Module3D = Module3D("Veritcal HCSR04", [x_rotated_sonar])
+        scad_program.append(vertical_sonar_module)
+        scad_program.if3d.name_match_append(
+            "vertical_sonar", vertical_sonar_module, ["Vertical Sonar"])
+
         # Do all of the sonar *PCBChunk* stuff now:
 
         # Compute the tie down hole *Pad*'s, which are mechanical only (i.e. no copper pads.):
@@ -2968,11 +2986,11 @@ class HCSR04:
         tie_down_hole_diameter: float = 2.5 + 0.05  # mm
         tie_down_hole_radius: float = tie_down_hole_diameter / 2.0
         tie_down_hole_x_extra: float = 0.2  # mm
-        tie_down_hole_lp_e_x: float = 2.0 * 2.54 + tie_down_hole_radius + tie_down_hole_x_extra
+        tie_down_hole_lp_e_x: float = 2.2 * 2.54 + tie_down_hole_radius + tie_down_hole_x_extra
         tie_down_hole_lp_w_x: float = -tie_down_hole_lp_e_x
-        tie_down_hole_h_e_x: float = 1.00 * 2.54 + tie_down_hole_radius + tie_down_hole_x_extra
+        tie_down_hole_h_e_x: float = 1.25 * 2.54 + tie_down_hole_radius + tie_down_hole_x_extra
         tie_down_hole_h_w_x: float = -tie_down_hole_h_e_x
-        tie_down_hole_lp_y: float = 1.50 * 2.54  # mm
+        tie_down_hole_lp_y: float = -0.5 * 2.54  # mm
         tie_down_hole_h_y: float = -1.15 * 2.54  # mm
         tie_down_hole_center_lp_e: P2D = P2D(tie_down_hole_lp_e_x, tie_down_hole_lp_y)
         tie_down_hole_center_lp_w: P2D = P2D(tie_down_hole_lp_w_x, tie_down_hole_lp_y)
@@ -3025,7 +3043,6 @@ class HCSR04:
 
         # Construct the *hcsr04_cpcb_chunk*:
         origin3d: P3D = P3D(0.0, 0.0, 0.0)
-        z_axis: P3D = P3D(0.0, 0.0, 1.0)
         hcsr04_transducer_module: Module3D = Module3D("HCSR04 Transducer", [colored_transducer])
         hcsr04_transducer_use_module: UseModule3D = hcsr04_transducer_module.use_module_get()
         left_transducer: Scad3D = hcsr04_transducer_use_module.reposition(
@@ -3050,7 +3067,7 @@ class HCSR04:
         hcsr04_pcb_chunk: PCBChunk = centered_hcsr04.reposition(origin2d, 0.0, edge_center)
         edge_sonar_exterior: SimplePolygon = sonar_exterior.reposition(origin2d, 0.0, edge_center)
 
-        # Generate the *hrsr04_module* but there is no assocaited `.kicad_pcb`):
+        # Generate the *hrsr04_module* but there is no associated `.kicad_pcb`):
         hcsr04_module: Module3D = hcsr04_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz, edge_sonar_exterior, "LightGreen", None, [])
         hcsr04_module = hcsr04_module  # Eventual this will be used.
@@ -3066,6 +3083,7 @@ class HCSR04:
         self.f1x4_mate_pcb_chunk: PCBChunk = f1x4_mate
         self.f1x4h_mate_pcb_chunk: PCBChunk = f1x4h_mate
         self.f1x4lp_mate_pcb_chunk: PCBChunk = f1x4lp_mate
+        self.vertical_sonar_module: Module3D = vertical_sonar_module
 
 
 # HeatSink:
@@ -3241,6 +3259,7 @@ class F1x4LP:
         # Stuff some values into *f1x4lp* (i.e. *self*):
         # f1x4lp: F1x4LP = self
         self.module: Module3D = f1x4lp_module
+        self.insulation_height: float = top_z
         self.pcb_chunk: PCBChunk = pcb_chunk
         self.pin_bottom_z: float = pin_bottom_z
         self.top_z: float = top_z
@@ -3886,7 +3905,7 @@ class MasterBoard:
         ne_sonars_pcb_chunk: PCBChunk
         nw_sonars_pcb_chunk: PCBChunk
         center_sonars_pcb_chunk, ne_sonars_pcb_chunk, nw_sonars_pcb_chunk = (
-            master_board.sonars_install(hcsr04, center_pcb, ne_pcb, nw_pcb,
+            master_board.sonars_install(hcsr04, center_pcb, ne_pcb, nw_pcb, connectors,
                                         tracing=next_tracing))
 
         # This is where we *st_link_use_modle* and translate it to the desired location:
@@ -4469,6 +4488,7 @@ class MasterBoard:
 
     # MasterBoard.sonars_install():
     def sonars_install(self, hcsr04: HCSR04, center_pcb: PCB, ne_pcb: PCB, nw_pcb: PCB,
+                       connectors: Connectors,
                        tracing: str = "") -> Tuple[PCBChunk, PCBChunk, PCBChunk]:
         """Install all of the sonars."""
         # Perform any requestd *tracing*:
@@ -4483,7 +4503,7 @@ class MasterBoard:
         # where:
         # * *name*: Is the name of the sonar:
         # * *board*: The sub-PCB to install sonars on:
-        # * *height*: One of "high", "medium", "low" for the sonar height.
+        # * *height*: One of "high", "normal", "low" for the sonar height.
         # * *rim_angle*: The polar coordinate angle from the orgin of the sonar.
         # * *beam_angle*: The angle of the sonar direction.
         # * *sonar_offset*: The offset from the nominal *sonar_radius*.
@@ -4500,38 +4520,81 @@ class MasterBoard:
                                 float, float, float, bool]] = [
             ("Rear Left Sonar", "high", ne_pcb, ne_pcb_chunks, ne_references, "CN60",
              (90.0 - 1.8 * 22.5) * degrees2radians,               # Trial and error to fit iniside
-             (90.0 + 0.5 * 22.5) * degrees2radians, 5.0, True),  # robot perimeter and miss spacer.
+             (90.0 + 0.5 * 22.5) * degrees2radians,
+             2.0 * 2.54, True),  # robot perimeter and miss spacer.
             ("Rear Right Sonar", "high", nw_pcb, nw_pcb_chunks, nw_references, "CN70",
              (90.0 + 1.8 * 22.5) * degrees2radians,               # Same Trial and error as above.
-             (90.0 - 0.5 * 22.5) * degrees2radians, 5.0, True),
-            ("Front Right Top Sonar", "medium", center_pcb,
+             (90.0 - 0.5 * 22.5) * degrees2radians,
+             2.0 * 2.540, True),
+            ("Front Right Top Sonar", "normal", center_pcb,
              center_pcb_chunks, center_references, "CN50",
              (270.0 - 2 * 22.5 + 2.5) * degrees2radians,
-             (270.0 - 2 * 22.5) * degrees2radians, 0.0, True),
+             (270.0 - 2 * 22.5) * degrees2radians,
+             1.5 * 2.54, True),
             ("Front Right Bottom Sonar", "low", center_pcb,
              center_pcb_chunks, center_references, "CN51",
              (270.0 - 1 * 22.5 - 2.5) * degrees2radians,
-             (270.0 - 1 * 22.5) * degrees2radians, 0.0, False),
+             (270.0 - 1 * 22.5) * degrees2radians,
+             1.5 * 2.54, False),
             ("Front Center Sonar", "low", center_pcb,
              center_pcb_chunks, center_references, "CN52",
              (270.0) * degrees2radians,
-             (270.0) * degrees2radians, 23.0, True),
+             (270.0) * degrees2radians,
+             23.0, True),
             ("Front Left Center Sonar", "low", center_pcb,
              center_pcb_chunks, center_references, "CN53",
              (270.0 + 1 * 22.5 + 2.5) * degrees2radians,
-             (270.0 + 1 * 22.5) * degrees2radians, 0.0, False),
-            ("Front Right Center Sonar", "medium", center_pcb,
+             (270.0 + 1 * 22.5) * degrees2radians,
+             1.5 * 2.54, False),
+            ("Front Right Center Sonar", "normal", center_pcb,
              center_pcb_chunks, center_references, "CN54",
              (270.0 + 2 * 22.5 - 2.5) * degrees2radians,
-             (270.0 + 2 * 22.5) * degrees2radians, 0.0, True),
+             (270.0 + 2 * 22.5) * degrees2radians,
+             1.5 * 2.54, True),
         ]
 
-        # Grab the 3 different female *PCBChunk*'s:
-        f1x4lp_mate_pcb_chunk: PCBChunk = hcsr04.f1x4lp_mate_pcb_chunk
+        # Now create *translated_hcsr04_f1x1lp_pcb_chunk*:
         f1x4_mate_pcb_chunk: PCBChunk = hcsr04.f1x4_mate_pcb_chunk
+        vertical_hcsr04_use_module: UseModule3D = hcsr04.vertical_sonar_module.use_module_get()
+        translated_hcsr04_for_f1x4: Translate3D = Translate3D(
+            "Translated HCSR04 for F1x4", vertical_hcsr04_use_module,
+            P3D(0.0, 0.0, connectors.f1x4.insulation_height))
+        translated_hcsr04_f1x4_pcb_chunk: PCBChunk = PCBChunk("Translated HCSR04 F1x4", [],
+                                                              [translated_hcsr04_for_f1x4])
+        f1x4_hcsr04_pcb_chunk: PCBChunk = PCBChunk.join(
+            "F1X4 and Sonar", [f1x4_mate_pcb_chunk, translated_hcsr04_f1x4_pcb_chunk])
+
+        # Now create both *top_surface_hcsr04_f1x4lp_pcb_chunk* for the PCB top surface:
+        f1x4lp_mate_pcb_chunk: PCBChunk = hcsr04.f1x4lp_mate_pcb_chunk
+        translated_hcsr04_for_f1x4lp: Translate3D = Translate3D(
+            "Translated HCSR04 for F1x4LP", vertical_hcsr04_use_module,
+            P3D(0.0, 0.0, connectors.f1x4lp.insulation_height))
+        translated_hcsr04_pcb_chunk: PCBChunk = PCBChunk("Translated HRCS04 for F1X4LP", [],
+                                                         [translated_hcsr04_for_f1x4lp])
+        top_surface_hcsr04_f1x4lp_pcb_chunk: PCBChunk = PCBChunk.join(
+            "F1X4LP and HCSR04 (Top Surface)",
+            [f1x4lp_mate_pcb_chunk, translated_hcsr04_pcb_chunk])
+
+        # Now create both *bottom_surface_hcsr04_f1x4lp_pcb_chunk* for the PCB bottom surface:
+        degrees180: float = pi
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        z_rotated_hcsr04_f1x4lp: Rotate3D = Rotate3D(
+            "Z Rotated HCSR04 for F1x4LPB", translated_hcsr04_for_f1x4lp, degrees180, z_axis)
+        z_rotated_hcsr04_pcb_chunk: PCBChunk = PCBChunk(
+            "Z Rotated HCSR04", [], [z_rotated_hcsr04_f1x4lp])
+        bottom_surface_hcsr04_f1x4lp_pcb_chunk: PCBChunk = PCBChunk.join(
+            "Bottom Surface F1X4 and HCSR04",
+            [f1x4lp_mate_pcb_chunk, z_rotated_hcsr04_pcb_chunk])
+
+        # Now create *translated_hcsr04_f1x4h_pcb_chunk*:
         f1x4h_mate_pcb_chunk: PCBChunk = hcsr04.f1x4h_mate_pcb_chunk
-        if tracing:
-            print(f"{tracing}f1x4h_mate_pcb_chunk.pads[0]={f1x4h_mate_pcb_chunk.pads[0]}")
+        translated_hcsr04_for_f1x4h: Translate3D = Translate3D(
+            "Translated HCSR04 for F1x4H", vertical_hcsr04_use_module,
+            P3D(0.0, 0.0, connectors.f1x4h.insulation_height))
+        translated_hcsr04_f1x4h_pcb_chunk: PCBChunk = PCBChunk("Translated HCSR04 F1x4H", [],
+                                                               [translated_hcsr04_for_f1x4h])
+        f1x4h_hcsr04_pcb_chunk: PCBChunk = PCBChunk.join(
+            "F1X4_Sonar", [f1x4h_mate_pcb_chunk, translated_hcsr04_f1x4h_pcb_chunk])
 
         # Iterate across all of the sonars in *sonar_poses*:
         origin2d: P2D = P2D(0.0, 0.0)
@@ -4549,7 +4612,7 @@ class MasterBoard:
         placements_file: IO[Any] = open("/tmp/placments.csv", "w")
         for (sonar_name, height, pcb, pcb_chunks, references, reference_name,
              rim_angle, beam_angle, sonar_offset, is_front) in sonar_poses:
-            sonar_radius: float = sonars_radius - sonar_offset - 1.27
+            sonar_radius: float = sonars_radius - sonar_offset
             sonar_x: float = sonar_radius * cos(rim_angle)
             sonar_y: float = sonar_radius * sin(rim_angle)
             sonar_flags: str = "" if is_front else "byY"
@@ -4561,21 +4624,22 @@ class MasterBoard:
                                    origin2d, rotate, sonar_translate)
                 pcb.module3d_place("HCSR04Low", {"sonars"}, sonar_flags,
                                    origin2d, rotate, sonar_translate)
-                connector_pcb_chunk = f1x4lp_mate_pcb_chunk
+                connector_pcb_chunk = (top_surface_hcsr04_f1x4lp_pcb_chunk
+                                       if is_front else bottom_surface_hcsr04_f1x4lp_pcb_chunk)
                 footprint_name = "HCSR04;F1x4LP"
-            elif height == "medium":
+            elif height == "normal":
                 pcb.module3d_place("F1x4", {"sonar_connectors"}, sonar_flags,
                                    origin2d, rotate, sonar_translate)
                 pcb.module3d_place("HCSR04Medium", {"sonars"}, sonar_flags,
                                    origin2d, rotate, sonar_translate)
-                connector_pcb_chunk = f1x4_mate_pcb_chunk
+                connector_pcb_chunk = f1x4_hcsr04_pcb_chunk
                 footprint_name = "HCSR04;F1x4"
             elif height == "high":
                 pcb.module3d_place("F1x4H", {"sonar_connectors"}, sonar_flags,
                                    origin2d, rotate, sonar_translate)
                 pcb.module3d_place("HCSR04High", {"sonars"}, sonar_flags,
                                    origin2d, rotate, sonar_translate)
-                connector_pcb_chunk = f1x4h_mate_pcb_chunk
+                connector_pcb_chunk = f1x4h_hcsr04_pcb_chunk
                 footprint_name = "HCSR04;F1x4H"
             else:
                 assert False, f"'{height}' is not one of 'high', 'medium', or 'low'."
