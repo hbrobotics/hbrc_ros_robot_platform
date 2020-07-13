@@ -30,13 +30,13 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
-$CMP HR2_Encoder;HR2Encoder
+$CMP HR2_Encoder;HR2:ENCODER
 D HR2 Encoder
 K ~
 F 
 $ENDCMP
 #
-$CMP HR2_EncoderMate;HR2EncoderMate
+$CMP HR2_EncoderMate;2XF1X3
 D HR2 Encoder Mating Connector
 K ~
 F 

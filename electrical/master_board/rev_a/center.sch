@@ -13,89 +13,125 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-NoConn ~ 3050 2550
-NoConn ~ 3050 2650
-NoConn ~ 3050 2750
-NoConn ~ 3050 2850
-NoConn ~ 3900 2550
-NoConn ~ 3900 2650
-NoConn ~ 3900 2750
-NoConn ~ 3900 2850
-NoConn ~ 4700 2550
-NoConn ~ 4700 2650
-NoConn ~ 4700 2750
-NoConn ~ 4700 2850
-NoConn ~ 5550 2550
-NoConn ~ 5550 2650
-NoConn ~ 5550 2750
-NoConn ~ 5550 2850
-NoConn ~ 6400 2550
-NoConn ~ 6400 2650
-NoConn ~ 6400 2750
-NoConn ~ 6400 2850
+NoConn ~ 3000 2600
+NoConn ~ 3000 2700
+NoConn ~ 3000 2800
+NoConn ~ 3000 2900
+NoConn ~ 3750 2600
+NoConn ~ 3750 2700
+NoConn ~ 3750 2800
+NoConn ~ 3750 2900
+NoConn ~ 4500 2600
+NoConn ~ 4500 2700
+NoConn ~ 4500 2800
+NoConn ~ 4500 2900
+NoConn ~ 5250 2600
+NoConn ~ 5250 2700
+NoConn ~ 5250 2800
+NoConn ~ 5250 2900
+NoConn ~ 6000 2600
+NoConn ~ 6000 2700
+NoConn ~ 6000 2800
+NoConn ~ 6000 2900
 $Comp
 L HR2:HCSR04LP;F1X4 CN51
 U 1 1 5F0BA517
-P 3200 2550
-F 0 "CN51" H 3500 2700 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 3550 2100 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4LP" H 3400 2600 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3400 2400 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3400 2500 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 3400 2300 60  0001 L CNN "Field5"
-	1    3200 2550
+P 3050 2600
+F 0 "CN51" H 3350 2750 50  0000 C CNN
+F 1 "HCSR04LP;F1X4" H 3400 2150 50  0000 C CNN
+F 2 "HR2:HCSR04_F1x4LP" H 3250 2650 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3250 2450 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3250 2550 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 3250 2350 60  0001 L CNN "Field5"
+	1    3050 2600
 	1    0    0    -1  
 $EndComp
 $Comp
 L HR2:HCSR04LP;F1X4 CN52
 U 1 1 5F0BB7A6
-P 4000 2550
-F 0 "CN52" H 4300 2700 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 4350 2100 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4LP" H 4200 2600 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4200 2400 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4200 2500 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 4200 2300 60  0001 L CNN "Field5"
-	1    4000 2550
+P 3800 2600
+F 0 "CN52" H 4100 2750 50  0000 C CNN
+F 1 "HCSR04LP;F1X4" H 4150 2150 50  0000 C CNN
+F 2 "HR2:HCSR04_F1x4LP" H 4000 2650 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4000 2450 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4000 2550 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 4000 2350 60  0001 L CNN "Field5"
+	1    3800 2600
 	1    0    0    -1  
 $EndComp
 $Comp
 L HR2:HCSR04LP;F1X4 CN53
 U 1 1 5F0BBC9F
-P 4850 2550
-F 0 "CN53" H 5150 2700 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 5200 2100 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4LP" H 5050 2600 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5050 2400 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5050 2500 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 5050 2300 60  0001 L CNN "Field5"
-	1    4850 2550
+P 4550 2600
+F 0 "CN53" H 4850 2750 50  0000 C CNN
+F 1 "HCSR04LP;F1X4" H 4900 2150 50  0000 C CNN
+F 2 "HR2:HCSR04_F1x4LP" H 4750 2650 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4750 2450 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4750 2550 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 4750 2350 60  0001 L CNN "Field5"
+	1    4550 2600
 	1    0    0    -1  
 $EndComp
 $Comp
 L HR2:HCSR04;F1X4 CN50
 U 1 1 5F0B87B8
-P 2350 2550
-F 0 "CN50" H 2650 2700 50  0000 C CNN
-F 1 "HCSR04;F1X4" H 2700 2100 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4" H 2550 2600 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 2550 2400 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 2550 2500 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Normal Profile Receptacle)" H 2550 2300 60  0001 L CNN "Field5"
-	1    2350 2550
+P 2300 2600
+F 0 "CN50" H 2600 2750 50  0000 C CNN
+F 1 "HCSR04;F1X4" H 2650 2150 50  0000 C CNN
+F 2 "HR2:HCSR04_F1x4" H 2500 2650 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 2500 2450 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 2500 2550 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (Normal Profile Receptacle)" H 2500 2350 60  0001 L CNN "Field5"
+	1    2300 2600
 	1    0    0    -1  
 $EndComp
 $Comp
 L HR2:HCSR04;F1X4 CN54
 U 1 1 5F0B915D
-P 5700 2550
-F 0 "CN54" H 6000 2700 50  0000 C CNN
-F 1 "HCSR04;F1X4" H 6050 2100 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4" H 5900 2600 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5900 2400 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5900 2500 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Normal Profile Receptacle)" H 5900 2300 60  0001 L CNN "Field5"
-	1    5700 2550
+P 5300 2600
+F 0 "CN54" H 5600 2750 50  0000 C CNN
+F 1 "HCSR04;F1X4" H 5650 2150 50  0000 C CNN
+F 2 "HR2:HCSR04_F1x4" H 5500 2650 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5500 2450 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5500 2550 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (Normal Profile Receptacle)" H 5500 2350 60  0001 L CNN "Field5"
+	1    5300 2600
+	1    0    0    -1  
+$EndComp
+NoConn ~ 3200 3600
+NoConn ~ 3200 3700
+NoConn ~ 3200 3800
+NoConn ~ 3200 3900
+NoConn ~ 3200 4000
+NoConn ~ 3200 4100
+$Comp
+L HR2:HR2_EncoderMate;2XF1X3 CN55
+U 1 1 5F0BB3ED
+P 2300 3600
+F 0 "CN55" H 2600 3750 50  0000 C CNN
+F 1 "HR2_EncoderMate;2XF1X3" H 2750 2950 50  0000 C CNN
+F 2 "HR2:ENCODER_MATE" H 2500 3650 60  0001 L CNN
+F 3 "HR2 Encoder Mating Connector" H 2500 3450 60  0001 L CNN
+F 4 "HR2 Encoder Mating Connector" H 2500 3350 60  0001 L CNN "Field5"
+	1    2300 3600
+	1    0    0    -1  
+$EndComp
+NoConn ~ 6000 4100
+NoConn ~ 6000 4000
+NoConn ~ 6000 3900
+NoConn ~ 6000 3800
+NoConn ~ 6000 3700
+NoConn ~ 6000 3600
+$Comp
+L HR2:HR2_EncoderMate;2XF1X3 CN56
+U 1 1 5F0BC2D6
+P 5100 3600
+F 0 "CN56" H 5400 3750 50  0000 C CNN
+F 1 "HR2_EncoderMate;2XF1X3" H 5550 2950 50  0000 C CNN
+F 2 "HR2:ENCODER_MATE" H 5300 3650 60  0001 L CNN
+F 3 "HR2 Encoder Mating Connector" H 5300 3450 60  0001 L CNN
+F 4 "HR2 Encoder Mating Connector" H 5300 3350 60  0001 L CNN "Field5"
+	1    5100 3600
 	1    0    0    -1  
 $EndComp
 $EndSCHEMATC
