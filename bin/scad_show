@@ -57,9 +57,6 @@ case "$1" in
     "encoder_board")
 	scad "encoder_board"
 	;;
-    "encoder_board")
-	scad "encoder_board"
-	;;
     "encoder_pcb")
 	scad "encoder_pcb"
 	;;
@@ -180,6 +177,9 @@ case "$1" in
     "xcenter_xboard")
 	scad "xcenter_xboard"
 	;;
+    "xencoder_board")
+	scad "xencoder_board"
+	;;
     "xne_board")
 	scad "xne_board"
 	;;
@@ -200,7 +200,6 @@ case "$1" in
 	echo "center_board"
 	echo "center_pcb"
 	echo "centered_hcsr04_board"
-	echo "encoder_board"
 	echo "encoder_board"
 	echo "encoder_pcb"
 	echo "expansion_flat"
@@ -242,6 +241,7 @@ case "$1" in
 	echo "wheel_assembly"
 	echo "xcenter_board"
 	echo "xcenter_xboard"
+	echo "xencoder_board"
 	echo "xne_board"
 	echo "xnw_board"
 	echo "xse_board"

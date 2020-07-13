@@ -2777,9 +2777,6 @@ class Encoder:
             P2D(pcb_corner_x, pcb_north_y), corner_radius, "SW")         # H
         encoder_exterior.lock()
 
-        # Create *encoder_pcb* iwth *encoder_exterior* as the PCB outline:
-        encoder_pcb: PCB = PCB("Encoder", scad_program, pcb_dz, encoder_exterior)
-
         # Create *north_header* and *south_header* for (Digikey: 2057-PH1RB-03-UA-ND (Adam Tech))
         # and make sure the header pin holes are appended to *pcb_polygon*:
         header_offset: float = 2.0 * 2.54
@@ -2820,20 +2817,43 @@ class Encoder:
 
         # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
         encoder_pcb_chunk: PCBChunk = PCBChunk.join(
-            "Encoder", [m1x3ra_pcb_chunk_north, m1x3ra_pcb_chunk_south, motor_slots_pcb_chunk])
+            "XEncoder", [m1x3ra_pcb_chunk_north, m1x3ra_pcb_chunk_south, motor_slots_pcb_chunk])
         encoder_pcb_chunk.footprint_generate("HR2", encoder_pcb_pretty_directory)
-        encoder_pcb_chunk.pcb_update(scad_program, pcb_origin, 1.6, encoder_exterior, "Purple",
-                                     encoder_pcb_path, [])
+        encoder_module: Module3D = encoder_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, 1.6, encoder_exterior, "Purple", encoder_pcb_path, [])
+        encoder_use_module: UseModule3D = encoder_module.use_module_get()
 
-        # encoder_pcb_chunk.pads_show("encoder_pcb_chunk:")
-        # encoder_pcb_chunk.references_show("encoder_pcb_chunk:")
+        # Create the *encoder_pcb_mate_chunk* next.  This has the 2 F1x3 connectors and
+        # the actual encoder in a vertical orientation in it.  Start with *f1x3_pcb_chunk*:
+        f1x3: RectangularConnector = connectors.f1x3
+        f1x3_pcb_chunk: PCBChunk = f1x3.pcb_chunk
 
-        # references: List[Reference] = [Reference(
-        #     "CN1", True, 0.0, P2D(0.0, 0.0), encoder_pcb_chunk)]  # pcb_chunk is bogus; no matter!
-        # xencoder_module: Module3D = encoder_pcb_chunk.pcb_update(
-        #     scad_program, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path, references)
-        # xencoder_module = xencoder_module
+        # Rotate the F1x3 90 degrees and make two copies along the Y axis for the encoder PCB
+        # to plug into:
+        north_translate2d: P2D = P2D(0.0, pcb_north_y - header_offset)
+        south_translate2d: P2D = P2D(0.0, pcb_south_y + header_offset)
+        north_f1x3_pcb_chunk: PCBChunk = f1x3_pcb_chunk.reposition(
+            origin2d, degrees90, north_translate2d).pads_rebase(3)
+        south_f1x3_pcb_chunk: PCBChunk = f1x3_pcb_chunk.reposition(
+            origin2d, degrees90, south_translate2d)
 
+        # Now generate *repositioned_use_module* which is vertical with connectors centered
+        # along the Y axis at a Z altitude slightly above the *f1x3* connectors:
+        pin_exposed: float = 0.2  # mm
+        y_axis: P3D = P3D(0.0, 1.0, 0.0)
+        reposition_center3d: P3D = P3D(pcb_corner_x + pin_exposed, 0.0, -0.5 * 2.54)
+        translate3d: P3D = P3D(0.0, 0.0, f1x3.insulation_height)
+        repositioned_use_module: Scad3D = encoder_use_module.reposition(
+            "Vertical Repositioned Encoder", reposition_center3d, y_axis, degrees90, translate3d)
+        repositioned_encoder_pcb_chunk: PCBChunk = PCBChunk("Repositioned Encoder", [],
+                                                            [repositioned_use_module])
+        encoder_pcb_chunk_mate: PCBChunk = PCBChunk.join(
+            "ENCODER_MATE", [north_f1x3_pcb_chunk, south_f1x3_pcb_chunk,
+                             repositioned_encoder_pcb_chunk])
+        encoder_pcb_chunk_mate.footprint_generate("HR2", encoder_pcb_pretty_directory)
+
+        # Create *encoder_pcb* with *encoder_exterior* as the PCB outline:
+        encoder_pcb: PCB = PCB("Encoder", scad_program, pcb_dz, encoder_exterior)
         encoder_pcb.pad_append("7", {"motors"}, "",
                                pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_north_slot_center)
         encoder_pcb.pad_append("8", {"motors"}, "",
@@ -2871,7 +2891,7 @@ class Encoder:
 
         # Wrap up the *encoder_pcb*:
 
-        encoder_module: Module3D = encoder_pcb.scad_program_append(scad_program, "Purple")
+        encoder_module = encoder_pcb.scad_program_append(scad_program, "Purple")
 
         # *translate* is the point on the east motor where the shaft comes out:
         # No need to worry about the west motor because the entire east wheel assembly is
@@ -2899,6 +2919,8 @@ class Encoder:
         self.offset: P2D = offset
         self.pcb: PCB = encoder_pcb
         self.translate: P3D = translate
+        self.encoder_pcb_chunk: PCBChunk = encoder_pcb_chunk
+        self.encoder_mate_pcb_chunk: PCBChunk = encoder_pcb_chunk_mate
 
         # Wrap up any requested *tracing*:
         if tracing:
@@ -3954,7 +3976,27 @@ class MasterBoard:
         master_board_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
         master_kicad_pcb_path: Path = master_board_directory / "master.kicad_pcb"
 
+        # Create the east and west encoder mating *PCBChunk*'s:
+        encoder_mate_pcb_chunk: PCBChunk = encoder.encoder_mate_pcb_chunk
+        encoder_mate_translate2d: P2D = P2D(36.0, 0.0)  # 36 is currently arbitrary.
+        east_encoder_mate_pcb_chunk: PCBChunk = encoder_mate_pcb_chunk.reposition(
+            origin2d, degrees180, encoder_mate_translate2d)
+        east_encoder_reference: Reference = Reference("CN55", True, 0.0, encoder_mate_translate2d,
+                                                      east_encoder_mate_pcb_chunk,
+                                                      "HR2_EncoderMate;2XF1X3")
+        west_encoder_mate_pcb_chunk: PCBChunk = encoder_mate_pcb_chunk.reposition(
+            origin2d, 0.0, -encoder_mate_translate2d)
+        west_encoder_reference: Reference = Reference("CN56", True, 0.0, -encoder_mate_translate2d,
+                                                      west_encoder_mate_pcb_chunk,
+                                                      "HR2_EncoderMate;2XF1X3")
+        encoder_references_pcb_chunk: PCBChunk = PCBChunk("Encoder References", [], [],
+                                                          references=[east_encoder_reference,
+                                                                      west_encoder_reference])
+
         center_pcb_chunk: PCBChunk = PCBChunk.join("XCenter", [
+            encoder_references_pcb_chunk,
+            east_encoder_mate_pcb_chunk,
+            west_encoder_mate_pcb_chunk,
             center_sonars_pcb_chunk,
         ])
         center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
@@ -3963,7 +4005,6 @@ class MasterBoard:
             center_pcb.pcb_exterior, "Tan", center_kicad_pcb_path, [])
         xcenter_module = xcenter_module
         scad_program.if3d.name_match_append("xcenter_xboard", xcenter_module, ["XCenterBoard"])
-        print(f"xcenter_module.name='{xcenter_module.name}'==================")
 
         ne_pcb_chunk: PCBChunk = PCBChunk.join("XNE", [
             ne_sonars_pcb_chunk,
