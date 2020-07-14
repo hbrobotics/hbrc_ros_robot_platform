@@ -30,6 +30,12 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
+$CMP RASPI;F2X20;HR2:RASPI_F2X20
+D 
+K ~
+F 
+$ENDCMP
+#
 $CMP HR2_Encoder;HR2:ENCODER
 D HR2 Encoder
 K ~
