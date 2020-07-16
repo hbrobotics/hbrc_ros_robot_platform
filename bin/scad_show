@@ -129,11 +129,17 @@ case "$1" in
     "otherpi_pcb")
 	scad "otherpi_pcb"
 	;;
+    "rasp_4b_mate_board")
+	scad "rasp_4b_mate_board"
+	;;
     "raspi4b_board")
 	scad "raspi4b_board"
 	;;
     "raspi4b_pcb")
 	scad "raspi4b_pcb"
+	;;
+    "raspi_4_board")
+	scad "raspi_4_board"
 	;;
     "romi_base")
 	scad "romi_base"
@@ -225,8 +231,10 @@ case "$1" in
 	echo "nw_pcb"
 	echo "otherpi_board"
 	echo "otherpi_pcb"
+	echo "rasp_4b_mate_board"
 	echo "raspi4b_board"
 	echo "raspi4b_pcb"
+	echo "raspi_4_board"
 	echo "romi_base"
 	echo "se_board"
 	echo "se_pcb"
