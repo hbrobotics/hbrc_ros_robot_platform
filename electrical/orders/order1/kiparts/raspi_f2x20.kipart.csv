@@ -1,4 +1,4 @@
-RASPI;F2X20;HR2:RASPI_F2X20,CN,FOOTPRINT,,HR2 Raspberry Pi F2x20 Connector
+RASPI;F2X20,CN,HR2:RASPI_F2X20,,Raspberry Pi F2x20 Connector (Row Swappped)
 Pin,Name,Type,Side,Unit,Style,Hidden
 1,3.3V,pwr_in,right,1,,
 2,5V,pwr_in,right,1,,
