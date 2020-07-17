@@ -30,7 +30,7 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
-$CMP RASPI;F2X20;HR2:RASPI_F2X20
+$CMP RASPI;F2X20
 D 
 K ~
 F 

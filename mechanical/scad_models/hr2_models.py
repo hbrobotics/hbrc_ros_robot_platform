@@ -4017,12 +4017,21 @@ class MasterBoard:
         encoder_references_pcb_chunk: PCBChunk = PCBChunk("Encoder References", [], [],
                                                           references=[east_encoder_reference,
                                                                       west_encoder_reference])
+        raspi4b_mate_pcb_chunk: PCBChunk = raspi4b.mate_pcb_chunk.reposition(
+            origin2d, degrees90, origin2d)
+
+        raspi4b_mate_reference: Reference = Reference(
+            "CN57", True, 0.0, origin2d, raspi4b_mate_pcb_chunk, "RASPI;F2X20")
+        raspi4b_mate_references_pcb_chunk: PCBChunk = PCBChunk(
+            "Raspi4b References", [], [], references=[raspi4b_mate_reference])
 
         center_pcb_chunk: PCBChunk = PCBChunk.join("XCenter", [
             encoder_references_pcb_chunk,
             east_encoder_mate_pcb_chunk,
             west_encoder_mate_pcb_chunk,
             center_sonars_pcb_chunk,
+            raspi4b_mate_pcb_chunk,
+            raspi4b_mate_references_pcb_chunk,
         ])
         center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
         xcenter_module: Module3D = center_pcb_chunk.pcb_update(
@@ -5280,11 +5289,16 @@ class Raspberrypi4:
             camera_slot, lcd_slot, processor_slot, sdram_slot, ethernet_slot, usb_slot]
         raspi4b_slots_pcb_chunk: PCBChunk = PCBChunk("Raspi4B Slots", [], [], cuts=cuts)
 
-        raspi4b_mate_pcb_chunk: PCBChunk = PCBChunk.join("Rasp 4B Mate", [
+        raspi4b_mate_pcb_chunk: PCBChunk = PCBChunk.join("RASPI_F2X20", [
             raspi4b_slots_pcb_chunk,
             mating_rasp4b_pcb_chunk,
             raspi4b_f2x20_pcb_chunk,
         ])
+
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        master_board_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
+        master_board_pretty_directory: Path = master_board_directory / "pretty"
+        raspi4b_mate_pcb_chunk.footprint_generate("HR2", master_board_pretty_directory)
 
         raspi4b_mate_pcb_chunk = raspi4b_mate_pcb_chunk
         raspi4b_mate_module: Module3D = raspi4b_mate_pcb_chunk.pcb_update(
@@ -5296,6 +5310,7 @@ class Raspberrypi4:
         self.module: Module3D = raspi4b_module
         self.xmodule: Module3D = raspi4b_xmodule
         self.pcb: PCB = raspi4b_pcb
+        self.mate_pcb_chunk: PCBChunk = raspi4b_mate_pcb_chunk
         # TODO: add the Camera and LCD connector locations:
 
 
