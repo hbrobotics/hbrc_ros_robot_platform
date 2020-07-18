@@ -192,6 +192,9 @@ case "$1" in
     "xnw_board")
 	scad "xnw_board"
 	;;
+    "xother_pi_board")
+	scad "xother_pi_board"
+	;;
     "xse_board")
 	scad "xse_board"
 	;;
@@ -252,6 +255,7 @@ case "$1" in
 	echo "xencoder_board"
 	echo "xne_board"
 	echo "xnw_board"
+	echo "xother_pi_board"
 	echo "xse_board"
 	echo "xsw_board"
 	;;
