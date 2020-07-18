@@ -3376,6 +3376,8 @@ class HR2BaseAssembly:
         bottom_z: float
         top_z: float
         male_height: float
+        pi_center_x: float = 0.0
+        pi_center_y: float = 0.0
         for spacer_name, key_name, bottom_z, top_z, male_height in spacer_tuples:
             # Lookup the *key_name* and extract (*key_x*, *key_y*) location:
             key: Tuple[Any, ...] = romi_base_key_table[key_name]
@@ -3384,6 +3386,9 @@ class HR2BaseAssembly:
             assert isinstance(key2, float) and isinstance(key3, float)
             key_x: float = float(key2)
             key_y: float = float(key3)
+            if name.startswith("Pi"):
+                pi_center_x += key_x
+                pi_center_y += key_y
 
             # Construct the *spacer* and append the *UseModule3D* to *spacers*:
             spacer_height: float = abs(top_z - bottom_z) - 2.0 * debug_dz
@@ -3393,6 +3398,10 @@ class HR2BaseAssembly:
                                     bottom_height=male_height,
                                     bottom_center=spacer_bottom_center)
             spacers.append(spacer.module.use_module_get())
+
+        # Verify that *pi_center* is at the origin.
+        pi_center: P2D = P2D(pi_center_x / 4.0, pi_center_y / 4.0)
+        assert pi_center.length() < .000000001, f"pi_center: {pi_center} is not at origin"
 
         # Create *module*, append to *scad_program* and save into *hr2_base_assembly* (i.e. *self*):
         module: Module3D = Module3D("HR2 Base Assembly",
@@ -3456,7 +3465,7 @@ class HR2MasterAssembly:
                  hr2_pi_assembly: "HR2PiAssembly", base_dxf: BaseDXF,
                  pi_board_z, master_board_z: float, nucleo_board_z: float, arm_z: float,
                  pi_offset2d: P2D, nucleo_offset2d: P2D, st_link_offset2d: P2D,
-                 encoder: "Encoder", raspi4b: "Raspberrypi4", nucleo144: "Nucleo144",
+                 encoder: "Encoder", raspi4b: "RaspberryPi4", nucleo144: "Nucleo144",
                  st_link: "STLink",
                  romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
@@ -3520,7 +3529,8 @@ class HR2PiAssembly:
 
     # HR2PiAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, hr2_base_assembly: HR2BaseAssembly,
-                 connectors: Connectors, raspi4b: "Raspberrypi4", st_link: "STLink",
+                 connectors: Connectors, raspi4b: "RaspberryPi4", other_pi: "OtherPi",
+                 st_link: "STLink",
                  pi_board_z: float, pi_offset2d: P2D, st_link_offset: P2D) -> None:
         """Initialize the HR2BaseAssembly."""
         # Define some constants
@@ -3529,7 +3539,6 @@ class HR2PiAssembly:
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
 
         # Create the *other_pi* and rotate and translate to the correct location:
-        OtherPi(scad_program)
         other_pi_board: Module3D = scad_program.module3d_get("OtherPi_Board")
         other_pi_board_use_module: UseModule3D = other_pi_board.use_module_get()
         pi_reposition: P3D = P3D(pi_offset2d.x, pi_offset2d.y, pi_board_z)
@@ -3603,7 +3612,8 @@ class HR2Robot:
         arm_z: float = master_board_z + 26.00
 
         # Now create the *raspi4b* and the *st_link*
-        raspi4b: Raspberrypi4 = Raspberrypi4(scad_program, connectors, pcb_origin)
+        other_pi: OtherPi = OtherPi(scad_program, connectors)
+        raspi4b: RaspberryPi4 = RaspberryPi4(scad_program, connectors, other_pi, pcb_origin)
         st_link: STLink = STLink(scad_program, connectors)
 
         # Create the *nucleo144* before *master_board* so it can be passed in:
@@ -3620,8 +3630,8 @@ class HR2Robot:
         hr2_base_assembly: HR2BaseAssembly = HR2BaseAssembly(scad_program, base_dxf, connectors,
                                                              pi_board_z, master_board_z, arm_z)
         hr2_pi_assembly: HR2PiAssembly = HR2PiAssembly(scad_program, hr2_base_assembly,
-                                                       connectors, raspi4b, st_link, pi_board_z,
-                                                       pi_offset2d, st_link_offset2d)
+                                                       connectors, raspi4b, other_pi, st_link,
+                                                       pi_board_z, pi_offset2d, st_link_offset2d)
         romi_base_keys: List[Tuple[Any, ...]] = hr2_base_assembly.romi_base_keys_get()
         hr2_master_assembly: HR2MasterAssembly = HR2MasterAssembly(
             scad_program, pcb_origin, connectors, hr2_pi_assembly, base_dxf,
@@ -3882,7 +3892,7 @@ class MasterBoard:
 
     # MasterBoard.__init__():
     def __init__(self, scad_program: ScadProgram, pcb_origin: P2D, base_dxf: BaseDXF,
-                 connectors: Connectors, encoder: "Encoder", raspi4b: "Raspberrypi4",
+                 connectors: Connectors, encoder: "Encoder", raspi4b: "RaspberryPi4",
                  nucleo144: "Nucleo144", st_link: "STLink", pi_offset: P2D, nucleo_offset: P2D,
                  st_link_offset: P2D, master_board_bottom_z: float, nucleo_board_z: float,
                  arm_z: float, romi_base_keys: List[Tuple[Any, ...]],
@@ -4824,7 +4834,7 @@ class OtherPi(PiBoard):
     """Represents a different SBC compatible with Raspberry Pi."""
 
     # OtherPi.__init__():
-    def __init__(self, scad_program: ScadProgram) -> None:
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors) -> None:
         """Initialize OtherPi."""
         # Define the board dimensions:
         pcb_dx: float = 104.00
@@ -4833,7 +4843,7 @@ class OtherPi(PiBoard):
         pcb_center_y: float = pcb_dy / 2
         pcb_dz: float = 1.0
         pcb_center: P2D = P2D(pcb_center_x, pcb_center_y)
-        pcb_corner_radius: float = 1.5
+        pcb_corner_radius: float = 3.0
 
         # The dimensions read off the drawing assume that the origin is at the lower left corner.
         # When we are done we want *pcb_center* to point to the exact middle of the 4 mounting
@@ -4947,18 +4957,115 @@ class OtherPi(PiBoard):
                                   "", translate=-holes_center)
         other_pi_module: Module3D = other_pi_pcb.scad_program_append(scad_program, "Yellow")
 
+        # Assemble all of the various connector *Scad*'s:
+        connectors_origin: P3D = P3D(-holes_center.x, -holes_center.y, 0.0)
+        connector_scads: List[Scad3D] = [
+            Color("Silver Ethernet Connector",
+                  Translate3D("Translated Ethernet Connector",
+                              CornerCube("Ethernet Connector",
+                                         P3D(80.00, 29.26, pcb_dz),
+                                         P3D(105.00, 44.51, pcb_dz + 13.08)),
+                              connectors_origin),
+                  "Silver"),
+            Color("Silver USB2 Connector",
+                  Translate3D("Translated USB2 Connector",
+                              CornerCube("USB2 Connector",
+                                         P3D(85.00, 12.82, pcb_dz),
+                                         P3D(104.00, 25.57, pcb_dz + 15.33)),
+                              connectors_origin),
+                  "Silver"),
+            Color("Silver West Connector",
+                  Translate3D("Translated West Connector",
+                              CornerCube("West Connector",
+                                         P3D(98.00, 50.69, pcb_dz),
+                                         P3D(105.00, 58.09, pcb_dz + 3.00)),
+                              connectors_origin),
+                  "Silver"),
+            Color("Black North Connector",
+                  Translate3D("Translated North Connector",
+                              CornerCube("North Connector",
+                                         P3D(70.03, 60.92, pcb_dz),
+                                         P3D(76.38, 66.00, pcb_dz + 5.00)),
+                              connectors_origin),
+                  "Black"),
+            Color("Black Audio Connector",
+                  Translate3D("Translated Audio Connector",
+                              CornerCube("Audio Connector",
+                                         P3D(66.31, -1.00, pcb_dz),
+                                         P3D(72.31, 14.00, pcb_dz + 5.12)),
+                              connectors_origin),
+                  "Black"),
+            Color("Silver USB3A Connector",
+                  Translate3D("Translated USB3A Connector",
+                              CornerCube("USB3A Connector",
+                                         P3D(9.54, 0.00, pcb_dz),
+                                         P3D(18.52, 10.00, pcb_dz + 2.95)),
+                              connectors_origin),
+                  "Silver"),
+            Color("Silver USB3B Connector",
+                  Translate3D("Translated USB3B Connector",
+                              CornerCube("USB3B Connector",
+                                         P3D(22.73, 0.00, pcb_dz),
+                                         P3D(31.71, 10.00, pcb_dz + 2.95)),
+                              connectors_origin),
+                  "Silver"),
+            Color("Silver Power Connector",
+                  Translate3D("Translated Power Connector",
+                              CornerCube("Power Connector",
+                                         P3D(-1.00, 22.50, pcb_dz),
+                                         P3D(8.00, 29.00, pcb_dz + 2.95)),
+                              connectors_origin),
+                  "Silver"),
+            Color("White JST Connector",
+                  Translate3D("Translated JST Connector",
+                              CornerCube("JST Connector",
+                                         P3D(0.00, 55.01, pcb_dz),
+                                         P3D(3.00, 63.37, pcb_dz + 2.95)),  # 0.00? 3.00?
+                              connectors_origin),
+                  "White"),
+            Color("Black Buttons Area",
+                  Translate3D("Translated Buttons Area",
+                              CornerCube("Buttons Area",
+                                         P3D(85.51, 62.12, pcb_dz),
+                                         P3D(98.23, 68.74, pcb_dz + 2.95)),  # 10.00?
+                              connectors_origin),
+                  "Black"),
+        ]  # End *connector_scads*
+
+        # other_pi_scads_mounts_pcb_chunk
+        pads: List[Pad] = [
+            Pad("NE Mount Hole", 0.0, 0.0, 2.7, hole_ne - holes_center, 0.0),
+            Pad("NW Mount Hole", 0.0, 0.0, 2.7, hole_nw - holes_center, 0.0),
+            Pad("SE Mount Hole", 0.0, 0.0, 2.7, hole_se - holes_center, 0.0),
+            Pad("SW Mount Hole", 0.0, 0.0, 2.7, hole_sw - holes_center, 0.0),
+        ]
+        other_pi_mount_holes_scads_pcb_chunk = PCBChunk("", pads, connector_scads)
+        other_pi_m2x20_pcb_chunk: PCBChunk = connectors.m2x20.pcb_chunk.reposition(
+            origin2d, 0.0, P2D(0.0, 24.5))
+
+        # Do the *PCBChunk* model.
+        other_pi_pcb_chunk: PCBChunk = PCBChunk.join("XOther Pi", [
+            other_pi_m2x20_pcb_chunk,
+            other_pi_mount_holes_scads_pcb_chunk,
+        ])
+        other_pi_pcb_xmodule: Module3D = other_pi_pcb_chunk.pcb_update(
+            scad_program, origin2d, 1.6, other_pi_exterior, "Yellow", None, [])
+        other_pi_pcb_xmodule = other_pi_pcb_xmodule
+
         # Stuff some values into *other_pi* (i.e. *self*):
         # other_pi: OtherPi = self
         self.module: Module3D = other_pi_module
         self.pcb: PCB = other_pi_pcb
+        self.pcb_chunk: PCBChunk = other_pi_pcb_chunk
 
 
-# Raspberrypi4:
-class Raspberrypi4:
+# RaspberryPi4:
+class RaspberryPi4:
     """Represents a Raspberry Pi 4B+."""
 
-    # Raspberrypi4.__init__():
-    def __init__(self, scad_program: ScadProgram, connectors: Connectors, pcb_origin: P2D) -> None:
+    # RaspberryPi4.__init__():
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors, other_pi: OtherPi,
+                 pcb_origin: P2D) -> None:
         """Initialize Raspberrypi4 and append to ScadProgram."""
         # Define the board dimensions:
         pcb_dx: float = 85.00
@@ -5216,7 +5323,7 @@ class Raspberrypi4:
             m2x2_pcb_chunk,
             heat_sinks_pcb_chunk])
         raspi4b_xmodule: Module3D = raspi4b_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, 1.6, raspi4b_exterior, "Green", None, [])
+            scad_program, origin2d, 1.6, raspi4b_exterior, "Green", None, [])
         raspi4b_xuse_module: UseModule3D = raspi4b_xmodule.use_module_get()
 
         # Now create the *rasp4b_mate_pcb_chunk* out of smaller chunks.
@@ -5226,10 +5333,18 @@ class Raspberrypi4:
                                                         P2D(0.0, hole_pitch_dy / 2.0)))
 
         # To help visualize everything, create *mating_raspi4b_pcb_chunk* that mates with the f1x20:
+        pi_z_offset: float = -12.10  # mm
         translated_rasp4b: Translate3D = Translate3D("Translated Rasp4B Board",
                                                      raspi4b_xuse_module,
-                                                     P3D(0.0, 0.0, -12.10))
+                                                     P3D(0.0, 0.0, pi_z_offset))
         mating_rasp4b_pcb_chunk: PCBChunk = PCBChunk("Mating Rasp4B Board", [], [translated_rasp4b])
+
+        # Likewise for the *other_pi*:
+        translated_other_pi: Translate3D = Translate3D("Translated Other Pi Board",
+                                                       other_pi.module.use_module_get(),
+                                                       P3D(0.0, 0.0, pi_z_offset))
+        mating_other_pi_pcb_chunk: PCBChunk = PCBChunk(
+            "Mating OtherPi Board", [], [translated_other_pi])
 
         # Create each of the slots for the heat sinks, camera connector, and LCD connector:
 
@@ -5292,6 +5407,7 @@ class Raspberrypi4:
         raspi4b_mate_pcb_chunk: PCBChunk = PCBChunk.join("RASPI_F2X20", [
             raspi4b_slots_pcb_chunk,
             mating_rasp4b_pcb_chunk,
+            mating_other_pi_pcb_chunk,
             raspi4b_f2x20_pcb_chunk,
         ])
 
@@ -5299,8 +5415,6 @@ class Raspberrypi4:
         master_board_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
         master_board_pretty_directory: Path = master_board_directory / "pretty"
         raspi4b_mate_pcb_chunk.footprint_generate("HR2", master_board_pretty_directory)
-
-        raspi4b_mate_pcb_chunk = raspi4b_mate_pcb_chunk
         raspi4b_mate_module: Module3D = raspi4b_mate_pcb_chunk.pcb_update(
              scad_program, pcb_origin, 1.6, raspi4b_exterior, "Green", None, [])
         raspi4b_mate_module = raspi4b_mate_module
