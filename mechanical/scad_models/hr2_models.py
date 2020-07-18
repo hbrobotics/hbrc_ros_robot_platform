@@ -3376,6 +3376,8 @@ class HR2BaseAssembly:
         bottom_z: float
         top_z: float
         male_height: float
+        pi_center_x: float = 0.0
+        pi_center_y: float = 0.0
         for spacer_name, key_name, bottom_z, top_z, male_height in spacer_tuples:
             # Lookup the *key_name* and extract (*key_x*, *key_y*) location:
             key: Tuple[Any, ...] = romi_base_key_table[key_name]
@@ -3384,6 +3386,9 @@ class HR2BaseAssembly:
             assert isinstance(key2, float) and isinstance(key3, float)
             key_x: float = float(key2)
             key_y: float = float(key3)
+            if name.startswith("Pi"):
+                pi_center_x += key_x
+                pi_center_y += key_y
 
             # Construct the *spacer* and append the *UseModule3D* to *spacers*:
             spacer_height: float = abs(top_z - bottom_z) - 2.0 * debug_dz
@@ -3393,6 +3398,10 @@ class HR2BaseAssembly:
                                     bottom_height=male_height,
                                     bottom_center=spacer_bottom_center)
             spacers.append(spacer.module.use_module_get())
+
+        # Verify that *pi_center* is at the origin.
+        pi_center: P2D = P2D(pi_center_x / 4.0, pi_center_y / 4.0)
+        assert pi_center.length() < .000000001, f"pi_center: {pi_center} is not at origin"
 
         # Create *module*, append to *scad_program* and save into *hr2_base_assembly* (i.e. *self*):
         module: Module3D = Module3D("HR2 Base Assembly",
