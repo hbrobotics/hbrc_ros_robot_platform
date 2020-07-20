@@ -4072,17 +4072,27 @@ class MasterBoard:
                                                                       west_encoder_reference])
         raspi4b_mate_pcb_chunk: PCBChunk = raspi4b.mate_pcb_chunk.reposition(
             origin2d, degrees90, origin2d)
-
         raspi4b_mate_reference: Reference = Reference(
             "CN57", True, 0.0, origin2d, raspi4b_mate_pcb_chunk, "RASPI;F2X20")
         raspi4b_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "Raspi4b References", [], [], references=[raspi4b_mate_reference])
+
+        # Place the ST Link assembly (ST adaptor and ST-Link):
+        st_mate_location: P2D = P2D(0.0, -45.0)
+        st_mate_pcb_chunk: PCBChunk = (
+            st_link.st_mate_pcb_chunk.reposition(origin2d, 0.0, st_mate_location))
+        st_mate_reference: Reference = Reference(
+            "CN58", True, 0.0, st_mate_location, st_mate_pcb_chunk, "ST_MATE;ST_MATE")
+        st_mate_references_pcb_chunk: PCBChunk = PCBChunk(
+            "ST_Mate References", [], [], references=[st_mate_reference])
 
         center_pcb_chunk: PCBChunk = PCBChunk.join("XCenter", [
             encoder_references_pcb_chunk,
             east_encoder_mate_pcb_chunk,
             west_encoder_mate_pcb_chunk,
             center_sonars_pcb_chunk,
+            st_mate_pcb_chunk,
+            st_mate_references_pcb_chunk,
             raspi4b_mate_pcb_chunk,
             raspi4b_mate_references_pcb_chunk,
         ])
@@ -8204,7 +8214,7 @@ class STLink:
         adapter_pcb.pcb_place(st_link_pcb, {"connectors_mate"}, "")
         f1x5ra_center: P2D = P2D(-9.0, 4.0 - 2.54)
         adapter_pcb.module3d_place("F1x5RA", {"connectors"}, "byY", origin2d, 0.0, f1x5ra_center)
-        adapter_module: Module3D = adapter_pcb.scad_program_append(scad_program, "Tan")
+        adapter_module: Module3D = adapter_pcb.scad_program_append(scad_program, "Olive")
         adapter_use_module: UseModule3D = adapter_module.use_module_get()
 
         translated_st_link: Translate3D = Translate3D("Translated ST Link", st_link_use_module,
@@ -8270,7 +8280,7 @@ class STLink:
             st_link_temporary_cuts_pcb_chunk,
         ])
         xst_link_module: Module3D = st_link_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, 1.6, st_link_exterior, "Tan", None, [])
+            scad_program, pcb_origin, 1.6, st_link_exterior, "Brown", None, [])
 
         # Now create an *translated_st_link_pcb_chunk* which is the *st_link_module* offset
         # to fit nicely with the upcoming *st_adapter_pcb_chunk*:
@@ -8322,7 +8332,7 @@ class STLink:
 
         # Create *st_adapter_module* and update *st_adapter_kicad_pcb*:
         st_adapter_module: Module3D = st_adapter_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, 1.6, st_adapter_exterior, "Tan", st_adapter_kicad_pcb, [])
+            scad_program, pcb_origin, 1.6, st_adapter_exterior, "Olive", st_adapter_kicad_pcb, [])
 
         # Create the nylon tie down holes for the upcoming *st_mate_pcb_chunk*:
         tie_diameter: float = 2.4  # mm
@@ -8367,10 +8377,9 @@ class STLink:
 
         # Create both the footprint and a temporary module for viewing purposes:
         st_mate_exterior: Square = Square("ST Mate Exterior", 70.0, 30.0)
-        st_mate_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory, tracing="    ")
+        st_mate_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory)
         st_mate_pcb_module: Module3D = st_mate_pcb_chunk.pcb_update(
             scad_program, pcb_origin, 1.6, st_mate_exterior, "Blue", None, [])
-        st_mate_pcb_module = st_mate_pcb_module
 
         # Stuff some values into *st_link* (i.e. *self*):
         # st_link: STLink = self
@@ -8381,6 +8390,8 @@ class STLink:
         self.st_link_pcb: PCB = st_link_pcb
         self.st_adapter_module: Module3D = st_adapter_module
         self.st_adapter_pcb_chunk: PCBChunk = st_adapter_pcb_chunk
+        self.st_mate_module: Module3D = st_mate_pcb_module
+        self.st_mate_pcb_chunk: PCBChunk = st_mate_pcb_chunk
 
 
 # SRF02:
