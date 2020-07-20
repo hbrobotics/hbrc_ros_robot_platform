@@ -1723,7 +1723,7 @@ class PCBChunk:
         # Unpack some values from *PCBChunk* (i.e. *self*):
         back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
         # back_scads: List[Scad3D] = pcb_chunk.back_scads
-        # cuts: List[SimplePolygon] = pcb_chunk.cuts
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
         front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
         # front_scads: List[Scad3D] = pcb_chunk.front_scads
         name: str = pcb_chunk.name
@@ -1817,6 +1817,31 @@ class PCBChunk:
         else:
             for pad in pads:
                 lines.append(pad.kicad_line(prefix, footprint_origin, tracing=next_tracing))
+
+        # Add any cut lines:
+        offset_x: int = 0
+        offset_y: int = 0
+        layer: str = "Edge.Cuts"
+        width: float = .05
+        cut: SimplePolygon
+        for cut in cuts:
+            cut_size: int = len(cut)
+            if tracing:
+                print(f"{tracing}cut_size:{cut_size}")
+            cut_index1: int
+            cut_index2: int
+            for cut_index1 in range(cut_size):
+                cut_index2 = (cut_index1 + 1) % cut_size
+                point1: P2D = cut[cut_index1]
+                point2: P2D = cut[cut_index2]
+                cut_line: str = ("  (fp_line "
+                                 f"(start {KicadPCB.number(offset_x + point1.x, 2)} "
+                                 f"{KicadPCB.number(offset_y - point1.y, 2)}) "
+                                 f"(end {KicadPCB.number(offset_x + point2.x, 2)} "
+                                 f"{KicadPCB.number(offset_y - point2.y, 2)}) "
+                                 f"(layer {layer}) "
+                                 f"(width {KicadPCB.number(width, 2)}))")
+                lines.append(cut_line)
 
         # Add the closing parenthesis and return the resulting *lines*:
         lines.append(f"{prefix})")
@@ -8322,7 +8347,7 @@ class STLink:
             connectors.m1x2.pcb_chunk.scads_y_flip().sides_swap().
             reposition(origin2d, 0.0, P2D(power_connector_center.x, 1.27)))
         st_mate_signal_connector_pcb_chunk: PCBChunk = (
-            connectors.m1x4.pcb_chunk.scads_y_flip().sides_swap().
+            connectors.m1x4.pcb_chunk.scads_y_flip().sides_swap().pads_rebase(2).
             reposition(origin2d, 0.0, P2D(signal_connector_center.x, 1.27)))
         st_mate_usb_cut_pcb_chunk: PCBChunk = PCBChunk("ST Mate Cuts", [], [], cuts=[
             Square("USB Cut", cn1_dx + 0.50, 1.5 * cn1_dz, P2D(cn1_center_x, 7.75),  # Trial & error
@@ -8332,7 +8357,7 @@ class STLink:
             "Repositoned ST Adapter", origin3d, x_axis, degrees90, P3D(0.0, 0.0, -12.1))
         st_mate_repositioned_pcb_chunk: PCBChunk = PCBChunk(
             "ST Mate Repositioned", [], [repositioned_st_adapter]).sides_swap()
-        st_mate_pcb_chunk: PCBChunk = PCBChunk.join("ST_ADAPTER_MATE", [
+        st_mate_pcb_chunk: PCBChunk = PCBChunk.join("ST_MATE", [
             st_mate_tie_holes_pcb_chunk,
             st_mate_repositioned_pcb_chunk,
             st_mate_usb_cut_pcb_chunk,
@@ -8342,7 +8367,7 @@ class STLink:
 
         # Create both the footprint and a temporary module for viewing purposes:
         st_mate_exterior: Square = Square("ST Mate Exterior", 70.0, 30.0)
-        st_mate_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory)
+        st_mate_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory, tracing="    ")
         st_mate_pcb_module: Module3D = st_mate_pcb_chunk.pcb_update(
             scad_program, pcb_origin, 1.6, st_mate_exterior, "Blue", None, [])
         st_mate_pcb_module = st_mate_pcb_module

@@ -153,9 +153,6 @@ case "$1" in
     "st_adapter_board")
 	scad "st_adapter_board"
 	;;
-    "st_adapter_mate_board")
-	scad "st_adapter_mate_board"
-	;;
     "st_link_adapter_board")
 	scad "st_link_adapter_board"
 	;;
@@ -170,6 +167,9 @@ case "$1" in
 	;;
     "st_link_sandwich")
 	scad "st_link_sandwich"
+	;;
+    "st_mate_board")
+	scad "st_mate_board"
 	;;
     "sw_board")
 	scad "sw_board"
@@ -251,12 +251,12 @@ case "$1" in
 	echo "se_board"
 	echo "se_pcb"
 	echo "st_adapter_board"
-	echo "st_adapter_mate_board"
 	echo "st_link_adapter_board"
 	echo "st_link_adapter_pcb"
 	echo "st_link_board"
 	echo "st_link_pcb"
 	echo "st_link_sandwich"
+	echo "st_mate_board"
 	echo "sw_board"
 	echo "sw_pcb"
 	echo "vertical_sonar"

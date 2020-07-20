@@ -54,4 +54,16 @@ K ~
 F http://www.adam-tech.com/downloader.php?p=RS1-XX-G.pdf
 $ENDCMP
 #
+$CMP ST_MATE;ST_MATE
+D 
+K ~
+F 
+$ENDCMP
+#
+$CMP ST_ADAPTER;ST_ADAPTER
+D 
+K ~
+F 
+$ENDCMP
+#
 #End Doc Library

@@ -1,0 +1,10 @@
+ST_MATE;ST_MATE,CN,HR2:ST_MATE,,ST Adaptor Mating Connector
+Pin,Name,Type,Side,Unit,Style,Hidden
+1,GND,pwr_out,right,1,,
+2,3V3,pwr_out,right,1,,
+3,SIG1,passive,right,1,,
+4,SIG2,passive,right,1,,
+5,SIG3,passive,right,1,,
+6,SIG4,passive,right,1,,
+,,,,,,
+
