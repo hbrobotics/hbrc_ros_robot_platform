@@ -69,6 +69,11 @@ class Connectors:
             "F1x2", scad_program, 1, 2, female_insulation_height, pcb_pin_height,
             insulation_color="Fuchsia",
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x2ra: RectangularConnector = RectangularConnector(
+            "F1x2RA", scad_program, 1, 2, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            right_angle_length=4.00,  # <=calipers / schematic=>6.00 + 0.127
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
         # Common 1x3 connectors:
         m1x3: RectangularConnector = RectangularConnector(
@@ -84,6 +89,11 @@ class Connectors:
         f1x3: RectangularConnector = RectangularConnector(
             "F1x3", scad_program, 1, 3, female_insulation_height, pcb_pin_height,
             insulation_color="Fuchsia",
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x3ra: RectangularConnector = RectangularConnector(
+            "F1x3RA", scad_program, 1, 3, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            right_angle_length=4.00,  # <=calipers / schematic=>6.00 + 0.127
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
         # Common 1x4 connectors:
@@ -106,12 +116,17 @@ class Connectors:
             "F1x4H", scad_program, 1, 4, female_insulation_height + 2.0,
             pcb_pin_height, insulation_color="Fuchsia",
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x4ra: RectangularConnector = RectangularConnector(
+            "F1x4RA", scad_program, 1, 4, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            right_angle_length=4.00,  # <=calipers / schematic=>6.00 + 0.127
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
         # Common 1x5 connectors:
         f1x5ra: RectangularConnector = RectangularConnector(
             "F1x5RA", scad_program, 1, 5, female_insulation_height, pcb_pin_height,
             insulation_color="Fuchsia",
-            right_angle_length=3.00 - 0.127,  # <=calipers / schematic=>6.00 + 0.127
+            right_angle_length=4.00,  # <=calipers / schematic=>6.00 + 0.127
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
         # Common 1x6 connectors:
@@ -183,11 +198,14 @@ class Connectors:
         # connectors: Connectors = self
         self.m1x2: RectangularConnector = m1x2
         self.f1x2: RectangularConnector = f1x2
+        self.f1x2ra: RectangularConnector = f1x2ra
         self.m1x3: RectangularConnector = m1x3
         self.m1x3ra: RectangularConnector = m1x3ra
         self.f1x3: RectangularConnector = f1x3
+        self.f1x3ra: RectangularConnector = f1x3ra
         self.m1x4: RectangularConnector = m1x4
         self.f1x4lp: F1x4LP = f1x4lp
+        self.f1x4ra: RectangularConnector = f1x4ra
         self.m1x4ra: RectangularConnector = m1x4ra
         self.f1x4: RectangularConnector = f1x4
         self.f1x4h: RectangularConnector = f1x4h
@@ -1705,7 +1723,7 @@ class PCBChunk:
         # Unpack some values from *PCBChunk* (i.e. *self*):
         back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
         # back_scads: List[Scad3D] = pcb_chunk.back_scads
-        # cuts: List[SimplePolygon] = pcb_chunk.cuts
+        cuts: List[SimplePolygon] = pcb_chunk.cuts
         front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
         # front_scads: List[Scad3D] = pcb_chunk.front_scads
         name: str = pcb_chunk.name
@@ -1800,6 +1818,31 @@ class PCBChunk:
             for pad in pads:
                 lines.append(pad.kicad_line(prefix, footprint_origin, tracing=next_tracing))
 
+        # Add any cut lines:
+        offset_x: int = 0
+        offset_y: int = 0
+        layer: str = "Edge.Cuts"
+        width: float = .05
+        cut: SimplePolygon
+        for cut in cuts:
+            cut_size: int = len(cut)
+            if tracing:
+                print(f"{tracing}cut_size:{cut_size}")
+            cut_index1: int
+            cut_index2: int
+            for cut_index1 in range(cut_size):
+                cut_index2 = (cut_index1 + 1) % cut_size
+                point1: P2D = cut[cut_index1]
+                point2: P2D = cut[cut_index2]
+                cut_line: str = ("  (fp_line "
+                                 f"(start {KicadPCB.number(offset_x + point1.x, 2)} "
+                                 f"{KicadPCB.number(offset_y - point1.y, 2)}) "
+                                 f"(end {KicadPCB.number(offset_x + point2.x, 2)} "
+                                 f"{KicadPCB.number(offset_y - point2.y, 2)}) "
+                                 f"(layer {layer}) "
+                                 f"(width {KicadPCB.number(width, 2)}))")
+                lines.append(cut_line)
+
         # Add the closing parenthesis and return the resulting *lines*:
         lines.append(f"{prefix})")
 
@@ -1819,7 +1862,7 @@ class PCBChunk:
 
         """
         # Perform any reqested *tracing*:
-        # next_tracing: str = tracing + " " if tracing else ""
+        next_tracing: str = tracing + " " if tracing else ""
         if tracing:
             print(f"{tracing}=>PCBChunk.footprint_generate('library_name', '{directory.name}')")
 
@@ -1874,7 +1917,7 @@ class PCBChunk:
         is_front: bool = True
         new_body_lines: List[str] = pcb_chunk.footprint_body_lines_generate(
             prefix, footprint_mode, is_front, origin2d, name, "REF**", value, path_id,
-            0.0, origin2d, False)
+            0.0, origin2d, False, tracing=next_tracing)
 
         # It is really important to create the *create_timestamp* only once and always resuse it.
         # The *edit_timestamp* needs to be changed anytime the file content changes.
@@ -1897,7 +1940,7 @@ class PCBChunk:
             footprint_text: str = '\n'.join(new_footprint_lines + [""])
             footprint_file.write(footprint_text)
 
-        # This stuff is OLD and nees to be eventually deleted:
+        # This stuff is OLD and needs to be eventually deleted:
         # footprint_path = directory / (name + ".kicad_mod")
 
         # Now start the *footprint*:
@@ -3614,7 +3657,7 @@ class HR2Robot:
         # Now create the *raspi4b* and the *st_link*
         other_pi: OtherPi = OtherPi(scad_program, connectors)
         raspi4b: RaspberryPi4 = RaspberryPi4(scad_program, connectors, other_pi, pcb_origin)
-        st_link: STLink = STLink(scad_program, connectors)
+        st_link: STLink = STLink(scad_program, connectors, pcb_origin)
 
         # Create the *nucleo144* before *master_board* so it can be passed in:
         nucleo_offset2d: P2D = P2D(pi_x + 8.5, pi_y - 1.0)
@@ -4029,17 +4072,27 @@ class MasterBoard:
                                                                       west_encoder_reference])
         raspi4b_mate_pcb_chunk: PCBChunk = raspi4b.mate_pcb_chunk.reposition(
             origin2d, degrees90, origin2d)
-
         raspi4b_mate_reference: Reference = Reference(
             "CN57", True, 0.0, origin2d, raspi4b_mate_pcb_chunk, "RASPI;F2X20")
         raspi4b_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "Raspi4b References", [], [], references=[raspi4b_mate_reference])
+
+        # Place the ST Link assembly (ST adaptor and ST-Link):
+        st_mate_location: P2D = P2D(0.0, -45.0)
+        st_mate_pcb_chunk: PCBChunk = (
+            st_link.st_mate_pcb_chunk.reposition(origin2d, 0.0, st_mate_location))
+        st_mate_reference: Reference = Reference(
+            "CN58", True, 0.0, st_mate_location, st_mate_pcb_chunk, "ST_MATE;ST_MATE")
+        st_mate_references_pcb_chunk: PCBChunk = PCBChunk(
+            "ST_Mate References", [], [], references=[st_mate_reference])
 
         center_pcb_chunk: PCBChunk = PCBChunk.join("XCenter", [
             encoder_references_pcb_chunk,
             east_encoder_mate_pcb_chunk,
             west_encoder_mate_pcb_chunk,
             center_sonars_pcb_chunk,
+            st_mate_pcb_chunk,
+            st_mate_references_pcb_chunk,
             raspi4b_mate_pcb_chunk,
             raspi4b_mate_references_pcb_chunk,
         ])
@@ -8037,7 +8090,7 @@ class Spacer:
 class STLink:
     """Represents the STLink portion of a Nucleo144."""
 
-    def __init__(self, scad_program: ScadProgram, connectors: Connectors) -> None:
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors, pcb_origin: P2D) -> None:
         """Initialize the STLink object."""
         # The mechanical drawing in the Nucleo144 User Manual does not give very much dimensional
         # information.  So much of the numbers below are measured with calipers:
@@ -8056,11 +8109,12 @@ class STLink:
         # Define all of the connector locations:
         degrees180: float = pi
         degrees90: float = degrees180 / 2.0
-        cn1_dx: float = 3.0  # Calipers
-        cn1_bottom_y: float = pcb_dy / 2.0 - 1.2  # Calipers
-        cn1_top_y: float = cn1_bottom_y + 10  # Extra large to poke through PCB
+        cn1_dx: float = 7.30  # Calipers
+        cn1_bottom_y: float = pcb_dy / 2.0 - 4.00  # Calipers
+        cn1_top_y: float = cn1_bottom_y + 5.36 + 3.0  # Extra large to poke through PCB
         cn1_dy: float = abs(cn1_top_y - cn1_bottom_y)
-        cn1_dz: float = 1.0
+        print(f"cn1_dy:{cn1_dy:.2f}")
+        cn1_dz: float = 2.75
         cn1_center_x: float = pcb_dx / 2.0 - 21.00  # Calipers
         cn1_center_y: float = cn1_bottom_y + cn1_dy / 2.0
         cn2_pin1_x: float = -pcb_dx / 2.0 + 3.25  # Calipers
@@ -8096,10 +8150,9 @@ class STLink:
         st_link_pcb: PCB = PCB("ST_Link", scad_program, pcb_dz, st_link_exterior)
 
         # Install CN1 USB connector:
-        cn1_cube_center: P3D = P3D(0.0, 0.0, cn1_dz / 2.0)
-        cn1_cube: Cube = Cube("CN1 USB Connector", cn1_dx, cn1_dy, cn1_dz, cn1_cube_center)
-        colored_cn1_cube: Color = Color("Colored CN1 USB Connector", cn1_cube, "Silver")
-        st_link_pcb.scad3d_place(colored_cn1_cube, "t", translate=P2D(cn1_center_x, cn1_center_y))
+        xcn1_cube_center: P3D = P3D(0.0, 0.0, cn1_dz / 2.0)
+        xcn1_cube: Cube = Cube("CN1 USB Connector", cn1_dx, cn1_dy, cn1_dz, xcn1_cube_center)
+        st_link_pcb.scad3d_place(xcn1_cube, "t", translate=P2D(cn1_center_x, cn1_center_y))
 
         # Install CN2 connectors:
         st_link_pcb.module3d_place("M1x2", {"ground_connectors"}, "",
@@ -8151,16 +8204,17 @@ class STLink:
         sandwich_pcb_dy: float = pcb_dy
         sandwich_pcb_dx: float = pcb_dx / 2.0 + 5.0
         sandwich_pcb_dz: float = 1.6
-        adapter_exterior: Square = Square("STLink Adapter Exterior",
-                                          sandwich_pcb_dx, sandwich_pcb_dy,
-                                          center=P2D(-(pcb_dx - sandwich_pcb_dx) / 2.0, 0.0),
-                                          corner_radius=1.5, corner_count=5)
+        st_adapter_exterior: Square = Square("STLink Adapter Exterior",
+                                             sandwich_pcb_dx, sandwich_pcb_dy,
+                                             center=P2D(-(pcb_dx - sandwich_pcb_dx) / 2.0, 0.0),
+                                             corner_radius=1.5, corner_count=5)
 
-        adapter_pcb: PCB = PCB("ST_Link_Adapter", scad_program, sandwich_pcb_dz, adapter_exterior)
+        adapter_pcb: PCB = PCB(
+            "ST_Link_Adapter", scad_program, sandwich_pcb_dz, st_adapter_exterior)
         adapter_pcb.pcb_place(st_link_pcb, {"connectors_mate"}, "")
         f1x5ra_center: P2D = P2D(-9.0, 4.0 - 2.54)
         adapter_pcb.module3d_place("F1x5RA", {"connectors"}, "byY", origin2d, 0.0, f1x5ra_center)
-        adapter_module: Module3D = adapter_pcb.scad_program_append(scad_program, "Tan")
+        adapter_module: Module3D = adapter_pcb.scad_program_append(scad_program, "Olive")
         adapter_use_module: UseModule3D = adapter_module.use_module_get()
 
         translated_st_link: Translate3D = Translate3D("Translated ST Link", st_link_use_module,
@@ -8184,6 +8238,149 @@ class STLink:
         scad_program.if3d.name_match_append("st_link_sandwich", sandwich_module,
                                             ["ST-Link Adapter Sandwich"])
 
+        # Create the *st_link_pin_connectors_pcb_chunk* needed for *st_link_pcb_chunk*:
+        st_link_pin_connectors_pcb_chunk: PCBChunk = PCBChunk.join("ST Link PinConnectors", [
+            (connectors.m1x2.pcb_chunk.reposition(origin2d, -degrees90, cn2_center).  # CN2
+             pads_rebase(20)),
+            (connectors.m1x6.pcb_chunk.reposition(origin2d, -degrees90, cn6_center).  # CN6
+             pads_rebase(60)),
+            (connectors.m1x2.pcb_chunk.reposition(origin2d, -degrees90, jp2_center).  # JP2
+             pads_rebase(200)),
+            (connectors.m1x4.pcb_chunk.reposition(origin2d, -degrees90, cn4_center).  # CN4
+             pads_rebase(40)),
+            (connectors.m1x2.pcb_chunk.reposition(origin2d, -degrees90, cn5_center).  # CN5
+             pads_rebase(50)),
+            (connectors.m1x2.pcb_chunk.reposition(origin2d, 0.0, jp1_center).         # JP1
+             pads_rebase(100)),
+            (connectors.m1x2.pcb_chunk.reposition(origin2d, -degrees90, cn3_center).  # CN3
+             pads_rebase(30)),
+        ])
+
+        # The power and signal connector centers a defined up here for so that temporary
+        # cuts can be made into the st-link module to see the signal/power connections:
+        power_signal_dy: float = 0.9
+        signal_connector_center: P2D = P2D((cn4_center.x + jp1_center.x) / 2.0, power_signal_dy)
+        power_connector_center: P2D = P2D((cn6_center.x + cn4_center.x) / 2.0, power_signal_dy)
+        st_link_temporary_cuts_pcb_chunk: PCBChunk = PCBChunk(
+            "ST Link Temporary Cuts", [], [], cuts=[
+                Square("Power Cut", 2*2.54, 6*2.56, P2D(power_connector_center.x, 4.0)),
+                Square("Signal Cut", 4*2.54, 6*2.56, P2D(signal_connector_center.x, 4.0)),
+            ])
+
+        # Create the *st_link_scads_pcb_chunk* needed for *st_link_pcb_chunk*:
+        cn1_cube_center: P3D = P3D(cn1_center_x, cn1_center_y, cn1_dz / 2.0)
+        cn1_cube: Cube = Cube("CN1 USB Connector", cn1_dx, cn1_dy, cn1_dz, cn1_cube_center)
+        colored_cn1_cube: Color = Color("Colored CN1 USB Connector", cn1_cube, "Silver")
+        st_link_scads_pcb_chunk: PCBChunk = PCBChunk("ST Link USB Scad", [], [colored_cn1_cube])
+
+        # Create the *st_link_pcb_chunk* and associated *st_link_module*:
+        st_link_pcb_chunk: PCBChunk = PCBChunk.join("XST_Link", [
+            st_link_pin_connectors_pcb_chunk,
+            st_link_scads_pcb_chunk,
+            st_link_temporary_cuts_pcb_chunk,
+        ])
+        xst_link_module: Module3D = st_link_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, 1.6, st_link_exterior, "Brown", None, [])
+
+        # Now create an *translated_st_link_pcb_chunk* which is the *st_link_module* offset
+        # to fit nicely with the upcoming *st_adapter_pcb_chunk*:
+        xtranslated_st_link: Translate3D = Translate3D(
+            "Translated ST Link Module", xst_link_module.use_module_get(), P3D(0.0, 0.0, -12.1))
+        translated_st_link_pcb_chunk: PCBChunk = PCBChunk(
+            "Translated ST Link", [], [xtranslated_st_link])
+
+        # Now create the *st_adapter_pin_connectors_pcb_chunk* need for the upcoming
+        # *st_adapter_pcb_chunk*.  The pin are rebased using CNn=>(n x 10) and JPn=>(n * 100)
+        st_adapter_pin_connectors_pcb_chunk: PCBChunk = PCBChunk.join("ST Adapter PinConnectors", [
+            (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
+             reposition(origin2d, -degrees90, cn2_center).pads_rebase(20)),   # CN2
+            (connectors.f1x6.pcb_chunk.scads_y_flip().sides_swap().
+             reposition(origin2d, -degrees90, cn6_center).pads_rebase(60)),   # CN6
+            (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
+             reposition(origin2d, -degrees90, jp2_center).pads_rebase(200)),  # JP2
+            (connectors.f1x4.pcb_chunk.scads_y_flip().sides_swap().
+             reposition(origin2d, -degrees90, cn4_center).pads_rebase(40)),   # CN4
+            (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
+             reposition(origin2d, -degrees90, cn5_center).pads_rebase(50)),   # CN5
+            (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
+             reposition(origin2d, 0.0, jp1_center).pads_rebase(100)),         # JP1
+        ])
+
+        # Create the *st_adapter_pcb_chunk*:
+        st_adapter_power_connector_pcb_chunk: PCBChunk = (
+            connectors.f1x2ra.pcb_chunk.scads_y_flip().sides_swap().
+            reposition(origin2d, degrees180, power_connector_center))
+        st_adapter_signal_connector_pcb_chunk: PCBChunk = (
+            connectors.f1x4ra.pcb_chunk.scads_y_flip().sides_swap().pads_rebase(4).
+            reposition(origin2d, degrees180, signal_connector_center))
+        st_adapter_pcb_chunk: PCBChunk = PCBChunk.join("ST_Adapter", [
+            st_adapter_pin_connectors_pcb_chunk,
+            st_adapter_power_connector_pcb_chunk,
+            st_adapter_signal_connector_pcb_chunk,
+            translated_st_link_pcb_chunk,
+        ])
+
+        # Compute all directory and file names needed to generate footprint and update PCB's:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY is not a defined environment variable."
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        st_adapter_directory: Path = hr2_directory / "electrical" / "st_adapter" / "rev_a"
+        st_adapter_kicad_pcb: Path = st_adapter_directory / "st_adapter.kicad_pcb"
+        st_adapter_pretty_directory: Path = st_adapter_directory / "pretty"
+
+        # Generate the footprint for *st_adapter_pcb_chunk*:
+        st_adapter_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory)
+
+        # Create *st_adapter_module* and update *st_adapter_kicad_pcb*:
+        st_adapter_module: Module3D = st_adapter_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, 1.6, st_adapter_exterior, "Olive", st_adapter_kicad_pcb, [])
+
+        # Create the nylon tie down holes for the upcoming *st_mate_pcb_chunk*:
+        tie_diameter: float = 2.4  # mm
+        tie_east_x: float = -0.3  # mm  (all values determined by trial and error)
+        tie_west_x: float = -29.0  # mm
+        tie_north_y: float = 12.0  # mm
+        tie_south_y: float = -3.0  # mm
+        st_mate_pads: List[Pad] = [
+            Pad("ST Adapter NE Nylon Tie Hole", 0.0, 0.0, tie_diameter,
+                P2D(tie_east_x, tie_north_y), 0.0),
+            Pad("ST Adapter Nw Nylon Tie Hole", 0.0, 0.0, tie_diameter,
+                P2D(tie_west_x, tie_north_y), 0.0),
+            Pad("ST Adapter SE Nylon Tie Hole", 0.0, 0.0, tie_diameter,
+                P2D(tie_east_x, tie_south_y), 0.0),
+            Pad("ST Adapter Sw Nylon Tie Hole", 0.0, 0.0, tie_diameter,
+                P2D(tie_west_x, tie_south_y), 0.0),
+        ]
+        st_mate_tie_holes_pcb_chunk: PCBChunk = PCBChunk("ST Mate Tie holes", st_mate_pads, [])
+
+        # Create the *st_adapter_mate_pcb_chunk*:
+        st_mate_power_connector_pcb_chunk: PCBChunk = (
+            connectors.m1x2.pcb_chunk.scads_y_flip().sides_swap().
+            reposition(origin2d, 0.0, P2D(power_connector_center.x, 1.27)))
+        st_mate_signal_connector_pcb_chunk: PCBChunk = (
+            connectors.m1x4.pcb_chunk.scads_y_flip().sides_swap().pads_rebase(2).
+            reposition(origin2d, 0.0, P2D(signal_connector_center.x, 1.27)))
+        st_mate_usb_cut_pcb_chunk: PCBChunk = PCBChunk("ST Mate Cuts", [], [], cuts=[
+            Square("USB Cut", cn1_dx + 0.50, 1.5 * cn1_dz, P2D(cn1_center_x, 7.75),  # Trial & error
+                   0.0, corner_radius=1.0, corner_count=3)])
+        origin3d: P3D = P3D(0.0, 0.0, 0.0)
+        repositioned_st_adapter: Scad3D = st_adapter_module.use_module_get().reposition(
+            "Repositoned ST Adapter", origin3d, x_axis, degrees90, P3D(0.0, 0.0, -12.1))
+        st_mate_repositioned_pcb_chunk: PCBChunk = PCBChunk(
+            "ST Mate Repositioned", [], [repositioned_st_adapter]).sides_swap()
+        st_mate_pcb_chunk: PCBChunk = PCBChunk.join("ST_MATE", [
+            st_mate_tie_holes_pcb_chunk,
+            st_mate_repositioned_pcb_chunk,
+            st_mate_usb_cut_pcb_chunk,
+            st_mate_power_connector_pcb_chunk,
+            st_mate_signal_connector_pcb_chunk,
+        ])
+
+        # Create both the footprint and a temporary module for viewing purposes:
+        st_mate_exterior: Square = Square("ST Mate Exterior", 70.0, 30.0)
+        st_mate_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory)
+        st_mate_pcb_module: Module3D = st_mate_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, 1.6, st_mate_exterior, "Blue", None, [])
+
         # Stuff some values into *st_link* (i.e. *self*):
         # st_link: STLink = self
         self.module: Module3D = sandwich_module
@@ -8191,6 +8388,10 @@ class STLink:
         self.adapter_pcb: PCB = adapter_pcb
         self.st_link_module: Module3D = st_link_module
         self.st_link_pcb: PCB = st_link_pcb
+        self.st_adapter_module: Module3D = st_adapter_module
+        self.st_adapter_pcb_chunk: PCBChunk = st_adapter_pcb_chunk
+        self.st_mate_module: Module3D = st_mate_pcb_module
+        self.st_mate_pcb_chunk: PCBChunk = st_mate_pcb_chunk
 
 
 # SRF02:
@@ -8885,12 +9086,12 @@ class KicadPCB:
     @staticmethod
     def number(value: float, maximum_fractional_digits: int) -> str:
         """Convert value into KiCad style number."""
-        # KiCad numbers are trimmed of trailing zeros and optionally the end decimal point:
-        number_text: str = str(round(value, maximum_fractional_digits)).rstrip('0').rstrip('.')
+        # Small positive/negative number close to zero to zero.
+        if abs(value) < .000000001:
+            value = 0.0
 
-        # Convert "-0..." to "0...":
-        if len(number_text) >= 2 and number_text[:2] == "-0":
-            number_text = number_text[1:]
+        # KiCad numbers are trimmed of trailing zeros and optionally the trailing decimal point:
+        number_text: str = str(round(value, maximum_fractional_digits)).rstrip('0').rstrip('.')
         return number_text
 
     # KicadPCB.string():

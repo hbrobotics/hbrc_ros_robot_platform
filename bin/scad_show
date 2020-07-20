@@ -150,6 +150,9 @@ case "$1" in
     "se_pcb")
 	scad "se_pcb"
 	;;
+    "st_adapter_board")
+	scad "st_adapter_board"
+	;;
     "st_link_adapter_board")
 	scad "st_link_adapter_board"
 	;;
@@ -164,6 +167,9 @@ case "$1" in
 	;;
     "st_link_sandwich")
 	scad "st_link_sandwich"
+	;;
+    "st_mate_board")
+	scad "st_mate_board"
 	;;
     "sw_board")
 	scad "sw_board"
@@ -197,6 +203,9 @@ case "$1" in
 	;;
     "xse_board")
 	scad "xse_board"
+	;;
+    "xst_link_board")
+	scad "xst_link_board"
 	;;
     "xsw_board")
 	scad "xsw_board"
@@ -241,11 +250,13 @@ case "$1" in
 	echo "romi_base"
 	echo "se_board"
 	echo "se_pcb"
+	echo "st_adapter_board"
 	echo "st_link_adapter_board"
 	echo "st_link_adapter_pcb"
 	echo "st_link_board"
 	echo "st_link_pcb"
 	echo "st_link_sandwich"
+	echo "st_mate_board"
 	echo "sw_board"
 	echo "sw_pcb"
 	echo "vertical_sonar"
@@ -257,6 +268,7 @@ case "$1" in
 	echo "xnw_board"
 	echo "xother_pi_board"
 	echo "xse_board"
+	echo "xst_link_board"
 	echo "xsw_board"
 	;;
 esac

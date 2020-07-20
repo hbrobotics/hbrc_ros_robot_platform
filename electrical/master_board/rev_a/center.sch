@@ -185,4 +185,22 @@ F 3 "Raspberry Pi F2x20 Connector (Row Swappped)" H 7800 850 60  0001 L CNN
 	1    7600 1000
 	1    0    0    -1  
 $EndComp
+$Comp
+L HR2:ST_MATE;ST_MATE CN58
+U 1 1 5F14D9D8
+P 3300 3600
+F 0 "CN58" H 3650 3750 50  0000 C CNN
+F 1 "ST_MATE;ST_MATE" H 3650 2950 50  0000 C CNN
+F 2 "HR2:ST_MATE" H 3500 3650 60  0001 L CNN
+F 3 "ST Adaptor Mating Connector" H 3500 3450 60  0001 L CNN
+	1    3300 3600
+	1    0    0    -1  
+$EndComp
+NoConn ~ 4000 3600
+NoConn ~ 4000 3700
+NoConn ~ 4000 3800
+NoConn ~ 4000 3900
+NoConn ~ 4000 4000
+NoConn ~ 4000 4100
+NoConn ~ 5300 1400
 $EndSCHEMATC
