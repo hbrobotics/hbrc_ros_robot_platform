@@ -33,32 +33,8 @@ function scad() {
     openscad "$HR2_DIRECTORY/mechanical/hr2_models.scad" -D $FOO
 }
 case "$1" in
-    "RPi4_Ethernet_Heat_Sink")
-	scad "RPi4_Ethernet_Heat_Sink"
-	;;
-    "RPi4_Processor_Heat_Sink")
-	scad "RPi4_Processor_Heat_Sink"
-	;;
-    "RPi4_SDRam_Heat_Sink")
-	scad "RPi4_SDRam_Heat_Sink"
-	;;
-    "RPi4_USB_Heat_Sink")
-	scad "RPi4_USB_Heat_Sink"
-	;;
-    "center_board")
-	scad "center_board"
-	;;
-    "center_pcb")
-	scad "center_pcb"
-	;;
-    "centered_hcsr04_board")
-	scad "centered_hcsr04_board"
-	;;
     "encoder_board")
 	scad "encoder_board"
-	;;
-    "encoder_pcb")
-	scad "encoder_pcb"
 	;;
     "expansion_flat")
 	scad "expansion_flat"
@@ -68,12 +44,6 @@ case "$1" in
 	;;
     "f1x4lp")
 	scad "f1x4lp"
-	;;
-    "hcsr04_board")
-	scad "hcsr04_board"
-	;;
-    "hcsr04_pcb")
-	scad "hcsr04_pcb"
 	;;
     "hr2_arm_assembly")
 	scad "hr2_arm_assembly"
@@ -96,50 +66,29 @@ case "$1" in
     "master_board")
 	scad "master_board"
 	;;
-    "master_board")
-	scad "master_board"
+    "master_center_board")
+	scad "master_center_board"
 	;;
-    "master_board")
-	scad "master_board"
+    "master_ne_board")
+	scad "master_ne_board"
 	;;
-    "master_pcb")
-	scad "master_pcb"
+    "master_nw_board")
+	scad "master_nw_board"
 	;;
-    "ne_board")
-	scad "ne_board"
+    "master_se_board")
+	scad "master_se_board"
 	;;
-    "ne_pcb")
-	scad "ne_pcb"
+    "master_sw_board")
+	scad "master_sw_board"
 	;;
-    "nucleo144_board")
-	scad "nucleo144_board"
+    "master_union_board")
+	scad "master_union_board"
 	;;
     "nucleo144_mate_board")
 	scad "nucleo144_mate_board"
 	;;
-    "nucleo144_pcb")
-	scad "nucleo144_pcb"
-	;;
-    "nw_board")
-	scad "nw_board"
-	;;
-    "nw_pcb")
-	scad "nw_pcb"
-	;;
-    "otherpi_board")
-	scad "otherpi_board"
-	;;
-    "otherpi_pcb")
-	scad "otherpi_pcb"
-	;;
-    "raspi4b_board")
-	scad "raspi4b_board"
-	;;
-    "raspi4b_pcb")
-	scad "raspi4b_pcb"
-	;;
-    "raspi_4_board")
-	scad "raspi_4_board"
+    "nucleo_144_board")
+	scad "nucleo_144_board"
 	;;
     "raspi_f2x20_board")
 	scad "raspi_f2x20_board"
@@ -147,90 +96,47 @@ case "$1" in
     "romi_base")
 	scad "romi_base"
 	;;
-    "se_board")
-	scad "se_board"
+    "rpi4_ethernet_heat_sink")
+	scad "rpi4_ethernet_heat_sink"
 	;;
-    "se_pcb")
-	scad "se_pcb"
+    "rpi4_processor_heat_sink")
+	scad "rpi4_processor_heat_sink"
+	;;
+    "rpi4_sdram_heat_sink")
+	scad "rpi4_sdram_heat_sink"
+	;;
+    "rpi4_usb_heat_sink")
+	scad "rpi4_usb_heat_sink"
+	;;
+    "sbc_other_pi_board")
+	scad "sbc_other_pi_board"
+	;;
+    "sbc_raspi4_board")
+	scad "sbc_raspi4_board"
+	;;
+    "sonar_centered_board")
+	scad "sonar_centered_board"
+	;;
+    "sonar_vertical")
+	scad "sonar_vertical"
 	;;
     "st_adapter_board")
 	scad "st_adapter_board"
 	;;
-    "st_link_adapter_board")
-	scad "st_link_adapter_board"
-	;;
-    "st_link_adapter_pcb")
-	scad "st_link_adapter_pcb"
-	;;
     "st_link_board")
 	scad "st_link_board"
-	;;
-    "st_link_pcb")
-	scad "st_link_pcb"
-	;;
-    "st_link_sandwich")
-	scad "st_link_sandwich"
 	;;
     "st_mate_board")
 	scad "st_mate_board"
 	;;
-    "sw_board")
-	scad "sw_board"
-	;;
-    "sw_pcb")
-	scad "sw_pcb"
-	;;
-    "vertical_sonar")
-	scad "vertical_sonar"
-	;;
     "wheel_assembly")
 	scad "wheel_assembly"
 	;;
-    "xcenter_board")
-	scad "xcenter_board"
-	;;
-    "xcenter_xboard")
-	scad "xcenter_xboard"
-	;;
-    "xencoder_board")
-	scad "xencoder_board"
-	;;
-    "xne_board")
-	scad "xne_board"
-	;;
-    "xnucleo_144_board")
-	scad "xnucleo_144_board"
-	;;
-    "xnw_board")
-	scad "xnw_board"
-	;;
-    "xother_pi_board")
-	scad "xother_pi_board"
-	;;
-    "xse_board")
-	scad "xse_board"
-	;;
-    "xst_link_board")
-	scad "xst_link_board"
-	;;
-    "xsw_board")
-	scad "xsw_board"
-	;;
     *)
-	echo "RPi4_Ethernet_Heat_Sink"
-	echo "RPi4_Processor_Heat_Sink"
-	echo "RPi4_SDRam_Heat_Sink"
-	echo "RPi4_USB_Heat_Sink"
-	echo "center_board"
-	echo "center_pcb"
-	echo "centered_hcsr04_board"
 	echo "encoder_board"
-	echo "encoder_pcb"
 	echo "expansion_flat"
 	echo "expansion_plate"
 	echo "f1x4lp"
-	echo "hcsr04_board"
-	echo "hcsr04_pcb"
 	echo "hr2_arm_assembly"
 	echo "hr2_base_assembly"
 	echo "hr2_master_assembly"
@@ -238,45 +144,27 @@ case "$1" in
 	echo "hr2_pi_assembly"
 	echo "hr2_wheel_assembly"
 	echo "master_board"
-	echo "master_board"
-	echo "master_board"
-	echo "master_pcb"
-	echo "ne_board"
-	echo "ne_pcb"
-	echo "nucleo144_board"
+	echo "master_center_board"
+	echo "master_ne_board"
+	echo "master_nw_board"
+	echo "master_se_board"
+	echo "master_sw_board"
+	echo "master_union_board"
 	echo "nucleo144_mate_board"
-	echo "nucleo144_pcb"
-	echo "nw_board"
-	echo "nw_pcb"
-	echo "otherpi_board"
-	echo "otherpi_pcb"
-	echo "raspi4b_board"
-	echo "raspi4b_pcb"
-	echo "raspi_4_board"
+	echo "nucleo_144_board"
 	echo "raspi_f2x20_board"
 	echo "romi_base"
-	echo "se_board"
-	echo "se_pcb"
+	echo "rpi4_ethernet_heat_sink"
+	echo "rpi4_processor_heat_sink"
+	echo "rpi4_sdram_heat_sink"
+	echo "rpi4_usb_heat_sink"
+	echo "sbc_other_pi_board"
+	echo "sbc_raspi4_board"
+	echo "sonar_centered_board"
+	echo "sonar_vertical"
 	echo "st_adapter_board"
-	echo "st_link_adapter_board"
-	echo "st_link_adapter_pcb"
 	echo "st_link_board"
-	echo "st_link_pcb"
-	echo "st_link_sandwich"
 	echo "st_mate_board"
-	echo "sw_board"
-	echo "sw_pcb"
-	echo "vertical_sonar"
 	echo "wheel_assembly"
-	echo "xcenter_board"
-	echo "xcenter_xboard"
-	echo "xencoder_board"
-	echo "xne_board"
-	echo "xnucleo_144_board"
-	echo "xnw_board"
-	echo "xother_pi_board"
-	echo "xse_board"
-	echo "xst_link_board"
-	echo "xsw_board"
 	;;
 esac

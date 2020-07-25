@@ -747,7 +747,8 @@ class ScadProgram:
         module3d_table: Dict[str, Module3D] = scad_program.module3d_table
         trimmed_name: str = Scad.name_trim(name)
         if trimmed_name not in module3d_table:
-            raise ValueError(f"Module name ('{name}' => '{trimmed_name}') is not a known Module3D.")
+            raise ValueError(f"Module name ('{name}' => '{trimmed_name}')"
+                             f" is not one of {sorted(list(module3d_table.keys()))}")
         module3d: Module3D = module3d_table[trimmed_name]
         return module3d
 
@@ -3079,7 +3080,7 @@ class Scad3D(Scad):
             # For rotate, move to *center* first, rotate, then move back to the final location.
             if center_translate:
                 scad3d = Translate3D(f"{name} Move Center to Origin", scad3d, -center)
-            scad3d = Rotate3D("f{name} Rotate Around Center", scad3d, rotate, axis)
+            scad3d = Rotate3D(f"{name} Rotate Around Center", scad3d, rotate, axis)
             if do_translate:
                 scad3d = Translate3D(f"{name} Move Origin to Translate Point", scad3d, translate)
             else:
@@ -3117,7 +3118,7 @@ class Scad3D(Scad):
         # Some constants:
         degrees180: float = pi
         origin3d: P3D = P3D(0.0, 0.0, 0.0)
-        y_axis: P3D = P3D(1.0, 0.0, 0.0)
+        y_axis: P3D = P3D(0.0, 1.0, 0.0)
 
         # Generate *y_fliped and return it:
         y_flipped_scad3d: Scad3D = scad3d.reposition(name, origin3d, y_axis, degrees180, origin3d)
