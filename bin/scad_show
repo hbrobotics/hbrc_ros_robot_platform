@@ -114,6 +114,9 @@ case "$1" in
     "nucleo144_board")
 	scad "nucleo144_board"
 	;;
+    "nucleo144_mate_board")
+	scad "nucleo144_mate_board"
+	;;
     "nucleo144_pcb")
 	scad "nucleo144_pcb"
 	;;
@@ -195,6 +198,9 @@ case "$1" in
     "xne_board")
 	scad "xne_board"
 	;;
+    "xnucleo_144_board")
+	scad "xnucleo_144_board"
+	;;
     "xnw_board")
 	scad "xnw_board"
 	;;
@@ -238,6 +244,7 @@ case "$1" in
 	echo "ne_board"
 	echo "ne_pcb"
 	echo "nucleo144_board"
+	echo "nucleo144_mate_board"
 	echo "nucleo144_pcb"
 	echo "nw_board"
 	echo "nw_pcb"
@@ -265,6 +272,7 @@ case "$1" in
 	echo "xcenter_xboard"
 	echo "xencoder_board"
 	echo "xne_board"
+	echo "xnucleo_144_board"
 	echo "xnw_board"
 	echo "xother_pi_board"
 	echo "xse_board"

@@ -3919,6 +3919,167 @@ class Nucleo144:
         # Wrap up *nucleo_pcb*:
         nucleo_board: Module3D = nucleo_pcb.scad_program_append(scad_program, "White")
 
+        # Now do the *PCBChunk*'s:
+        origin2d: P2D = P2D(0.0, 0.0)
+
+        # Define mount hole centers:
+        ne_hole_center: P2D = P2D(ne_mount_hole_x, ne_mount_hole_y)
+        nw_hole_center: P2D = P2D(nw_mount_hole_x, nw_mount_hole_y)
+        se_hole_center: P2D = P2D(se_mount_hole_x, se_mount_hole_y)
+        sw_hole_center: P2D = P2D(sw_mount_hole_x, sw_mount_hole_y)
+        center_hole_center: P2D = P2D(center_mount_hole_x, center_mount_hole_y)
+
+        # Create the *mount_holes_pcb_chunk*:
+        mount_holes_pads: List[Pad] = [
+            Pad("NE Mount Hole", 0.0, 0.0, mount_hole_diameter, ne_hole_center, 0.0),
+            Pad("NW Mount Hole", 0.0, 0.0, mount_hole_diameter, nw_hole_center, 0.0),
+            Pad("SE Mount Hole", 0.0, 0.0, mount_hole_diameter, se_hole_center, 0.0),
+            Pad("SW Mount Hole", 0.0, 0.0, mount_hole_diameter, sw_hole_center, 0.0),
+            Pad("Center Mount Hole", 0.0, 0.0, mount_hole_diameter, center_hole_center, 0.0),
+        ]
+        mount_holes_pcb_chunk: PCBChunk = PCBChunk("Nucleo Mount Holes", mount_holes_pads, [])
+        spacer_dz: float = 13.0  # mm
+        spacer_hex_diameter: float = 5.0  # mm
+        spacer_hole_diameter: float = 2.5  # mm
+        spacer_polygon: Polygon = Polygon("Spacer Polygon", [
+            Circle("Nucleo Spacer Hex Exterior", spacer_hex_diameter, 6),
+            Circle("Nucleo Spacer Hole", spacer_hole_diameter, 16),
+        ])
+        extruded_spacer: LinearExtrude = LinearExtrude("Extruded Nucleo Spacer",
+                                                       spacer_polygon, spacer_dz)
+        origin3d: P3D = P3D(0.0, 0.0, 0.0)
+        alignment: Cylinder = Cylinder("Alignment Screw", 2.45,
+                                       P3D(0.0, 0.0, -2.0 * pcb_dz),
+                                       P3D(0.0, 0.0, spacer_dz + 2.0 * pcb_dz), 16)
+        colored_alignment: Color = Color("Colored Alignment Screw", alignment, "Silver")
+
+        silver_spacer: Color = Color("Silver Nucleo Spacer", extruded_spacer, "Silver")
+        z_axis: P3D = P3D(0.0, 0.0, 1.0)
+        spacers_chunk: PCBChunk = PCBChunk("Repositioned Nucleo Spacers", [], [
+            silver_spacer.reposition("NE Nucleo spacer", origin3d, z_axis, 0.0,
+                                     P3D(ne_hole_center.x, ne_hole_center.y, 0.0)),
+            silver_spacer.reposition("NW Nucleo spacer", origin3d, z_axis, 0.0,
+                                     P3D(nw_hole_center.x, nw_hole_center.y, 0.0)),
+            silver_spacer.reposition("SE Nucleo spacer", origin3d, z_axis, 0.0,
+                                     P3D(se_hole_center.x, se_hole_center.y, 0.0)),
+            silver_spacer.reposition("SW Nucleo spacer", origin3d, z_axis, 0.0,
+                                     P3D(sw_hole_center.x, sw_hole_center.y, 0.0)),
+            colored_alignment.reposition("Center Nucleo spacer", origin3d, z_axis, 0.0,
+                                         P3D(center_hole_center.x, center_hole_center.y, 0.0)),
+        ])
+
+        # Create two cut-outs to improve visibility:
+        cutout_dx: float = 30.0  # mm
+        cutout_e: float = cutout_dx / 2.0
+        cutout_w: float = - cutout_e
+        extra_dy: float = 1.75  # mm
+
+        # Create the *upper_cut_out*:
+        upper_cutout_ne: P2D = P2D(cutout_e, ne_mount_hole_y - extra_dy)
+        upper_cutout_sw: P2D = P2D(cutout_w, center_mount_hole_y + extra_dy)
+        upper_cutout_center: P2D = (upper_cutout_ne + upper_cutout_sw) / 2.0
+        upper_cutout_dx: float = abs(upper_cutout_ne.x - upper_cutout_sw.x)
+        upper_cutout_dy: float = abs(upper_cutout_ne.y - upper_cutout_sw.y)
+        upper_cutout: Square = Square(
+            "Upper Cutout", upper_cutout_dx, upper_cutout_dy, center=upper_cutout_center)
+
+        # Create the *middle_cut_out*:
+        middle_cutout_ne: P2D = P2D(cutout_e, center_mount_hole_y - extra_dy)
+        middle_cutout_sw: P2D = P2D(cutout_w, sw_mount_hole_y + extra_dy)
+        middle_cutout_center: P2D = (middle_cutout_ne + middle_cutout_sw) / 2.0
+        middle_cutout_dx: float = abs(middle_cutout_ne.x - middle_cutout_sw.x)
+        middle_cutout_dy: float = abs(middle_cutout_ne.y - middle_cutout_sw.y)
+        middle_cutout: Square = Square(
+            "Middle Cutout", middle_cutout_dx, middle_cutout_dy, center=middle_cutout_center)
+
+        # Create the *lower_cut_out*:
+        lower_cutout_ne: P2D = P2D(cutout_e, sw_mount_hole_y - extra_dy)
+        lower_cutout_sw: P2D = P2D(cutout_w, -pcb_dy / 2.0 + extra_dy)
+        lower_cutout_center: P2D = (lower_cutout_ne + lower_cutout_sw) / 2.0
+        lower_cutout_dx: float = abs(lower_cutout_ne.x - lower_cutout_sw.x)
+        lower_cutout_dy: float = abs(lower_cutout_ne.y - lower_cutout_sw.y)
+        lower_cutout: Square = Square(
+            "Lower Cutout", lower_cutout_dx, lower_cutout_dy, center=lower_cutout_center)
+
+        # Create the *cutouts_pcb_chunk*:
+        cutouts_pcb_chunk: PCBChunk = PCBChunk(
+            "Nucleo Cutouts", [], [], cuts=[upper_cutout, middle_cutout, lower_cutout])
+
+        # Create the 2 morpho connectors and 2 associated ground connectors:
+        # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
+        # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
+        cn11_pcb_chunk: PCBChunk = (connectors.m2x35_long.pcb_chunk.scads_x_flip().sides_swap().
+                                    reposition(origin2d, -degrees90, cn11_morpho_center).
+                                    pads_rebase(1100))
+        cn11_mate_pcb_chunk: PCBChunk = (connectors.f2x35.pcb_chunk.
+                                         reposition(origin2d, -degrees90, cn11_morpho_center).
+                                         pads_rebase(1100))
+        cn11_ground_pcb_chunk: PCBChunk = (connectors.m1x2.pcb_chunk.scads_y_flip().sides_swap().
+                                           reposition(origin2d, 0.0,
+                                                      P2D(cn11_morpho_center_x, ground_south_y)))
+        cn12_pcb_chunk: PCBChunk = (connectors.m2x35_long.pcb_chunk.scads_x_flip().sides_swap().
+                                    reposition(origin2d, -degrees90, cn12_morpho_center).
+                                    pads_rebase(1200))
+        cn12_mate_pcb_chunk: PCBChunk = (connectors.f2x35.pcb_chunk.
+                                         reposition(origin2d, -degrees90, cn12_morpho_center).
+                                         pads_rebase(1200))
+        cn12_ground_pcb_chunk: PCBChunk = (connectors.m1x2.pcb_chunk.scads_y_flip().sides_swap().
+                                           reposition(origin2d, 0.0,
+                                                      P2D(cn12_morpho_center_x, ground_south_y)))
+        # Insert the 4 ZIO connectors:
+        cn7_pcb_chunk: PCBChunk = (connectors.f2x10_long.pcb_chunk.
+                                   reposition(origin2d, degrees90,
+                                              P2D(cn7_zio_center_x, cn7_zio_center_y)))
+        cn8_pcb_chunk: PCBChunk = (connectors.f2x8_long.pcb_chunk.
+                                   reposition(origin2d, degrees90,
+                                              P2D(cn8_zio_center_x, cn8_zio_center_y)))
+        cn9_pcb_chunk: PCBChunk = (connectors.f2x15_long.pcb_chunk.
+                                   reposition(origin2d, degrees90,
+                                              P2D(cn9_zio_center_x, cn9_zio_center_y)))
+        cn10_pcb_chunk: PCBChunk = (connectors.f2x17_long.pcb_chunk.
+                                    reposition(origin2d, degrees90,
+                                               P2D(cn10_zio_center_x, cn10_zio_center_y)))
+
+        # Create the *nucleo_pcb_chunk*:
+        nucleo_pcb_chunk: PCBChunk = PCBChunk.join("xnucleo_144", [
+            cn7_pcb_chunk,
+            cn8_pcb_chunk,
+            cn9_pcb_chunk,
+            cn10_pcb_chunk,
+            cn11_pcb_chunk,
+            cn11_ground_pcb_chunk,
+            cn12_pcb_chunk,
+            cn12_ground_pcb_chunk,
+            mount_holes_pcb_chunk,
+            cutouts_pcb_chunk,
+        ])
+
+        # Define the directories to use to write out the footprint to:
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        master_board_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
+        master_board_pretty_directory: Path = master_board_directory / "pretty"
+        nucleo_module: Module3D = nucleo_pcb_chunk.pcb_update(
+            scad_program, origin2d, 1.6, nucleo_exterior, "White", None, [])
+        nucleo_module = nucleo_module
+
+        raised_nucleo_pcb_chunk: PCBChunk = PCBChunk(
+            "Raised Nucleo 144", [], [nucleo_module.use_module_get().reposition(
+                "Raised Nucleo", origin3d, z_axis, 0.0, P3D(0.0, 0.0, spacer_dz)),
+            ])
+
+        # Create *nucleo_mate_pcb_chunk*, a fake PCB that shows how everything fits together:
+        nucleo_mate_pcb_chunk: PCBChunk = PCBChunk.join("NUCLEO144_MATE", [
+            raised_nucleo_pcb_chunk,
+            mount_holes_pcb_chunk,
+            cn11_mate_pcb_chunk,
+            cn12_mate_pcb_chunk,
+            spacers_chunk,
+        ])
+        nucleo_mate_module: Module3D = nucleo_mate_pcb_chunk.pcb_update(
+            scad_program, origin2d, 1.6, nucleo_exterior, "Tan", None, [])
+        nucleo_mate_pcb_chunk.footprint_generate("HR2", master_board_pretty_directory)
+        nucleo_mate_module = nucleo_mate_module
+
         # Stuff a some values into *nucleo144* (i.e. *self*):
         # nucleo144: Nucleo144 = self
         self.module: Module3D = nucleo_board
