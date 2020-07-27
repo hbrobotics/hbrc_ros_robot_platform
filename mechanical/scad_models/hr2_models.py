@@ -27,6 +27,9 @@
 # <======================================= 100 characters =======================================> #
 """Code that generates an OpenSCAD model for HR2 (HBRC ROS Robot)."""
 
+# Random useful URL:
+# https://mechanicalc.com/reference/fastener-size-tables
+
 from scad_models.scad import (
     Circle, Color, CornerCube, Cube, Cylinder, If2D, Difference2D, LinearExtrude,
     Module2D, Module3D, P2D, P3D, Polygon, Rotate3D, Scad2D, Scad3D, SimplePolygon, ScadProgram,
@@ -2734,8 +2737,8 @@ class Encoder:
         motor_casing_north_y: float = base_dxf.y_locate(3.382512)
         north_electrical_north_y: float = base_dxf.y_locate(3.208303)
         north_electrical_south_y: float = base_dxf.y_locate(3.188610)
-        # motor_shaft_north_y: float = base_dxf.y_locate(2.967165)
-        # motor_shaft_south_y: float = base_dxf.y_locate(2.908110)
+        motor_shaft_north_y: float = base_dxf.y_locate(2.967165)
+        motor_shaft_south_y: float = base_dxf.y_locate(2.908110)
         south_electrical_north_y: float = base_dxf.y_locate(2.686650)
         south_electrical_south_y: float = base_dxf.y_locate(2.666957)
         motor_casing_south_y: float = base_dxf.y_locate(2.492748)
@@ -2753,7 +2756,7 @@ class Encoder:
         electrical_dz: float = abs(electrical_top_z - electrical_bottom_z)
         motor_casing_dy: float = abs(motor_casing_north_y - motor_casing_south_y)
         motor_casing_dz: float = abs(motor_casing_top_z - motor_casing_bottom_z)
-        # motor_shaft_diameter: float = (motor_shaft_north_y + motor_shaft_south_y) / 2.0
+        motor_shaft_diameter: float = (motor_shaft_north_y + motor_shaft_south_y) / 2.0
         motor_shaft_z: float = motor_casing_bottom_z + motor_casing_dz / 2.0
 
         # Some random constants:
@@ -2763,19 +2766,19 @@ class Encoder:
         # The PCB is designed in a flat orientation with the motor shaft in the center aligned
         # with the Z-axis and then rotated on end and translated into position.  This tends to
         # swap X and Z coordinates.  Thus the constants below are *VERY* confusing:
-        pcb_west_x: float = -14.0  # Trail and error
+        pcb_west_x: float = -9.0  # Trail and error
         pcb_connector_x: float = -motor_casing_dz / 2.0 - 3.0   # Note the X/Z coordinate swap
         pcb_east_x: float = motor_casing_dz / 2.0
         pcb_header_dx: float = 6.5  # Trial and error
         pcb_corner_x: float = -2.5  # Trial and error
-        pcb_dy_extra: float = 9.0 * 2.54
-        # pcb_dz: float = 1.0  # mm
+        pcb_dy_extra: float = 7.0 * 2.54
+        pcb_dz: float = 1.6  # mm
         pcb_north_y: float = (motor_casing_dy + pcb_dy_extra) / 2.0
         pcb_north_corner_y: float = motor_casing_dy / 2.0
         pcb_south_corner_y: float = -pcb_north_corner_y
         pcb_south_y: float = -pcb_north_y
-        # pcb_shaft_diameter_extra: float = 3.0
-        # pcb_shaft_hole_diameter: float = motor_shaft_diameter + pcb_shaft_diameter_extra
+        pcb_shaft_diameter_extra: float = 3.0
+        pcb_shaft_hole_diameter: float = motor_shaft_diameter + pcb_shaft_diameter_extra
         pcb_slot_extra: float = 0.400
         pcb_slot_dx: float = electrical_dz + pcb_slot_extra
         pcb_slot_dy: float = electrical_dy + pcb_slot_extra
@@ -2794,7 +2797,7 @@ class Encoder:
         #    |   |
         #    |   G--F
         #    |      |
-        #    |      |
+        #    |    O |  O = shaft hole at origin
         #    |      |
         #    |   D--E
         #    |   |
@@ -2824,7 +2827,7 @@ class Encoder:
 
         # Create *north_header* and *south_header* for (Digikey: 2057-PH1RB-03-UA-ND (Adam Tech))
         # and make sure the header pin holes are appended to *pcb_polygon*:
-        header_offset: float = 2.0 * 2.54
+        header_offset: float = 1.5 * 2.54  # Trail and error
         north_header_center2d: P2D = P2D(pcb_connector_x + 0.5 * 2.54, pcb_north_y - header_offset)
         south_header_center2d: P2D = P2D(pcb_connector_x + 0.5 * 2.54, pcb_south_y + header_offset)
 
@@ -2837,13 +2840,13 @@ class Encoder:
                                             pads_rebase(3).
                                             pads_y_mirror().
                                             scads_y_flip().
-                                            reposition(origin2d, degrees90, north_header_center2d))
+                                            reposition(origin2d, -degrees90, north_header_center2d))
         # m1x3ra_pcb_chunk_north.pads_show("m1x3ra_chunks_north:")
         m1x3ra_pcb_chunk_south: PCBChunk = (m1x3ra_pcb_chunk.
                                             sides_swap().
                                             pads_y_mirror().
                                             scads_y_flip().
-                                            reposition(origin2d, degrees90, south_header_center2d))
+                                            reposition(origin2d, -degrees90, south_header_center2d))
 
         # Create *motor_slots_pcb_chunk* (put "8" before "7" because the footprint looks better):
         north_motor_pad: Pad = Pad("8", pcb_pad_dx, pcb_pad_dy,
@@ -2853,6 +2856,10 @@ class Encoder:
         motor_slots_pcb_chunk: PCBChunk = PCBChunk("motor_slots",
                                                    [north_motor_pad, south_motor_pad], [])
 
+        # Create the *shaft_hole_pcb_chunk*:
+        shaft_hole_pad: Pad = Pad("Encoder Shaft Hole", 0.0, 0.0, pcb_shaft_hole_diameter, origin2d)
+        shaft_hole_pcb_chunk: PCBChunk = PCBChunk("Encoder Shaft Hole", [shaft_hole_pad], [])
+
         # Figure out *encoder_pcb_directory* and *encoder_pcb_pretty_directory*:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
@@ -2861,11 +2868,15 @@ class Encoder:
         encoder_pcb_path: Path = encoder_pcb_directory / "encoder.kicad_pcb"
 
         # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
-        encoder_pcb_chunk: PCBChunk = PCBChunk.join(
-            "Encoder", [m1x3ra_pcb_chunk_north, m1x3ra_pcb_chunk_south, motor_slots_pcb_chunk])
+        encoder_pcb_chunk: PCBChunk = PCBChunk.join("Encoder", [
+            m1x3ra_pcb_chunk_north,
+            m1x3ra_pcb_chunk_south,
+            motor_slots_pcb_chunk,
+            shaft_hole_pcb_chunk,
+        ])
         encoder_pcb_chunk.footprint_generate("HR2", encoder_pcb_pretty_directory)
         encoder_module: Module3D = encoder_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, 1.6, encoder_exterior, "Purple", encoder_pcb_path, [])
+            scad_program, pcb_origin, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path, [])
         encoder_use_module: UseModule3D = encoder_module.use_module_get()
 
         # Create the *encoder_pcb_mate_chunk* next.  This has the 2 F1x3 connectors and
@@ -2896,45 +2907,6 @@ class Encoder:
             "ENCODER_MATE", [north_f1x3_pcb_chunk, south_f1x3_pcb_chunk,
                              repositioned_encoder_pcb_chunk])
         encoder_pcb_chunk_mate.footprint_generate("HR2", encoder_pcb_pretty_directory)
-
-        # Create *encoder_pcb* with *encoder_exterior* as the PCB outline:
-        # encoder_pcb: PCB = PCB("Encoder", scad_program, pcb_dz, encoder_exterior)
-        # encoder_pcb.pad_append("7", {"motors"}, "",
-        #                        pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_north_slot_center)
-        # encoder_pcb.pad_append("8", {"motors"}, "",
-        #                        pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_south_slot_center)
-
-        # f1x3_pcb_chunk_north: PCBChunk = f1x3.reposition(origin2d, degrees90, degrees)
-        # f1x3_pcb_chunk_south: PCBChunk = f1x3.reposition(origin2d,
-        #                                                  degrees90, south_header_center_2d)
-        # master_pcb_chunk: PCB_Chunk = PCBCHunk.Join(
-        #     "Encoder_Master", [f1x3_pcb_chunk_north])  # , f1x3_pcb_chunk_south])
-        # master_pcb_chunk = master_pcb_chunk
-
-        # Install the connectors to the encoder board:
-        # encoder_pcb.module3d_place("M1x3RA", {"connectors"}, "bx",
-        #                            origin2d, degrees90, north_header_center2d)
-        # encoder_pcb.module3d_place("F1x3", {"connectors_mate"}, "nN",
-        #                            origin2d, degrees90, north_header_center2d)
-        # encoder_pcb.module3d_place("M1x3RA", {"connectors"}, "bx",
-        #                            origin2d, degrees90, south_header_center2d, pads_base=3)
-        # encoder_pcb.module3d_place("F1x3", {"connectors_mate"}, "nN",
-        #                            origin2d, degrees90, south_header_center2d, pads_base=3)
-        # encoder_pcb.mount_hole_append("SHAFT", {"shaft"}, pcb_shaft_hole_diameter, origin2d)
-
-        # Constuct the slots for the motor tabs:
-        # encoder_pcb.pad_append("7", {"motors"}, "",
-        #                        pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_north_slot_center)
-        # encoder_pcb.pad_append("8", {"motors"}, "",
-        #                        pcb_pad_dx, pcb_pad_dy, pcb_drill_diameter, pcb_south_slot_center)
-
-        # Digikey: 2057-PH1RB-03-UA-ND (Adam Tech):
-        # encoder_pcb.footprint_generate(Path("/tmp"), "En",
-        #                                {"connectors", "motors", "shaft"}, "U")
-        # encoder_pcb.footprint_generate(Path("/tmp"), "ENCODER_MATE",
-        #                                {"connectors"}, "U")
-
-        # Wrap up the *encoder_pcb*:
 
         # encoder_module = encoder_pcb.scad_program_append(scad_program, "Purple")
 
@@ -3512,31 +3484,47 @@ class HR2MasterAssembly:
                  scad_program: ScadProgram, pcb_origin: P2D, connectors: Connectors,
                  hr2_pi_assembly: "HR2PiAssembly", base_dxf: BaseDXF,
                  pi_board_z, master_board_z: float, nucleo_board_z: float, arm_z: float,
-                 pi_offset2d: P2D, nucleo_offset2d: P2D, st_link_offset2d: P2D,
-                 encoder: "Encoder", raspi4b: "RaspberryPi4", nucleo144: "Nucleo144",
-                 st_link: "STLink",
+                 pi_offset2d: P2D, nucleo_offset2d: P2D, nucleo_rotate: float,
+                 st_link_offset2d: P2D, encoder: "Encoder", raspi4b: "RaspberryPi4",
+                 nucleo144: "Nucleo144", st_link: "STLink",
                  romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the HR2MasterAssembly."""
         # print(f"HR2MasterAssembly: nucleo_offset2d:{nucleo_offset2d}")
-        master_board: MasterBoard = MasterBoard(scad_program, pcb_origin, base_dxf, connectors,
-                                                encoder, raspi4b, nucleo144, st_link,
-                                                pi_offset2d, nucleo_offset2d, st_link_offset2d,
-                                                master_board_z, nucleo_board_z, arm_z,
-                                                romi_base_keys, romi_expansion_plate_keys)
+        master_board: MasterBoard = MasterBoard(
+            scad_program, pcb_origin, base_dxf, connectors, encoder, raspi4b, nucleo144, st_link,
+            pi_offset2d, nucleo_offset2d, nucleo_rotate, st_link_offset2d, master_board_z,
+            nucleo_board_z, arm_z, romi_base_keys, romi_expansion_plate_keys)
 
-        # Create *module*, append to *scad_program* and save into *hr2_master_assembly*
+        # Create *translated_master_without_nucleo* and *translated_master_with_nucleol*:
         # (i.e. *self*):
-        master_use_module: UseModule3D = master_board.master_module.use_module_get()
-        translated_master_board: Translate3D = Translate3D(
-            "MasterBoard Translated", master_use_module, P3D(0.0, 0.0, master_board_z))
-        module: Module3D = Module3D("HR2 Master Assembly", [
+        master_module_without_nucleo: Module3D = master_board.master_module_without_nucleo
+        translated_master_without_nucleo_board: Translate3D = Translate3D(
+            "MasterBoard Without Nucleo Translated", master_module_without_nucleo.use_module_get(),
+            P3D(0.0, 0.0, master_board_z))
+        master_module_with_nucleo: Module3D = master_board.master_module_with_nucleo
+        translated_master_with_nucleo_board: Translate3D = Translate3D(
+            "MasterBoard With Nucleo Translated", master_module_with_nucleo.use_module_get(),
+            P3D(0.0, 0.0, master_board_z))
+
+        # Create *module_with_nucleo* and *module_without_nucleo*:
+        module_without_nucleo: Module3D = Module3D("HR2 Master Assembly", [
             hr2_pi_assembly.module.use_module_get(),
-            translated_master_board])
-        scad_program.append(module)
+            translated_master_without_nucleo_board])
+        module_with_nucleo: Module3D = Module3D("HR2 Master Assembly", [
+            hr2_pi_assembly.module.use_module_get(),
+            translated_master_with_nucleo_board])
+
+        # The master assembly uses the one without the Nucleo:
+        scad_program.append(module_without_nucleo)
+        scad_program.if3d.name_match_append(
+            "hr2_master_assembly", module_without_nucleo, ["HR2 Base Assembly"])
+
+        # Stuff some values into *hr2_master_assembly* (i.e. *self*):
         # hr2_master_assembly: HR2MasterAssembly = self
-        self.module = module
-        scad_program.if3d.name_match_append("hr2_master_assembly", module, ["HR2 Base Assembly"])
+        self.module_without_nucleo: Module3D = module_without_nucleo
+        self.module_with_nucleo: Module3D = module_with_nucleo
+        self.hr2_pi_assembly: HR2PiAssembly = hr2_pi_assembly
 
 
 # HR2NucleoAssembly:
@@ -3545,8 +3533,8 @@ class HR2NucleoAssembly:
 
     # HR2NucleoAssembly.__init__():
     def __init__(self, scad_program: ScadProgram, connectors: Connectors,
-                 hr2_wheel_assembly: "HR2WheelAssembly",
-                 nucleo144: "Nucleo144", nucleo_board_z: float, nucleo_offset2d: P2D) -> None:
+                 hr2_wheel_assembly: "HR2WheelAssembly", nucleo144: "Nucleo144",
+                 nucleo_board_z: float, nucleo_offset2d: P2D, nucleo_rotate: float) -> None:
         """Initialize the HR2NucleoAssembly."""
         # Create *module*, append to *scad_program* and save into *hr2_nucleo_assembly*
         # (i.e. *self*):
@@ -3554,9 +3542,8 @@ class HR2NucleoAssembly:
         nucleo144_module: Module3D = nucleo144.nucleo_module
         nucleo144_use_module: UseModule3D = nucleo144_module.use_module_get()
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
-        degrees90: float = pi / 2.0
         rotated_nucleo144: Rotate3D = Rotate3D("Rotated Nucleo144 PCB",
-                                               nucleo144_use_module, -degrees90, z_axis)
+                                               nucleo144_use_module, nucleo_rotate, z_axis)
         nucleo_translate: P3D = P3D(nucleo_offset2d.x, nucleo_offset2d.y, nucleo_board_z)
         translated_nucleo144: Translate3D = Translate3D("Translated Nucleo 144",
                                                         rotated_nucleo144, nucleo_translate)
@@ -3665,7 +3652,11 @@ class HR2Robot:
         st_link: STLink = STLink(scad_program, connectors, pcb_origin)
 
         # Create the *nucleo144* before *master_board* so it can be passed in:
+        degrees90: float = pi / 2.0
         nucleo_offset2d: P2D = P2D(pi_x + 8.5, pi_y - 1.0)
+        nucleo_rotate: float = -degrees90
+        # nucleo_offset2d: P2D = P2D(pi_x - 8.5, pi_y - 1.0)
+        # nucleo_rotate: float = degrees90
         # print(f"HR2PiAssembly:nucleo_offset2d:{nucleo_offset2d}")
         nucleo144: Nucleo144 = Nucleo144(scad_program, connectors)
 
@@ -3684,7 +3675,7 @@ class HR2Robot:
         hr2_master_assembly: HR2MasterAssembly = HR2MasterAssembly(
             scad_program, pcb_origin, connectors, hr2_pi_assembly, base_dxf,
             pi_board_z, master_board_z, nucleo_board_z, arm_z,
-            pi_offset2d, nucleo_offset2d, st_link_offset2d,
+            pi_offset2d, nucleo_offset2d, nucleo_rotate, st_link_offset2d,
             encoder, raspi4b, nucleo144, st_link,
             romi_base_keys, romi_expansion_plate_keys)
         hr2_wheel_assembly: HR2WheelAssembly = HR2WheelAssembly(scad_program, hr2_master_assembly,
@@ -3693,7 +3684,7 @@ class HR2Robot:
 
         hr2_nucleo_assembly: HR2NucleoAssembly = HR2NucleoAssembly(
             scad_program, connectors, hr2_wheel_assembly, nucleo144,
-            nucleo_board_z, nucleo_offset2d)
+            nucleo_board_z, nucleo_offset2d, nucleo_rotate)
         hr2_arm_assembly: HR2ArmAssembly = HR2ArmAssembly(scad_program, hr2_nucleo_assembly,
                                                           romi_expansion_plate, arm_z)
         hr2_arm_assembly = hr2_arm_assembly
@@ -3703,7 +3694,7 @@ class HR2Robot:
 class HR2WheelAssembly:
     """Represents HR2 with wheels, motors, and encoders installed."""
 
-    # HR2WheelAssemlby.__init__():
+    # HR2WheelAssembly.__init__():
     def __init__(self, scad_program: ScadProgram,
                  hr2_master_assembly: HR2MasterAssembly,
                  connectors: Connectors,
@@ -3722,11 +3713,14 @@ class HR2WheelAssembly:
                                                       west_romi_wheel_assembly_use_module,
                                                       degrees180, z_axis)
 
+        hr2_pi_assembly: HR2PiAssembly = hr2_master_assembly.hr2_pi_assembly
+
         # Create the *module* and append it to *scad_program*:
         module: Module3D = Module3D("HR2 Wheel Assembly", [
-            hr2_master_assembly.module.use_module_get(),
+            hr2_master_assembly.module_without_nucleo.use_module_get(),
             west_romi_wheel_assembly_use_module,
-            east_romi_wheel_assembly
+            east_romi_wheel_assembly,
+            hr2_pi_assembly.module.use_module_get(),
         ])
         scad_program.append(module)
         self.module: Module3D = module
@@ -3770,7 +3764,7 @@ class Nucleo144:
         # origin: P2D = P2D(0, 0)
         # morpho_pin_columns: int = 35
         # morpho_pin_rows: int = 2
-        mount_hole_diameter: float = 3.20
+        mount_hole_diameter: float = 3.00  # Calipers
 
         # X Coordinates:
         pcb_dx: float = 70.0
@@ -3800,8 +3794,8 @@ class Nucleo144:
         center_mount_hole_x: float = pcb_west_x + mil(1727)
 
         # Miscellaneous X coordinates:
-        # ethernet_east_x: float = pcb_east_x - 17.50  # Calipers
-        # ethernet_west_x: float = pcb_west_x + 36.00  # Calipers
+        ethernet_east_x: float = pcb_east_x - 17.50  # Calipers
+        ethernet_west_x: float = pcb_west_x + 36.00  # Calipers
 
         # Y Coordinates:
         pcb_dy: float = mil(2002) + mil(2243)
@@ -3831,8 +3825,8 @@ class Nucleo144:
         cn12_morpho_center_y: float = (cn12_morpho_pin1_y -
                                        float(cn12_morpho_y_pins - 1) * mil(100) / 2.0)
         # Miscellaneous Y coordinates:
-        # ethernet_south_y: float = pcb_south_y - 2.50   # Calipers
-        # ethernet_north_y: float = pcb_south_y + 13.00  # Calipers
+        ethernet_south_y: float = pcb_south_y - 2.50   # Calipers
+        ethernet_north_y: float = pcb_south_y + 13.00  # Calipers
 
         # Mounting_hole_coordinates:
         center_mount_hole_y: float = pcb_pseudo_origin_y + mil(98)
@@ -3845,7 +3839,7 @@ class Nucleo144:
 
         # Z Cordinates:
         pcb_dz: float = 1.60  # Calipers
-        # ethernet_top_z: float = pcb_dz + 6.50
+        ethernet_top_z: float = pcb_dz + 6.50
         ethernet_bottom_z: float = -2.50
         self.ethernet_bottom_z: float = ethernet_bottom_z
         # zio_pin_dz: float = 7.60 + pcb_dz
@@ -3861,17 +3855,14 @@ class Nucleo144:
         # Create the *colored_ethernet* connector and add it to *nucleo_pcb*:
         nucleo_exterior: Square = Square("Nucleo144 Exterior", pcb_dx, pcb_dy, corner_radius=1.0)
         # nucleo_pcb: PCB = PCB("Nucleo144", scad_program, pcb_dz, nucleo_exterior)
-        # ethernet_corner_cube: CornerCube = CornerCube("Ethernet Connector Corner Cube",
-        #                                               P3D(ethernet_west_x,
-        #                                                   ethernet_south_y,
-        #                                                   ethernet_bottom_z),
-        #                                               P3D(ethernet_east_x,
-        #                                                   ethernet_north_y,
-        #                                                   ethernet_top_z))
-        # colored_ethernet: Color = Color("Colored Ethenet Connector",
-        #                                 ethernet_corner_cube,
-        #                                 "Silver")
-        # nucleo_pcb.scad3d_place(colored_ethernet, "")
+        ethernet_bsw: P3D = P3D(ethernet_west_x, ethernet_south_y, ethernet_bottom_z)
+        ethernet_tne: P3D = P3D(ethernet_east_x, ethernet_north_y, ethernet_top_z)
+        ethernet_connector_cube: CornerCube = CornerCube(
+            "Ethernet Connector Corner Cube", ethernet_tne, ethernet_bsw)
+        colored_ethernet: Color = Color(
+            "Colored Ethenet Connector", ethernet_connector_cube, "Silver")
+        ethernet_pcb_chunk: PCBChunk = PCBChunk(
+            "Nucleo144 Ethernet Connector", [], [colored_ethernet])
 
         # To improve visibility cut a hole into the center of the PCB:
         # pcb_cut_out: Square = Square("PCB Cut-Out", .575 * pcb_dx, .75 * pcb_dy)
@@ -3944,10 +3935,10 @@ class Nucleo144:
         ]
         mount_holes_pcb_chunk: PCBChunk = PCBChunk("Nucleo Mount Holes", mount_holes_pads, [])
         spacer_dz: float = 13.0  # mm
-        spacer_hex_diameter: float = 5.0  # mm
-        spacer_hole_diameter: float = 2.5  # mm
+        spacer_hole_diameter: float = 2.90  # mm
+        spacer_hex_diameter: float = 4.76  # mm
         spacer_polygon: Polygon = Polygon("Spacer Polygon", [
-            Circle("Nucleo Spacer Hex Exterior", spacer_hex_diameter, 6),
+            Circle("Nucleo Spacer Hex Exterior", spacer_hex_diameter, 16),
             Circle("Nucleo Spacer Hole", spacer_hole_diameter, 16),
         ])
         extruded_spacer: LinearExtrude = LinearExtrude("Extruded Nucleo Spacer",
@@ -3973,8 +3964,8 @@ class Nucleo144:
                                          P3D(center_hole_center.x, center_hole_center.y, 0.0)),
         ])
 
-        # Create two cut-outs to improve visibility:
-        cutout_dx: float = 30.0  # mm
+        # Create some cut-outs to improve visibility:
+        cutout_dx: float = 40.0  # mm
         cutout_e: float = cutout_dx / 2.0
         cutout_w: float = - cutout_e
         extra_dy: float = 1.75  # mm
@@ -4049,6 +4040,7 @@ class Nucleo144:
 
         # Create the *nucleo_pcb_chunk*:
         nucleo_pcb_chunk: PCBChunk = PCBChunk.join("nucleo_144", [
+            ethernet_pcb_chunk,
             cn7_pcb_chunk,
             cn8_pcb_chunk,
             cn9_pcb_chunk,
@@ -4074,18 +4066,28 @@ class Nucleo144:
                 "Raised Nucleo", origin3d, z_axis, 0.0, P3D(0.0, 0.0, spacer_dz)),
             ])
 
-        # Create *nucleo_mate_pcb_chunk*, a fake PCB that shows how everything fits together:
-        nucleo_mate_pcb_chunk: PCBChunk = PCBChunk.join("NUCLEO144_MATE", [
-            raised_nucleo_pcb_chunk,
+        # Create *nucleo_mate_without_pcb_chunk*:
+        nucleo_mate_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("NUCLEO144_MATE", [
             mount_holes_pcb_chunk,
             cn11_mate_pcb_chunk,
             cn12_mate_pcb_chunk,
             spacers_chunk,
         ])
-        nucleo_mate_module: Module3D = nucleo_mate_pcb_chunk.pcb_update(
-            scad_program, origin2d, 1.6, nucleo_exterior, "Tan", None, [])
-        nucleo_mate_pcb_chunk.footprint_generate("HR2", master_board_pretty_directory)
-        nucleo_mate_module = nucleo_mate_module
+
+        # Create *nucleo_mate_with_nucleo_pcb_chunk*:
+        nucleo_mate_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("NUCLEO144_MATE", [
+            raised_nucleo_pcb_chunk,
+            nucleo_mate_without_nucleo_pcb_chunk,
+        ])
+
+        # Create *nucleo_mate_with_nucleo_module:
+        # nucleo_mate_with_nucleo_module: Module3D = nucleo_mate_with_nucleo_pcb_chunk.pcb_update(
+        #     scad_program, origin2d, 1.6, nucleo_exterior, "Tan", None, [])
+        # nucleo_mate_without_nucleo_module: Module3D = (
+        #     nucleo_mate_without_nucleo_pcb_chunk.pcb_update(
+        #         scad_program, origin2d, 1.6, nucleo_exterior, "Tan", None, []))
+        nucleo_mate_without_nucleo_pcb_chunk.footprint_generate(
+            "HR2", master_board_pretty_directory)
 
         # Stuff a some values into *nucleo144* (i.e. *self*):
         # nucleo144: Nucleo144 = self
@@ -4093,7 +4095,8 @@ class Nucleo144:
         # self.pcb: PCB = nucleo_pcb
         self.nucleo_module: Module3D = nucleo_module
         self.nucleo_pcb_chunk: PCBChunk = nucleo_pcb_chunk
-        self.nucleo_mate_chunk: PCBChunk = nucleo_mate_pcb_chunk
+        self.nucleo_mate_with_nucleo_pcb_chunk: PCBChunk = nucleo_mate_with_nucleo_pcb_chunk
+        self.nucleo_mate_without_nucleo_pcb_chunk: PCBChunk = nucleo_mate_without_nucleo_pcb_chunk
 
         # Wrap up any requested *tracing*:
         if tracing:
@@ -4108,9 +4111,9 @@ class MasterBoard:
     # MasterBoard.__init__():
     def __init__(self, scad_program: ScadProgram, pcb_origin: P2D, base_dxf: BaseDXF,
                  connectors: Connectors, encoder: "Encoder", raspi4b: "RaspberryPi4",
-                 nucleo144: "Nucleo144", st_link: "STLink", pi_offset: P2D, nucleo_offset: P2D,
-                 st_link_offset: P2D, master_board_bottom_z: float, nucleo_board_z: float,
-                 arm_z: float, romi_base_keys: List[Tuple[Any, ...]],
+                 nucleo144: "Nucleo144", st_link: "STLink", pi_offset: P2D, nucleo_offset2d: P2D,
+                 nucleo_rotate: float, st_link_offset: P2D, master_board_bottom_z: float,
+                 nucleo_board_z: float, arm_z: float, romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]], tracing: str = "") -> None:
         """Initialize the MasterBoard."""
         master_board: MasterBoard = self
@@ -4234,7 +4237,7 @@ class MasterBoard:
 
         # Create the east and west encoder mating *PCBChunk*'s:
         encoder_mate_pcb_chunk: PCBChunk = encoder.encoder_mate_pcb_chunk
-        encoder_mate_translate2d: P2D = P2D(36.0, 0.0)  # 36 is currently arbitrary.
+        encoder_mate_translate2d: P2D = P2D(36.3, 0.0)  # Trial and Error
         east_encoder_mate_pcb_chunk: PCBChunk = encoder_mate_pcb_chunk.reposition(
             origin2d, degrees180, encoder_mate_translate2d)
         east_encoder_reference: Reference = Reference("CN55", True, 0.0, encoder_mate_translate2d,
@@ -4255,8 +4258,22 @@ class MasterBoard:
         raspi4b_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "Raspi4b References", [], [], references=[raspi4b_mate_reference])
 
+        nucleo144_mate_with_nucleo_pcb_chunk: PCBChunk = (
+            nucleo144.nucleo_mate_with_nucleo_pcb_chunk.reposition(
+                origin2d, nucleo_rotate, nucleo_offset2d))
+        nucleo144_mate_without_nucleo_pcb_chunk: PCBChunk = (
+            nucleo144.nucleo_mate_without_nucleo_pcb_chunk.reposition(
+                origin2d, nucleo_rotate, nucleo_offset2d))
+
+        # Create *nucleo144_mate_refererence* and associated *PCBChunk*:
+        nucleo144_mate_reference: Reference = Reference(
+            "CN59", True, 0.0, origin2d,
+            nucleo144_mate_with_nucleo_pcb_chunk, "NUCLEO144;MORPHO144")
+        nucleo144_mate_references_pcb_chunk: PCBChunk = PCBChunk(
+            "Nucleo144 References", [], [], references=[nucleo144_mate_reference])
+
         # Place the ST Link assembly (ST adaptor and ST-Link):
-        st_mate_location: P2D = P2D(0.0, -45.0)
+        st_mate_location: P2D = P2D(7.0 * 2.54, -47.0)
         st_mate_pcb_chunk: PCBChunk = (
             st_link.st_mate_pcb_chunk.reposition(origin2d, 0.0, st_mate_location))
         st_mate_reference: Reference = Reference(
@@ -4264,8 +4281,9 @@ class MasterBoard:
         st_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "ST_Mate References", [], [], references=[st_mate_reference])
 
-        # Create *center_pcb_chunk* and update its associated PCB:
-        center_pcb_chunk: PCBChunk = PCBChunk.join("Master Center", [
+        # Create *no_nucleo_chunk* which contains all the *PCBChunk*'s except the
+        # Nucleo-144:
+        no_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("No Nucelo Center", [
             encoder_references_pcb_chunk,
             east_encoder_mate_pcb_chunk,
             west_encoder_mate_pcb_chunk,
@@ -4275,10 +4293,25 @@ class MasterBoard:
             raspi4b_mate_pcb_chunk,
             raspi4b_mate_references_pcb_chunk,
         ])
+
+        # Create *center_without_nucleo_pcb_chunk* that does not contain the the Nucleo-14:
+        center_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center Without Nucleo", [
+            no_nucleo_pcb_chunk,
+            nucleo144_mate_without_nucleo_pcb_chunk,
+            nucleo144_mate_references_pcb_chunk,
+        ])
         center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
-        center_module: Module3D = center_pcb_chunk.pcb_update(
+        center_module_without_nucleo: Module3D = center_without_nucleo_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz,
             center_exterior, "Tan", center_kicad_pcb_path, [])
+
+        # Create *center_with_nucleo_pcb_chunk* that does contain the the Nucleo-14:
+        center_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center With Nucleo", [
+            center_without_nucleo_pcb_chunk,
+            nucleo144_mate_with_nucleo_pcb_chunk,
+        ])
+        center_module_with_nucleo: Module3D = center_with_nucleo_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, center_exterior, "Tan", None, [])
 
         # Create *ne_pcb_chunk* and update its associated PCB:
         ne_pcb_chunk: PCBChunk = PCBChunk.join("Master NE", [
@@ -4286,7 +4319,7 @@ class MasterBoard:
         ])
         ne_kicad_pcb_path: Path = master_board_directory / "ne.kicad_pcb"
         ne_module: Module3D = ne_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, pcb_dz, ne_exterior, "Green", ne_kicad_pcb_path, [])
+            scad_program, pcb_origin, pcb_dz, ne_exterior, "YellowGreen", ne_kicad_pcb_path, [])
 
         nw_pcb_chunk: PCBChunk = PCBChunk.join("Master NW", [
             nw_sonars_pcb_chunk,
@@ -4305,34 +4338,70 @@ class MasterBoard:
         sw_module: Module3D = sw_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz, sw_exterior, "Red", sw_kicad_pcb_path, [])
 
-        # Create *master_pcb_chunk* and upate its associated PCB:
-        master_pcb_chunk: PCBChunk = PCBChunk.join("Master", [
-            center_pcb_chunk,
+        # Create *master_with_nucleo_pcb_chunk* and *master_module_with_nucleo*
+        master_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Without Nucleo", [
+            center_with_nucleo_pcb_chunk,
             ne_pcb_chunk,
             nw_pcb_chunk,
             se_pcb_chunk,
-            sw_pcb_chunk])
-        master_module: Module3D = master_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, pcb_dz, master_exterior,
-            "Orange", master_kicad_pcb_path, [])
+            sw_pcb_chunk
+        ])
+        master_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master", [
+            center_without_nucleo_pcb_chunk,
+            ne_pcb_chunk,
+            nw_pcb_chunk,
+            se_pcb_chunk,
+            sw_pcb_chunk
+        ])
+        master_module_with_nucleo: Module3D = master_with_nucleo_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, master_exterior, "Orange", master_kicad_pcb_path, [])
+        master_module_without_nucleo: Module3D = master_without_nucleo_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, master_exterior, "Orange", None, [])
+
+        # Create *no_nucleo_pcb_chunk* and *no_nucleo_module* which are used to show the
+        # assembly sequence:
+        # not_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Not With Nucleo", [
+        #     no_nucleo_pcb_chunk,
+        #     ne_pcb_chunk,
+        #     nw_pcb_chunk,
+        #     se_pcb_chunk,
+        #     sw_pcb_chunk,
+        # ])
+        # not_with_nucleo_module: Module3D = not_with_nucleo_pcb_chunk.pcb_update(
+        #     scad_program, pcb_origin, pcb_dz, master_exterior,
+        #     "Orange", None, [])
 
         # Create a union of the 5 sub-boards:
-        union_module: Module3D = Module3D("Master Union", [
-            center_module.use_module_get(),
+        union_with_nucleo_module: Module3D = Module3D("Master With Nucleo Union", [
+            center_module_with_nucleo.use_module_get(),
             ne_module.use_module_get(),
             nw_module.use_module_get(),
             se_module.use_module_get(),
             sw_module.use_module_get(),
         ])
-        scad_program.append(union_module)
-        scad_program.if3d.name_match_append("master_union_board", union_module, ["Master Union"])
+        union_without_nucleo_module: Module3D = Module3D("Master Without Nucleo Union", [
+            center_module_without_nucleo.use_module_get(),
+            ne_module.use_module_get(),
+            nw_module.use_module_get(),
+            se_module.use_module_get(),
+            sw_module.use_module_get(),
+        ])
+
+        # Create an entry for the `scad_show` program:
+        scad_program.append(union_with_nucleo_module)
+        scad_program.if3d.name_match_append(
+            "master_union_board", union_with_nucleo_module, ["Master Union"])
 
         # Stuff some values into *master_board* (i.e. *self*):
         # master_board: MasterBoard = self
-        self.master_module: Module3D = master_module
-        self.master_pcb_chunk: PCBChunk = master_pcb_chunk
-        self.center_module: Module3D = center_module
-        self.center_pcb_chunk: PCBChunk = center_pcb_chunk
+        self.master_module_with_nucleo: Module3D = master_module_with_nucleo
+        self.master_module_without_nucleo: Module3D = master_module_without_nucleo
+        self.master_with_nucleo_pcb_chunk: PCBChunk = master_with_nucleo_pcb_chunk
+        self.master_without_nucleo_pcb_chunk: PCBChunk = master_without_nucleo_pcb_chunk
+        self.center_module_with_nucleo: Module3D = center_module_with_nucleo
+        self.center_module_without__nucleo: Module3D = center_module_without_nucleo
+        self.center_with_nucleo_pcb_chunk: PCBChunk = center_with_nucleo_pcb_chunk
+        self.center_without_nucleo_pcb_chunk: PCBChunk = center_without_nucleo_pcb_chunk
         self.ne_module: Module3D = ne_module
         self.ne_pcb_chunk: PCBChunk = ne_pcb_chunk
         self.nw_module: Module3D = nw_module
@@ -4341,7 +4410,8 @@ class MasterBoard:
         self.se_pcb_chunk: PCBChunk = se_pcb_chunk
         self.sw_module: Module3D = sw_module
         self.sw_pcb_chunk: PCBChunk = sw_pcb_chunk
-        self.union_module: Module3D = union_module
+        self.union_with_nucleo_module: Module3D = union_with_nucleo_module
+        self.union_without_nucleo_module: Module3D = union_without_nucleo_module
 
         # Wrap up any requested *tracing*:
         if tracing:
@@ -4539,11 +4609,17 @@ class MasterBoard:
 
         # The remaining variable are defined in alphabetical order:
         arm_well_dx: float = 15.0  # mm (trail and error)
-        arm_well_north: float = -50.0  # mm (trail and error)
+        arm_well_north: float = -53.0  # mm (trail and error)
         # bantam_dx: float = 5 * 25.4  # mm (size of Bantam Labs PCB blank)
         bantam_dy: float = 4 * 25.4  # mm (size of Bantam Labs PCB blank)
-        center_pcb_north: float = wheel_well_dy / 2.0 + 3.0  # mm (trail and error)
+        center_pcb_north: float = wheel_well_dy / 2.0 + 1.5  # mm (trail and error)
         center_pcb_south: float = center_pcb_north - (bantam_dy - 4.0)  # mm (trail and error)
+        center_pcb_dy: float = abs(center_pcb_north - center_pcb_south)
+        inch2mm: float = 25.40
+        center_pcb_dy_inch: float = center_pcb_dy / inch2mm
+        # print(f"center_pcb_dx:{center_pcb_dy_inch:.2f}in")
+        assert center_pcb_dy_inch <= 4.0, (f"Center PCB height(={center_pcb_dy_inch}in) "
+                                           "is too wide for Bantum PCB Mill")
         corner_radius: float = 1.5  # mm
         # print(f"center_pcb_south:{center_pcb_south}")
         # print(f"center_pcb_north:{center_pcb_north}")
@@ -4832,38 +4908,38 @@ class MasterBoard:
         sonar_poses: List[Tuple[str, str, List[PCBChunk], List[Reference], str,
                                 float, float, float, bool]] = [
             ("Rear Left Sonar", "high", ne_pcb_chunks, ne_references, "CN60",
-             (90.0 - 1.8 * 22.5) * degrees2radians,               # Trial and error to fit iniside
+             (90.0 - 2 * 22.5 + 1.0) * degrees2radians,    # Trial and error to fit on PCB
              (90.0 + 0.5 * 22.5) * degrees2radians,
-             2.0 * 2.54, True),  # robot perimeter and miss spacer.
+             2.8 * 2.54, True),  # robot perimeter and miss spacer.
             ("Rear Right Sonar", "high", nw_pcb_chunks, nw_references, "CN70",
-             (90.0 + 1.8 * 22.5) * degrees2radians,               # Same Trial and error as above.
+             (90.0 + 2 * 22.5 - 1.0) * degrees2radians,    # Same Trial and error as above
              (90.0 - 0.5 * 22.5) * degrees2radians,
-             2.0 * 2.540, True),
+             2.8 * 2.540, True),
             ("Front Right Top Sonar", "normal",
              center_pcb_chunks, center_references, "CN50",
-             (270.0 - 2 * 22.5 + 2.5) * degrees2radians,
+             (270.0 - 2 * 22.5 + 10.5) * degrees2radians,  # Trail and error
              (270.0 - 2 * 22.5) * degrees2radians,
-             1.5 * 2.54, True),
+             0.0 * 2.54, True),
             ("Front Right Bottom Sonar", "low",
              center_pcb_chunks, center_references, "CN51",
-             (270.0 - 1 * 22.5 - 2.5) * degrees2radians,
+             (270.0 - 1 * 22.5 - 5.5) * degrees2radians,   # Trail and error
              (270.0 - 1 * 22.5) * degrees2radians,
-             1.5 * 2.54, False),
+             2.5 * 2.54, False),
             ("Front Center Sonar", "low",
              center_pcb_chunks, center_references, "CN52",
-             (270.0) * degrees2radians,
-             (270.0) * degrees2radians,
-             23.0, True),
-            ("Front Left Center Sonar", "low",
+             (270.0) * degrees2radians,                    # Rim Angle
+             (270.0) * degrees2radians,                    # Beam Angle
+             25.0, True),
+            ("Front Left Bottom Sonar", "low",
              center_pcb_chunks, center_references, "CN53",
-             (270.0 + 1 * 22.5 + 2.5) * degrees2radians,
+             (270.0 + 1 * 22.5 + 5.5) * degrees2radians,   # Trail and error
              (270.0 + 1 * 22.5) * degrees2radians,
-             1.5 * 2.54, False),
-            ("Front Right Center Sonar", "normal",
+             2.5 * 2.54, False),
+            ("Front Left Top Sonar", "normal",
              center_pcb_chunks, center_references, "CN54",
-             (270.0 + 2 * 22.5 - 2.5) * degrees2radians,
+             (270.0 + 2 * 22.5 - 10.5) * degrees2radians,  # Trail and error
              (270.0 + 2 * 22.5) * degrees2radians,
-             1.5 * 2.54, True),
+             0.0 * 2.54, True),
         ]
 
         # Now create *translated_hcsr04_f1x1lp_pcb_chunk*:
@@ -5614,6 +5690,7 @@ class RaspberryPi4:
         ethernet_slot: SimplePolygon = Square(
             "Ethernet Heat Sink Slot", ethernet_dx, ethernet_dy, ethernet_center,
             corner_radius=1.0, corner_count=5)
+        ethernet_slot = ethernet_slot
 
         # Create the *usb_slot*:
         usb_dx: float = abs(usb_ne2d.x - usb_sw2d.x)
@@ -5622,10 +5699,26 @@ class RaspberryPi4:
         usb_slot: SimplePolygon = Square(
             "Usb Heat Sink Slot", usb_dx, usb_dy, usb_center,
             corner_radius=1.0, corner_count=5)
+        usb_slot = usb_slot  # Ignore for now.
+
+        # Combined Ethernet/USB heat slot determined by trial and error.
+        ethernet_usb_dx: float = 7.0
+        ethernet_usb_dy: float = 23.0
+        ethernet_usb_center: P2D = P2D(23.0, 2.5)  # (Y, -X) in master board coordinate state
+        ethernet_usb_slot: SimplePolygon = Square(
+            "Ethernet USB Heat Sink Slot", ethernet_usb_dx, ethernet_usb_dy, ethernet_usb_center,
+            corner_radius=1.0, corner_count=5)
 
         # Now create the *raspi4b_slots_pcb_chunk*:
         cuts: List[SimplePolygon] = [
-            camera_slot, lcd_slot, processor_slot, sdram_slot, ethernet_slot, usb_slot]
+            camera_slot,
+            lcd_slot,
+            processor_slot,
+            sdram_slot,
+            # ethernet_slot,
+            # usb_slot,
+            ethernet_usb_slot,
+        ]
         raspi4b_slots_pcb_chunk: PCBChunk = PCBChunk("Raspi4B Slots", [], [], cuts=cuts)
 
         raspi4b_mate_pcb_chunk: PCBChunk = PCBChunk.join("RASPI_F2X20", [
@@ -8040,21 +8133,21 @@ class RomiWheelAssembly:
         romi_motor: RomiMotor = RomiMotor(scad_program, base_dxf)
         romi_magnet: RomiMagnet = RomiMagnet(scad_program, base_dxf)
 
-        y_axis: P3D = P3D(0.0, 1.0, 0.0)
-        degrees90: float = pi / 2.0
-        encoder_use_module: UseModule3D = encoder.module.use_module_get()
-        encoder_translate: P3D = encoder.translate
-        rotated_encoder: Rotate3D = Rotate3D("Rotated Encoder", encoder_use_module,
-                                             degrees90, y_axis)
-        translated_encoder: Translate3D = Translate3D("Translated Encoder",
-                                                      rotated_encoder, encoder_translate)
+        # y_axis: P3D = P3D(0.0, 1.0, 0.0)
+        # degrees90: float = pi / 2.0
+        # encoder_use_module: UseModule3D = encoder.module.use_module_get()
+        # encoder_translate: P3D = encoder.translate
+        # rotated_encoder: Rotate3D = Rotate3D("Rotated Encoder", encoder_use_module,
+        #                                      degrees90, y_axis)
+        # translated_encoder: Translate3D = Translate3D("Translated Encoder",
+        #                                               rotated_encoder, encoder_translate)
 
         # Construct *module*, append to *scad_program*, and store into *rom_wheel_assembly*
         # (i.e. *self*):
         module = Module3D("Romi Wheel Assembly Module", [
             romi_motor.module.use_module_get(),
             romi_magnet.module.use_module_get(),
-            translated_encoder,
+            # translated_encoder,
         ])
 
         scad_program.append(module)
@@ -8284,7 +8377,6 @@ class STLink:
         cn1_bottom_y: float = pcb_dy / 2.0 - 4.00  # Calipers
         cn1_top_y: float = cn1_bottom_y + 5.36 + 3.0  # Extra large to poke through PCB
         cn1_dy: float = abs(cn1_top_y - cn1_bottom_y)
-        print(f"cn1_dy:{cn1_dy:.2f}")
         cn1_dz: float = 2.75
         cn1_center_x: float = pcb_dx / 2.0 - 21.00  # Calipers
         cn1_center_y: float = cn1_bottom_y + cn1_dy / 2.0
