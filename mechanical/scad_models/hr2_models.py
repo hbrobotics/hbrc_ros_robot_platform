@@ -36,7 +36,7 @@ import os
 import time
 from pathlib import Path
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
-from math import asin, atan2, cos, degrees, nan, pi, sin, sqrt
+from math import asin, atan2, cos, degrees, nan, pi, radians, sin, sqrt
 
 # Can not do this at the top level since it forms a circular import dependency loop:
 # from scad_models.kicad import Footprint, KicadPCB
@@ -879,6 +879,84 @@ class PadsGroup:
         for pad in pads:
             new_pads_group.insert(pad.reposition(flags, center, rotate, translate, pads_base))
         return new_pads_group
+
+
+# LED:
+class LED:
+    """Represents a right angle LED."""
+
+    # LED.__init__():
+    def __init__(self, name: str, scad_program: "ScadProgram", color: str = "LightGreen") -> None:
+        """Initialize a right angle LED."""
+        # Mfg Part #: TLPRG5600  Digi-Key part #: TLPG5600-ND
+        # Points forward along the +X axis direction.
+
+        # Create the LED *base*:
+        base_dx: float = 1.7  # mm
+        base_dy: float = 4.8  # mm
+        base_dz: float = 4.5  # mm
+        base: Scad3D = Cube(
+            "LED Base", base_dx, base_dy, base_dz, center=P3D(0.0, 0.0, base_dz / 2.0))
+
+        # Create the LED *optic*:
+        optic_dx: float = 4.0  # mm
+        optic_diameter: float = 2.0 * 1.75  # mm
+        optic_start: P3D = P3D(base_dx / 2.0,           0.0, base_dz / 2.0)
+        optic_end: P3D = P3D(-base_dx / 2.0 + optic_dx, 0.0, base_dz / 2.0)
+        optic: Scad3D = Cylinder("LED Optic", optic_diameter, optic_start, optic_end, 16)
+        print(f"optic_start:{optic_start} optic_end:{optic_end}")
+
+        # Create *led_union* and *led_color*:
+        led_union: Union3D = Union3D("LED Union", [base, optic])
+        led_color: Color = Color("LED Color", led_union, color)
+
+        # Create the pins:
+        pin_dx: float = 0.4  # mm
+        pin_dy: float = 0.45  # mm
+        pin_dz: float = 1.6 + .24  # mm
+        pin_pitch: float = 2.54  # mm
+        pin: Cube = Cube("LED Pin", pin_dx, pin_dy, pin_dz, center=P3D(0.0, 0.0, -pin_dz / 2.0))
+        colored_pin: Color = Color("Colored LED Pin", pin, "Gold")
+        positive_pin_position2d: P2D = P2D(0.0, -pin_pitch / 2.0)
+        positive_pin_position3d: P3D = P3D(0.0, -pin_pitch / 2.0, 0.0)
+        negative_pin_position2d: P2D = P2D(0.0, pin_pitch / 2.0)
+        negative_pin_position3d: P3D = P3D(0.0, pin_pitch / 2.0, 0.0)
+        pin1: Translate3D = Translate3D("LED +", colored_pin, positive_pin_position3d)
+        pin2: Translate3D = Translate3D("LED -", colored_pin, negative_pin_position3d)
+
+        # Create the final *led_module* and stuff it into *scad_program*:
+        led_module: Module3D = Module3D("LED", [led_color, pin1, pin2])
+        scad_program.append(led_module)
+        scad_program.if3d.name_match_append("LED", led_module, ["LED"])
+        led_use_module: UseModule3D = led_module.use_module_get()
+
+        # Create the *led_pads*:
+        pad_diameter: float = 1.80  # mm   (Guess for now)
+        pad_drill: float = max(pin_dx, pin_dy) + 0.20  # mm (a little extra pin clearance)
+        positive_pad: Pad = Pad("+", pad_diameter, pad_diameter, pad_drill, positive_pin_position2d)
+        negative_pad: Pad = Pad("-", pad_diameter, pad_diameter, pad_drill, negative_pin_position2d)
+        led_pads: List[Pad] = [positive_pad, negative_pad]
+
+        # Create the *led_artwork*:
+        led_outline: SimplePolygon = Square("LED Outline", base_dx, base_dy)
+        plus_diameter: float = 2.54  # mm
+        plus_x_offset: P2D = P2D(plus_diameter / 2.0, 0)
+        plus_y_offset: P2D = P2D(0, plus_diameter / 2.0)
+        plus_center: P2D = P2D(0.0, base_dy / 2.0 - 1.5 * plus_diameter)  # 1.5 = trial & error
+        plus_horizontal: SimplePolygon = SimplePolygon(
+            "Led Plus Horizontal", [plus_center - plus_x_offset, plus_center + plus_x_offset])
+        plus_vertical: SimplePolygon = SimplePolygon(
+            "Led Plus vertical", [plus_center - plus_y_offset, plus_center + plus_y_offset])
+        led_artwork: List[SimplePolygon] = [led_outline, plus_horizontal, plus_vertical]
+
+        # Create the *led_pcb_chunk*:
+        led_pcb_chunk: PCBChunk = PCBChunk(
+            f"{name} LED", led_pads, [led_use_module], front_artworks=led_artwork)
+
+        # Stuff everything into *led* (i.el *self*).
+        # led: LED = self
+        self.module: Module3D = led_module
+        self.pcb_chunk: PCBChunk = led_pcb_chunk
 
 
 # PCB:
@@ -4192,6 +4270,13 @@ class MasterBoard:
         center_sonars_pcb_chunk, ne_sonars_pcb_chunk, nw_sonars_pcb_chunk = (
             master_board.sonars_install(hcsr04, connectors, tracing=next_tracing))
 
+        ne_leds_pcb_chunk: PCBChunk
+        nw_leds_pcb_chunk: PCBChunk
+        se_leds_pcb_chunk: PCBChunk
+        sw_leds_pcb_chunk: PCBChunk
+        ne_leds_pcb_chunk, nw_leds_pcb_chunk, se_leds_pcb_chunk, sw_leds_pcb_chunk = (
+            master_board.leds_install(scad_program))
+
         # This is where we *st_link_use_modle* and translate it to the desired location:
         # st_link_use_module: UseModule3D = st_link.st_adapter_module.use_module_get()
         # translated_st_link: Scad3D = Translate3D(
@@ -4319,6 +4404,7 @@ class MasterBoard:
 
         # Create *ne_pcb_chunk* and update its associated PCB:
         ne_pcb_chunk: PCBChunk = PCBChunk.join("Master NE", [
+            ne_leds_pcb_chunk,
             ne_spacer_pcb_chunk,
             ne_sonars_pcb_chunk,
         ])
@@ -4327,6 +4413,7 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, ne_exterior, "YellowGreen", ne_kicad_pcb_path, [])
 
         nw_pcb_chunk: PCBChunk = PCBChunk.join("Master NW", [
+            nw_leds_pcb_chunk,
             nw_spacer_pcb_chunk,
             nw_sonars_pcb_chunk,
         ])
@@ -4334,12 +4421,16 @@ class MasterBoard:
         nw_module: Module3D = nw_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz, nw_exterior, "Orange", nw_kicad_pcb_path, [])
 
-        se_pcb_chunk: PCBChunk = PCBChunk.join("Master SE", [])
+        se_pcb_chunk: PCBChunk = PCBChunk.join("Master SE", [
+            se_leds_pcb_chunk,
+        ])
         se_kicad_pcb_path: Path = master_board_directory / "se.kicad_pcb"
         se_module: Module3D = se_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz, se_exterior, "Purple", se_kicad_pcb_path, [])
 
-        sw_pcb_chunk: PCBChunk = PCBChunk.join("Master SW", [])
+        sw_pcb_chunk: PCBChunk = PCBChunk.join("Master SW", [
+            sw_leds_pcb_chunk,
+        ])
         sw_kicad_pcb_path: Path = master_board_directory / "sw.kicad_pcb"
         sw_module: Module3D = sw_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz, sw_exterior, "Red", sw_kicad_pcb_path, [])
@@ -4826,6 +4917,65 @@ class MasterBoard:
 
         # Return the resulting exterior *SimplePolygon*'s:
         return master_exterior, center_exterior, ne_exterior, nw_exterior, se_exterior, sw_exterior
+
+    # MasterBoard.leds_install():
+    def leds_install(self,
+                     scad_program: ScadProgram) -> Tuple[PCBChunk, PCBChunk, PCBChunk, PCBChunk]:
+        """Install the LEDs."""
+        led: LED = LED("Led", scad_program)
+        led_pcb_chunk: PCBChunk = led.pcb_chunk
+
+        # Define *led_positions* which specifies the locations of all of the LED's:
+        ne_led_pcb_chunks: List[PCBChunk] = []
+        nw_led_pcb_chunks: List[PCBChunk] = []
+        se_led_pcb_chunks: List[PCBChunk] = []
+        sw_led_pcb_chunks: List[PCBChunk] = []
+        n_pitch_angle: float = 16.0  # degrees
+        n_center_offset: float = 43.0  # degrees
+        ne_center_angle: float = 90.0 - n_center_offset  # degrees
+        nw_center_angle: float = 90.0 + n_center_offset  # degrees
+        s_pitch_angle: float = 13.0  # degrees
+        s_center_offset: float = 34.0  # degrees
+        sw_center_angle: float = 270.0 - s_center_offset  # degrees
+        se_center_angle: float = 270.0 + s_center_offset  # degrees
+        led_positions: List[Tuple[str, float, float, List[PCBChunk]]] = [
+            ("NE LED1", radians(ne_center_angle - n_pitch_angle), 0.0, ne_led_pcb_chunks),
+            ("NE LED2", radians(ne_center_angle), 0.0, ne_led_pcb_chunks),
+            ("NE LED3", radians(ne_center_angle + n_pitch_angle), 0.0, ne_led_pcb_chunks),
+            ("NW LED3", radians(nw_center_angle - n_pitch_angle), 0.0, nw_led_pcb_chunks),
+            ("NW LED2", radians(nw_center_angle), 0.0, nw_led_pcb_chunks),
+            ("NW LED1", radians(nw_center_angle + n_pitch_angle), 0.0, nw_led_pcb_chunks),
+            ("SW LED1", radians(sw_center_angle - 2.0 * s_pitch_angle), 0.0, sw_led_pcb_chunks),
+            ("SW LED2", radians(sw_center_angle - 1.0 * s_pitch_angle), 0.0, sw_led_pcb_chunks),
+            ("SW LED3", radians(sw_center_angle), 0.0, sw_led_pcb_chunks),
+            ("SW LED4", radians(sw_center_angle + 1.0 * s_pitch_angle), 0.0, sw_led_pcb_chunks),
+            ("SW LED5", radians(sw_center_angle + 2.0 * s_pitch_angle), 0.0, sw_led_pcb_chunks),
+            ("SE LED1", radians(se_center_angle - 2.0 * s_pitch_angle), 0.0, se_led_pcb_chunks),
+            ("SE LED2", radians(se_center_angle - 1.0 * s_pitch_angle), 0.0, se_led_pcb_chunks),
+            ("SE LED3", radians(se_center_angle), 0.0, se_led_pcb_chunks),
+            ("SE LED4", radians(se_center_angle + 1.0 * s_pitch_angle), 0.0, se_led_pcb_chunks),
+            ("SE LED5", radians(se_center_angle + 2.0 * s_pitch_angle), 0.0, se_led_pcb_chunks),
+        ]
+        origin2d: P2D = P2D(0.0, 0.0)
+        led_radius: float = 78.0  # mm  Trial and error
+        led_name: str
+        led_angle: float  # radians
+        led_offset: float  # mm
+        pcb_chunks: List[PCBChunk] = []
+        for led_name, led_angle, led_offset, pcb_chunks in led_positions:
+            x: float = (led_radius - led_offset) * cos(led_angle)
+            y: float = (led_radius - led_offset) * sin(led_angle)
+            led_position: P2D = P2D(x, y)
+            repositioned_led_pcb_chunk: PCBChunk = led_pcb_chunk.reposition(
+                origin2d, led_angle, led_position)
+            pcb_chunks.append(repositioned_led_pcb_chunk)
+
+        # Create the final *PCBChunk*'s and return.
+        ne_led_pcb_chunk: PCBChunk = PCBChunk.join("NE LED's", ne_led_pcb_chunks)
+        nw_led_pcb_chunk: PCBChunk = PCBChunk.join("NW LED's", nw_led_pcb_chunks)
+        se_led_pcb_chunk: PCBChunk = PCBChunk.join("SE LED's", se_led_pcb_chunks)
+        sw_led_pcb_chunk: PCBChunk = PCBChunk.join("SW LED's", sw_led_pcb_chunks)
+        return ne_led_pcb_chunk, nw_led_pcb_chunk, se_led_pcb_chunk, sw_led_pcb_chunk
 
     # MasterBoard.sonar_modules_create():
     def sonar_modules_create(self, scad_program: ScadProgram,
