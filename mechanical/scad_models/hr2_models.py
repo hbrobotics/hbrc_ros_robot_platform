@@ -140,6 +140,16 @@ class Connectors:
             insulation_color="Fuchsia",
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
+        # Common 1x8 connectors:
+        m1x8: RectangularConnector = RectangularConnector(
+            "M1x8", scad_program, 1, 8, pins_dx_dy, pcb_pin_height,
+            insulation_color="Maroon", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x8: RectangularConnector = RectangularConnector(
+            "F1x8", scad_program, 1, 8, female_insulation_height, pcb_pin_height,
+            insulation_color="Fuchsia",
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
         # Common 2x2 male jumper:
         m2x2: RectangularConnector = RectangularConnector(
             "M2x2", scad_program, 2, 2, pins_dx_dy, pcb_pin_height,
@@ -213,6 +223,8 @@ class Connectors:
         self.f1x5ra: RectangularConnector = f1x5ra
         self.m1x6: RectangularConnector = m1x6
         self.f1x6: RectangularConnector = f1x6
+        self.m1x8: RectangularConnector = m1x8
+        self.f1x8: RectangularConnector = f1x8
         self.m2x2: RectangularConnector = m2x2
         self.m2x20: RectangularConnector = m2x20
         self.f2x20: RectangularConnector = f2x20
@@ -904,7 +916,6 @@ class LED:
         optic_start: P3D = P3D(base_dx / 2.0,           0.0, base_dz / 2.0)
         optic_end: P3D = P3D(-base_dx / 2.0 + optic_dx, 0.0, base_dz / 2.0)
         optic: Scad3D = Cylinder("LED Optic", optic_diameter, optic_start, optic_end, 16)
-        print(f"optic_start:{optic_start} optic_end:{optic_end}")
 
         # Create *led_union* and *led_color*:
         led_union: Union3D = Union3D("LED Union", [base, optic])
@@ -3636,6 +3647,17 @@ class MasterBoard:
             raspi4b_mate_references_pcb_chunk,
         ])
 
+        # Create the mikrobus_small_pcb_chunk:
+        mikrobus_small: MikroBus = MikroBus(scad_program, connectors, "S")
+        mikrobus_small_pcb_chunk: PCBChunk = mikrobus_small.pcb_chunk
+        mikrobus_small_pcb_chunk = mikrobus_small_pcb_chunk
+        mikrobus_medium: MikroBus = MikroBus(scad_program, connectors, "M")
+        mikrobus_medium_pcb_chunk: PCBChunk = mikrobus_medium.pcb_chunk
+        mikrobus_medium_pcb_chunk = mikrobus_medium_pcb_chunk
+        mikrobus_large: MikroBus = MikroBus(scad_program, connectors, "L")
+        mikrobus_large_pcb_chunk: PCBChunk = mikrobus_large.pcb_chunk
+        mikrobus_large_pcb_chunk = mikrobus_large_pcb_chunk
+
         # Create *center_without_nucleo_pcb_chunk* that does not contain the the Nucleo-14:
         center_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center Without Nucleo", [
             center_spacer_pcb_chunk,
@@ -4441,6 +4463,93 @@ class MasterBoard:
         ne_spacers_pcb_chunk: PCBChunk = PCBChunk("NE Spacers", ne_pads, ne_scads)
         nw_spacers_pcb_chunk: PCBChunk = PCBChunk("NW Spacers", nw_pads, nw_scads)
         return ne_spacers_pcb_chunk, nw_spacers_pcb_chunk, center_spacers_pcb_chunk
+
+
+# MikroBus:
+class MikroBus:
+    """Represents a Mikrobus Module."""
+
+    # Mikrobus.__init__():
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors, size: str) -> None:
+        """Initialize a Mikrobus module."""
+        # Dimensions from spec. sheet:
+        notch_dx_dy: float = 2.54  # mm
+        pcb_dx: float = 25.4  # mm
+        pcb_dy_short: float = 28.6  # mm
+        pcb_dy_medium: float = 42.9  # mm
+        pcb_dy_long: float = 57.15  # mm
+        pcb_dz: float = 1.6  # mm
+        connector_pitch_dx: float = 22.86  # mm
+
+        # Determine *pcb_dy*:
+        pcb_dy_table: Dict[str, float] = {
+            "S": pcb_dy_short,
+            "M": pcb_dy_medium,
+            "L": pcb_dy_long,
+        }
+        assert size in pcb_dy_table, f"Mikro bus {size} must be one of 'S', 'M', 'L'"
+        pcb_dy: float = pcb_dy_table[size]
+
+        # Create the *mikrobus_exteriror*:
+        pcb_east_x: float = pcb_dx / 2.0
+        pcb_west_x: float = -pcb_east_x
+        pcb_south_y: float = -4.0 * 2.54 - notch_dx_dy
+        pcb_north_y: float = pcb_south_y + pcb_dy
+        # Origin is in the center of the connectors:
+        mikrobus_exterior: SimplePolygon = SimplePolygon(f"Mirkobus {size} Exterior", [
+            P2D(pcb_east_x, pcb_north_y),
+            P2D(pcb_west_x, pcb_north_y),
+            P2D(pcb_west_x, pcb_south_y),
+            P2D(pcb_east_x - notch_dx_dy, pcb_south_y),
+            P2D(pcb_east_x, pcb_south_y + notch_dx_dy),
+        ], lock=True)
+
+        origin2d: P2D = P2D(0.0, 0.0)
+        degrees90: float = pi / 2.0
+        m1x8_west_pcb_chunk: PCBChunk = (
+            connectors.m1x8.pcb_chunk.scads_x_flip().sides_swap().
+            reposition(origin2d, degrees90, P2D(-connector_pitch_dx / 2.0, 0.0))
+        )
+        m1x8_east_pcb_chunk: PCBChunk = (
+            connectors.m1x8.pcb_chunk.scads_x_flip().sides_swap().pads_rebase(8).
+            reposition(origin2d, -degrees90, P2D(connector_pitch_dx / 2.0, 0.0))
+        )
+
+        mikrobus_pcb_chunk: PCBChunk = PCBChunk.join(f"MikroBus {size}", [
+            m1x8_west_pcb_chunk,
+            m1x8_east_pcb_chunk,
+        ])
+        mikrobus_module: Module3D = mikrobus_pcb_chunk.pcb_update(
+            scad_program, origin2d, pcb_dz, mikrobus_exterior, "LightGreen", None, [])
+
+        f1x8_west_pcb_chunk: PCBChunk = (
+            connectors.f1x8.pcb_chunk.
+            reposition(origin2d, degrees90, P2D(-connector_pitch_dx / 2.0, 0.0))
+        )
+        f1x8_east_pcb_chunk: PCBChunk = (
+            connectors.f1x8.pcb_chunk.pads_rebase(8).
+            reposition(origin2d, -degrees90, P2D(connector_pitch_dx / 2.0, 0.0))
+        )
+        translate_position: P3D = P3D(0.0, 0.0, 8.70)  # Trail and error
+        translated_mikrobus_scad: Scad3D = Translate3D(
+            "Translated MikroBus Scad", mikrobus_module.use_module_get(), translate_position)
+        translated_mikrobus_pcb_chunk: PCBChunk = PCBChunk(
+            f"Translated MikroBus {size}", [], [translated_mikrobus_scad])
+
+        mikrobus_mate_pcb_chunk: PCBChunk = PCBChunk.join(f"MikroBus {size} Mate", [
+            f1x8_west_pcb_chunk,
+            f1x8_east_pcb_chunk,
+            translated_mikrobus_pcb_chunk,
+        ])
+        mikrobus_mate_module: Module3D = mikrobus_mate_pcb_chunk.pcb_update(
+            scad_program, origin2d, pcb_dz, mikrobus_exterior, "LightGreen", None, [])
+
+        # Stuff some value into the mikrobus object (i.e. *self*):
+        # mikrobus: Mikrobus = self
+        self.mate_module: Module3D = mikrobus_mate_module
+        self.mate_pcb_chunk: PCBChunk = mikrobus_mate_pcb_chunk
+        self.module: Module3D = mikrobus_module
+        self.pcb_chunk: PCBChunk = mikrobus_pcb_chunk
 
 
 # PiBoard:

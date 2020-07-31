@@ -93,6 +93,24 @@ case "$1" in
     "master_without_nucleo_board")
 	scad "master_without_nucleo_board"
 	;;
+    "mikrobus_l_board")
+	scad "mikrobus_l_board"
+	;;
+    "mikrobus_l_mate_board")
+	scad "mikrobus_l_mate_board"
+	;;
+    "mikrobus_m_board")
+	scad "mikrobus_m_board"
+	;;
+    "mikrobus_m_mate_board")
+	scad "mikrobus_m_mate_board"
+	;;
+    "mikrobus_s_board")
+	scad "mikrobus_s_board"
+	;;
+    "mikrobus_s_mate_board")
+	scad "mikrobus_s_mate_board"
+	;;
     "nucleo_144_board")
 	scad "nucleo_144_board"
 	;;
@@ -159,6 +177,12 @@ case "$1" in
 	echo "master_sw_board"
 	echo "master_union_board"
 	echo "master_without_nucleo_board"
+	echo "mikrobus_l_board"
+	echo "mikrobus_l_mate_board"
+	echo "mikrobus_m_board"
+	echo "mikrobus_m_mate_board"
+	echo "mikrobus_s_board"
+	echo "mikrobus_s_mate_board"
 	echo "nucleo_144_board"
 	echo "raspi_f2x20_board"
 	echo "romi_base"
