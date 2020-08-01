@@ -153,6 +153,12 @@ case "$1" in
     "st_mate_board")
 	scad "st_mate_board"
 	;;
+    "u3v70x_board")
+	scad "u3v70x_board"
+	;;
+    "u3v70xmate_board")
+	scad "u3v70xmate_board"
+	;;
     "wheel_assembly")
 	scad "wheel_assembly"
 	;;
@@ -197,6 +203,8 @@ case "$1" in
 	echo "st_adapter_board"
 	echo "st_link_board"
 	echo "st_mate_board"
+	echo "u3v70x_board"
+	echo "u3v70xmate_board"
 	echo "wheel_assembly"
 	;;
 esac
