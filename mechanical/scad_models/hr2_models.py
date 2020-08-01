@@ -2792,15 +2792,10 @@ class HR2BaseAssembly:
     """Represents the HR2 base with motor holders and spacers."""
 
     # HR2BaseAssembly.__init__():
-    def __init__(self, scad_program: ScadProgram, base_dxf: BaseDXF, connectors: Connectors,
+    def __init__(self, scad_program: ScadProgram, romi_base: "RomiBase", romi_motor_holder,
+                 connectors: Connectors, base_battery_top_z: float, base_top_z: float,
                  pi_board_z: float, master_board_z: float, arm_z: float) -> None:
         """Initialize a HR2BaseAssembly."""
-        # Grab some Z values via *base_dxf*:
-        base_battery_top_z: float = base_dxf.z_locate(-2.701374)
-        base_top_z: float = base_dxf.z_locate(-3.095083)
-
-        romi_base: RomiBase = RomiBase(scad_program, base_dxf)
-        romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program, base_dxf)
         west_romi_motor_holder: UseModule3D = romi_motor_holder.module.use_module_get()
         degrees180: float = pi
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
@@ -3093,6 +3088,10 @@ class HR2Robot:
         raspi4b: RaspberryPi4 = RaspberryPi4(scad_program, connectors, other_pi, pcb_origin)
         st_link: STLink = STLink(scad_program, connectors, pcb_origin)
 
+        # Create *romi_base* and *romi_motor_holder*:
+        romi_base: RomiBase = RomiBase(scad_program, base_dxf)
+        romi_motor_holder: RomiMotorHolder = RomiMotorHolder(scad_program, base_dxf)
+
         # Create the *nucleo144* before *master_board* so it can be passed in:
         degrees90: float = pi / 2.0
         nucleo_offset2d: P2D = P2D(pi_x + 8.5, pi_y - 0.75)  # Trial and error
@@ -3108,8 +3107,12 @@ class HR2Robot:
 
         # Create the *hr2_base_assembly* object that can accept the various PCB's and assemblies
         # that go on top of it:
-        hr2_base_assembly: HR2BaseAssembly = HR2BaseAssembly(scad_program, base_dxf, connectors,
-                                                             pi_board_z, master_board_z, arm_z)
+        # Grab some Z values via *base_dxf*:
+        base_battery_top_z: float = base_dxf.z_locate(-2.701374)
+        base_top_z: float = base_dxf.z_locate(-3.095083)
+        hr2_base_assembly: HR2BaseAssembly = HR2BaseAssembly(
+            scad_program, romi_base, romi_motor_holder, connectors, base_battery_top_z, base_top_z,
+            pi_board_z, master_board_z, arm_z)
         hr2_pi_assembly: HR2PiAssembly = HR2PiAssembly(scad_program, hr2_base_assembly,
                                                        connectors, raspi4b, other_pi, st_link,
                                                        pi_board_z, pi_offset2d, st_link_offset2d)
