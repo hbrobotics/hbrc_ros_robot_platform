@@ -124,10 +124,13 @@ class Connectors:
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
         # Common 1x5 connectors:
-        f1x5ra: RectangularConnector = RectangularConnector(
-            "F1x5RA", scad_program, 1, 5, female_insulation_height, pcb_pin_height,
+        m1x5: RectangularConnector = RectangularConnector(
+            "M1x5", scad_program, 1, 5, pins_dx_dy, pcb_pin_height,
+            insulation_color="Maroon", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f1x5: RectangularConnector = RectangularConnector(
+            "F1x5", scad_program, 1, 5, female_insulation_height, pcb_pin_height,
             insulation_color="Fuchsia",
-            right_angle_length=4.00,  # <=calipers / schematic=>6.00 + 0.127
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
         # Common 1x6 connectors:
@@ -220,7 +223,8 @@ class Connectors:
         self.m1x4ra: RectangularConnector = m1x4ra
         self.f1x4: RectangularConnector = f1x4
         self.f1x4h: RectangularConnector = f1x4h
-        self.f1x5ra: RectangularConnector = f1x5ra
+        self.m1x5: RectangularConnector = m1x5
+        self.f1x5: RectangularConnector = f1x5
         self.m1x6: RectangularConnector = m1x6
         self.f1x6: RectangularConnector = f1x6
         self.m1x8: RectangularConnector = m1x8
@@ -1146,7 +1150,7 @@ class PCBChunk:
         value: str = pcb_chunk.value
 
         # Create the *copied_pcb_chunk* and return it.
-        # (Note, PCB_Chunk always makes shallow copies of the lists):
+        # (Note, PCBChunk always makes shallow copies of the lists):
         copied_pcb_chunk: PCBChunk = PCBChunk(name, pads, front_scads,
                                               front_artworks=front_artworks, cuts=cuts,
                                               back_artworks=back_artworks, back_scads=back_scads,
@@ -2829,13 +2833,13 @@ class HR2BaseAssembly:
              base_battery_top_z, master_board_z, spacer_male_height),
             ("MasterBoard NW", "BATTERY: Upper Hole (0, 2)",
              base_battery_top_z, master_board_z, spacer_male_height),
-            # ("MasterBoard SE", "RIGHT: Misc Small Upper Right 90deg",
+            # ("MasterBoard SE1", "RIGHT: Misc Small Upper Right 90deg",
             #  base_top_z, master_board_z, 0.0),
-            # ("MasterBoard SW", "LEFT: Misc Small Upper Right 90deg",
+            # ("MasterBoard SW1", "LEFT: Misc Small Upper Right 90deg",
             #  base_top_z, master_board_z, 0.0),
-            ("MasterBoard SE", "RIGHT: Vector Hole 8",
+            ("MasterBoard SE2", "RIGHT: Vector Hole 8",
              base_top_z, master_board_z, 0.0),
-            ("MasterBoard SW", "LEFT: Vector Hole 8",
+            ("MasterBoard SW2", "LEFT: Vector Hole 8",
              base_top_z, master_board_z, 0.0),
         ]
         spacer_tuple: Tuple[str, str, float, float, float]
@@ -3091,7 +3095,7 @@ class HR2Robot:
 
         # Create the *nucleo144* before *master_board* so it can be passed in:
         degrees90: float = pi / 2.0
-        nucleo_offset2d: P2D = P2D(pi_x + 8.5, pi_y - 2.5)
+        nucleo_offset2d: P2D = P2D(pi_x + 8.5, pi_y - 0.75)  # Trial and error
         nucleo_rotate: float = -degrees90
         # nucleo_offset2d: P2D = P2D(pi_x - 8.5, pi_y - 1.0)
         # nucleo_rotate: float = degrees90
@@ -3504,9 +3508,7 @@ class MasterBoard:
             print(f"{tracing}=>MasterBoard.__init__(...)")
 
         # Define some PCB constants
-        # pcb_bottom_z: float = 0.0
         pcb_dz: float = 1.6
-        # pcb_top_z: float = pcb_bottom_z + pcb_dz
 
         # Create the various exterior *SimplePolygon*'s:
         master_exterior: SimplePolygon
@@ -3519,51 +3521,21 @@ class MasterBoard:
          sw_exterior) = master_board.exteriors_create(scad_program, pcb_dz)
 
         # Install various cut out slots, mount_holes and spacers:
-        # master_board.cut_holes_append(center_pcb, pi_offset)
         ne_spacer_pcb_chunk: PCBChunk
         nw_spacer_pcb_chunk: PCBChunk
         center_spacer_pcb_chunk: PCBChunk
-        # master_board_top_z: float = master_board_bottom_z + pcb_dz
         arm_spacer_dz: float = arm_z - master_board_bottom_z - pcb_dz
 
+        # Create the spacer *PCBChunk*'s:
         ne_spacer_pcb_chunk, nw_spacer_pcb_chunk, center_spacer_pcb_chunk = (
             master_board.spacer_mounts_create(scad_program, romi_base_keys,
                                               romi_expansion_plate_keys,
                                               0.0, arm_spacer_dz))
-        # ne_spacer_pcb_chunk = ne_spacer_pcb_chunk
-        # nw_spacer_pcb_chunk = nw_spacer_pcb_chunk
-        # center_spacer_pcb_chunk = center_spacer_pcb_chunk
 
         # Install the nucleo144 and Raspberry Pi connectors and mounting holes:
         origin2d: P2D = P2D(0.0, 0.0)
         degrees180: float = pi
         degrees90: float = degrees180 / 2.0
-        # center_pcb.pcb_place(nucleo144.pcb, {"morpho_mate", "arduino"}, "",
-        #                      origin2d, -degrees90, nucleo_offset)
-        # center_pcb.pcb_place(raspi4b.pcb, {"connector_mate"}, "",
-        #                      origin2d, degrees90, pi_offset)
-
-        # Install the two encoder connectors:
-        # encoder_offset: P2D = encoder.offset
-        # center_pcb.pcb_place(encoder.pcb, {"connectors_mate"},
-        #                      "West Encoder Connectors", origin2d, 0.0, encoder_offset)
-        # center_pcb.pcb_place(encoder.pcb, {"connectors_mate"},
-        #                      "East Encoder Connectors", origin2d, degrees180, -encoder_offset)
-
-        # center_pcb.pcb_place(st_link.pcb, {"connectors_mate"}, "b",
-        #                       origin2d, 0.0, st_link_offset)
-
-        # Create the *arm_spacers* and install the appropriate arm spacer mounting holes:
-        # arm_spacers: List[Scad3D] = master_board.arm_spacers_append(
-        #     scad_program, romi_expansion_plate_keys, center_pcb, ne_pcb, nw_pcb, pcb_top_z)
-
-        # Install the *nucleo144* mounting holes into *pcb_polygon* and create a list
-        # of *nucleo144_spacer*:
-        # Set *spacer_debug_dz* to non zero to show some gap space above and below the spacer:
-        # spacer_debug_dz: float = 0.0 + 0.250
-        # nucleo144_offset: P3D = nucleo144.offset
-        # spacer_height: float = abs(nucleo_board_z - pcb_top_z) - 2.0 * spacer_debug_dz
-        # nucleo144_spacers: List[Scad3D] = []
 
         # Create and install all of the sonars:
         hcsr04: HCSR04 = HCSR04(scad_program, connectors, pcb_origin)
@@ -3581,6 +3553,32 @@ class MasterBoard:
         sw_leds_pcb_chunk: PCBChunk
         ne_leds_pcb_chunk, nw_leds_pcb_chunk, se_leds_pcb_chunk, sw_leds_pcb_chunk = (
             master_board.leds_install(scad_program))
+
+        # Create the base MicroBus *PCBChunk*'s:
+        mikrobus_small: MikroBus = MikroBus(scad_program, connectors, "S")
+        mikrobus_small_pcb_chunk: PCBChunk = mikrobus_small.pcb_chunk
+        mikrobus_small_pcb_chunk = mikrobus_small_pcb_chunk
+        mikrobus_medium: MikroBus = MikroBus(scad_program, connectors, "M")
+        mikrobus_medium_pcb_chunk: PCBChunk = mikrobus_medium.pcb_chunk
+        mikrobus_medium_pcb_chunk = mikrobus_medium_pcb_chunk
+        mikrobus_large: MikroBus = MikroBus(scad_program, connectors, "L")
+        mikrobus_large_pcb_chunk: PCBChunk = mikrobus_large.pcb_chunk
+        mikrobus_large_pcb_chunk = mikrobus_large_pcb_chunk
+
+        # Create the MikroBus *PCBChunk*'s:
+        center_mikro_bus_chunk: PCBChunk
+        ne_mikrobus_pcb_chunk: PCBChunk
+        nw_mikrobus_pcb_chunk: PCBChunk
+        se_mikrobus_pcb_chunk: PCBChunk
+        sw_mikrobus_pcb_chunk: PCBChunk
+        center_mikrobus_pcb_chunk, ne_mikrobus_pcb_chunk, nw_mikrobus_pcb_chunk, \
+            se_mikrobus_pcb_chunk, sw_mikrobus_pcb_chunk = master_board.mikrobus_install(
+                mikrobus_small, mikrobus_medium, mikrobus_large)
+
+        # Create the *u3v70_9v_pcb_chunk*:
+        u3v70x: U3V70x = U3V70x(scad_program, 9.0, connectors)
+        u3v70x_9v_pcb_chunk: PCBChunk = (
+            u3v70x.mate_pcb_chunk.reposition(origin2d, 0.0, P2D(22.0, -8.5)))  # Trial and error
 
         # Squirt everything into the associated KiCad PCB's:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
@@ -3647,19 +3645,10 @@ class MasterBoard:
             raspi4b_mate_references_pcb_chunk,
         ])
 
-        # Create the mikrobus_small_pcb_chunk:
-        mikrobus_small: MikroBus = MikroBus(scad_program, connectors, "S")
-        mikrobus_small_pcb_chunk: PCBChunk = mikrobus_small.pcb_chunk
-        mikrobus_small_pcb_chunk = mikrobus_small_pcb_chunk
-        mikrobus_medium: MikroBus = MikroBus(scad_program, connectors, "M")
-        mikrobus_medium_pcb_chunk: PCBChunk = mikrobus_medium.pcb_chunk
-        mikrobus_medium_pcb_chunk = mikrobus_medium_pcb_chunk
-        mikrobus_large: MikroBus = MikroBus(scad_program, connectors, "L")
-        mikrobus_large_pcb_chunk: PCBChunk = mikrobus_large.pcb_chunk
-        mikrobus_large_pcb_chunk = mikrobus_large_pcb_chunk
-
         # Create *center_without_nucleo_pcb_chunk* that does not contain the the Nucleo-14:
         center_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center Without Nucleo", [
+            u3v70x_9v_pcb_chunk,
+            center_mikrobus_pcb_chunk,
             center_spacer_pcb_chunk,
             no_nucleo_pcb_chunk,
             nucleo144_mate_without_nucleo_pcb_chunk,
@@ -3672,6 +3661,7 @@ class MasterBoard:
 
         # Create *center_with_nucleo_pcb_chunk* that does contain the the Nucleo-14:
         center_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center With Nucleo", [
+            center_mikrobus_pcb_chunk,
             center_without_nucleo_pcb_chunk,
             nucleo144_mate_with_nucleo_pcb_chunk,
         ])
@@ -3680,6 +3670,7 @@ class MasterBoard:
 
         # Create *ne_pcb_chunk* and update its associated PCB:
         ne_pcb_chunk: PCBChunk = PCBChunk.join("Master NE", [
+            ne_mikrobus_pcb_chunk,
             ne_leds_pcb_chunk,
             ne_spacer_pcb_chunk,
             ne_sonars_pcb_chunk,
@@ -3689,6 +3680,7 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, ne_exterior, "YellowGreen", ne_kicad_pcb_path, [])
 
         nw_pcb_chunk: PCBChunk = PCBChunk.join("Master NW", [
+            nw_mikrobus_pcb_chunk,
             nw_leds_pcb_chunk,
             nw_spacer_pcb_chunk,
             nw_sonars_pcb_chunk,
@@ -3698,6 +3690,7 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, nw_exterior, "Orange", nw_kicad_pcb_path, [])
 
         se_pcb_chunk: PCBChunk = PCBChunk.join("Master SE", [
+            se_mikrobus_pcb_chunk,
             se_leds_pcb_chunk,
         ])
         se_kicad_pcb_path: Path = master_board_directory / "se.kicad_pcb"
@@ -3705,6 +3698,7 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, se_exterior, "Purple", se_kicad_pcb_path, [])
 
         sw_pcb_chunk: PCBChunk = PCBChunk.join("Master SW", [
+            sw_mikrobus_pcb_chunk,
             sw_leds_pcb_chunk,
         ])
         sw_kicad_pcb_path: Path = master_board_directory / "sw.kicad_pcb"
@@ -4132,6 +4126,47 @@ class MasterBoard:
         sw_led_pcb_chunk: PCBChunk = PCBChunk.join("SW LED's", sw_led_pcb_chunks)
         return ne_led_pcb_chunk, nw_led_pcb_chunk, se_led_pcb_chunk, sw_led_pcb_chunk
 
+    # MasterBoard.mikrobus_install():
+    def mikrobus_install(
+            self, mikrobus_small: "MikroBus", mikrobus_medium: "MikroBus",
+            mikrobus_large: "MikroBus") -> Tuple[PCBChunk, PCBChunk, PCBChunk, PCBChunk, PCBChunk]:
+        """Install the MikroBus boards."""
+        center_pcb_chunks: List[PCBChunk] = []
+        ne_pcb_chunks: List[PCBChunk] = []
+        nw_pcb_chunks: List[PCBChunk] = []
+        se_pcb_chunks: List[PCBChunk] = []
+        sw_pcb_chunks: List[PCBChunk] = []
+
+        # Create a placement table:
+        degrees180: float = pi
+        # degrees90: float = degrees180 / 2.0
+        placements: List[Tuple[str, MikroBus, bool, P2D, float, List[PCBChunk]]] = [
+            ("SW MikroBus", mikrobus_small,
+             False, P2D(-45.0, -25.25), degrees180, center_pcb_chunks),
+            ("NW MikroBus", mikrobus_medium, False, P2D(-44.5, 25.25), 0.0, center_pcb_chunks),
+        ]
+
+        origin2d: P2D = P2D(0.0, 0.0)
+        name: str
+        mikrobus: MikroBus
+        position: P2D
+        rotate: float
+        pcb_chunks: List[PCBChunk]
+        in_front: bool
+        for name, mikrobus, in_front, position, rotate, pcb_chunks in placements:
+            pcb_chunk: PCBChunk = mikrobus.mate_pcb_chunk
+            if not in_front:
+                pcb_chunk = pcb_chunk.scads_y_flip().pads_y_mirror().sides_swap()
+            pcb_chunk = pcb_chunk.reposition(origin2d, rotate, position)
+            pcb_chunks.append(pcb_chunk)
+
+        center_pcb_chunk: PCBChunk = PCBChunk.join("Center MikroBus modules", center_pcb_chunks)
+        ne_pcb_chunk: PCBChunk = PCBChunk.join("NE MikroBus modules", ne_pcb_chunks)
+        nw_pcb_chunk: PCBChunk = PCBChunk.join("NW MikroBus modules", nw_pcb_chunks)
+        se_pcb_chunk: PCBChunk = PCBChunk.join("SE MikroBus modules", se_pcb_chunks)
+        sw_pcb_chunk: PCBChunk = PCBChunk.join("SW MikroBus modules", sw_pcb_chunks)
+        return center_pcb_chunk, ne_pcb_chunk, nw_pcb_chunk, se_pcb_chunk, sw_pcb_chunk
+
     # MasterBoard.sonar_modules_create():
     def sonar_modules_create(self, scad_program: ScadProgram,
                              hcsr04: HCSR04, connectors: Connectors) -> None:
@@ -4410,14 +4445,14 @@ class MasterBoard:
         nw_pads: List[Pad] = []
         nw_scads: List[Scad3D] = []
         spacer_tuples: List[Tuple[bool, str, str, str, List[Pad], List[Scad3D]]] = [
-            (True, "NE MasterBoard", "BATTERY: Upper Hole (9, 2)", "H6", ne_pads, ne_scads),
-            (True, "NW MasterBoard", "BATTERY: Upper Hole (0, 2)", "H7", nw_pads, nw_scads),
-            (True, "SE MasterBoard", "RIGHT: Vector Hole 8", "H8", center_pads, center_scads),
-            (True, "SW MasterBoard", "LEFT: Vector Hole 8", "H9", center_pads, center_scads),
-            (False, "SEA Spacer", "LEFT: Middle Triple Hole", "H10", center_pads, center_scads),
-            (False, "SWA Spacer", "RIGHT: Middle Triple Hole", "H11", center_pads, center_scads),
-            (False, "NEA Spacer", "Angle Hole[0,0]", "H12", nw_pads, nw_scads),
-            (False, "NWA Spacer", "Angle Hole[5,0]", "H13", ne_pads, ne_scads),
+            # (True, "NE MasterBoard", "BATTERY: Upper Hole (9, 2)", "H6", ne_pads, ne_scads),
+            # (True, "NW MasterBoard", "BATTERY: Upper Hole (0, 2)", "H7", nw_pads, nw_scads),
+            # (True, "SE MasterBoard", "RIGHT: Vector Hole 8", "H8", center_pads, center_scads),
+            # (True, "SW MasterBoard", "LEFT: Vector Hole 8", "H9", center_pads, center_scads),
+            (False, "SE Arm Spacer", "LEFT: Middle Triple Hole", "H10", center_pads, center_scads),
+            (False, "SW Arm Spacer", "RIGHT: Middle Triple Hole", "H11", center_pads, center_scads),
+            (False, "NE Arm Spacer", "Angle Hole[0,0]", "H12", nw_pads, nw_scads),
+            (False, "NW Arm Spacer", "Angle Hole[5,0]", "H13", ne_pads, ne_scads),
         ]
 
         # Create the *expansion_spacer*:
@@ -4490,7 +4525,7 @@ class MikroBus:
         assert size in pcb_dy_table, f"Mikro bus {size} must be one of 'S', 'M', 'L'"
         pcb_dy: float = pcb_dy_table[size]
 
-        # Create the *mikrobus_exteriror*:
+        # Create the *mikrobus_exterior*:
         pcb_east_x: float = pcb_dx / 2.0
         pcb_west_x: float = -pcb_east_x
         pcb_south_y: float = -4.0 * 2.54 - notch_dx_dy
@@ -4504,6 +4539,7 @@ class MikroBus:
             P2D(pcb_east_x, pcb_south_y + notch_dx_dy),
         ], lock=True)
 
+        # Position the east/west connector chunks and create *microbus_pcb_chunk*:
         origin2d: P2D = P2D(0.0, 0.0)
         degrees90: float = pi / 2.0
         m1x8_west_pcb_chunk: PCBChunk = (
@@ -4514,14 +4550,16 @@ class MikroBus:
             connectors.m1x8.pcb_chunk.scads_x_flip().sides_swap().pads_rebase(8).
             reposition(origin2d, -degrees90, P2D(connector_pitch_dx / 2.0, 0.0))
         )
-
         mikrobus_pcb_chunk: PCBChunk = PCBChunk.join(f"MikroBus {size}", [
             m1x8_west_pcb_chunk,
             m1x8_east_pcb_chunk,
         ])
+
+        # Generate *mikobus_module* for use by *microbus_mate_pcb_chunk*:
         mikrobus_module: Module3D = mikrobus_pcb_chunk.pcb_update(
             scad_program, origin2d, pcb_dz, mikrobus_exterior, "LightGreen", None, [])
 
+        # Create the east/west female *PCBChunk*'s:
         f1x8_west_pcb_chunk: PCBChunk = (
             connectors.f1x8.pcb_chunk.
             reposition(origin2d, degrees90, P2D(-connector_pitch_dx / 2.0, 0.0))
@@ -4530,19 +4568,51 @@ class MikroBus:
             connectors.f1x8.pcb_chunk.pads_rebase(8).
             reposition(origin2d, -degrees90, P2D(connector_pitch_dx / 2.0, 0.0))
         )
+
+        # Create *tranalsted_mikrobus_chunk* that is positioned just above the female connectors:
         translate_position: P3D = P3D(0.0, 0.0, 8.70)  # Trail and error
         translated_mikrobus_scad: Scad3D = Translate3D(
             "Translated MikroBus Scad", mikrobus_module.use_module_get(), translate_position)
         translated_mikrobus_pcb_chunk: PCBChunk = PCBChunk(
             f"Translated MikroBus {size}", [], [translated_mikrobus_scad])
 
+        # Create the *tie_downs_pcb_chunk* that has the two tie down holes:
+        tie_down_diameter: float = 2.5 + 0.05  # mm
+        tie_down_pitch_dx: float = connector_pitch_dx + 2.54 + tie_down_diameter
+        tie_down_y: float = -1.0 * 2.54
+        east_tie_down_center: P2D = P2D(tie_down_pitch_dx / 2.0, tie_down_y)
+        west_tie_down_center: P2D = P2D(-tie_down_pitch_dx / 2.0, tie_down_y)
+        east_tie_down_pad: Pad = Pad(
+            "East Tie Down", 0.0, 0.0, tie_down_diameter, east_tie_down_center)
+        west_tie_down_pad: Pad = Pad(
+            "West Tie Down", 0.0, 0.0, tie_down_diameter, west_tie_down_center)
+        tie_down_pads: List[Pad] = [east_tie_down_pad, west_tie_down_pad]
+        tie_downs_pcb_chunk: PCBChunk = PCBChunk("Tie Down Holes", tie_down_pads, [])
+
+        # Create *mikrobus_mate_pcb_chunk*:
         mikrobus_mate_pcb_chunk: PCBChunk = PCBChunk.join(f"MikroBus {size} Mate", [
             f1x8_west_pcb_chunk,
             f1x8_east_pcb_chunk,
+            tie_downs_pcb_chunk,
             translated_mikrobus_pcb_chunk,
         ])
+
+        # Create the *mikrobus_mate_exterior* for the example board:
+        pcb_dx_extra: float = 5.0
+        mate_pcb_east_x: float = pcb_dx / 2.0 + pcb_dx_extra
+        mate_pcb_west_x: float = -mate_pcb_east_x
+        mate_pcb_south_y: float = -4.0 * 2.54 - notch_dx_dy
+        mate_pcb_north_y: float = mate_pcb_south_y + pcb_dy
+        # Origin is in the center of the connectors:
+        mikrobus_mate_exterior: SimplePolygon = SimplePolygon(f"Mirkobus {size} Exterior", [
+            P2D(mate_pcb_east_x, mate_pcb_north_y),
+            P2D(mate_pcb_west_x, mate_pcb_north_y),
+            P2D(mate_pcb_west_x, mate_pcb_south_y),
+            P2D(mate_pcb_east_x - notch_dx_dy, mate_pcb_south_y),
+            P2D(mate_pcb_east_x, mate_pcb_south_y + notch_dx_dy),
+        ], lock=True)
         mikrobus_mate_module: Module3D = mikrobus_mate_pcb_chunk.pcb_update(
-            scad_program, origin2d, pcb_dz, mikrobus_exterior, "LightGreen", None, [])
+            scad_program, origin2d, pcb_dz, mikrobus_mate_exterior, "Violet", None, [])
 
         # Stuff some value into the mikrobus object (i.e. *self*):
         # mikrobus: Mikrobus = self
@@ -4941,7 +5011,7 @@ class RaspberryPi4:
         camera_ne: P2D = P2D(47.50, 22.70) - holes_center
         camera_center: P2D = (camera_sw + camera_ne) / 2.0
         camera_dx: float = abs(camera_ne.x - camera_sw.x)
-        camera_dy: float = abs(camera_ne.y - camera_sw.y)
+        camera_dy: float = abs(camera_ne.y - camera_sw.y) - 2.0  # Shave off a little...
         camera_slot: SimplePolygon = Square(
             "Raspi4 Camera Slot", camera_dx, camera_dy, camera_center,
             corner_radius=1.0, corner_count=5)
@@ -4990,8 +5060,8 @@ class RaspberryPi4:
         usb_slot = usb_slot  # Ignore for now.
 
         # Combined Ethernet/USB heat slot determined by trial and error.
-        ethernet_usb_dx: float = 7.0
-        ethernet_usb_dy: float = 23.0
+        ethernet_usb_dx: float = 6.0
+        ethernet_usb_dy: float = 22.0
         ethernet_usb_center: P2D = P2D(23.0, 2.5)  # (Y, -X) in master board coordinate state
         ethernet_usb_slot: SimplePolygon = Square(
             "Ethernet USB Heat Sink Slot", ethernet_usb_dx, ethernet_usb_dy, ethernet_usb_center,
@@ -7892,6 +7962,177 @@ class SRF02:
         scad_program.if3d.name_match_append("sonar", module, ["SRF02 Sonar"])
         # srf02: SRF02 = self
         self.module: Module3D = module
+
+
+# U3V70x:
+class U3V70x:
+    """Represents a Pololu UV70x Step-Up Voltage Regulator."""
+
+    # U3V70x.__init__:
+    def __init__(self, scad_program: ScadProgram,
+                 output_voltage: float, connectors: Connectors) -> None:
+        """Initialize a U3V70x voltage regulator."""
+        # Dimensions obtained from:
+        #    https://www.robitshop.com/urun/5v-step-up-voltage-regulator-u3v70f5
+
+        # Some X dimensions:
+        pcb_dx: float = 15.20  # mm
+        pcb_edge_e: float = pcb_dx / 2.0
+        pcb_edge_w: float = -pcb_edge_e
+        sw_mount_x: float = pcb_edge_w + 2.20
+        ne_mount_x: float = sw_mount_x + 10.90
+        nw_terminal_x: float = pcb_edge_w + 2.54
+        ne_terminal_x: float = nw_terminal_x + 5.00
+        se_terminal_x: float = pcb_edge_e - 2.54
+        sw_terminal_x: float = se_terminal_x - 5.00
+        n_connector_center_x: float = pcb_edge_w + 1.27 + ((4 - 1) * 2.54) / 2.0
+        s_connector_center_x: float = pcb_edge_e - 1.27 - ((5 - 1) * 2.54) / 2.0
+
+        # Some Y dimensions:
+        pcb_dy: float = 40.60  # mm
+        pcb_edge_n: float = pcb_dy / 2.0
+        pcb_edge_s: float = -pcb_edge_n
+        s_mount_y: float = pcb_edge_s + 2.20
+        n_mount_y: float = s_mount_y + 36.30
+        n_terminal_y: float = pcb_edge_n - 2.54
+        s_terminal_y: float = pcb_edge_s + 2.54
+        n_connector_center_y: float = pcb_edge_n - 5.08
+        s_connector_center_y: float = pcb_edge_s + 5.08
+
+        # The switching transistor is the largest object on the board.  It dimensions and locations
+        # are obtained by obtained using GIMP reading off pixel locations.  The pixel Y axis is
+        # downwards, so a minus flips it to standard right hand rule Cartesian coordinates:
+        sw_pcb_corner_pixels: P2D = P2D(88.6, -265.1)
+        sw_transistor_corner_pixels: P2D = P2D(106.5, -222.1)
+        ne_transistor_corner_pixels: P2D = P2D(139.6, -186.6)
+        ne_pcb_corner_pixels: P2D = P2D(162.4, -67.6)
+        pcb_dx_dy_pixels: P2D = ne_pcb_corner_pixels - sw_pcb_corner_pixels
+        pcb_center_pixels: P2D = (sw_pcb_corner_pixels + ne_pcb_corner_pixels) / 2.0
+        transistor_dx_dy_pixels: P2D = ne_transistor_corner_pixels - sw_transistor_corner_pixels
+        transistor_center_pixels: P2D = (
+            sw_transistor_corner_pixels + ne_transistor_corner_pixels) / 2.0
+        x_pixels2mm: float = pcb_dx / pcb_dx_dy_pixels.x
+        y_pixels2mm: float = pcb_dy / pcb_dx_dy_pixels.y
+        transistor_dx: float = transistor_dx_dy_pixels.x * x_pixels2mm
+        transistor_dy: float = transistor_dx_dy_pixels.y * y_pixels2mm
+        transistor_center_x: float = (transistor_center_pixels - pcb_center_pixels).x * x_pixels2mm
+        transistor_center_y: float = (transistor_center_pixels - pcb_center_pixels).y * y_pixels2mm
+
+        # Some miscellaneous dimensions:
+        pcb_dz: float = 1.57
+        transistor_dz: float = 3.0
+        mount_diameter: float = 2.18  # mm for #2 or 2mm screw.
+        # terminal_diameter: float = 2.18  # Same.
+
+        # Create the *mounts_pcb_chunk*:
+        ne_mount_center: P2D = P2D(ne_mount_x, n_mount_y)
+        sw_mount_center: P2D = P2D(sw_mount_x, s_mount_y)
+        ne_terminal_center: P2D = P2D(ne_terminal_x, n_terminal_y)
+        nw_terminal_center: P2D = P2D(nw_terminal_x, n_terminal_y)
+        se_terminal_center: P2D = P2D(se_terminal_x, s_terminal_y)
+        sw_terminal_center: P2D = P2D(sw_terminal_x, s_terminal_y)
+        ne_mount_pad: Pad = Pad("U3V70x NE Mount Hole", 0.0, 0.0, mount_diameter, ne_mount_center)
+        sw_mount_pad: Pad = Pad("U3V70x SE Mount Hole", 0.0, 0.0, mount_diameter, sw_mount_center)
+        mount_pads: List[Pad] = [ne_mount_pad, sw_mount_pad]
+        ne_terminal_pad: Pad = Pad(
+            "U3V70x NE Terminal", 0.0, 0.0, mount_diameter, ne_terminal_center)
+        nw_terminal_pad: Pad = Pad(
+            "U3V70x NW Terminal", 0.0, 0.0, mount_diameter, nw_terminal_center)
+        se_terminal_pad: Pad = Pad(
+            "U3V70x SE Terminal", 0.0, 0.0, mount_diameter, se_terminal_center)
+        sw_terminal_pad: Pad = Pad(
+            "U3V70x sW Terminal", 0.0, 0.0, mount_diameter, sw_terminal_center)
+        terminal_pads: List[Pad] = [
+            ne_terminal_pad, nw_terminal_pad, se_terminal_pad, sw_terminal_pad]
+        mounts_pcb_chunk: PCBChunk = PCBChunk(
+            "U3V70x Mount Holes", mount_pads + terminal_pads, [])
+
+        # Create the *transistor_scad*:
+        transistor_cube: Cube = Cube(
+            "U3V70x Transistor Cube", transistor_dx, transistor_dy, transistor_dz,
+            center=P3D(transistor_center_x, transistor_center_y, transistor_dz / 2.0))
+        transistor_scad: Scad3D = Color("U3V70x Transistor", transistor_cube, "SaddleBrown")
+        transistor_pcb_chunk: PCBChunk = PCBChunk("U3V70x Transistor", [], [transistor_scad])
+
+        # Create the connector *PCBChunk*'s:
+        origin2d: P2D = P2D(0.0, 0.0)
+        n_connector_center: P2D = P2D(n_connector_center_x, n_connector_center_y)
+        s_connector_center: P2D = P2D(s_connector_center_x, s_connector_center_y)
+        connector_n_pcb_chunk: PCBChunk = (
+            connectors.m1x4.pcb_chunk.
+            scads_y_flip().sides_swap().pads_rebase(5).
+            reposition(origin2d, 0.0, n_connector_center))
+        connector_s_pcb_chunk: PCBChunk = (
+            connectors.m1x5.pcb_chunk.
+            scads_y_flip().sides_swap().
+            reposition(origin2d, 0.0, s_connector_center))
+
+        # Create the *pcb_exterior* and associated *exterior_pcb_chunk*:
+        pcb_exterior: SimplePolygon = Square("U3V70x Exterior", pcb_dx, pcb_dy)
+        outline_pcb_chunk: PCBChunk = PCBChunk(
+            "U3V7x Exterior Outline", [], [], back_artworks=[pcb_exterior])
+
+        # Create *u3v70x_pcb_chunk*:
+        u3v70x_pcb_chunk: PCBChunk = PCBChunk.join("U3V70x", [
+            connector_n_pcb_chunk,
+            connector_s_pcb_chunk,
+            outline_pcb_chunk,
+            mounts_pcb_chunk,
+            transistor_pcb_chunk,
+        ])
+
+        # Generate the *u3v70x_module*:
+        u3v70x_module: Module3D = u3v70x_pcb_chunk.pcb_update(
+            scad_program, origin2d, pcb_dz, pcb_exterior, "SeaGreen", None, [])
+
+        # Create the *spacer_
+        spacer_dz: float = 9.0
+        spacer_diameter: float = 4.00  # Pololu Spacers: L=4/8/10/12/15mm OD=4mm ID=M2
+        spacer: Spacer = Spacer(scad_program, "U3V70x Spacer", spacer_dz, "M2", spacer_diameter)
+        ne_translated_spacer: Scad3D = Translate3D(
+            "Translated NE U3V70x Spacer", spacer.module.use_module_get(),
+            P3D(ne_mount_x, n_mount_y, 0.0))
+        sw_translated_spacer: Scad3D = Translate3D(
+            "Translated SW U3V70x Spacer", spacer.module.use_module_get(),
+            P3D(sw_mount_x, s_mount_y, 0.0))
+
+        # Create *u3v70x_mate_pcb_chunk:
+        connector_mate_n_pcb_chunk: PCBChunk = (
+            connectors.f1x4.pcb_chunk.pads_rebase(5).
+            reposition(origin2d, 0.0, n_connector_center))
+        connector_mate_s_pcb_chunk: PCBChunk = (
+            connectors.f1x5.pcb_chunk.
+            reposition(origin2d, 0.0, s_connector_center))
+        translated_u3v70x: Scad3D = Translate3D("U3V70x", u3v70x_module.use_module_get(),
+                                                P3D(0.0, 0.0, spacer_dz))
+        mating_u3v70x_pcb_chunk: PCBChunk = PCBChunk(
+            "Mating U3V70x", [], [translated_u3v70x, ne_translated_spacer, sw_translated_spacer])
+        mate_mounts_pcb_chunk: PCBChunk = PCBChunk("U3V70x Mate Mount Holes", mount_pads, [])
+        u3v70x_mate_pcb_chunk: PCBChunk = PCBChunk.join("U3V70xMate", [
+            outline_pcb_chunk.sides_swap(),
+            mate_mounts_pcb_chunk,
+            connector_mate_n_pcb_chunk,
+            connector_mate_s_pcb_chunk,
+            mating_u3v70x_pcb_chunk,
+        ])
+
+        # Figure out *master_pcb_directory* and *master_pcb_pretty_directory*:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environment variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        master_pcb_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
+        master_pcb_pretty_directory: Path = master_pcb_directory / "pretty"
+
+        # Output the *u3v70x_mate_pcb_chunk* footprint:
+        u3v70x_mate_pcb_chunk.footprint_generate("HR2", master_pcb_pretty_directory)
+        u3v70x_mate_module: Module3D = u3v70x_mate_pcb_chunk.pcb_update(
+            scad_program, origin2d, 1.6, pcb_exterior, "MediumSlateBlue", None, [])
+
+        # Stuff some values into xxx (i.e. *self*):
+        # u3v70x: U3V70x = self
+        self.module: Module3D = u3v70x_module
+        self.pcb_chunk: PCBChunk = u3v70x_pcb_chunk
+        self.mate_module: Module3D = u3v70x_mate_module
+        self.mate_pcb_chunk: PCBChunk = u3v70x_mate_pcb_chunk
 
 
 def main() -> int:  # pragma: no cover
