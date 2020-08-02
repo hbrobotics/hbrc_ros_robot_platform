@@ -2920,6 +2920,7 @@ class HR2MasterAssembly:
                  pi_offset2d: P2D, nucleo_offset2d: P2D, nucleo_rotate: float,
                  st_link_offset2d: P2D, encoder: "Encoder", raspi4b: "RaspberryPi4",
                  nucleo144: "Nucleo144", st_link: "STLink",
+                 base_spacer_positions: Dict[str, Tuple[P2D, float]],
                  romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
         """Initialize the HR2MasterAssembly."""
@@ -2927,7 +2928,7 @@ class HR2MasterAssembly:
         master_board: MasterBoard = MasterBoard(
             scad_program, pcb_origin, base_dxf, connectors, encoder, raspi4b, nucleo144, st_link,
             pi_offset2d, nucleo_offset2d, nucleo_rotate, st_link_offset2d, master_board_z,
-            nucleo_board_z, arm_z, romi_base_keys, romi_expansion_plate_keys)
+            nucleo_board_z, arm_z, base_spacer_positions, romi_base_keys, romi_expansion_plate_keys)
 
         # Create *translated_master_without_nucleo* and *translated_master_with_nucleol*:
         # (i.e. *self*):
@@ -3105,6 +3106,7 @@ class HR2Robot:
             pi_board_z, master_board_z, nucleo_board_z, arm_z,
             pi_offset2d, nucleo_offset2d, nucleo_rotate, st_link_offset2d,
             encoder, raspi4b, nucleo144, st_link,
+            romi_base.spacer_positions_get(),
             romi_base_keys, romi_expansion_plate_keys)
         hr2_wheel_assembly: HR2WheelAssembly = HR2WheelAssembly(scad_program, hr2_master_assembly,
                                                                 connectors,
@@ -3483,7 +3485,9 @@ class MasterBoard:
                  connectors: Connectors, encoder: "Encoder", raspi4b: "RaspberryPi4",
                  nucleo144: "Nucleo144", st_link: "STLink", pi_offset: P2D, nucleo_offset2d: P2D,
                  nucleo_rotate: float, st_link_offset: P2D, master_board_bottom_z: float,
-                 nucleo_board_z: float, arm_z: float, romi_base_keys: List[Tuple[Any, ...]],
+                 nucleo_board_z: float, arm_z: float,
+                 spacer_positions: Dict[str, Tuple[P2D, float]],
+                 romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]], tracing: str = "") -> None:
         """Initialize the MasterBoard."""
         master_board: MasterBoard = self
@@ -3514,9 +3518,9 @@ class MasterBoard:
 
         # Create the spacer *PCBChunk*'s:
         ne_spacer_pcb_chunk, nw_spacer_pcb_chunk, center_spacer_pcb_chunk = (
-            master_board.spacer_mounts_create(scad_program, romi_base_keys,
-                                              romi_expansion_plate_keys,
-                                              0.0, arm_spacer_dz))
+            master_board.spacer_mounts_create(
+                scad_program, spacer_positions, romi_base_keys, romi_expansion_plate_keys,
+                0.0, arm_spacer_dz))
 
         # Install the nucleo144 and Raspberry Pi connectors and mounting holes:
         origin2d: P2D = P2D(0.0, 0.0)
@@ -4400,7 +4404,7 @@ class MasterBoard:
 
     # MasterBoard.spacer_mounts_create():
     def spacer_mounts_create(
-            self, scad_program: ScadProgram,
+            self, scad_program: ScadProgram, base_spacer_positions: Dict[str, Tuple[P2D, float]],
             base_keys: List[Tuple[Any, ...]], expansion_keys: List[Tuple[Any, ...]],
             master_board_top_z: float, arm_spacer_dz: float) -> Tuple[PCBChunk, PCBChunk, PCBChunk]:
         """Append some spacers mounts to MasterBoard."""
@@ -4422,14 +4426,35 @@ class MasterBoard:
             expansion_keys_table[expansion_key_name] = expansion_key
             # print(f"[{index}]: '{expansion_key_name}', {expansion_key}")
 
-        # Create the *romi_base_mounting holes* which are the holes for mounting the
-        # master board to the Romi base:
+        # Collect the *Pad*s and *Scad3D*'s in various lists:
         center_pads: List[Pad] = []
         center_scads: List[Scad3D] = []
         ne_pads: List[Pad] = []
         ne_scads: List[Scad3D] = []
         nw_pads: List[Pad] = []
         nw_scads: List[Scad3D] = []
+
+        # Iterate through *base_spacer_positions* and install the mounting holes:
+        hole_diameter: float = 2.7  # M2.5 spacer hole diameter
+        base_spacer_name: str
+        base_spacer_tuple: Tuple[P2D, float]
+        for base_spacer_name, base_spacer_tuple in base_spacer_positions.items():
+            # Unpack *spacer_tuple*:
+            base_position: P2D
+            base_dz: float
+            base_position, base_dz = base_spacer_tuple
+            if not base_spacer_name.startswith("Pi"):
+                base_pad: Pad = Pad(
+                    f"{base_spacer_name} Mount Hole", 0.0, 0.0, hole_diameter, base_position)
+                if base_position.y < 0.0:
+                    center_pads.append(base_pad)
+                elif base_position.x < 0.0:
+                    nw_pads.append(base_pad)
+                else:
+                    ne_pads.append(base_pad)
+
+        # Create the *romi_base_mounting holes* which are the holes for mounting the
+        # master board to the Romi base:
         spacer_tuples: List[Tuple[bool, str, str, str, List[Pad], List[Scad3D]]] = [
             # (True, "NE MasterBoard", "BATTERY: Upper Hole (9, 2)", "H6", ne_pads, ne_scads),
             # (True, "NW MasterBoard", "BATTERY: Upper Hole (0, 2)", "H7", nw_pads, nw_scads),
