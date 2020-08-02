@@ -5572,14 +5572,6 @@ class RomiBase:
         # Set *debugging* to *True* to print out debugging messages:
         debugging: bool = False  # True
 
-        # Load some values into *romi_base* (i.e. *self*) right now:
-        romi_base: RomiBase = self
-        self.debugging = debugging
-        self.base_dxf: BaseDXF = base_dxf
-
-        # if debugging:  # pragma: no cover
-        #    print(f"origin_offset={origin_offset}")
-
         # Grab some Z values (X values are arbtrarily set to 0.0). We use the Y coordiante
         # which is actually the Z value:
         base_bottom_z: float = base_dxf.z_locate(-3.469098)
@@ -5587,6 +5579,13 @@ class RomiBase:
         base_top_z: float = base_dxf.z_locate(-3.095083)
         battery_dz: float = abs(battery_top_z - base_bottom_z)
         base_dz: float = abs(base_top_z - base_bottom_z)
+
+        # Load some values into *romi_base* (i.e. *self*):
+        romi_base: RomiBase = self
+        self.debugging = debugging
+        self.base_dxf: BaseDXF = base_dxf
+        self.battery_dz: float = battery_dz
+        self.base_dz: float = base_dz
 
         # Now construct the base:
         romi_battery_base_polygon: Polygon = romi_base.battery_base_polygon_get()
@@ -6695,6 +6694,72 @@ class RomiBase:
             lower_rectangles.append(lower_rectangle)
         vertical_rectangles: List[Square] = upper_rectangles + lower_rectangles
         return vertical_rectangles
+
+    # RomiBase.spacer_positions_get():
+    def spacer_positions_get(self) -> Dict[str, Tuple[P2D, float]]:
+        """Generate a table of spacer positions."""
+        # Grab some values from *romi_base* (i.e. *self*):
+        romi_base: RomiBase = self
+        romi_base_keys: List[Tuple[Any, ...]] = romi_base.keys_get()
+        battery_dz: float = romi_base.battery_dz
+
+        # Create *romi_base_keys_table* to lookup key tuples by key name:
+        romi_base_key_table: Dict[str, Tuple[Any, ...]] = {}
+        romi_base_key: Tuple[Any, ...]
+        for romi_base_key in romi_base_keys:
+            name: str = romi_base_key[1]
+            romi_base_key_table[name] = romi_base_key
+
+        # Define the *spacer_tuples* list which is a list of 3-tuples of the spacer name (*str*),
+        # key name (*str*), and base_level (*float*).
+        base_dz: float = 0.0
+        spacer_tuples: List[Tuple[str, str, float]] = [
+            ("Pi NE", "BATTERY: Upper Slot (7, 1)", battery_dz),
+            ("Pi NW", "BATTERY: Upper Slot (2, 1)", battery_dz),
+            ("Pi SE", "RIGHT: LOWER Small Hex Slot (3, 0)", base_dz),
+            ("Pi SW", "LEFT: LOWER Small Hex Slot (3, 0)", base_dz),
+            ("Master NE", "BATTERY: Upper Hole (9, 2)", base_dz),
+            ("Master NW", "BATTERY: Upper Hole (0, 2)", base_dz),
+            # ("MasterBoard SE1", "RIGHT: Misc Small Upper Right 90deg", base_dz)
+            # ("MasterBoard SW1", "LEFT: Misc Small Upper Right 90deg", base_dz)
+            ("MasterBoard SE2", "RIGHT: Vector Hole 8", base_dz),
+            ("MasterBoard SW2", "LEFT: Vector Hole 8", base_dz),
+        ]
+        spacer_tuple: Tuple[str, str, float]
+        # Set *debug_dz* to non-zero to provide a little gap on top and bottom for visualization:
+        bottom_z: float
+        top_z: float
+        male_height: float
+        pi_center_x: float = 0.0
+        pi_center_y: float = 0.0
+
+        # Iterate over *spacer_tuples*:
+        spacer_positions: Dict[str, Tuple[P2D, float]] = {}
+        spacer_name: str
+        key_name: str
+        base_level: float
+        for spacer_name, key_name, base_level in spacer_tuples:
+            # Lookup the *key_name* and extract (*key_x*, *key_y*) location:
+            key: Tuple[Any, ...] = romi_base_key_table[key_name]
+            key2: Any = key[2]
+            key3: Any = key[3]
+            assert isinstance(key2, float) and isinstance(key3, float)
+            key_x: float = float(key2)
+            key_y: float = float(key3)
+
+            # Insert value into *spacer_positions*:
+            spacer_positions[name] = (P2D(key_x, key_y), base_level)
+
+            # Keep track of the Raspberry Pi center to ensure that it is very close to (0, 0).
+            if name.startswith("Pi"):
+                pi_center_x += key_x
+                pi_center_y += key_y
+
+        # Verify that *pi_center* is at the origin.
+        pi_center: P2D = P2D(pi_center_x / 4.0, pi_center_y / 4.0)
+        assert pi_center.length() < .000000001, f"pi_center: {pi_center} is not at origin"
+
+        return spacer_positions
 
     # RomiBase.base_keys_get():
     def keys_get(self) -> List[Tuple[Any, ...]]:
