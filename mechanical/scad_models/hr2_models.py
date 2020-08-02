@@ -2864,7 +2864,7 @@ class HR2BaseAssembly:
             spacer_height: float = abs(top_z - bottom_z) - 2.0 * debug_dz
             spacer_bottom_center: P3D = P3D(key_x, key_y, bottom_z + debug_dz)
             spacer: Spacer = Spacer(scad_program, f"{spacer_name} Spacer",
-                                    spacer_height, "M2", diameter=3.50,
+                                    spacer_height, "M2",  # outer_diameter=3.50,
                                     bottom_height=male_height,
                                     bottom_center=spacer_bottom_center)
             spacers.append(spacer.module.use_module_get())
@@ -4459,7 +4459,7 @@ class MasterBoard:
         ]
 
         # Create the *expansion_spacer*:
-        arm_spacer_diameter: float = 3.9  # mm
+        # arm_spacer_outer_diameter: float = 3.9  # mm
         arm_spacer_hole_diameter: float = 2.5  # mm
 
         # Put in a spacer_hole for each *spacer_tuple*:
@@ -4485,7 +4485,7 @@ class MasterBoard:
             if not is_base_master:
                 arm_spacer: Spacer = Spacer(
                     scad_program, f"{spacer_name} Spacer", arm_spacer_dz, "M2.5",
-                    diameter=arm_spacer_diameter, color="Silver",
+                    # color="Silver", outer_diameter=arm_spacer_diameter,
                     bottom_center=P3D(key_x, -key_y, master_board_top_z))  # Again, why minus sign?
                 scads.append(arm_spacer.module.use_module_get())
 
@@ -7521,9 +7521,9 @@ class Spacer:
 
     # Spacer.__init__():
     def __init__(self, scad_program: ScadProgram, name: str, height: float, screw_class: str,
-                 diameter: float = 0.0, is_hex: bool = False,
+                 inner_diameter: float = 0.0, outer_diameter: float = 0.0, is_hex: bool = False,
                  bottom_center: P3D = P3D(0.0, 0.0, 0.0),
-                 bottom_height: float = 0.0, top_height: float = 0.0, color: str = "GoldenRod",
+                 bottom_height: float = 0.0, top_height: float = 0.0, color: str = "Silver",
                  bottom_washers: List[Tuple[float, float, str]] = [],
                  top_washers: List[Tuple[float, float, str]] = []) -> None:
         """Generate a spacer with optional washers.
@@ -7540,7 +7540,10 @@ class Spacer:
             *screw_class*: (*str*):
                 The diameter of the screw to be supported, currently
                 only "M2" and "M3" are supported.
-            *diameter*: (*float*):
+            *inner_diameter*: (*float*):
+                (Optional: Defaults to 0.0 which causes the diameter
+                to be looked up from the screw class.
+            *outer_diameter*: (*float*):
                 (Optional: Defaults to 0.0 which causes the diameter
                 to be looked up from the screw class.
             *is_threaded*: (*bool*):
@@ -7579,7 +7582,8 @@ class Spacer:
         assert height > 0.0, f"height (={height}) is not positive"
         assert screw_class in screw_classes, (f"screw_class (='{screw_class})' "
                                               "is not one of {screw_classes}")
-        assert diameter >= 0.0, f"diameter (={diameter}) is negative"
+        assert inner_diameter >= 0.0, f"inner_diameter (={inner_diameter}) is negative"
+        assert outer_diameter >= 0.0, f"outer_diameter (={outer_diameter}) is negative"
         assert bottom_height >= 0.0, f"bottom_height (={bottom_height}) is negative)"
         assert top_height >= 0.0, f"top_height (={top_height}) is negative)"
         washer: Tuple[float, float, str]
@@ -7587,20 +7591,32 @@ class Spacer:
             assert len(washer) == 3, "top/bottom washer (={washer}) does not have 3 entries"
 
         # https://littlemachineshop.com/images/gallery/PDF/TapDrillSizes.pdf
-        # Determin some standard constants based on *screw_class*:
+        # Determine some standard constants based on *screw_class*:
         screw_size: float
-        standard_fit: float
-        if screw_class == "M2":
+        standard_drill_fit: float
+        if screw_class == "M2":  # M2 spacers are not readily available, use M2.5 instead.
             screw_size = 2.00
-            standard_fit = 2.20
+            standard_drill_fit = 2.20
+            class_inner_diameter = 2.70  # This is actually an M2.5 spacer inner diameter
+            class_outer_diameter = 4.00  # This is actually an M2.5 spacer outer diameter
         elif screw_class == "M2.5":
             screw_size = 2.5
-            standard_fit = 2.75
+            standard_drill_fit = 2.75
+            class_inner_diameter = 2.70
+            class_outer_diameter = 4.00
         elif screw_class == "M3":
             screw_size = 3.00
-            standard_fit = 3.30
+            standard_drill_fit = 3.30
+            class_inner_diameter = 3.30
+            class_outer_diameter = 5.00
         else:
             assert False, "Bad screw class"  # pragma: no cover
+
+        # If either *inner_diameter* or *outer_diamter* are zero, override with class based values:
+        if inner_diameter <= 0.0:
+            inner_diameter = class_inner_diameter
+        if outer_diameter <= 0.0:
+            outer_diameter = class_outer_diameter
 
         # Detemine the *hex_diameter* using math (http://mathworld.wolfram.com/RegularPolygon.html):
         #     (1) r = R * cos(pi / n)
@@ -7609,7 +7625,7 @@ class Spacer:
         #     R is the circle diameter,
         #     r is the center to side distance, and
         #     n is the number of sides.
-        hex_diameter: float = diameter / cos(pi / float(6))
+        hex_diameter: float = outer_diameter / cos(pi / float(6))  # Trail and error
 
         # Compute *bottom_washers_height* and *top_washers_height*:
         bottom_washers_height: float = 0.0
@@ -7633,7 +7649,7 @@ class Spacer:
                 body_stack.append(bottom_cylinder)
 
             # Now construct the body:
-            body_diameter: float = hex_diameter if is_hex else diameter
+            body_diameter: float = hex_diameter if is_hex else outer_diameter
             body_sides: int = 6 if is_hex else 16
             spacer_polygon: Polygon
             body_polygon: Polygon = Polygon(f"{name} Polygon", [
@@ -7662,13 +7678,13 @@ class Spacer:
         washer_index: int
         for washer_index, washer in enumerate(bottom_washers):
             z = spacer.washer_append(f"{name} Bottom[{washer_index}]",
-                                     washer, standard_fit, z, spacer_stack)
+                                     washer, standard_drill_fit, z, spacer_stack)
 
         # Stack up the *top_washers*:
         z = height
         for washer_index, washer in enumerate(top_washers):
             z = spacer.washer_append(f"{name} Top['{washer_index}]",
-                                     washer, standard_fit, z, spacer_stack)
+                                     washer, standard_drill_fit, z, spacer_stack)
 
         # Construct the *spacer_union*, the final *module* and append to *scad_program*:
         spacer_union: Union3D = Union3D(f"{name} Union", spacer_stack)
