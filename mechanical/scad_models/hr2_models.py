@@ -2802,76 +2802,59 @@ class HR2BaseAssembly:
         east_romi_motor_holder: Rotate3D = Rotate3D("East Romi Motor Holder",
                                                     west_romi_motor_holder, degrees180, z_axis)
 
-        # Grab the *romi_base_keys* and build *romi_base_keys_table*:
-        spacer_male_height: float = 30.0
-        romi_base_keys: List[Tuple[Any, ...]] = romi_base.keys_get()
-        romi_base_key_table: Dict[str, Tuple[Any, ...]] = {}
-        romi_base_key: Tuple[Any, ...]
-        for romi_base_key in romi_base_keys:
-            name: str = romi_base_key[1]
-            romi_base_key_table[name] = romi_base_key
+        # Create the *base_master_spacer* and the *battery_pi_spacer*:
+        # base_dz: float = romi_base.base_dz
+        battery_dz: float = romi_base.battery_dz
 
-        # Construct *spacers* using data in *spacer_tuples*.  The spacers attached to the
-        # battery holes are Male-Female so that the male end can be screwed into a hex nut
-        # in the battery box.  The other spacers are Female-Female, since there is no associated
-        # hex nut indentation under the hole:
-        spacer_tuples: List[Tuple[str, str, float, float, float]] = [
-            ("Pi NE", "BATTERY: Upper Slot (7, 1)",
-             base_battery_top_z, pi_board_z, spacer_male_height),
-            ("Pi NW", "BATTERY: Upper Slot (2, 1)",
-             base_battery_top_z, pi_board_z, spacer_male_height),
-            ("Pi SE", "RIGHT: LOWER Small Hex Slot (3, 0)",
-             base_top_z, pi_board_z, 0.0),
-            ("Pi SW", "LEFT: LOWER Small Hex Slot (3, 0)",
-             base_top_z, pi_board_z, 0.0),
-            ("MasterBoard NE", "BATTERY: Upper Hole (9, 2)",
-             base_battery_top_z, master_board_z, spacer_male_height),
-            ("MasterBoard NW", "BATTERY: Upper Hole (0, 2)",
-             base_battery_top_z, master_board_z, spacer_male_height),
-            # ("MasterBoard SE1", "RIGHT: Misc Small Upper Right 90deg",
-            #  base_top_z, master_board_z, 0.0),
-            # ("MasterBoard SW1", "LEFT: Misc Small Upper Right 90deg",
-            #  base_top_z, master_board_z, 0.0),
-            ("MasterBoard SE2", "RIGHT: Vector Hole 8",
-             base_top_z, master_board_z, 0.0),
-            ("MasterBoard SW2", "LEFT: Vector Hole 8",
-             base_top_z, master_board_z, 0.0),
-        ]
-        spacer_tuple: Tuple[str, str, float, float, float]
-        # Set *debug_dz* to non-zero to provide a little gap on top and bottom for visualization:
-        debug_dz: float = 0.0  # + 0.250
+        # Create the 4 different spacer heights:
+        base_master_height: float = master_board_z - base_top_z
+        base_pi_height: float = pi_board_z - base_top_z
+        battery_master_height: float = master_board_z - base_top_z + battery_dz
+        battery_pi_height: float = pi_board_z - base_battery_top_z
+
+        # Create the 4 different *Spacer*'s:
+        base_master_spacer: Spacer = Spacer(
+            scad_program, "Base Master Spacer", base_master_height, "M2.5")
+        base_pi_spacer: Spacer = Spacer(
+            scad_program, "Base Pi Spacer", base_pi_height, "M2.5")
+        battery_master_spacer: Spacer = Spacer(
+            scad_program, "Battery Master Spacer", battery_master_height, "M2.5")
+        battery_pi_spacer: Spacer = Spacer(
+            scad_program, "Battery Pi Spacer", battery_pi_height, "M2.5")
+
+        spacer_positions: Dict[str, Tuple[P2D, float]] = romi_base.spacer_positions_get()
         spacers: List[Scad3D] = []
         spacer_name: str
-        key_name: str
-        bottom_z: float
-        top_z: float
-        male_height: float
-        pi_center_x: float = 0.0
-        pi_center_y: float = 0.0
-        for spacer_name, key_name, bottom_z, top_z, male_height in spacer_tuples:
-            # Lookup the *key_name* and extract (*key_x*, *key_y*) location:
-            key: Tuple[Any, ...] = romi_base_key_table[key_name]
-            key2: Any = key[2]
-            key3: Any = key[3]
-            assert isinstance(key2, float) and isinstance(key3, float)
-            key_x: float = float(key2)
-            key_y: float = float(key3)
-            if name.startswith("Pi"):
-                pi_center_x += key_x
-                pi_center_y += key_y
+        spacer_tuple: Tuple[P2D, float]
+        for spacer_name, spacer_tuple in spacer_positions.items():
+            # Upnpack *spacer_tuple*:
+            position: P2D
+            dz: float
+            position, dz = spacer_tuple
 
-            # Construct the *spacer* and append the *UseModule3D* to *spacers*:
-            spacer_height: float = abs(top_z - bottom_z) - 2.0 * debug_dz
-            spacer_bottom_center: P3D = P3D(key_x, key_y, bottom_z + debug_dz)
-            spacer: Spacer = Spacer(scad_program, f"{spacer_name} Spacer",
-                                    spacer_height, "M2",  # outer_diameter=3.50,
-                                    bottom_height=male_height,
-                                    bottom_center=spacer_bottom_center)
-            spacers.append(spacer.module.use_module_get())
+            # Select the correct *spacer* and *spacer_z*:
+            spacer: Spacer
+            spacer_z: float
+            if spacer_name.startswith("Pi"):
+                if dz > 0.0:
+                    spacer = battery_pi_spacer
+                    spacer_z = base_battery_top_z
+                else:
+                    spacer = base_pi_spacer
+                    spacer_z = base_top_z
+            else:
+                if dz > 0.0:
+                    spacer = battery_master_spacer
+                    spacer_z = base_battery_top_z
+                else:
+                    spacer = base_master_spacer
+                    spacer_z = base_top_z
 
-        # Verify that *pi_center* is at the origin.
-        pi_center: P2D = P2D(pi_center_x / 4.0, pi_center_y / 4.0)
-        assert pi_center.length() < .000000001, f"pi_center: {pi_center} is not at origin"
+            # Translate *spacer_scad* into postion and append to *spacer*:
+            spacer_scad: UseModule3D = spacer.module.use_module_get()
+            translated_spacer_scad: Scad3D = Translate3D(
+                f"Translated {spacer_name}", spacer_scad, P3D(position.x, position.y, spacer_z))
+            spacers.append(translated_spacer_scad)
 
         # Create *module*, append to *scad_program* and save into *hr2_base_assembly* (i.e. *self*):
         module: Module3D = Module3D("HR2 Base Assembly",
@@ -2883,7 +2866,7 @@ class HR2BaseAssembly:
         # hr2_base_assembly: HR2BaseAssembly = self
         self.module = module
         self.romi_base: RomiBase = romi_base
-        self.spacer_tuples: List[Tuple[str, str, float, float, float]] = spacer_tuples
+        # self.spacer_tuples: List[Tuple[str, str, float, float, float]] = spacer_tuples
         scad_program.if3d.name_match_append("hr2_base_assembly", module, ["HR2 Base Assembly"])
 
     # HR2BaseAssembly.romi_base_keys_get():
@@ -6748,7 +6731,7 @@ class RomiBase:
             key_y: float = float(key3)
 
             # Insert value into *spacer_positions*:
-            spacer_positions[name] = (P2D(key_x, key_y), base_level)
+            spacer_positions[spacer_name] = (P2D(key_x, key_y), base_level)
 
             # Keep track of the Raspberry Pi center to ensure that it is very close to (0, 0).
             if name.startswith("Pi"):
