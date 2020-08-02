@@ -4497,52 +4497,52 @@ class MasterBoard:
 
         # Create the *romi_base_mounting holes* which are the holes for mounting the
         # master board to the Romi base:
-        spacer_tuples: List[Tuple[bool, str, str, str, List[Pad], List[Scad3D]]] = [
-            # (False,
-            # "SE Arm Spacer", "LEFT: Middle Triple Hole", "H10", center_pads, center_scads),
-            # (False,
-            # "SW Arm Spacer", "RIGHT: Middle Triple Hole", "H11", center_pads, center_scads),
-            # (False, "NE Arm Spacer", "Angle Hole[0,0]", "H12", nw_pads, nw_scads),
-            # (False, "NW Arm Spacer", "Angle Hole[5,0]", "H13", ne_pads, ne_scads),
-        ]
+        # spacer_tuples: List[Tuple[bool, str, str, str, List[Pad], List[Scad3D]]] = [
+        #     # (False,
+        #     # "SE Arm Spacer", "LEFT: Middle Triple Hole", "H10", center_pads, center_scads),
+        #     # (False,
+        #    # "SW Arm Spacer", "RIGHT: Middle Triple Hole", "H11", center_pads, center_scads),
+        #    # (False, "NE Arm Spacer", "Angle Hole[0,0]", "H12", nw_pads, nw_scads),
+        #    # (False, "NW Arm Spacer", "Angle Hole[5,0]", "H13", ne_pads, ne_scads),
+        # ]
 
         # Create the *expansion_spacer*:
         # arm_spacer_outer_diameter: float = 3.9  # mm
-        arm_spacer_hole_diameter: float = 2.5  # mm
+        # arm_spacer_hole_diameter: float = 2.5  # mm
 
         # Put in a spacer_hole for each *spacer_tuple*:
 
-        kicad_mounting_holes: Dict[str, Tuple[P2D, float]] = {}
-        kicad_hole_name: str
-        is_base_master: bool
-        spacer_name: str
-        spacer_tuple: Tuple[str, str, str]
-        scads: List[Scad3D]
-        for is_base_master, spacer_name, key_name, kicad_hole_name, pads, scads in spacer_tuples:
-            # Lookup up the *romi_base_key* and create *spacer_center*:
-            keys_table: Dict[str, Tuple[Any, ...]] = (base_keys_table if is_base_master
-                                                      else expansion_keys_table)
-            assert key_name in keys_table, (f"Spacer key {key_name} not found in "
-                                            f"{sorted(list(keys_table.keys()))}")
-            key = keys_table[key_name]
-            key_x: float = key[2]
-            key_y: float = key[3]
-            spacer_center: P2D = (P2D(key_x, key_y) if is_base_master
-                                  else P2D(key_x, -key_y))  # Why the minus sign? It works, but why?
+        # kicad_mounting_holes: Dict[str, Tuple[P2D, float]] = {}
+        # kicad_hole_name: str
+        # is_base_master: bool
+        # spacer_name: str
+        # spacer_tuple: Tuple[str, str, str]
+        # scads: List[Scad3D]
+        # for is_base_master, spacer_name, key_name, kicad_hole_name, pads, scads in spacer_tuples:
+        #     # Lookup up the *romi_base_key* and create *spacer_center*:
+        #     keys_table: Dict[str, Tuple[Any, ...]] = (base_keys_table if is_base_master
+        #                                               else expansion_keys_table)
+        #     assert key_name in keys_table, (f"Spacer key {key_name} not found in "
+        #                                     f"{sorted(list(keys_table.keys()))}")
+        #     key = keys_table[key_name]
+        #     key_x: float = key[2]
+        #     key_y: float = key[3]
+        #     spacer_center: P2D = (P2D(key_x, key_y) if is_base_master
+        #                         else P2D(key_x, -key_y))  # Why the minus sign? It works, but why?
 
-            if not is_base_master:
-                arm_spacer: Spacer = Spacer(
-                    scad_program, f"{spacer_name} Spacer", arm_spacer_dz, "M2.5",
-                    # color="Silver", outer_diameter=arm_spacer_diameter,
-                    bottom_center=P3D(key_x, -key_y, master_board_top_z))  # Again, why minus sign?
-                scads.append(arm_spacer.module.use_module_get())
+        #    if not is_base_master:
+        #        arm_spacer: Spacer = Spacer(
+        #            scad_program, f"{spacer_name} Spacer", arm_spacer_dz, "M2.5",
+        #            # color="Silver", outer_diameter=arm_spacer_diameter,
+        #            bottom_center=P3D(key_x, -key_y, master_board_top_z))  # Again, why minus sign?
+        #        scads.append(arm_spacer.module.use_module_get())
 
-            # Remember this information.  (Is this needed anymore?, probably not!):
-            kicad_mounting_holes[kicad_hole_name] = (spacer_center, arm_spacer_hole_diameter)
+        #    # Remember this information.  (Is this needed anymore?, probably not!):
+        #    kicad_mounting_holes[kicad_hole_name] = (spacer_center, arm_spacer_hole_diameter)
 
-            # Construrt the *pad* and append to *pads*:
-            pad: Pad = Pad(spacer_name, 0.0, 0.0, arm_spacer_hole_diameter, spacer_center)
-            pads.append(pad)
+        #    # Construrt the *pad* and append to *pads*:
+        #    pad: Pad = Pad(spacer_name, 0.0, 0.0, arm_spacer_hole_diameter, spacer_center)
+        #    pads.append(pad)
 
         # Create and return the *PCBChunk*'s:
         center_spacers_pcb_chunk: PCBChunk = PCBChunk("Center Spacers", center_pads, center_scads)
