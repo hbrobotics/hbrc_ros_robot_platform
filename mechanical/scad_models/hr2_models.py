@@ -4456,10 +4456,6 @@ class MasterBoard:
         # Create the *romi_base_mounting holes* which are the holes for mounting the
         # master board to the Romi base:
         spacer_tuples: List[Tuple[bool, str, str, str, List[Pad], List[Scad3D]]] = [
-            # (True, "NE MasterBoard", "BATTERY: Upper Hole (9, 2)", "H6", ne_pads, ne_scads),
-            # (True, "NW MasterBoard", "BATTERY: Upper Hole (0, 2)", "H7", nw_pads, nw_scads),
-            # (True, "SE MasterBoard", "RIGHT: Vector Hole 8", "H8", center_pads, center_scads),
-            # (True, "SW MasterBoard", "LEFT: Vector Hole 8", "H9", center_pads, center_scads),
             (False, "SE Arm Spacer", "LEFT: Middle Triple Hole", "H10", center_pads, center_scads),
             (False, "SW Arm Spacer", "RIGHT: Middle Triple Hole", "H11", center_pads, center_scads),
             (False, "NE Arm Spacer", "Angle Hole[0,0]", "H12", nw_pads, nw_scads),
@@ -7085,6 +7081,47 @@ class RomiExpansionPlate:
                                             small_hole_diameter, 8, center)
                 small_holes.append(small_hole)
         return small_holes
+
+    # RomiExpansionPlate.spacer_positions_get():
+    def spacer_positions_get(self) -> Dict[str, Tuple[P2D, str, str]]:
+        """Return the spacer positions for ExpansionPlate."""
+        # Grab the *plate_keys* from *plate* (i.e. *self*):
+        plate: RomiExpansionPlate = self
+        plate_keys: List[Tuple[Any, ...]] = plate.keys_get()
+
+        # Insert the contents of *plate_keys* into *plate_keys_table* keyed by key name:
+        positions_table: Dict[str, P2D] = {}
+        position: P2D
+        plate_key: Tuple[Any, ...]
+        for plate_key in plate_keys:
+            key_name = plate_key[0]
+            x = plate_key[2]
+            y = plate_key[3]
+            assert isinstance(key_name, str) and isinstance(x, float) and isinstance(y, float)
+            position = P2D(x, y)
+            positions_table[key_name] = position
+
+        # Start with a list of *spacer_tuples*:
+        spacer_tuples: List[Tuple[str, str, str, str]] = [
+            ("SE Arm Spacer", "LEFT: Middle Triple Hole", "H10", "center"),
+            ("SW Arm Spacer", "RIGHT: Middle Triple Hole", "H11", "center"),
+            ("NE Arm Spacer", "Angle Hole[0,0]", "H12", "nw"),
+            ("NW Arm Spacer", "Angle Hole[5,0]", "H13", "ne"),
+        ]
+
+        # Create and populate *spacer_posistions* by iterating over *spacer_tuples*:
+        spacer_positions: Dict[str, Tuple[P2D, str, str]] = {}
+        spacer_name: str
+        reference_name: str
+        board_name: str
+        for spacer_name, key_name, reference_name, board_name in spacer_tuples:
+            assert key_name in positions_table, (f"Can not find '{key_name}' in positions table: "
+                                                 f"{sorted(list(positions_table.keys()))}")
+            position = positions_table[key_name]
+            position_tuple: Tuple[P2D, str, str] = (
+                position, reference_name, board_name)
+            spacer_positions[spacer_name] = position_tuple
+        return spacer_positions
 
     # RomiExpansionPlate.standoff_holes_get():
     def standoff_holes_get(self) -> List[Circle]:
