@@ -2822,15 +2822,16 @@ class HR2BaseAssembly:
         battery_pi_spacer: Spacer = Spacer(
             scad_program, "Battery Pi Spacer", battery_pi_height, "M2.5")
 
-        spacer_positions: Dict[str, Tuple[P2D, float]] = romi_base.spacer_positions_get()
+        spacer_positions: Dict[str, Tuple[P2D, str, float]] = romi_base.spacer_positions_get()
         spacers: List[Scad3D] = []
         spacer_name: str
-        spacer_tuple: Tuple[P2D, float]
+        spacer_tuple: Tuple[P2D, str, float]
         for spacer_name, spacer_tuple in spacer_positions.items():
             # Upnpack *spacer_tuple*:
             position: P2D
+            reference_name: str
             dz: float
-            position, dz = spacer_tuple
+            position, reference_name, dz = spacer_tuple
 
             # Select the correct *spacer* and *spacer_z*:
             spacer: Spacer
@@ -2920,7 +2921,7 @@ class HR2MasterAssembly:
                  pi_offset2d: P2D, nucleo_offset2d: P2D, nucleo_rotate: float,
                  st_link_offset2d: P2D, encoder: "Encoder", raspi4b: "RaspberryPi4",
                  nucleo144: "Nucleo144", st_link: "STLink",
-                 base_spacer_positions: Dict[str, Tuple[P2D, float]],
+                 base_spacer_positions: Dict[str, Tuple[P2D, str, float]],
                  plate_spacer_positions: Dict[str, Tuple[P2D, str, str]],
                  romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]]) -> None:
@@ -3489,7 +3490,7 @@ class MasterBoard:
                  nucleo144: "Nucleo144", st_link: "STLink", pi_offset: P2D, nucleo_offset2d: P2D,
                  nucleo_rotate: float, st_link_offset: P2D, master_board_bottom_z: float,
                  nucleo_board_z: float, arm_z: float,
-                 base_spacer_positions: Dict[str, Tuple[P2D, float]],
+                 base_spacer_positions: Dict[str, Tuple[P2D, str, float]],
                  plate_spacer_positions: Dict[str, Tuple[P2D, str, str]],
                  romi_base_keys: List[Tuple[Any, ...]],
                  romi_expansion_plate_keys: List[Tuple[Any, ...]], tracing: str = "") -> None:
@@ -4409,7 +4410,8 @@ class MasterBoard:
 
     # MasterBoard.spacer_mounts_create():
     def spacer_mounts_create(
-            self, scad_program: ScadProgram, base_spacer_positions: Dict[str, Tuple[P2D, float]],
+            self, scad_program: ScadProgram,
+            base_spacer_positions: Dict[str, Tuple[P2D, str, float]],
             plate_spacer_positions: Dict[str, Tuple[P2D, str, str]],
             base_keys: List[Tuple[Any, ...]], expansion_keys: List[Tuple[Any, ...]],
             master_board_top_z: float, arm_spacer_dz: float) -> Tuple[PCBChunk, PCBChunk, PCBChunk]:
@@ -4433,36 +4435,48 @@ class MasterBoard:
             # print(f"[{index}]: '{expansion_key_name}', {expansion_key}")
 
         # Collect the *Pad*s and *Scad3D*'s in various lists:
-        center_pads: List[Pad] = []
-        center_scads: List[Scad3D] = []
-        ne_pads: List[Pad] = []
-        ne_scads: List[Scad3D] = []
-        nw_pads: List[Pad] = []
-        nw_scads: List[Scad3D] = []
+        center_pcb_chunks: List[PCBChunk] = []
+        center_references: List[Reference] = []
+        ne_pcb_chunks: List[PCBChunk] = []
+        ne_references: List[Reference] = []
+        nw_pcb_chunks: List[PCBChunk] = []
+        nw_references: List[Reference] = []
 
         # Iterate through *base_spacer_positions* and install the mounting holes:
         hole_diameter: float = 2.7  # M2.5 spacer hole diameter
         base_spacer_name: str
-        base_spacer_tuple: Tuple[P2D, float]
+        base_spacer_tuple: Tuple[P2D, str, float]
         for base_spacer_name, base_spacer_tuple in base_spacer_positions.items():
             # Unpack *spacer_tuple*:
             # FIXME: Add a hole reference:
             base_position: P2D
+            base_reference_name: str
             base_dz: float
-            base_position, base_dz = base_spacer_tuple
+            base_position, base_reference_name, base_dz = base_spacer_tuple
             if not base_spacer_name.startswith("Pi"):
-                base_pad: Pad = Pad(
+                # Construct the *Pad*, *PCBChunk*, and *Reference*:
+                base_spacer_pad: Pad = Pad(
                     f"{base_spacer_name} Mount Hole", 0.0, 0.0, hole_diameter, base_position)
+                base_spacer_pcb_chunk: PCBChunk = PCBChunk(
+                    f"{base_spacer_name} Mount", [base_spacer_pad], [])
+                base_spacer_reference: Reference = Reference(
+                    base_reference_name, True, 0.0, base_position, base_spacer_pcb_chunk,
+                    "HOLE_FOOTPRINT")
+
+                # Use *base_position* to determine which board to put the *PCBChunk*/*Reference* on:
                 if base_position.y < 0.0:
-                    center_pads.append(base_pad)
+                    center_pcb_chunks.append(base_spacer_pcb_chunk)
+                    center_references.append(base_spacer_reference)
                 elif base_position.x < 0.0:
-                    nw_pads.append(base_pad)
+                    nw_pcb_chunks.append(base_spacer_pcb_chunk)
+                    nw_references.append(base_spacer_reference)
                 else:
-                    ne_pads.append(base_pad)
+                    ne_pcb_chunks.append(base_spacer_pcb_chunk)
+                    ne_references.append(base_spacer_reference)
 
         # Create the *master_arm_spacer*:
         master_arm_spacer: Spacer = Spacer(
-            scad_program, "Mater Arm Spacer", arm_spacer_dz, "M2.5", color="YellowGreen")
+            scad_program, "Mater Arm Spacer", arm_spacer_dz, "M2.5")
 
         # Iterate through *plate_spacer_positions*:
         plate_spacer_name: str
@@ -4483,72 +4497,40 @@ class MasterBoard:
                 P3D(plate_position.x, plate_position.y, 0.0))
             arm_spacer_pad: Pad = Pad(
                 f"{plate_spacer_name} Mount", 0.0, 0.0, arm_hole_diameter, plate_position)
+            arm_spacer_pcb_chunk: PCBChunk = PCBChunk(
+                f"{plate_spacer_name}", [arm_spacer_pad], [arm_spacer_scad])
+            arm_spacer_reference: Reference = Reference(
+                plate_reference, False, 0.0, plate_position, arm_spacer_pcb_chunk, "HOLE_FOOTPRINT")
+
+            # Install *PCBChunk* and *Reference* onto appropriate board:
             if plate_board_name == "center":
-                center_pads.append(arm_spacer_pad)
-                center_scads.append(arm_spacer_scad)
+                center_pcb_chunks.append(arm_spacer_pcb_chunk)
+                center_references.append(arm_spacer_reference)
             elif plate_board_name == "ne":
-                ne_pads.append(arm_spacer_pad)
-                ne_scads.append(arm_spacer_scad)
+                ne_pcb_chunks.append(arm_spacer_pcb_chunk)
+                ne_references.append(arm_spacer_reference)
             elif plate_board_name == "nw":
-                nw_pads.append(arm_spacer_pad)
-                nw_scads.append(arm_spacer_scad)
+                nw_pcb_chunks.append(arm_spacer_pcb_chunk)
+                nw_references.append(arm_spacer_reference)
             else:
                 assert False, f"'{plate_board_name}' is not a valid board name"
 
-        # Create the *romi_base_mounting holes* which are the holes for mounting the
-        # master board to the Romi base:
-        # spacer_tuples: List[Tuple[bool, str, str, str, List[Pad], List[Scad3D]]] = [
-        #     # (False,
-        #     # "SE Arm Spacer", "LEFT: Middle Triple Hole", "H10", center_pads, center_scads),
-        #     # (False,
-        #    # "SW Arm Spacer", "RIGHT: Middle Triple Hole", "H11", center_pads, center_scads),
-        #    # (False, "NE Arm Spacer", "Angle Hole[0,0]", "H12", nw_pads, nw_scads),
-        #    # (False, "NW Arm Spacer", "Angle Hole[5,0]", "H13", ne_pads, ne_scads),
-        # ]
+        # Create various *PCBChunk*'s that contains
+        center_references_pcb_chunk: PCBChunk = PCBChunk(
+            "Center Mount References", [], [], references=center_references)
+        ne_references_pcb_chunk: PCBChunk = PCBChunk(
+            "NE Mount References", [], [], references=ne_references)
+        nw_references_pcb_chunk: PCBChunk = PCBChunk(
+            "NW Mount References", [], [], references=nw_references)
 
-        # Create the *expansion_spacer*:
-        # arm_spacer_outer_diameter: float = 3.9  # mm
-        # arm_spacer_hole_diameter: float = 2.5  # mm
-
-        # Put in a spacer_hole for each *spacer_tuple*:
-
-        # kicad_mounting_holes: Dict[str, Tuple[P2D, float]] = {}
-        # kicad_hole_name: str
-        # is_base_master: bool
-        # spacer_name: str
-        # spacer_tuple: Tuple[str, str, str]
-        # scads: List[Scad3D]
-        # for is_base_master, spacer_name, key_name, kicad_hole_name, pads, scads in spacer_tuples:
-        #     # Lookup up the *romi_base_key* and create *spacer_center*:
-        #     keys_table: Dict[str, Tuple[Any, ...]] = (base_keys_table if is_base_master
-        #                                               else expansion_keys_table)
-        #     assert key_name in keys_table, (f"Spacer key {key_name} not found in "
-        #                                     f"{sorted(list(keys_table.keys()))}")
-        #     key = keys_table[key_name]
-        #     key_x: float = key[2]
-        #     key_y: float = key[3]
-        #     spacer_center: P2D = (P2D(key_x, key_y) if is_base_master
-        #                         else P2D(key_x, -key_y))  # Why the minus sign? It works, but why?
-
-        #    if not is_base_master:
-        #        arm_spacer: Spacer = Spacer(
-        #            scad_program, f"{spacer_name} Spacer", arm_spacer_dz, "M2.5",
-        #            # color="Silver", outer_diameter=arm_spacer_diameter,
-        #            bottom_center=P3D(key_x, -key_y, master_board_top_z))  # Again, why minus sign?
-        #        scads.append(arm_spacer.module.use_module_get())
-
-        #    # Remember this information.  (Is this needed anymore?, probably not!):
-        #    kicad_mounting_holes[kicad_hole_name] = (spacer_center, arm_spacer_hole_diameter)
-
-        #    # Construrt the *pad* and append to *pads*:
-        #    pad: Pad = Pad(spacer_name, 0.0, 0.0, arm_spacer_hole_diameter, spacer_center)
-        #    pads.append(pad)
-
-        # Create and return the *PCBChunk*'s:
-        center_spacers_pcb_chunk: PCBChunk = PCBChunk("Center Spacers", center_pads, center_scads)
-        ne_spacers_pcb_chunk: PCBChunk = PCBChunk("NE Spacers", ne_pads, ne_scads)
-        nw_spacers_pcb_chunk: PCBChunk = PCBChunk("NW Spacers", nw_pads, nw_scads)
-        return ne_spacers_pcb_chunk, nw_spacers_pcb_chunk, center_spacers_pcb_chunk
+        # Create and return the final *PCBChunk*'s:
+        final_center_pcb_chunk: PCBChunk = PCBChunk.join(
+            "Center Spacers", center_pcb_chunks + [center_references_pcb_chunk])
+        final_ne_pcb_chunk: PCBChunk = PCBChunk.join(
+            "NE Spacers", ne_pcb_chunks + [ne_references_pcb_chunk])
+        final_nw_pcb_chunk: PCBChunk = PCBChunk.join(
+            "NW Spacers", nw_pcb_chunks + [nw_references_pcb_chunk])
+        return final_ne_pcb_chunk, final_nw_pcb_chunk, final_center_pcb_chunk
 
 
 # MikroBus:
@@ -6744,7 +6726,7 @@ class RomiBase:
         return vertical_rectangles
 
     # RomiBase.spacer_positions_get():
-    def spacer_positions_get(self) -> Dict[str, Tuple[P2D, float]]:
+    def spacer_positions_get(self) -> Dict[str, Tuple[P2D, str, float]]:
         """Generate a table of spacer positions."""
         # Grab some values from *romi_base* (i.e. *self*):
         romi_base: RomiBase = self
@@ -6761,17 +6743,15 @@ class RomiBase:
         # Define the *spacer_tuples* list which is a list of 3-tuples of the spacer name (*str*),
         # key name (*str*), and base_level (*float*).
         base_dz: float = 0.0
-        spacer_tuples: List[Tuple[str, str, float]] = [
-            ("Pi NE", "BATTERY: Upper Slot (7, 1)", battery_dz),
-            ("Pi NW", "BATTERY: Upper Slot (2, 1)", battery_dz),
-            ("Pi SE", "RIGHT: LOWER Small Hex Slot (3, 0)", base_dz),
-            ("Pi SW", "LEFT: LOWER Small Hex Slot (3, 0)", base_dz),
-            ("Master NE", "BATTERY: Upper Hole (9, 2)", base_dz),
-            ("Master NW", "BATTERY: Upper Hole (0, 2)", base_dz),
-            # ("MasterBoard SE1", "RIGHT: Misc Small Upper Right 90deg", base_dz)
-            # ("MasterBoard SW1", "LEFT: Misc Small Upper Right 90deg", base_dz)
-            ("MasterBoard SE2", "RIGHT: Vector Hole 8", base_dz),
-            ("MasterBoard SW2", "LEFT: Vector Hole 8", base_dz),
+        spacer_tuples: List[Tuple[str, str, str, float]] = [
+            ("Pi NE", "BATTERY: Upper Slot (7, 1)", "H1", battery_dz),
+            ("Pi NW", "BATTERY: Upper Slot (2, 1)", "H2", battery_dz),
+            ("Pi SE", "RIGHT: LOWER Small Hex Slot (3, 0)", "H3", base_dz),
+            ("Pi SW", "LEFT: LOWER Small Hex Slot (3, 0)", "H4", base_dz),
+            ("Master NE", "BATTERY: Upper Hole (9, 2)", "H5", base_dz),
+            ("Master NW", "BATTERY: Upper Hole (0, 2)", "H6", base_dz),
+            ("MasterBoard SE2", "RIGHT: Vector Hole 8", "H7", base_dz),
+            ("MasterBoard SW2", "LEFT: Vector Hole 8", "H8", base_dz),
         ]
         spacer_tuple: Tuple[str, str, float]
         # Set *debug_dz* to non-zero to provide a little gap on top and bottom for visualization:
@@ -6782,11 +6762,12 @@ class RomiBase:
         pi_center_y: float = 0.0
 
         # Iterate over *spacer_tuples*:
-        spacer_positions: Dict[str, Tuple[P2D, float]] = {}
+        spacer_positions: Dict[str, Tuple[P2D, str, float]] = {}
         spacer_name: str
+        reference_name: str
         key_name: str
         base_level: float
-        for spacer_name, key_name, base_level in spacer_tuples:
+        for spacer_name, key_name, reference_name, base_level in spacer_tuples:
             # Lookup the *key_name* and extract (*key_x*, *key_y*) location:
             key: Tuple[Any, ...] = romi_base_key_table[key_name]
             key2: Any = key[2]
@@ -6796,7 +6777,7 @@ class RomiBase:
             key_y: float = float(key3)
 
             # Insert value into *spacer_positions*:
-            spacer_positions[spacer_name] = (P2D(key_x, key_y), base_level)
+            spacer_positions[spacer_name] = (P2D(key_x, key_y), reference_name, base_level)
 
             # Keep track of the Raspberry Pi center to ensure that it is very close to (0, 0).
             if name.startswith("Pi"):
