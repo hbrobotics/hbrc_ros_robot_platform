@@ -4497,8 +4497,10 @@ class MasterBoard:
                 P3D(plate_position.x, plate_position.y, 0.0))
             arm_spacer_pad: Pad = Pad(
                 f"{plate_spacer_name} Mount", 0.0, 0.0, arm_hole_diameter, plate_position)
+            arm_spacer_pads: List[Pad] = ([] if plate_spacer_name.endswith("NO_HOLE")
+                                          else [arm_spacer_pad])
             arm_spacer_pcb_chunk: PCBChunk = PCBChunk(
-                f"{plate_spacer_name}", [arm_spacer_pad], [arm_spacer_scad])
+                f"{plate_spacer_name}", arm_spacer_pads, [arm_spacer_scad])
             arm_spacer_reference: Reference = Reference(
                 plate_reference, False, 0.0, plate_position, arm_spacer_pcb_chunk, "HOLE_FOOTPRINT")
 
@@ -6985,7 +6987,7 @@ class RomiExpansionPlate:
         return simple_polygons
 
     # RomiExpansionPlate.large_holes_get():
-    def large_holes_get(self) -> List[Circle]:
+    def large_holes_get(self) -> List[SimplePolygon]:
         """Return the expansion chasis small hole pattern."""
         # romi_expanson_plate: RomiExpansionPlate = self
         # Define some constants from dimentions `.pdf`:
@@ -6998,7 +7000,7 @@ class RomiExpansionPlate:
         y_pitches: List[float] = [0.0, y_pitch, 2.0 * y_pitch, 2.0 * y_pitch - 51.0]
 
         # Assemble all of the holes into *large_holes*:
-        large_holes: List[Circle] = []
+        large_holes: List[SimplePolygon] = []
         x_index: int
         for x_index in range(9):
             x: float = x_start + float(x_index) * x_pitch
@@ -7015,8 +7017,8 @@ class RomiExpansionPlate:
                 else:
                     # print(f"  Large Hole[{x_index},{y_index}]")
                     center: P2D = P2D(x, y)
-                    large_hole: Circle = Circle(f"Large Hole[{x_index}, {y_index}]",
-                                                large_hole_diameter, 8, center)
+                    large_hole: SimplePolygon = Circle(f"Large Hole[{x_index}, {y_index}]",
+                                                       large_hole_diameter, 8, center)
                     large_holes.append(large_hole)
         return large_holes
 
@@ -7093,28 +7095,23 @@ class RomiExpansionPlate:
 
         # Fill in *simple_polygons* starting with *expansion_outer* and the all of the
         # other holes, rectangles and slots:
-        simple_polygons: List[SimplePolygon] = [expansion_outer]
-        expansion_large_holes: List[Circle] = romi_expansion_plate.large_holes_get()
-        simple_polygons.extend(expansion_large_holes)
-        expansion_small_holes: List[Circle] = romi_expansion_plate.small_holes_get()
-        simple_polygons.extend(expansion_small_holes)
-        expansion_hex_holes_slots: List[SimplePolygon] = romi_expansion_plate.hex_holes_slots_get()
-        simple_polygons.extend(expansion_hex_holes_slots)
-        expansion_standoff_holes: List[Circle] = romi_expansion_plate.standoff_holes_get()
-        simple_polygons.extend(expansion_standoff_holes)
-        top_slots: List[SimplePolygon] = romi_expansion_plate.top_slots_get()
-        simple_polygons.extend(top_slots)
-        miscellaneous_polygons: List[SimplePolygon]
-        miscellaneous_polygons = romi_expansion_plate.miscellaneous_polygons_get()
-        assert len(miscellaneous_polygons) >= 1
-        simple_polygons.extend(miscellaneous_polygons)
+        simple_polygons: List[SimplePolygon] = (
+            [expansion_outer] +
+            romi_expansion_plate.large_holes_get() +
+            romi_expansion_plate.small_holes_get() +
+            romi_expansion_plate.hex_holes_slots_get() +
+            romi_expansion_plate.standoff_holes_get() +
+            romi_expansion_plate.top_slots_get() +
+            romi_expansion_plate.arc_holes_get() +
+            romi_expansion_plate.miscellaneous_polygons_get()
+        )
 
         # Create and return *expansion_polygon* in an unlocked state:
         expansion_polygon: Polygon = Polygon("Expansion", simple_polygons, lock=True)
         return expansion_polygon
 
     # RomiExpansionPlate.small_holes_get():
-    def small_holes_get(self) -> List[Circle]:
+    def small_holes_get(self) -> List[SimplePolygon]:
         """Return the expansion chasis small hole pattern."""
         # romi_expansion_plate: RomiExpansionPlate = self
         # Define some constants from dimentions `.pdf`:
@@ -7127,7 +7124,7 @@ class RomiExpansionPlate:
         y_pitches: List[float] = [0.0, y_pitch, 2.0 * y_pitch, 2.0 * y_pitch + x_pitch]
 
         # Assemble all of the holes into *small_holes*:
-        small_holes: List[Circle] = []
+        small_holes: List[SimplePolygon] = []
         y_index: int
         for y_index in range(4):
             y: float = y_start + y_pitches[y_index]
@@ -7135,8 +7132,8 @@ class RomiExpansionPlate:
             for x_index in range(10):
                 x: float = x_start + float(x_index) * x_pitch
                 center: P2D = P2D(x, y)
-                small_hole: Circle = Circle(f"Small Hole[{x_index}, {y_index}]",
-                                            small_hole_diameter, 8, center)
+                small_hole: SimplePolygon = Circle(f"Small Hole[{x_index}, {y_index}]",
+                                                   small_hole_diameter, 8, center)
                 small_holes.append(small_hole)
         return small_holes
 
@@ -7161,10 +7158,10 @@ class RomiExpansionPlate:
 
         # Start with a list of *spacer_tuples*:
         spacer_tuples: List[Tuple[str, str, str, str]] = [
-            ("SE Arm Spacer", "LEFT: Middle Triple Hole", "H10", "center"),
-            ("SW Arm Spacer", "RIGHT: Middle Triple Hole", "H11", "center"),
-            ("NE Arm Spacer", "Angle Hole[0,0]", "H12", "nw"),
-            ("NW Arm Spacer", "Angle Hole[5,0]", "H13", "ne"),
+            ("Outer NE Arm Spacer NO_HOLE", "LEFT: Arc Hole 1", "H10", "center"),
+            ("Outer NW Arm Spacer NO_HOLE", "RIGHT: Arc Hole 1", "H10", "center"),
+            ("Inner NE Arm Spacer", "Slot[1,4]", "H12", "nw"),  # Spacer in center of slot
+            ("Inner NW Arm Spacer", "Slot[5,5]", "H13", "ne"),  # Spacer in centef of slot
         ]
 
         # Create and populate *spacer_posistions* by iterating over *spacer_tuples*:
@@ -7182,7 +7179,7 @@ class RomiExpansionPlate:
         return spacer_positions
 
     # RomiExpansionPlate.standoff_holes_get():
-    def standoff_holes_get(self) -> List[Circle]:
+    def standoff_holes_get(self) -> List[SimplePolygon]:
         """Produce the 6 standoff holes."""
         # Define some constants:
         small_hole_diameter: float = 2.4
@@ -7200,12 +7197,12 @@ class RomiExpansionPlate:
         y0: float = -81.5 + 10.4
 
         standoff_centers: List[P2D] = [P2D(x0, y1), P2D(x2, y0), P2D(x3, y0), P2D(x5, y1)]
-        standoff_holes: List[Circle] = []
+        standoff_holes: List[SimplePolygon] = []
         standoff_center: P2D
         standoff_index: int
         for standoff_index, standoff_center in enumerate(standoff_centers):
-            standoff_hole: Circle = Circle(f"Standoff[{standoff_index}",
-                                           small_hole_diameter, 8, center=standoff_center)
+            standoff_hole: SimplePolygon = Circle(f"Standoff[{standoff_index}",
+                                                  small_hole_diameter, 8, center=standoff_center)
             standoff_holes.append(standoff_hole)
         return standoff_holes
 
@@ -7321,6 +7318,48 @@ class RomiExpansionPlate:
                                            for right_slot in right_slots]
         all_top_slots: List[SimplePolygon] = [center_slot] + right_slots + left_slots
         return all_top_slots
+
+    # RomiExpansionPlate.arc_holes_get():
+    def arc_holes_get(self) -> List[SimplePolygon]:
+        """Return The arc holes at the front."""
+        # Grab *expansion_dxf* from *romi_expansion_plate* (i.e. *self*):
+        romi_expansion_plate: RomiExpansionPlate = self
+        expansion_dxf: ExpansionDXF = romi_expansion_plate.expansion_dxf
+        right_arc_hole0: SimplePolygon = expansion_dxf.hole_locate("RIGHT: Arc Hole 0",  # Small
+                                                                   0.260413, 2.275024,
+                                                                   0.354858, 2.369469)
+        right_arc_hole1: SimplePolygon = expansion_dxf.hole_locate("RIGHT: Arc Hole 1",  # Large
+                                                                   0.134024, 2.095858,
+                                                                   0.260413, 2.222248)
+        right_arc_hole2: SimplePolygon = expansion_dxf.hole_locate("RIGHT: Arc Hole 2",  # Small
+                                                                   0.039579, 1.948634,
+                                                                   0.134024, 2.043079)
+        right_arc_hole3: SimplePolygon = expansion_dxf.hole_locate("RIGHT: Arc Hole 3",  # Small
+                                                                   -0.070142, 1.815303,
+                                                                   0.024303, 1.909748)
+        right_arc_hole4: SimplePolygon = expansion_dxf.hole_locate("RIGHT: Arc Hole 4",  # Small
+                                                                   -0.225697, 1.659748,
+                                                                   -0.099307, 1.784748)
+        right_arc_hole5: SimplePolygon = expansion_dxf.hole_locate("RIGHT: Arc Hole 5",  # Small
+                                                                   -0.349307, 1.536134,
+                                                                   -0.254866, 1.630579)
+        right_arc_hole6: SimplePolygon = expansion_dxf.hole_locate("RIGHT: Arc Hole 6",  # Large
+                                                                   -0.493752, 1.418079,
+                                                                   -0.399307, 1.512524)
+        right_arc_holes: List[SimplePolygon] = [
+            right_arc_hole0,
+            right_arc_hole1,
+            right_arc_hole2,
+            right_arc_hole3,
+            right_arc_hole4,
+            right_arc_hole5,
+            right_arc_hole6,
+        ]
+        right_arc_hole: SimplePolygon
+        left_arc_holes: List[SimplePolygon] = [right_arc_hole.y_mirror("RIGHT", "LEFT")
+                                               for right_arc_hole in right_arc_holes]
+        all_arc_holes: List[SimplePolygon] = right_arc_holes + left_arc_holes
+        return all_arc_holes
 
 
 # RomiMagnet:
