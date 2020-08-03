@@ -3850,7 +3850,7 @@ class MasterBoard:
         radius: float = 163.0 / 2.0  # mm (from user's guide)
 
         # The remaining variable are defined in alphabetical order:
-        arm_well_dx: float = 15.0  # mm (trail and error)
+        arm_well_dx: float = 13.0  # mm (trail and error)
         arm_well_north: float = -53.0  # mm (trail and error)
         # bantam_dx: float = 5 * 25.4  # mm (size of Bantam Labs PCB blank)
         bantam_dy: float = 4 * 25.4  # mm (size of Bantam Labs PCB blank)
@@ -6740,6 +6740,34 @@ class RomiBase:
             name: str = romi_base_key[1]
             romi_base_key_table[name] = romi_base_key
 
+        # Find holes that are close to a named hole:
+        def find(anchor_name: str, base_key_table: Dict[str, Tuple[Any, ...]]) -> None:
+            """Find some holes that close."""
+            anchor_key: Tuple[Any, ...] = base_key_table[anchor_name]
+            anchor_position: P2D = P2D(float(anchor_key[2]), float(anchor_key[3]))
+            distance_tuples: List[Tuple[float, str, float, float]] = []
+            other_key: Tuple[Any, ...]
+            distance_tuple: Tuple[float, str, float, float]
+            distance: float
+            name: str
+            x: float
+            y: float
+            for other_key in base_key_table.values():
+                assert isinstance(other_key[1], str)
+                name = other_key[1]
+                x = float(other_key[2])
+                y = float(other_key[3])
+                other_position: P2D = P2D(x, y)
+                distance = anchor_position.distance(other_position)
+                distance_tuple = (distance, name, x, y)
+                distance_tuples.append(distance_tuple)
+            distance_tuples = sorted(distance_tuples)
+            index: int
+            for index, distance_tuple in enumerate(distance_tuples[:15]):
+                distance, name, x, y = distance_tuple
+                print(f"[{index}]: {distance:.2f} '{name}' {x:.2f} {y:.2f}")
+            print("")
+
         # Define the *spacer_tuples* list which is a list of 3-tuples of the spacer name (*str*),
         # key name (*str*), and base_level (*float*).
         base_dz: float = 0.0
@@ -6749,11 +6777,15 @@ class RomiBase:
             ("Pi SE", "RIGHT: LOWER Small Hex Slot (3, 0)", "H3", base_dz),
             ("Pi SW", "LEFT: LOWER Small Hex Slot (3, 0)", "H4", base_dz),
             ("Master NE", "BATTERY: Upper Hole (9, 2)", "H5", base_dz),
-            ("Master NW", "BATTERY: Upper Hole (0, 2)", "H6", base_dz),
-            ("MasterBoard SE2", "RIGHT: Vector Hole 8", "H7", base_dz),
-            ("MasterBoard SW2", "LEFT: Vector Hole 8", "H8", base_dz),
+            ("Master NE", "RIGHT: Upper hole 0", "H5", base_dz),
+            ("Master NW", "LEFT: Upper hole 0", "H6", base_dz),
+            # ("MasterBoard SE", "RIGHT: Vector Hole 8", "H7", base_dz),
+            ("MasterBoard SE", "RIGHT: Lower hole 0", "H7", base_dz),
+            ("MasterBoard SW", "LEFT: Lower hole 0", "H8", base_dz),
+            # ("MasterBoard SW", "LEFT: Vector Hole 1", "H8", base_dz),
         ]
-        spacer_tuple: Tuple[str, str, float]
+        # find("RIGHT: Lower hole 0", romi_base_key_table)
+
         # Set *debug_dz* to non-zero to provide a little gap on top and bottom for visualization:
         bottom_z: float
         top_z: float
@@ -6762,6 +6794,7 @@ class RomiBase:
         pi_center_y: float = 0.0
 
         # Iterate over *spacer_tuples*:
+        spacer_tuple: Tuple[str, str, float]
         spacer_positions: Dict[str, Tuple[P2D, str, float]] = {}
         spacer_name: str
         reference_name: str
