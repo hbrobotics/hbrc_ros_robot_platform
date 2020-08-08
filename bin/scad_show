@@ -33,6 +33,9 @@ function scad() {
     openscad "$HR2_DIRECTORY/mechanical/hr2_models.scad" -D $FOO
 }
 case "$1" in
+    "Blue_20x20_Grove")
+	scad "Blue_20x20_Grove"
+	;;
     "LED")
 	scad "LED"
 	;;
@@ -162,7 +165,11 @@ case "$1" in
     "wheel_assembly")
 	scad "wheel_assembly"
 	;;
+    "yplidar_x2_lidar")
+	scad "yplidar_x2_lidar"
+	;;
     *)
+	echo "Blue_20x20_Grove"
 	echo "LED"
 	echo "encoder_board"
 	echo "expansion_flat"
@@ -206,5 +213,6 @@ case "$1" in
 	echo "u3v70x_board"
 	echo "u3v70xmate_board"
 	echo "wheel_assembly"
+	echo "yplidar_x2_lidar"
 	;;
 esac
