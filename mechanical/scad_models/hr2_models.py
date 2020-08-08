@@ -2401,6 +2401,145 @@ class Encoder:
             print(f"{tracing}<=Encoder.__init__(...)")
 
 
+# Grove:
+class Grove:
+    """Represents Seeedstudio Grove module."""
+
+    def __init__(self, scad_program: ScadProgram, dx_mm: int, dy_mm: int, color: str) -> None:
+        """Initialize a Seeedstudo Grove module."""
+        # Verify argument types:
+        assert dx_mm % 20 == 0, f"dx_mm={dx_mm} must be a multiple of 20"
+        assert dy_mm % 20 == 0, f"dx_mm={dy_mm} must be a multiple of 20"
+        assert color != ""
+
+        # Define some constants:
+        dx: float = float(dx_mm)
+        dy: float = float(dy_mm)
+        dz: float = 1.6  # mm
+        pitch: float = 20.0  # mm
+        corner_radius: float = 0.80
+        nub_radius: float = 2.00
+        hole_diameter: float = 2.20  # For M2 hardware
+        columns: int = int(dx_mm / 20)
+        rows: int = int(dy_mm / 20)
+        degrees0: float = 0.0
+        degrees180: float = pi
+        degrees90: float = degrees180 / 2.0
+        degrees270: float = degrees180 + degrees90
+        degrees10: float = degrees90 / 9.0
+        east_x: float = dx / 2.0
+        west_x: float = -east_x
+        north_y: float = dy / 2.0
+        south_y: float = -north_y
+        spacer_height: float = 2.0  # mm
+
+        # Create a Spacer:
+        full_name: str = f"{color} {dx_mm}x{dy_mm} Grove"
+        grove_spacer: Spacer = Spacer(scad_program, f"{full_name} Spacer", spacer_height, "M2")
+        spacer_use_module: UseModule3D = grove_spacer.module.use_module_get()
+
+        # Start the *grove_exterior* by drawing the 4 corners along with the various nubs,
+        # and indentations:
+        grove_exterior: SimplePolygon = SimplePolygon(f"{full_name} Exterior", [])
+
+        # Start with the NW rounded corner:
+        corner_center: P2D = P2D(west_x + corner_radius, north_y - corner_radius)
+        grove_exterior.arc_append(corner_center, corner_radius, degrees180, degrees90, degrees10)
+
+        # Draw the North nubs and holes:
+        holes: List[SimplePolygon] = []
+        pads: List[Pad] = []
+        pad: Pad
+        spacer_scads: List[Scad3D] = []
+        hole_center: P2D
+        translated_spacer: Scad3D
+        column: int
+        for column in range(columns):
+            hole_center = P2D(west_x + (float(column) + 0.5) * pitch, north_y)
+            grove_exterior.arc_append(hole_center, nub_radius, degrees180, degrees0, degrees10)
+            holes.append(Circle(f"N[{column}] Hole", hole_diameter, 16, center=hole_center))
+            translated_spacer = Translate3D(
+                f"N[{column}] Spacer", spacer_use_module, P3D(hole_center.x, hole_center.y, 0.0))
+            spacer_scads.append(translated_spacer)
+            pad = Pad(f"N[{column}] {full_name}", 0.0, 0.0, hole_diameter, hole_center)
+            pads.append(pad)
+
+        # End with the NE rounded corner:
+        corner_center = P2D(east_x - corner_radius, north_y - corner_radius)
+        grove_exterior.arc_append(corner_center, corner_radius, degrees90, degrees0, degrees10)
+
+        # Draw the East nub indents:
+        row: int
+        for row in range(rows):
+            hole_center = P2D(east_x, north_y - (float(row) + 0.5) * pitch)
+            grove_exterior.arc_append(hole_center, nub_radius, degrees90, degrees270, degrees10)
+
+        # Draw the SE corner:
+        corner_center = P2D(east_x - corner_radius, south_y + corner_radius)
+        grove_exterior.arc_append(corner_center, corner_radius, degrees0, -degrees90, degrees10)
+
+        # Draw the South nubs, holes, and pads:
+        for column in range(columns):
+            hole_center = P2D(east_x - (float(column) + 0.5) * pitch, south_y)
+            grove_exterior.arc_append(hole_center, nub_radius, degrees0, -degrees180, degrees10)
+            holes.append(Circle(f"S[{column}] Hole", hole_diameter, 16, center=hole_center))
+            translated_spacer = Translate3D(
+                f"S[{column}] Spacer", spacer_use_module, P3D(hole_center.x, hole_center.y, 0.0))
+            spacer_scads.append(translated_spacer)
+            pad = Pad(f"S[{column}] {full_name}", 0.0, 0.0, hole_diameter, hole_center)
+            pads.append(pad)
+
+        # Draw the SW corner:
+        corner_center = P2D(west_x + corner_radius, south_y + corner_radius)
+        grove_exterior.arc_append(corner_center, corner_radius, -degrees90, -degrees180, degrees10)
+
+        # Draw the West nub indents:
+        for row in range(rows):
+            hole_center = P2D(west_x, south_y + (float(row) + 0.5) * pitch)
+            grove_exterior.arc_append(hole_center, nub_radius, -degrees90, degrees90, degrees10)
+        grove_exterior.lock()
+
+        # Create the *grove_connector*:
+        connector_dx: float = 5.0  # mm
+        connector_dy: float = 10.0  # mm
+        connector_dz: float = 7.7  # mm
+        connector_center_x: float = west_x + 1.4 + connector_dx / 2.0
+        connector_center_y: float = 0.0
+        connector_center_z: float = spacer_height + dz + connector_dz / 2.0
+        connector_center: P3D = P3D(connector_center_x, connector_center_y, connector_center_z)
+        connector_cube: Cube = Cube(
+            f"{full_name} Cube", connector_dx, connector_dy, connector_dz, center=connector_center)
+        colored_connector: Scad3D = Color(f"{full_name} Connector", connector_cube, "Beige")
+
+        # Create the extruded PCB:
+        grove_polygon: Polygon = Polygon(f"{dx_mm}x{dy_mm} Polygon", [grove_exterior] + holes)
+        extruded_grove: LinearExtrude = LinearExtrude("Extruded Grove", grove_polygon, dz)
+        translated_grove: Translate3D = Translate3D(
+            "Translated Grove", extruded_grove, P3D(0.0, 0.0, spacer_height))
+        colored_grove: Scad3D = Color(f"{color} Colored Grove", translated_grove, color)
+
+        # Now create the *grove_module*:
+        grove_module: Module3D = Module3D(f"{full_name} Module",
+                                          [colored_grove, colored_connector] + spacer_scads)
+        scad_program.append(grove_module)
+        scad_program.if3d.name_match_append(full_name, grove_module, [full_name])
+
+        # Create the *grove_pcb_chunk*:
+        footprint_name: str = f"GROVE{int(dx)}x{int(dy)}"
+        grove_pcb_chunk: PCBChunk = PCBChunk(
+            footprint_name, pads, [grove_module.use_module_get()], front_artworks=[grove_exterior])
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        hr2_pretty_directory: Path = (hr2_directory /
+                                      "electrical" / "master_board" / "rev_a" / "pretty")
+        grove_pcb_chunk.footprint_generate("HR2", hr2_pretty_directory)
+
+        # Stuff some values into *grove* (i.e. *self*):
+        # grove: Grove = self
+        self.module: Module3D = grove_module
+        self.pcb_chunk: PCBChunk = grove_pcb_chunk
+
+
 # HCSR04:
 class HCSR04:
     """Represents an HC-SR04 sonar module."""
@@ -2802,6 +2941,11 @@ class HR2BaseAssembly:
         east_romi_motor_holder: Rotate3D = Rotate3D("East Romi Motor Holder",
                                                     west_romi_motor_holder, degrees180, z_axis)
 
+        lidar: Lidar = Lidar(scad_program, "yplidar_x2", 96.0, 60.5, 50.3, 60.5, 2 * 7.9,
+                             35.3 + 5.0, 30.0, 10.0,
+                             [P2D(-35.3, 0.0), P2D(36.0, 18.0), P2D(36.0, -18.0)])
+        lidar = lidar
+
         # Create the *base_master_spacer* and the *battery_pi_spacer*:
         # base_dz: float = romi_base.base_dz
         battery_dz: float = romi_base.battery_dz
@@ -3160,6 +3304,85 @@ class HR2WheelAssembly:
         self.module: Module3D = module
         self.hr2_master_assembly: HR2MasterAssembly = hr2_master_assembly
         scad_program.if3d.name_match_append("hr2_wheel_assembly", module, ["HR2 Wheel Assembly"])
+
+
+# Lidar:
+class Lidar:
+    """Represents an inexpensive Lidar."""
+
+    # Lidar.__init__():
+    def __init__(self, scad_program: ScadProgram, name: str, dx: float, dy: float, dz: float,
+                 scanner_diameter: float, scanner_dz: float, scanner_center_dx: float,
+                 motor_diameter: float, base_dz: float, spacer_positions: List[P2D]) -> None:
+        """Initialize a Lidar."""
+        motor_radius: float = motor_diameter / 2.0
+
+        def arc_append(start_angle: float, end_angle: float,
+                       start_radius: float, end_radius: float, arc_points: List[P2D]) -> None:
+            """Append a curved arc of points to a list."""
+            degrees180: float = pi
+            degrees90: float = degrees180 / 2.0
+            segments_count: int = int(90 / 5)
+            delta_angle: float = degrees90 / float(segments_count)
+            # *delta_radius* can be postive or negative:
+            delta_radius: float = (end_radius - start_radius) / float(segments_count)
+            index: int
+            for index in range(segments_count):
+                angle: float = start_angle + float(index) * delta_angle
+                radius: float = start_radius + float(index) * delta_radius
+                x: float = radius * cos(angle)
+                y: float = radius * sin(angle)
+                arc_point: P2D = P2D(x, y)
+                arc_points.append(arc_point)
+
+        # The origin is centered under the Lidar center, with the motor along the +X axis:
+        degrees0: float = 0
+        degrees180: float = pi
+        degrees90: float = degrees180 / 2.0
+        degrees270: float = degrees180 + degrees90
+        degrees360: float = 2.0 * degrees180
+
+        # Create the *base_exterior* out of 4 blended arcs:
+        base_lidar_radius: float = scanner_center_dx
+        base_points: List[P2D] = []
+        arc_append(degrees0, degrees90, dx - scanner_center_dx, dy / 2.0, base_points)
+        arc_append(degrees90, degrees180, dy / 2.0, base_lidar_radius, base_points)
+        arc_append(degrees180, degrees270, base_lidar_radius, dy / 2.0, base_points)
+        arc_append(degrees270, degrees360, dy / 2.0, dx - scanner_center_dx, base_points)
+        base_exterior: SimplePolygon = SimplePolygon(f"{name} Base Outline", base_points, lock=True)
+
+        # Compute various dz values:
+        motor_dz: float = dz - scanner_dz - base_dz
+        assert abs(motor_dz + base_dz + scanner_dz - dz) < 0.0001
+
+        # Create the *motor_scad*:
+        motor_x: float = -scanner_center_dx + dx - motor_radius
+        motor_cylinder: Cylinder = Cylinder("Lidar Motor", motor_diameter,
+                                            P3D(motor_x, 0.0, 0.0), P3D(motor_x, 0.0, motor_dz), 32)
+        motor_scad: Scad3D = Color("Colored Lidar Motor", motor_cylinder, "Silver")
+
+        # Create the *base_scad*:
+        base_color: str = "Blue"
+        extruded_base: LinearExtrude = LinearExtrude("Extruded Lidar Base", base_exterior, base_dz)
+        translated_base: Translate3D = Translate3D("Translated Lidar Base", extruded_base,
+                                                   P3D(0.0, 0.0, motor_dz))
+        base_scad: Scad3D = Color("Colored Lidar Base", translated_base, base_color)
+
+        # Create the *scanner_scad*:
+        scanner_cylinder: Cylinder = Cylinder("Lidar Scanner", scanner_diameter,
+                                              P3D(0.0, 0.0, motor_dz + base_dz),
+                                              P3D(0.0, 0.0, dz), 64)
+        scanner_scad: Scad3D = Color("Colored Lidar Scaner", scanner_cylinder, base_color)
+
+        # Create the *lidar_module*:
+        lidar_scads: List[Scad3D] = [motor_scad, base_scad, scanner_scad]
+        lidar_module: Module3D = Module3D(f"{name} Lidar", lidar_scads)
+        scad_program.append(lidar_module)
+        scad_program.if3d.name_match_append(f"{name}_lidar", lidar_module, [f"{name} Lidar"])
+
+        # Stuff everything into *lidar* (i.e. *self*):
+        # lidar: Lidar = self
+        self.module = lidar_module
 
 
 # Nucleo144:
@@ -3532,6 +3755,13 @@ class MasterBoard:
         degrees180: float = pi
         degrees90: float = degrees180 / 2.0
 
+        # Install the Grove modules:
+        center_grove_pcb_chunk: PCBChunk
+        ne_grove_pcb_chunk: PCBChunk
+        nw_grove_pcb_chunk: PCBChunk
+        center_grove_pcb_chunk, ne_grove_pcb_chunk, nw_grove_pcb_chunk = (
+            master_board.groves_install(scad_program))
+
         # Create and install all of the sonars:
         hcsr04: HCSR04 = HCSR04(scad_program, connectors, pcb_origin)
         master_board.sonar_modules_create(scad_program, hcsr04, connectors)
@@ -3632,6 +3862,7 @@ class MasterBoard:
         no_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("No Nucelo Center", [
             encoder_references_pcb_chunk,
             east_encoder_mate_pcb_chunk,
+            center_grove_pcb_chunk,
             west_encoder_mate_pcb_chunk,
             center_sonars_pcb_chunk,
             st_mate_pcb_chunk,
@@ -3665,6 +3896,7 @@ class MasterBoard:
 
         # Create *ne_pcb_chunk* and update its associated PCB:
         ne_pcb_chunk: PCBChunk = PCBChunk.join("Master NE", [
+            ne_grove_pcb_chunk,
             ne_mikrobus_pcb_chunk,
             ne_leds_pcb_chunk,
             ne_spacer_pcb_chunk,
@@ -3675,6 +3907,7 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, ne_exterior, "YellowGreen", ne_kicad_pcb_path, [])
 
         nw_pcb_chunk: PCBChunk = PCBChunk.join("Master NW", [
+            nw_grove_pcb_chunk,
             nw_mikrobus_pcb_chunk,
             nw_leds_pcb_chunk,
             nw_spacer_pcb_chunk,
@@ -4062,6 +4295,59 @@ class MasterBoard:
 
         # Return the resulting exterior *SimplePolygon*'s:
         return master_exterior, center_exterior, ne_exterior, nw_exterior, se_exterior, sw_exterior
+
+    # MasterBoard.groves_install():
+    def groves_install(self, scad_program: ScadProgram) -> Tuple[PCBChunk, PCBChunk, PCBChunk]:
+        """Install the Grove mounting holes."""
+        center_grove_pcb_chunks: List[PCBChunk] = []
+        ne_grove_pcb_chunks: List[PCBChunk] = []
+        nw_grove_pcb_chunks: List[PCBChunk] = []
+
+        grove20x20: Grove = Grove(scad_program, 20, 20, "Blue")
+        grove20x20_pcb_chunk: PCBChunk = grove20x20.pcb_chunk
+        degrees0: float = 0.0
+        degrees180: float = pi
+        degrees90: float = degrees180 / 2.0
+
+        # Create a list grove placements:
+        placements: List[Tuple[str, bool, P2D, float, PCBChunk, List[PCBChunk]]] = [
+            ("NW Top", True, P2D(-49.0, 25.0), degrees0,
+             grove20x20_pcb_chunk, nw_grove_pcb_chunks),
+            ("NW Bottom", False, P2D(-42.0, 53.0), degrees90,
+             grove20x20_pcb_chunk, nw_grove_pcb_chunks),
+            ("NE Outer Bottom", False, P2D(47.0, 45.0), degrees90,
+             grove20x20_pcb_chunk, ne_grove_pcb_chunks),
+            ("NE Inner Bottom", False, P2D(47.0, 25.0), degrees0,
+             grove20x20_pcb_chunk, center_grove_pcb_chunks),
+            ("Center NE Inner Bottom", False, P2D(47.0, 25.0), degrees0,
+             grove20x20_pcb_chunk, center_grove_pcb_chunks),
+            ("Center NW Top", True, P2D(-49.0, 25.0), degrees0,
+             grove20x20_pcb_chunk, center_grove_pcb_chunks),
+            ("Center SW Top", True, P2D(-49.0, -25.0), degrees0,
+             grove20x20_pcb_chunk, center_grove_pcb_chunks),
+            ("Center SE Bottom", False, P2D(47.5, -24.25), degrees0,
+             grove20x20_pcb_chunk, center_grove_pcb_chunks),
+        ]
+        origin2d: P2D = P2D(0.0, 0.0)
+        name: str
+        is_front: bool
+        position: P2D
+        rotate: float
+        grove: Grove
+        pcb_chunks: List[PCBChunk]
+        for name, is_front, position, rotate, grove_pcb_chunk, pcb_chunks in placements:
+            pcb_chunk: PCBChunk = grove_pcb_chunk
+            if not is_front:
+                pcb_chunk = pcb_chunk.scads_y_flip().sides_swap()
+            pcb_chunk = pcb_chunk.reposition(origin2d, rotate, position)
+            pcb_chunks.append(pcb_chunk)
+
+        # Assemble the final PCB Chunk:
+        center_grove_pcb_chunk: PCBChunk = PCBChunk.join(
+            "Center Groves", center_grove_pcb_chunks)
+        ne_grove_pcb_chunk: PCBChunk = PCBChunk.join("NE Groves", ne_grove_pcb_chunks)
+        nw_grove_pcb_chunk: PCBChunk = PCBChunk.join("NW Groves", nw_grove_pcb_chunks)
+        return center_grove_pcb_chunk, ne_grove_pcb_chunk, nw_grove_pcb_chunk
 
     # MasterBoard.leds_install():
     def leds_install(self,
