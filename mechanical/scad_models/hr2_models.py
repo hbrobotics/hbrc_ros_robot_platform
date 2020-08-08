@@ -4305,27 +4305,20 @@ class MasterBoard:
 
         grove20x20: Grove = Grove(scad_program, 20, 20, "Blue")
         grove20x20_pcb_chunk: PCBChunk = grove20x20.pcb_chunk
-        degrees0: float = 0.0
-        degrees180: float = pi
-        degrees90: float = degrees180 / 2.0
 
         # Create a list grove placements:
         placements: List[Tuple[str, bool, P2D, float, PCBChunk, List[PCBChunk]]] = [
-            ("NW Top", True, P2D(-49.0, 25.0), degrees0,
+            ("NW Outer Bottom", False, P2D(-42.0, 53.0), radians(-90),
              grove20x20_pcb_chunk, nw_grove_pcb_chunks),
-            ("NW Bottom", False, P2D(-42.0, 53.0), degrees90,
-             grove20x20_pcb_chunk, nw_grove_pcb_chunks),
-            ("NE Outer Bottom", False, P2D(47.0, 45.0), degrees90,
+            ("NE Outer Bottom", False, P2D(47.0, 45.0), radians(-90),
              grove20x20_pcb_chunk, ne_grove_pcb_chunks),
-            ("NE Inner Bottom", False, P2D(47.0, 25.0), degrees0,
+            ("Center NE Inner Bottom", False, P2D(47.0, 25.0), radians(180),
              grove20x20_pcb_chunk, center_grove_pcb_chunks),
-            ("Center NE Inner Bottom", False, P2D(47.0, 25.0), degrees0,
+            ("Center NW Inner Top", True, P2D(-48.5, 31.0), radians(180 + 50),
              grove20x20_pcb_chunk, center_grove_pcb_chunks),
-            ("Center NW Top", True, P2D(-49.0, 25.0), degrees0,
+            ("Center SW Top", True, P2D(-48.0, -28.0), radians(180 - 22.5),
              grove20x20_pcb_chunk, center_grove_pcb_chunks),
-            ("Center SW Top", True, P2D(-49.0, -25.0), degrees0,
-             grove20x20_pcb_chunk, center_grove_pcb_chunks),
-            ("Center SE Bottom", False, P2D(47.5, -24.25), degrees0,
+            ("Center SE Bottom", False, P2D(47.5, -24.25), radians(180),
              grove20x20_pcb_chunk, center_grove_pcb_chunks),
         ]
         origin2d: P2D = P2D(0.0, 0.0)
@@ -4338,7 +4331,7 @@ class MasterBoard:
         for name, is_front, position, rotate, grove_pcb_chunk, pcb_chunks in placements:
             pcb_chunk: PCBChunk = grove_pcb_chunk
             if not is_front:
-                pcb_chunk = pcb_chunk.scads_y_flip().sides_swap()
+                pcb_chunk = pcb_chunk.scads_x_flip().sides_swap()
             pcb_chunk = pcb_chunk.reposition(origin2d, rotate, position)
             pcb_chunks.append(pcb_chunk)
 
