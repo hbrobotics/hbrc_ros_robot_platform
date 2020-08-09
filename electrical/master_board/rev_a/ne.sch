@@ -30,4 +30,26 @@ F 5 "HC-SR04 Sonar (High Profile Receptacle)" H 5000 3000 60  0001 L CNN "Field5
 	1    4800 3250
 	1    0    0    -1  
 $EndComp
+$Comp
+L HR2:HOLE;M2.5 H5
+U 1 1 5F2F7E7C
+P 1800 4850
+F 0 "H5" H 1825 4903 60  0000 L CNN
+F 1 "HOLE;M2.5" H 1825 4797 60  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 2000 4900 60  0001 L CNN
+F 3 "M2.5 Mounting Hole" H 2000 4700 60  0001 L CNN
+	1    1800 4850
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:HOLE;M2.5 H1
+U 1 1 5F2F85AA
+P 1800 4550
+F 0 "H1" H 1825 4603 60  0000 L CNN
+F 1 "HOLE;M2.5" H 1825 4497 60  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 2000 4600 60  0001 L CNN
+F 3 "M2.5 Mounting Hole" H 2000 4400 60  0001 L CNN
+	1    1800 4550
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
