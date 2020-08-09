@@ -3793,26 +3793,15 @@ class MasterBoard:
         ne_leds_pcb_chunk, nw_leds_pcb_chunk, se_leds_pcb_chunk, sw_leds_pcb_chunk = (
             master_board.leds_install(scad_program))
 
-        # Create the base MicroBus *PCBChunk*'s:
-        mikrobus_small: MikroBus = MikroBus(scad_program, connectors, "S")
-        mikrobus_small_pcb_chunk: PCBChunk = mikrobus_small.pcb_chunk
-        mikrobus_small_pcb_chunk = mikrobus_small_pcb_chunk
-        mikrobus_medium: MikroBus = MikroBus(scad_program, connectors, "M")
-        mikrobus_medium_pcb_chunk: PCBChunk = mikrobus_medium.pcb_chunk
-        mikrobus_medium_pcb_chunk = mikrobus_medium_pcb_chunk
-        mikrobus_large: MikroBus = MikroBus(scad_program, connectors, "L")
-        mikrobus_large_pcb_chunk: PCBChunk = mikrobus_large.pcb_chunk
-        mikrobus_large_pcb_chunk = mikrobus_large_pcb_chunk
-
         # Create the MikroBus *PCBChunk*'s:
         center_mikro_bus_chunk: PCBChunk
         ne_mikrobus_pcb_chunk: PCBChunk
         nw_mikrobus_pcb_chunk: PCBChunk
         se_mikrobus_pcb_chunk: PCBChunk
         sw_mikrobus_pcb_chunk: PCBChunk
-        center_mikrobus_pcb_chunk, ne_mikrobus_pcb_chunk, nw_mikrobus_pcb_chunk, \
-            se_mikrobus_pcb_chunk, sw_mikrobus_pcb_chunk = master_board.mikrobus_install(
-                mikrobus_small, mikrobus_medium, mikrobus_large)
+        (center_mikrobus_pcb_chunk, ne_mikrobus_pcb_chunk, nw_mikrobus_pcb_chunk,
+         se_mikrobus_pcb_chunk, sw_mikrobus_pcb_chunk) = master_board.mikrobus_install(scad_program,
+                                                                                       connectors)
 
         # Create the *u3v70_9v_pcb_chunk*:
         u3v70x: U3V70x = U3V70x(scad_program, 9.0, connectors)
@@ -4336,16 +4325,16 @@ class MasterBoard:
              "GV1", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
             ("NE Outer Bottom Center", False, P2D(47.0, 45.0), radians(-90),
              "GV2", grove20x20_pcb_chunk, ne_references, ne_grove_pcb_chunks),
-            ("Center NW Inner Bottom (Left)", False, P2D(47.0, 25.0), radians(180),
+            ("Center NE Inner Bottom (Left)", False, P2D(47.0, 25.0), radians(180),
              "GV3", left_grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
 
             # Note GV4/GV7 is the same Grove split across the center and nw PCB's:
-            ("Center NW Inner Top (Left)", True, P2D(-48.5, 31.0), radians(180 + 50),
+            ("Center NW Inner Top (Left)", True, P2D(-48.5, 31.0), radians(22.5),
              "GV4", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
-            ("NW NE Inner Bottom (Right)", True, P2D(-48.5, 31.0), radians(180),
+            ("NW NW Inner Bottom (Right)", True, P2D(-48.5, 31.0), radians(22.5),
              "GV7", right_grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
 
-            ("Center SW Top", True, P2D(-48.0, -28.0), radians(180 - 22.5),
+            ("Center SW Top", True, P2D(-48.0, -28.0), radians(-22.5),
              "GV5", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
             ("Center SE Bottom", False, P2D(47.5, -24.25), radians(180),
              "GV6", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
@@ -4377,7 +4366,7 @@ class MasterBoard:
                 while rotate < 0.0:
                     rotate += radians(360)
                 side_text: str = "Front" if is_front else "Back"
-                grove_file.write(f"{reference_name}: {side_text} {name} {degrees(rotate):.1f}deg\n")
+                grove_file.write(f"{reference_name}: {side_text} {degrees(rotate):.1f}deg {name}\n")
 
         # Create the reference *PCBChunk*'s:
         center_references_pcb_chunk: PCBChunk = PCBChunk(
@@ -4457,45 +4446,86 @@ class MasterBoard:
         return ne_led_pcb_chunk, nw_led_pcb_chunk, se_led_pcb_chunk, sw_led_pcb_chunk
 
     # MasterBoard.mikrobus_install():
-    def mikrobus_install(
-            self, mikrobus_small: "MikroBus", mikrobus_medium: "MikroBus",
-            mikrobus_large: "MikroBus") -> Tuple[PCBChunk, PCBChunk, PCBChunk, PCBChunk, PCBChunk]:
+    def mikrobus_install(self, scad_program: ScadProgram,
+                         connectors: Connectors) -> Tuple[PCBChunk, PCBChunk,
+                                                          PCBChunk, PCBChunk, PCBChunk]:
         """Install the MikroBus boards."""
         center_pcb_chunks: List[PCBChunk] = []
+        center_references: List[Reference] = []
         ne_pcb_chunks: List[PCBChunk] = []
+        ne_references: List[Reference] = []
         nw_pcb_chunks: List[PCBChunk] = []
+        nw_references: List[Reference] = []
         se_pcb_chunks: List[PCBChunk] = []
+        se_references: List[Reference] = []
         sw_pcb_chunks: List[PCBChunk] = []
+        sw_references: List[Reference] = []
+
+        # Create the base MicroBus *PCBChunk*'s:
+        mikrobus_small: MikroBus = MikroBus(scad_program, connectors, "S")
+        mikrobus_medium: MikroBus = MikroBus(scad_program, connectors, "M")
+        mikrobus_large: MikroBus = MikroBus(scad_program, connectors, "L")
+        mikrobus_large = mikrobus_large
 
         # Create a placement table:
         degrees180: float = pi
         # degrees90: float = degrees180 / 2.0
-        placements: List[Tuple[str, MikroBus, bool, P2D, float, List[PCBChunk]]] = [
-            ("SW MikroBus", mikrobus_small,
-             False, P2D(-45.0, -25.25), degrees180, center_pcb_chunks),
-            ("NW MikroBus", mikrobus_medium, False, P2D(-44.5, 25.25), 0.0, center_pcb_chunks),
+        placements: List[Tuple[str, str, MikroBus, str, bool,
+                               P2D, float, List[PCBChunk], List[Reference]]] = [
+            ("NE MikroBus", "CN40", mikrobus_small, "SMALL",
+             False, P2D(-45.0, -25.25), degrees180, center_pcb_chunks, center_references),
+            ("NW MikroBus", "CN41", mikrobus_medium, "MEDUIM",
+             False, P2D(-44.5, 25.25), 0.0, center_pcb_chunks, center_references),
         ]
 
+        # Iterate over the *placements* table and append to the appropriate *PCBChunk*'s and
+        # *Reference*'s lists:
         origin2d: P2D = P2D(0.0, 0.0)
         name: str
         mikrobus: MikroBus
+        size_name: str
+        reference_name: str
         position: P2D
         rotate: float
         pcb_chunks: List[PCBChunk]
+        refrences: List[Reference]
         in_front: bool
-        for name, mikrobus, in_front, position, rotate, pcb_chunks in placements:
+        for (name, reference_name, mikrobus, size_name,
+             in_front, position, rotate, pcb_chunks, references) in placements:
             pcb_chunk: PCBChunk = mikrobus.mate_pcb_chunk
             if not in_front:
                 pcb_chunk = pcb_chunk.scads_y_flip().pads_y_mirror().sides_swap()
             pcb_chunk = pcb_chunk.reposition(origin2d, rotate, position)
             pcb_chunks.append(pcb_chunk)
+            reference: Reference = Reference(
+                reference_name, True, 0.0, position, pcb_chunk, f"MIKROBUS;{size_name}")
+            references.append(reference)
 
-        center_pcb_chunk: PCBChunk = PCBChunk.join("Center MikroBus modules", center_pcb_chunks)
-        ne_pcb_chunk: PCBChunk = PCBChunk.join("NE MikroBus modules", ne_pcb_chunks)
-        nw_pcb_chunk: PCBChunk = PCBChunk.join("NW MikroBus modules", nw_pcb_chunks)
-        se_pcb_chunk: PCBChunk = PCBChunk.join("SE MikroBus modules", se_pcb_chunks)
-        sw_pcb_chunk: PCBChunk = PCBChunk.join("SW MikroBus modules", sw_pcb_chunks)
-        return center_pcb_chunk, ne_pcb_chunk, nw_pcb_chunk, se_pcb_chunk, sw_pcb_chunk
+        center_references_pcb_chunk: PCBChunk = PCBChunk(
+            "Center MikroBus References", [], [], references=center_references)
+        ne_references_pcb_chunk: PCBChunk = PCBChunk(
+            "NE MikroBus References", [], [], references=ne_references)
+        nw_references_pcb_chunk: PCBChunk = PCBChunk(
+            "NW MikroBus References", [], [], references=nw_references)
+        se_references_pcb_chunk: PCBChunk = PCBChunk(
+            "NE MikroBus References", [], [], references=se_references)
+        sw_references_pcb_chunk: PCBChunk = PCBChunk(
+            "NW MikroBus References", [], [], references=sw_references)
+
+        # Create the final *PCBChunk*'s with references:
+        final_center_pcb_chunk: PCBChunk = PCBChunk.join(
+            "Center Mikrobus", center_pcb_chunks + [center_references_pcb_chunk])
+        final_ne_pcb_chunk: PCBChunk = PCBChunk.join(
+            "NE Mikrobus", ne_pcb_chunks + [ne_references_pcb_chunk])
+        final_nw_pcb_chunk: PCBChunk = PCBChunk.join(
+            "NW Mikrobus", nw_pcb_chunks + [nw_references_pcb_chunk])
+        final_se_pcb_chunk: PCBChunk = PCBChunk.join(
+            "SE Mikrobus", se_pcb_chunks + [se_references_pcb_chunk])
+        final_sw_pcb_chunk: PCBChunk = PCBChunk.join(
+            "SW Mikrobus", sw_pcb_chunks + [sw_references_pcb_chunk])
+        print(f"final_center_pcb_chunk:{final_center_pcb_chunk}")
+        return (final_center_pcb_chunk, final_ne_pcb_chunk, final_nw_pcb_chunk,
+                final_se_pcb_chunk, final_sw_pcb_chunk)
 
     # MasterBoard.sonar_modules_create():
     def sonar_modules_create(self, scad_program: ScadProgram,
@@ -4913,8 +4943,13 @@ class MikroBus:
     """Represents a Mikrobus Module."""
 
     # Mikrobus.__init__():
-    def __init__(self, scad_program: ScadProgram, connectors: Connectors, size: str) -> None:
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors, size: str,
+                 tracing: str = "") -> None:
         """Initialize a Mikrobus module."""
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Mikrobus.__init__(*, *, *, '{size}')")
+
         # Dimensions from spec. sheet:
         notch_dx_dy: float = 2.54  # mm
         pcb_dx: float = 25.4  # mm
@@ -4930,6 +4965,12 @@ class MikroBus:
             "M": pcb_dy_medium,
             "L": pcb_dy_long,
         }
+        pcb_suffix_table: Dict[str, str] = {
+            "S": "SMALL",
+            "M": "MEDIUM",
+            "L": "LARGE",
+        }
+
         assert size in pcb_dy_table, f"Mikro bus {size} must be one of 'S', 'M', 'L'"
         pcb_dy: float = pcb_dy_table[size]
 
@@ -4950,18 +4991,19 @@ class MikroBus:
         # Position the east/west connector chunks and create *microbus_pcb_chunk*:
         origin2d: P2D = P2D(0.0, 0.0)
         degrees90: float = pi / 2.0
-        m1x8_west_pcb_chunk: PCBChunk = (
+        m1x8_east_pcb_chunk: PCBChunk = (
             connectors.m1x8.pcb_chunk.scads_x_flip().sides_swap().
+            reposition(origin2d, degrees90, P2D(connector_pitch_dx / 2.0, 0.0))
+        )
+        m1x8_west_pcb_chunk: PCBChunk = (
+            connectors.m1x8.pcb_chunk.scads_x_flip().sides_swap().pads_rebase(8).
             reposition(origin2d, degrees90, P2D(-connector_pitch_dx / 2.0, 0.0))
         )
-        m1x8_east_pcb_chunk: PCBChunk = (
-            connectors.m1x8.pcb_chunk.scads_x_flip().sides_swap().pads_rebase(8).
-            reposition(origin2d, -degrees90, P2D(connector_pitch_dx / 2.0, 0.0))
-        )
         mikrobus_pcb_chunk: PCBChunk = PCBChunk.join(f"MikroBus {size}", [
-            m1x8_west_pcb_chunk,
             m1x8_east_pcb_chunk,
+            m1x8_west_pcb_chunk,
         ])
+        print(f"microbus_pcb_chunk: {mikrobus_pcb_chunk}")
 
         # Generate *mikobus_module* for use by *microbus_mate_pcb_chunk*:
         mikrobus_module: Module3D = mikrobus_pcb_chunk.pcb_update(
@@ -4969,12 +5011,12 @@ class MikroBus:
 
         # Create the east/west female *PCBChunk*'s:
         f1x8_west_pcb_chunk: PCBChunk = (
-            connectors.f1x8.pcb_chunk.
+            connectors.f1x8.pcb_chunk.pads_rebase(8).
             reposition(origin2d, degrees90, P2D(-connector_pitch_dx / 2.0, 0.0))
         )
         f1x8_east_pcb_chunk: PCBChunk = (
-            connectors.f1x8.pcb_chunk.pads_rebase(8).
-            reposition(origin2d, -degrees90, P2D(connector_pitch_dx / 2.0, 0.0))
+            connectors.f1x8.pcb_chunk.
+            reposition(origin2d, degrees90, P2D(connector_pitch_dx / 2.0, 0.0))
         )
 
         # Create *tranalsted_mikrobus_chunk* that is positioned just above the female connectors:
@@ -4998,9 +5040,14 @@ class MikroBus:
         tie_downs_pcb_chunk: PCBChunk = PCBChunk("Tie Down Holes", tie_down_pads, [])
 
         # Create *mikrobus_mate_pcb_chunk*:
-        mikrobus_mate_pcb_chunk: PCBChunk = PCBChunk.join(f"MikroBus {size} Mate", [
+        mikrobus_exterior_pcb_chunk: PCBChunk = PCBChunk(
+            f"MikroBus Exterior", [], [], front_artworks=[mikrobus_exterior])
+        print(f"mikrobus_exterior_pcb_chunk:{mikrobus_exterior_pcb_chunk}")
+        footprint_name: str = f"MIKROBUS_{pcb_suffix_table[size]}_MATE"
+        mikrobus_mate_pcb_chunk: PCBChunk = PCBChunk.join(footprint_name, [
             f1x8_west_pcb_chunk,
             f1x8_east_pcb_chunk,
+            mikrobus_exterior_pcb_chunk,
             tie_downs_pcb_chunk,
             translated_mikrobus_pcb_chunk,
         ])
@@ -5022,12 +5069,23 @@ class MikroBus:
         mikrobus_mate_module: Module3D = mikrobus_mate_pcb_chunk.pcb_update(
             scad_program, origin2d, pcb_dz, mikrobus_mate_exterior, "Violet", None, [])
 
+        # Write out the *mikrobus_mate_pcb_chunk* footprint:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        pretty_directory: Path = hr2_directory / "electrical" / "orders" / "order1" / "pretty"
+        mikrobus_mate_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        # print(f"Generate HR2:{footprint_name}")
+
         # Stuff some value into the mikrobus object (i.e. *self*):
         # mikrobus: Mikrobus = self
         self.mate_module: Module3D = mikrobus_mate_module
         self.mate_pcb_chunk: PCBChunk = mikrobus_mate_pcb_chunk
         self.module: Module3D = mikrobus_module
         self.pcb_chunk: PCBChunk = mikrobus_pcb_chunk
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=Mikrobus.__init__(*, *, *, '{size}')")
 
 
 # PiBoard:
