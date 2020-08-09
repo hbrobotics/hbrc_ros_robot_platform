@@ -52,4 +52,30 @@ F 3 "M2.5 Mounting Hole" H 2300 4050 60  0001 L CNN
 	1    2100 4200
 	1    0    0    -1  
 $EndComp
+$Comp
+L HR2:GROVE;20x20 GV1
+U 1 1 5F2F999C
+P 2100 3950
+F 0 "GV1" H 2050 4000 60  0000 L CNN
+F 1 "GROVE;20x20" H 1800 3900 60  0000 L CNN
+F 2 "HR2:GROVE20x20" H 2300 4000 60  0001 L CNN
+F 3 "Grove 20x20 Module" H 2300 3800 60  0001 L CNN
+F 4 "Grove 20x20 Module" H 2300 3900 60  0001 L CNN "manf#"
+	1    2100 3950
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:GROVE;20x20R GV7
+U 1 1 5F303BB1
+P 2100 4700
+F 0 "GV7" H 2000 4750 60  0000 L CNN
+F 1 "GROVE;20x20R" H 1750 4650 60  0000 L CNN
+F 2 "HR2:GROVE20x20R" H 2300 4750 60  0001 L CNN
+F 3 "Grove 20x20 Module" H 2300 4550 60  0001 L CNN
+F 4 "Grove 20x20 Module" H 2300 4650 60  0001 L CNN "manf#"
+	1    2100 4700
+	1    0    0    -1  
+$EndComp
+Text Notes 1550 5000 0    50   ~ 0
+Note: GV7 is the other have\nof GV3 on center board
 $EndSCHEMATC
