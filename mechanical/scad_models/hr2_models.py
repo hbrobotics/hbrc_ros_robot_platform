@@ -2524,20 +2524,32 @@ class Grove:
         scad_program.append(grove_module)
         scad_program.if3d.name_match_append(full_name, grove_module, [full_name])
 
-        # Create the *grove_pcb_chunk*:
+        # Create the Grove *PCBChunk*'s.  The left/right pad distinction is for on of the
+        # modules that needs to split across the center and NW PCB:
         footprint_name: str = f"GROVE{int(dx)}x{int(dy)}"
+        grove_scads: List[Scad3D] = [grove_module.use_module_get()]
         grove_pcb_chunk: PCBChunk = PCBChunk(
-            footprint_name, pads, [grove_module.use_module_get()], front_artworks=[grove_exterior])
+            footprint_name, pads, grove_scads, front_artworks=[grove_exterior])
+        grove_left_pcb_chunk: PCBChunk = PCBChunk(  # Only the left pad
+            footprint_name + "L", [pads[1]], grove_scads, front_artworks=[grove_exterior])
+        grove_right_pcb_chunk: PCBChunk = PCBChunk(  # Everything else
+            footprint_name + "R", [pads[0]], [], [])
+
+        # Write out the 3 footprints:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
         hr2_pretty_directory: Path = (hr2_directory /
                                       "electrical" / "master_board" / "rev_a" / "pretty")
         grove_pcb_chunk.footprint_generate("HR2", hr2_pretty_directory)
+        grove_left_pcb_chunk.footprint_generate("HR2", hr2_pretty_directory)
+        grove_right_pcb_chunk.footprint_generate("HR2", hr2_pretty_directory)
 
         # Stuff some values into *grove* (i.e. *self*):
         # grove: Grove = self
         self.module: Module3D = grove_module
         self.pcb_chunk: PCBChunk = grove_pcb_chunk
+        self.left_pcb_chunk: PCBChunk = grove_left_pcb_chunk
+        self.right_pcb_chunk: PCBChunk = grove_right_pcb_chunk
 
 
 # HCSR04:
@@ -2808,7 +2820,7 @@ class HeatSink:
                   f"{base_dz:.2f} {fin_dx:.2f}, {fin_count}, '{color}')")
 
 
-# F11x4LP:
+# F1x4LP:
 class F1x4LP:
     """Represents a Mill-Max F1x4LP low profile connector."""
 
@@ -4304,47 +4316,86 @@ class MasterBoard:
     def groves_install(self, scad_program: ScadProgram) -> Tuple[PCBChunk, PCBChunk, PCBChunk]:
         """Install the Grove mounting holes."""
         center_grove_pcb_chunks: List[PCBChunk] = []
+        center_references: List[Reference] = []
         ne_grove_pcb_chunks: List[PCBChunk] = []
+        ne_references: List[Reference] = []
         nw_grove_pcb_chunks: List[PCBChunk] = []
+        nw_references: List[Reference] = []
 
         grove20x20: Grove = Grove(scad_program, 20, 20, "Blue")
         grove20x20_pcb_chunk: PCBChunk = grove20x20.pcb_chunk
+        left_grove20x20_pcb_chunk: PCBChunk = grove20x20.left_pcb_chunk
+        right_grove20x20_pcb_chunk: PCBChunk = grove20x20.left_pcb_chunk
+        left_grove20x20_pcb_chunk = left_grove20x20_pcb_chunk
+        right_grove20x20_pcb_chunk = right_grove20x20_pcb_chunk
 
         # Create a list grove placements:
-        placements: List[Tuple[str, bool, P2D, float, PCBChunk, List[PCBChunk]]] = [
+        placements: List[Tuple[str, bool, P2D, float, str,
+                               PCBChunk, List[Reference], List[PCBChunk]]] = [
             ("NW Outer Bottom", False, P2D(-42.0, 53.0), radians(-90),
-             grove20x20_pcb_chunk, nw_grove_pcb_chunks),
-            ("NE Outer Bottom", False, P2D(47.0, 45.0), radians(-90),
-             grove20x20_pcb_chunk, ne_grove_pcb_chunks),
-            ("Center NE Inner Bottom", False, P2D(47.0, 25.0), radians(180),
-             grove20x20_pcb_chunk, center_grove_pcb_chunks),
-            ("Center NW Inner Top", True, P2D(-48.5, 31.0), radians(180 + 50),
-             grove20x20_pcb_chunk, center_grove_pcb_chunks),
+             "GV1", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
+            ("NE Outer Bottom Center", False, P2D(47.0, 45.0), radians(-90),
+             "GV2", grove20x20_pcb_chunk, ne_references, ne_grove_pcb_chunks),
+            ("Center NW Inner Bottom (Left)", False, P2D(47.0, 25.0), radians(180),
+             "GV3", left_grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+
+            # Note GV4/GV7 is the same Grove split across the center and nw PCB's:
+            ("Center NW Inner Top (Left)", True, P2D(-48.5, 31.0), radians(180 + 50),
+             "GV4", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+            ("NW NE Inner Bottom (Right)", True, P2D(-48.5, 31.0), radians(180),
+             "GV7", right_grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
+
             ("Center SW Top", True, P2D(-48.0, -28.0), radians(180 - 22.5),
-             grove20x20_pcb_chunk, center_grove_pcb_chunks),
+             "GV5", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
             ("Center SE Bottom", False, P2D(47.5, -24.25), radians(180),
-             grove20x20_pcb_chunk, center_grove_pcb_chunks),
+             "GV6", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
         ]
-        origin2d: P2D = P2D(0.0, 0.0)
-        name: str
-        is_front: bool
-        position: P2D
-        rotate: float
-        grove: Grove
-        pcb_chunks: List[PCBChunk]
-        for name, is_front, position, rotate, grove_pcb_chunk, pcb_chunks in placements:
-            pcb_chunk: PCBChunk = grove_pcb_chunk
-            if not is_front:
-                pcb_chunk = pcb_chunk.scads_x_flip().sides_swap()
-            pcb_chunk = pcb_chunk.reposition(origin2d, rotate, position)
-            pcb_chunks.append(pcb_chunk)
+        grove_file: IO[Any]
+        with open(Path("/tmp", "grove.txt"), "w") as grove_file:
+            origin2d: P2D = P2D(0.0, 0.0)
+            name: str
+            is_front: bool
+            position: P2D
+            rotate: float
+            grove: Grove
+            reference_name: str
+            pcb_chunks: List[PCBChunk]
+            references: List[Reference]
+            for (name, is_front, position, rotate, reference_name, grove_pcb_chunk,
+                 references, pcb_chunks) in placements:
+
+                pcb_chunk: PCBChunk = grove_pcb_chunk
+                if not is_front:
+                    pcb_chunk = pcb_chunk.scads_x_flip().sides_swap()
+                pcb_chunk = pcb_chunk.reposition(origin2d, rotate, position)
+                pcb_chunks.append(pcb_chunk)
+                reference: Reference = Reference(
+                    reference_name, is_front, rotate, position, pcb_chunk, "HOLE;M2.5")
+                references.append(reference)
+                while rotate > radians(360):
+                    rotate -= radians(360)
+                while rotate < 0.0:
+                    rotate += radians(360)
+                side_text: str = "Front" if is_front else "Back"
+                grove_file.write(f"{reference_name}: {side_text} {name} {degrees(rotate):.1f}deg\n")
+
+        # Create the reference *PCBChunk*'s:
+        center_references_pcb_chunk: PCBChunk = PCBChunk(
+            "Center Grove References", [], [], references=center_references)
+        nw_references_pcb_chunk: PCBChunk = PCBChunk(
+            "Center Grove References", [], [], references=nw_references)
+        ne_references_pcb_chunk: PCBChunk = PCBChunk(
+            "Center Grove References", [], [], references=ne_references)
 
         # Assemble the final PCB Chunk:
-        center_grove_pcb_chunk: PCBChunk = PCBChunk.join(
-            "Center Groves", center_grove_pcb_chunks)
-        ne_grove_pcb_chunk: PCBChunk = PCBChunk.join("NE Groves", ne_grove_pcb_chunks)
-        nw_grove_pcb_chunk: PCBChunk = PCBChunk.join("NW Groves", nw_grove_pcb_chunks)
-        return center_grove_pcb_chunk, ne_grove_pcb_chunk, nw_grove_pcb_chunk
+        final_center_grove_pcb_chunk: PCBChunk = PCBChunk.join(
+            "Center Groves", center_grove_pcb_chunks + [center_references_pcb_chunk])
+        final_ne_grove_pcb_chunk: PCBChunk = PCBChunk.join(
+            "NE Groves", ne_grove_pcb_chunks + [ne_references_pcb_chunk])
+        final_nw_grove_pcb_chunk: PCBChunk = PCBChunk.join(
+            "NW Groves", nw_grove_pcb_chunks + [nw_references_pcb_chunk])
+
+        return final_center_grove_pcb_chunk, final_ne_grove_pcb_chunk, final_nw_grove_pcb_chunk
 
     # MasterBoard.leds_install():
     def leds_install(self,
@@ -4751,7 +4802,7 @@ class MasterBoard:
                 base_spacer_reference: Reference = Reference(
                     base_reference_name, True, 0.0, base_position, base_spacer_pcb_chunk,
                     "HOLE;M2.5")
-                print(f"Base: {base_reference_name}: {board_name} {base_position}")
+                # print(f"Base: {base_reference_name}: {board_name} {base_position}")
                 # print(f"Reference: {base_spacer_reference}")
                 # Use *base_position* to determine which board to put the *PCBChunk*/*Reference* on:
                 if board_name == "center":
@@ -4789,7 +4840,7 @@ class MasterBoard:
             # The plate is rotated 180 degrees from the Pololu documentation, hence the minus sign:
             plate_position = -plate_position
             is_no_hole: bool = plate_spacer_name.endswith("NO_HOLE")
-            print(f"Plate: {plate_reference}: {plate_board_name} {plate_position} {is_no_hole}")
+            # print(f"Plate: {plate_reference}: {plate_board_name} {plate_position} {is_no_hole}")
 
             # *arm_spacer_scad* and *arm_spacer_pad* and stuff them onto the appropiate PCB:
             arm_spacer_scad: Scad3D = Translate3D(

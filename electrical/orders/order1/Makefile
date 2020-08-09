@@ -36,9 +36,13 @@ ORDER_LIB := $(ORDER).lib
 ORDER_DCM := $(ORDER).dcm
 
 # Scan the KIPARTS_DIRECTORY for `.csv` files and remove the `order*.csv` from the list:
-KIPART_CSVS := $(shell ls $(KIPARTS_DIRECTORY)/*.csv | grep -v $(ORDER_CSV))
+KIPART_CSVS := $(shell ls $(KIPARTS_DIRECTORY)/*.csv | grep -v $(ORDER_CSV) | sort)
 
 all: $(ORDER_LIB)
+
+foo:
+	for csv in ${KIPART_CSVS} ; do echo $$csv ; done
+
 
 $(ORDER_LIB): ${KIPART_CSVS}
 	cat ${KIPART_CSVS} > $(ORDER_CSV)

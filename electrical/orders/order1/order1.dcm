@@ -18,6 +18,12 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
+$CMP GROVE;20x20
+D 
+K ~
+F Grove 20x20 Module
+$ENDCMP
+#
 $CMP STLINKCN3;F1X2
 D ST-Link Ground Pins
 K ~
@@ -51,7 +57,7 @@ $ENDCMP
 $CMP HOLE;M2.5
 D 
 K ~
-F 
+F M2.5 Mounting Hole
 $ENDCMP
 #
 $CMP STLINKCN2;F1X2
@@ -63,7 +69,13 @@ $ENDCMP
 $CMP HOLE;M3.0
 D 
 K ~
-F 
+F M3 Mounting Hole
+$ENDCMP
+#
+$CMP GROVE;20x20R
+D 
+K ~
+F Grove 20x20 Module
 $ENDCMP
 #
 $CMP ST_MATE;ST_MATE
@@ -75,13 +87,19 @@ $ENDCMP
 $CMP HOLE;M2
 D 
 K ~
-F 
+F M2 Mounting Hole
 $ENDCMP
 #
 $CMP ST_ADAPTER;ST_ADAPTER
 D 
 K ~
 F 
+$ENDCMP
+#
+$CMP GROVE;20x20L
+D 
+K ~
+F Grove 20x20 Module
 $ENDCMP
 #
 #End Doc Library
