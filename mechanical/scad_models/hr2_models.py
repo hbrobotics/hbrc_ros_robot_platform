@@ -8441,7 +8441,7 @@ class STLink:
         pcb_dy: float = abs(north_y2 - south_y)
         pcb_dx: float = 70.0
         # pcb_bottom_z: float = 0.0
-        # pcb_dz: float = 1.60  # mm Calipers
+        pcb_dz: float = 1.60  # mm Calipers
         # pcb_top_z: float = pcb_bottom_z + pcb_dz
 
         # Define all of the connector locations:
@@ -8577,14 +8577,16 @@ class STLink:
 
         # Create *st_adapter_module* and update *st_adapter_kicad_pcb*:
         adapter_pcb_dy: float = pcb_dy
-        adapter_pcb_dx: float = pcb_dx / 2.0 + 5.0
-        # adapter_pcb_dz: float = 1.6
-        st_adapter_exterior: Square = Square("STLink Adapter Exterior",
-                                             adapter_pcb_dx, adapter_pcb_dy,
-                                             center=P2D(-(pcb_dx - adapter_pcb_dx) / 2.0, 0.0),
-                                             corner_radius=1.5, corner_count=5)
+        adapter_pcb_dx_offset: float = 5.0
+        adapter_pcb_dx: float = pcb_dx / 2.0 + adapter_pcb_dx_offset
+        adapter_pcb_center_x: float = -(pcb_dx - adapter_pcb_dx) / 2.0
+        adapter_pcb_dz: float = 1.6
+        st_adapter_exterior: Square = Square(
+            "STLink Adapter Exterior", adapter_pcb_dx, adapter_pcb_dy,
+            center=P2D(adapter_pcb_center_x, 0.0), corner_radius=1.5, corner_count=5)
         st_adapter_module: Module3D = st_adapter_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, 1.6, st_adapter_exterior, "Olive", st_adapter_kicad_pcb, [])
+            scad_program, pcb_origin, adapter_pcb_dz, st_adapter_exterior,
+            "Olive", st_adapter_kicad_pcb, [])
 
         # Create the nylon tie down holes for the upcoming *st_mate_pcb_chunk*:
         tie_diameter: float = 2.4  # mm
@@ -8602,7 +8604,20 @@ class STLink:
             Pad("ST Adapter Sw Nylon Tie Hole", 0.0, 0.0, tie_diameter,
                 P2D(tie_west_x, tie_south_y), 0.0),
         ]
+        sandwitch_dz: float = 12.1
         st_mate_tie_holes_pcb_chunk: PCBChunk = PCBChunk("ST Mate Tie holes", st_mate_pads, [])
+        # The positioning for *st_mate_edge* is totally kudged for now:
+        st_mate_edge: SimplePolygon = Square(
+            "ST Link Edge Artowrk", pcb_dx, adapter_pcb_dz,
+            P2D(adapter_pcb_center_x + 3.0 * adapter_pcb_dx_offset, sandwitch_dz - 1.5 * pcb_dz))
+        st_mate_adapter_edge: SimplePolygon = Square(
+            "ST Link Adapter Edge Artwork", adapter_pcb_dx, pcb_dz,
+            P2D(adapter_pcb_center_x, -adapter_pcb_dz / 2.0))
+        st_mate_artworks_pcb_chunk: PCBChunk = PCBChunk(
+            "ST Adapter Edge Artworks", [], [], back_artworks=[
+                st_mate_adapter_edge,
+                st_mate_edge,
+            ])
 
         # Create the *st_adapter_mate_pcb_chunk*:
         st_mate_power_connector_pcb_chunk: PCBChunk = (
@@ -8617,10 +8632,11 @@ class STLink:
         origin3d: P3D = P3D(0.0, 0.0, 0.0)
         x_axis: P3D = P3D(1.0, 0.0, 0.0)
         repositioned_st_adapter: Scad3D = st_adapter_module.use_module_get().reposition(
-            "Repositoned ST Adapter", origin3d, x_axis, degrees90, P3D(0.0, 0.0, -12.1))
+            "Repositoned ST Adapter", origin3d, x_axis, degrees90, P3D(0.0, 0.0, -sandwitch_dz))
         st_mate_repositioned_pcb_chunk: PCBChunk = PCBChunk(
             "ST Mate Repositioned", [], [repositioned_st_adapter]).sides_swap()
         st_mate_pcb_chunk: PCBChunk = PCBChunk.join("ST_MATE", [
+            st_mate_artworks_pcb_chunk,
             st_mate_tie_holes_pcb_chunk,
             st_mate_repositioned_pcb_chunk,
             st_mate_usb_cut_pcb_chunk,
