@@ -954,19 +954,37 @@ class LED:
 
         # Create the *led_artwork*:
         led_outline: SimplePolygon = Square("LED Outline", base_dx, base_dy)
-        plus_diameter: float = 2.54  # mm
+        plus_diameter: float = 1.27  # mm
         plus_x_offset: P2D = P2D(plus_diameter / 2.0, 0)
         plus_y_offset: P2D = P2D(0, plus_diameter / 2.0)
-        plus_center: P2D = P2D(0.0, base_dy / 2.0 - 1.5 * plus_diameter)  # 1.5 = trial & error
+        plus_center: P2D = P2D(0.0, -base_dy / 2.0 - plus_diameter)
         plus_horizontal: SimplePolygon = SimplePolygon(
             "Led Plus Horizontal", [plus_center - plus_x_offset, plus_center + plus_x_offset])
         plus_vertical: SimplePolygon = SimplePolygon(
             "Led Plus vertical", [plus_center - plus_y_offset, plus_center + plus_y_offset])
-        led_artwork: List[SimplePolygon] = [led_outline, plus_horizontal, plus_vertical]
+        lens_radius: float = 1.5   # Trail and error
+        degrees90: float = radians(90.0)
+        lens_increment: float = degrees90 / 10.0
+        lens_artwork: SimplePolygon = SimplePolygon("LED Optic Artwork", lock=False)
+        lens_artwork.arc_append(
+            P2D(base_dx / 2.0, 0.0), lens_radius, -degrees90, degrees90, lens_increment)
+        lens_artwork.lock()
+        led_artwork: List[SimplePolygon] = [
+            led_outline,
+            lens_artwork,
+            plus_horizontal,
+            plus_vertical,
+        ]
 
         # Create the *led_pcb_chunk*:
         led_pcb_chunk: PCBChunk = PCBChunk(
-            f"{name} LED", led_pads, [led_use_module], front_artworks=led_artwork)
+            f"LED_GRNRA", led_pads, [led_use_module], front_artworks=led_artwork)
+
+        # Generate the LED fooprint:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        pretty_directory: Path = hr2_directory / "electrical" / "orders" / "order1" / "pretty"
+        led_pcb_chunk.footprint_generate("HR2", pretty_directory)
 
         # Stuff everything into *led* (i.el *self*).
         # led: LED = self
@@ -3793,6 +3811,18 @@ class MasterBoard:
         ne_leds_pcb_chunk, nw_leds_pcb_chunk, se_leds_pcb_chunk, sw_leds_pcb_chunk = (
             master_board.leds_install(scad_program))
 
+        # print(f"sw_leds_pcb_chunk:{sw_leds_pcb_chunk}")
+        # i: int
+        # r: Reference
+        # for i, r in enumerate(ne_leds_pcb_chunk.references):
+        #     print(f"NE[{i}]:{r.name}")
+        # for i, r in enumerate(nw_leds_pcb_chunk.references):
+        #     print(f"NW[{i}]:{r.name}")
+        # for i, r in enumerate(se_leds_pcb_chunk.references):
+        #     print(f"SE[{i}]:{r.name}")
+        # for i, r in enumerate(sw_leds_pcb_chunk.references):
+        #     print(f"SW[{i}]:{r.name}")
+
         # Create the MikroBus *PCBChunk*'s:
         center_mikro_bus_chunk: PCBChunk
         ne_mikrobus_pcb_chunk: PCBChunk
@@ -4339,8 +4369,10 @@ class MasterBoard:
             ("Center SE Bottom", False, P2D(47.5, -24.25), radians(180),
              "GV6", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
         ]
+
+        # Create all of main *PCBChunk*'s and associated *Reference*'s:
         grove_file: IO[Any]
-        with open(Path("/tmp", "grove.txt"), "w") as grove_file:
+        with open("/tmp/groves.txt", "w") as grove_file:
             origin2d: P2D = P2D(0.0, 0.0)
             name: str
             is_front: bool
@@ -4352,7 +4384,6 @@ class MasterBoard:
             references: List[Reference]
             for (name, is_front, position, rotate, reference_name, grove_pcb_chunk,
                  references, pcb_chunks) in placements:
-
                 pcb_chunk: PCBChunk = grove_pcb_chunk
                 if not is_front:
                     pcb_chunk = pcb_chunk.scads_x_flip().sides_swap()
@@ -4366,7 +4397,7 @@ class MasterBoard:
                 while rotate < 0.0:
                     rotate += radians(360)
                 side_text: str = "Front" if is_front else "Back"
-                grove_file.write(f"{reference_name}: {side_text} {degrees(rotate):.1f}deg {name}\n")
+                grove_file.write(f"{reference_name}: {side_text} {degrees(rotate):.1f}dg {name}\n")
 
         # Create the reference *PCBChunk*'s:
         center_references_pcb_chunk: PCBChunk = PCBChunk(
@@ -4376,7 +4407,7 @@ class MasterBoard:
         ne_references_pcb_chunk: PCBChunk = PCBChunk(
             "Center Grove References", [], [], references=ne_references)
 
-        # Assemble the final PCB Chunk:
+        # Assemble the final *PCBChunk*'s and return them:
         final_center_grove_pcb_chunk: PCBChunk = PCBChunk.join(
             "Center Groves", center_grove_pcb_chunks + [center_references_pcb_chunk])
         final_ne_grove_pcb_chunk: PCBChunk = PCBChunk.join(
@@ -4390,60 +4421,114 @@ class MasterBoard:
     def leds_install(self,
                      scad_program: ScadProgram) -> Tuple[PCBChunk, PCBChunk, PCBChunk, PCBChunk]:
         """Install the LEDs."""
+        # Create the *led*:
         led: LED = LED("Led", scad_program)
         led_pcb_chunk: PCBChunk = led.pcb_chunk
 
-        # Define *led_positions* which specifies the locations of all of the LED's:
-        ne_led_pcb_chunks: List[PCBChunk] = []
-        nw_led_pcb_chunks: List[PCBChunk] = []
-        se_led_pcb_chunks: List[PCBChunk] = []
-        sw_led_pcb_chunks: List[PCBChunk] = []
+        # Define some constants:
         n_pitch_angle: float = 16.0  # degrees
-        n_center_offset: float = 43.0  # degrees
+        n_center_offset: float = 44.0  # degrees
         ne_center_angle: float = 90.0 - n_center_offset  # degrees
         nw_center_angle: float = 90.0 + n_center_offset  # degrees
         s_pitch_angle: float = 13.0  # degrees
         s_center_offset: float = 34.0  # degrees
         sw_center_angle: float = 270.0 - s_center_offset  # degrees
         se_center_angle: float = 270.0 + s_center_offset  # degrees
-        led_positions: List[Tuple[str, float, float, List[PCBChunk]]] = [
-            ("NE LED1", radians(ne_center_angle - n_pitch_angle), 0.0, ne_led_pcb_chunks),
-            ("NE LED2", radians(ne_center_angle), 0.0, ne_led_pcb_chunks),
-            ("NE LED3", radians(ne_center_angle + n_pitch_angle), 0.0, ne_led_pcb_chunks),
-            ("NW LED3", radians(nw_center_angle - n_pitch_angle), 0.0, nw_led_pcb_chunks),
-            ("NW LED2", radians(nw_center_angle), 0.0, nw_led_pcb_chunks),
-            ("NW LED1", radians(nw_center_angle + n_pitch_angle), 0.0, nw_led_pcb_chunks),
-            ("SW LED1", radians(sw_center_angle - 2.0 * s_pitch_angle), 0.0, sw_led_pcb_chunks),
-            ("SW LED2", radians(sw_center_angle - 1.0 * s_pitch_angle), 0.0, sw_led_pcb_chunks),
-            ("SW LED3", radians(sw_center_angle), 0.0, sw_led_pcb_chunks),
-            ("SW LED4", radians(sw_center_angle + 1.0 * s_pitch_angle), 0.0, sw_led_pcb_chunks),
-            ("SW LED5", radians(sw_center_angle + 2.0 * s_pitch_angle), 0.0, sw_led_pcb_chunks),
-            ("SE LED1", radians(se_center_angle - 2.0 * s_pitch_angle), 0.0, se_led_pcb_chunks),
-            ("SE LED2", radians(se_center_angle - 1.0 * s_pitch_angle), 0.0, se_led_pcb_chunks),
-            ("SE LED3", radians(se_center_angle), 0.0, se_led_pcb_chunks),
-            ("SE LED4", radians(se_center_angle + 1.0 * s_pitch_angle), 0.0, se_led_pcb_chunks),
-            ("SE LED5", radians(se_center_angle + 2.0 * s_pitch_angle), 0.0, se_led_pcb_chunks),
+
+        # Define Collect everything into the appropriate *Reference*'s and *PCBChunk*'s list:
+        ne_led_pcb_chunks: List[PCBChunk] = []
+        ne_references: List[Reference] = []
+        nw_led_pcb_chunks: List[PCBChunk] = []
+        nw_references: List[Reference] = []
+        se_led_pcb_chunks: List[PCBChunk] = []
+        se_references: List[Reference] = []
+        sw_led_pcb_chunks: List[PCBChunk] = []
+        sw_references: List[Reference] = []
+
+        # Define *led_positions* which specifies the locations of all of the LED's:
+        led_positions: List[Tuple[str, str, float, float, List[PCBChunk], List[Reference]]] = [
+            ("NE LED1", "D1", radians(ne_center_angle - n_pitch_angle),
+             0.0, ne_led_pcb_chunks, ne_references),
+            ("NE LED2", "D2", radians(ne_center_angle),
+             0.0, ne_led_pcb_chunks, ne_references),
+            ("NE LED3", "D3", radians(ne_center_angle + n_pitch_angle),
+             0.0, ne_led_pcb_chunks, ne_references),
+
+            ("NW LED1", "D4", radians(nw_center_angle - n_pitch_angle),
+             0.0, nw_led_pcb_chunks, nw_references),
+            ("NW LED2", "D5", radians(nw_center_angle),
+             0.0, nw_led_pcb_chunks, nw_references),
+            ("NW LED3", "D6", radians(nw_center_angle + n_pitch_angle),
+             0.0, nw_led_pcb_chunks, nw_references),
+
+            ("SW LED1", "D7", radians(sw_center_angle - 2.0 * s_pitch_angle),
+             0.0, sw_led_pcb_chunks, sw_references),
+            ("SW LED2", "D8", radians(sw_center_angle - 1.0 * s_pitch_angle),
+             0.0, sw_led_pcb_chunks, sw_references),
+            ("SW LED3", "D9", radians(sw_center_angle),
+             0.0, sw_led_pcb_chunks, sw_references),
+            ("SW LED4", "D10", radians(sw_center_angle + 1.0 * s_pitch_angle),
+             0.0, sw_led_pcb_chunks, sw_references),
+            ("SW LED5", "D11", radians(sw_center_angle + 2.0 * s_pitch_angle),
+             0.0, sw_led_pcb_chunks, sw_references),
+
+            ("SE LED1", "D12", radians(se_center_angle - 2.0 * s_pitch_angle),
+             0.0, se_led_pcb_chunks, se_references),
+            ("SE LED2", "D13", radians(se_center_angle - 1.0 * s_pitch_angle),
+             0.0, se_led_pcb_chunks, se_references),
+            ("SE LED3", "D14", radians(se_center_angle),
+             0.0, se_led_pcb_chunks, se_references),
+            ("SE LED4", "D15", radians(se_center_angle + 1.0 * s_pitch_angle),
+             0.0, se_led_pcb_chunks, se_references),
+            ("SE LED5", "D16", radians(se_center_angle + 2.0 * s_pitch_angle),
+             0.0, se_led_pcb_chunks, se_references),
         ]
         origin2d: P2D = P2D(0.0, 0.0)
-        led_radius: float = 78.0  # mm  Trial and error
+        led_radius: float = 79.0  # mm  Trial and error
         led_name: str
+        reference_name: str
         led_angle: float  # radians
         led_offset: float  # mm
-        pcb_chunks: List[PCBChunk] = []
-        for led_name, led_angle, led_offset, pcb_chunks in led_positions:
-            x: float = (led_radius - led_offset) * cos(led_angle)
-            y: float = (led_radius - led_offset) * sin(led_angle)
-            led_position: P2D = P2D(x, y)
-            repositioned_led_pcb_chunk: PCBChunk = led_pcb_chunk.reposition(
-                origin2d, led_angle, led_position)
-            pcb_chunks.append(repositioned_led_pcb_chunk)
+        pcb_chunks: List[PCBChunk]
+        references: List[Reference]
+        led_file: IO[Any]
+        with open(Path("/tmp/leds.txt"), "w") as led_file:
+            for (led_name, reference_name,
+                 led_angle, led_offset, pcb_chunks, references) in led_positions:
+                x: float = (led_radius - led_offset) * cos(led_angle)
+                y: float = (led_radius - led_offset) * sin(led_angle)
+                led_position: P2D = P2D(x, y)
+                repositioned_led_pcb_chunk: PCBChunk = led_pcb_chunk.reposition(
+                    origin2d, led_angle, led_position)
+                pcb_chunks.append(repositioned_led_pcb_chunk)
+                reference: Reference = Reference(
+                    reference_name, True, led_angle, led_position,
+                    repositioned_led_pcb_chunk, "LED_GRNRA")
+                references.append(reference)
+                led_file.write(f"{led_name}: {reference_name} {degrees(led_angle):.1f}deg\n")
 
-        # Create the final *PCBChunk*'s and return.
-        ne_led_pcb_chunk: PCBChunk = PCBChunk.join("NE LED's", ne_led_pcb_chunks)
-        nw_led_pcb_chunk: PCBChunk = PCBChunk.join("NW LED's", nw_led_pcb_chunks)
-        se_led_pcb_chunk: PCBChunk = PCBChunk.join("SE LED's", se_led_pcb_chunks)
-        sw_led_pcb_chunk: PCBChunk = PCBChunk.join("SW LED's", sw_led_pcb_chunks)
-        return ne_led_pcb_chunk, nw_led_pcb_chunk, se_led_pcb_chunk, sw_led_pcb_chunk
+        # Create the reference *PCBChunks*'s:
+        ne_references_pcb_chunk: PCBChunk = PCBChunk(
+            "NE References", [], [], references=ne_references)
+        nw_references_pcb_chunk: PCBChunk = PCBChunk(
+            "NW References", [], [], references=nw_references)
+        se_references_pcb_chunk: PCBChunk = PCBChunk(
+            "SE References", [], [], references=se_references)
+        sw_references_pcb_chunk: PCBChunk = PCBChunk(
+            "SW References", [], [], references=sw_references)
+
+        # Create the final *PCBChunks*':
+        final_ne_led_pcb_chunk: PCBChunk = PCBChunk.join(
+            "NE LED's", ne_led_pcb_chunks + [ne_references_pcb_chunk])
+        final_nw_led_pcb_chunk: PCBChunk = PCBChunk.join(
+            "NW LED's", nw_led_pcb_chunks + [nw_references_pcb_chunk])
+        final_se_led_pcb_chunk: PCBChunk = PCBChunk.join(
+            "SE LED's", se_led_pcb_chunks + [se_references_pcb_chunk])
+        final_sw_led_pcb_chunk: PCBChunk = PCBChunk.join(
+            "SW LED's", sw_led_pcb_chunks + [sw_references_pcb_chunk])
+
+        return (final_ne_led_pcb_chunk, final_nw_led_pcb_chunk,
+                final_se_led_pcb_chunk, final_sw_led_pcb_chunk)
 
     # MasterBoard.mikrobus_install():
     def mikrobus_install(self, scad_program: ScadProgram,
@@ -4523,7 +4608,7 @@ class MasterBoard:
             "SE Mikrobus", se_pcb_chunks + [se_references_pcb_chunk])
         final_sw_pcb_chunk: PCBChunk = PCBChunk.join(
             "SW Mikrobus", sw_pcb_chunks + [sw_references_pcb_chunk])
-        print(f"final_center_pcb_chunk:{final_center_pcb_chunk}")
+        # print(f"final_center_pcb_chunk:{final_center_pcb_chunk}")
         return (final_center_pcb_chunk, final_ne_pcb_chunk, final_nw_pcb_chunk,
                 final_se_pcb_chunk, final_sw_pcb_chunk)
 
@@ -5003,7 +5088,7 @@ class MikroBus:
             m1x8_east_pcb_chunk,
             m1x8_west_pcb_chunk,
         ])
-        print(f"microbus_pcb_chunk: {mikrobus_pcb_chunk}")
+        # print(f"microbus_pcb_chunk: {mikrobus_pcb_chunk}")
 
         # Generate *mikobus_module* for use by *microbus_mate_pcb_chunk*:
         mikrobus_module: Module3D = mikrobus_pcb_chunk.pcb_update(
@@ -5042,7 +5127,7 @@ class MikroBus:
         # Create *mikrobus_mate_pcb_chunk*:
         mikrobus_exterior_pcb_chunk: PCBChunk = PCBChunk(
             f"MikroBus Exterior", [], [], front_artworks=[mikrobus_exterior])
-        print(f"mikrobus_exterior_pcb_chunk:{mikrobus_exterior_pcb_chunk}")
+        # print(f"mikrobus_exterior_pcb_chunk:{mikrobus_exterior_pcb_chunk}")
         footprint_name: str = f"MIKROBUS_{pcb_suffix_table[size]}_MATE"
         mikrobus_mate_pcb_chunk: PCBChunk = PCBChunk.join(footprint_name, [
             f1x8_west_pcb_chunk,
