@@ -1782,6 +1782,20 @@ class PCBChunk:
             print(f"{tracing}<=PCBChunk.pcb_cuts_references_update('{name}', '{path_text}', *, "
                   f"{pcb_origin}, |more_references|={len(more_references)}")
 
+    # PCBChunk.reference():
+    def reference(self, reference_name: str,
+                  is_front: bool, rotate: float, position: P2D, footprint_name: str) -> "PCBChunk":
+        """Add a reference to a PCBChunk."""
+        # Create the *reference* using the original *pcb_chunk* (i.e. *self*):
+        pcb_chunk: PCBChunk = self
+        reference: Reference = Reference(
+            reference_name, is_front, rotate, position, pcb_chunk, footprint_name)
+
+        # Now create *referenced_pcb_chunk* and return it.
+        referenced_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        referenced_pcb_chunk.references.append(reference)
+        return referenced_pcb_chunk
+
     # PCBChunk.references_show():
     def references_show(self, prefix: str = "") -> None:
         """Show the pads."""
@@ -3835,8 +3849,11 @@ class MasterBoard:
 
         # Create the *u3v70_9v_pcb_chunk*:
         u3v70x: U3V70x = U3V70x(scad_program, 9.0, connectors)
+        u3v70x_position: P2D = P2D(22.0, -8.5)  # Trial and error
         u3v70x_9v_pcb_chunk: PCBChunk = (
-            u3v70x.mate_pcb_chunk.reposition(origin2d, 0.0, P2D(22.0, -8.5)))  # Trial and error
+            u3v70x.mate_pcb_chunk.reposition(origin2d, 0.0, u3v70x_position).
+            reference("CN42", True, 0.0, u3v70x_position, "U3V70x_F1x4+F1x5")
+        )
 
         # Squirt everything into the associated KiCad PCB's:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
@@ -8635,7 +8652,7 @@ class STLink:
             "Repositoned ST Adapter", origin3d, x_axis, degrees90, P3D(0.0, 0.0, -sandwitch_dz))
         st_mate_repositioned_pcb_chunk: PCBChunk = PCBChunk(
             "ST Mate Repositioned", [], [repositioned_st_adapter]).sides_swap()
-        st_mate_pcb_chunk: PCBChunk = PCBChunk.join("ST_MATE", [
+        st_mate_pcb_chunk: PCBChunk = PCBChunk.join("STADAPTER_F1x2+F1x4", [
             st_mate_artworks_pcb_chunk,
             st_mate_tie_holes_pcb_chunk,
             st_mate_repositioned_pcb_chunk,
@@ -8844,12 +8861,12 @@ class U3V70x:
         connector_mate_s_pcb_chunk: PCBChunk = (
             connectors.f1x5.pcb_chunk.
             reposition(origin2d, 0.0, s_connector_center))
-        translated_u3v70x: Scad3D = Translate3D("U3V70x", u3v70x_module.use_module_get(),
-                                                P3D(0.0, 0.0, spacer_dz))
+        translated_u3v70x: Scad3D = Translate3D(
+            "Translated U3V70x", u3v70x_module.use_module_get(), P3D(0.0, 0.0, spacer_dz))
         mating_u3v70x_pcb_chunk: PCBChunk = PCBChunk(
             "Mating U3V70x", [], [translated_u3v70x, ne_translated_spacer, sw_translated_spacer])
         mate_mounts_pcb_chunk: PCBChunk = PCBChunk("U3V70x Mate Mount Holes", mount_pads, [])
-        u3v70x_mate_pcb_chunk: PCBChunk = PCBChunk.join("U3V70xMate", [
+        u3v70x_mate_pcb_chunk: PCBChunk = PCBChunk.join("U3V70xMATE_F1x4+F1x5", [
             outline_pcb_chunk.sides_swap(),
             mate_mounts_pcb_chunk,
             connector_mate_n_pcb_chunk,
