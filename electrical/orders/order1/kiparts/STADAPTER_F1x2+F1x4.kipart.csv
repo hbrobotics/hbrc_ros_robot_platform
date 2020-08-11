@@ -1,4 +1,4 @@
-ST_MATE;ST_MATE,CN,HR2:ST_MATE,,ST Adaptor Mating Connector
+STADAPTER;F1x2+F1x4,CN,HR2:STADAPTER_F1x2+F1x4,ST Adapter Mating Connectors,ST Adapter Mating Connectors
 Pin,Name,Type,Side,Unit,Style,Hidden
 1,GND,pwr_out,right,1,,
 2,3V3,pwr_out,right,1,,

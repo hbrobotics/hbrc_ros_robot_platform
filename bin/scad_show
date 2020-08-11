@@ -153,14 +153,14 @@ case "$1" in
     "st_link_board")
 	scad "st_link_board"
 	;;
-    "st_mate_board")
-	scad "st_mate_board"
+    "stadapter_f1x2+f1x4_board")
+	scad "stadapter_f1x2+f1x4_board"
 	;;
     "u3v70x_board")
 	scad "u3v70x_board"
 	;;
-    "u3v70xmate_board")
-	scad "u3v70xmate_board"
+    "u3v70xmate_f1x4+f1x5_board")
+	scad "u3v70xmate_f1x4+f1x5_board"
 	;;
     "wheel_assembly")
 	scad "wheel_assembly"
@@ -209,9 +209,9 @@ case "$1" in
 	echo "sonar_vertical"
 	echo "st_adapter_board"
 	echo "st_link_board"
-	echo "st_mate_board"
+	echo "stadapter_f1x2+f1x4_board"
 	echo "u3v70x_board"
-	echo "u3v70xmate_board"
+	echo "u3v70xmate_f1x4+f1x5_board"
 	echo "wheel_assembly"
 	echo "yplidar_x2_lidar"
 	;;

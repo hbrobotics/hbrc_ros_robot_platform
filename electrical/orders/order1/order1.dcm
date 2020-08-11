@@ -54,6 +54,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP U3V70xMATE;F1x4+F1x5
+D 
+K ~
+F Pololu U3V70x Voltage Regulator Mating Connector
+$ENDCMP
+#
 $CMP HOLE;M2.5
 D 
 K ~
@@ -72,28 +78,22 @@ K ~
 F M3 Mounting Hole
 $ENDCMP
 #
+$CMP STADAPTER;F1x2+F1x4
+D 
+K ~
+F ST Adapter Mating Connectors
+$ENDCMP
+#
 $CMP GROVE;20x20R
 D 
 K ~
 F Grove 20x20 Module
 $ENDCMP
 #
-$CMP ST_MATE;ST_MATE
-D 
-K ~
-F 
-$ENDCMP
-#
 $CMP HOLE;M2
 D 
 K ~
 F M2 Mounting Hole
-$ENDCMP
-#
-$CMP ST_ADAPTER;ST_ADAPTER
-D 
-K ~
-F 
 $ENDCMP
 #
 $CMP GROVE;20x20L
