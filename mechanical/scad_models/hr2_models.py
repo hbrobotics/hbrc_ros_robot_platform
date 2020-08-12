@@ -1210,7 +1210,7 @@ class PCBChunk:
     # PCBChunk.footprint_body_lines_generate():
     def footprint_body_lines_generate(self, prefix: str, footprint_mode: bool, is_front: bool,
                                       pcb_origin: P2D, footprint_name: str, reference_name: str,
-                                      value_name: str, path_id: int, rotate: float, position: P2D,
+                                      value_name: str, path_id: str, rotate: float, position: P2D,
                                       pads_reverse: bool, tracing: str = "") -> List[str]:
         """Generate a list of corresponding to a footprint."""
         def polygon_lines(pcb_origin: P2D, polygon: SimplePolygon, layer: str) -> List[str]:
@@ -1276,8 +1276,8 @@ class PCBChunk:
                          f"{KicadPCB.number(pcb_origin_y - position.y, 4)}{rotate_text})")
 
         # If appropriate add a ...(path /XXXXX) line:
-        if path_id != 0:
-            lines.append(f"{prefix}  (path /{path_id:08X})")
+        if path_id != "":
+            lines.append(f"{prefix}  (path /{path_id})")
 
         # Do a ...(fp_text reference ...) line:
         justify_mirror: str = "" if is_front else " (justify mirror)"
@@ -1427,7 +1427,7 @@ class PCBChunk:
         # Create the *new_body_lines*:
         origin2d: P2D = P2D(0.0, 0.0)
         prefix: str = ""
-        path_id: int = 0  # No *path_id*'s in a footprint.
+        path_id: str = ""  # No *path_id*'s in a footprint.
         is_front: bool = True
         new_body_lines: List[str] = pcb_chunk.footprint_body_lines_generate(
             prefix, footprint_mode, is_front, origin2d, name, "REF**", value, path_id,
@@ -1971,7 +1971,7 @@ class PCBModule:
     def __init__(self, file_path: Path, line_number: int,
                  reference_name: str, preceeding_lines: List[str],
                  module_lines: List[str], edit_timestamp: int, create_timestamp: int,
-                 path_id: int, module_prefix: str) -> None:
+                 path_id: str, module_prefix: str) -> None:
         """Initialize a Module."""
         # Stuff values into *module* (i.e *self*):
         # module: Module = self
@@ -1981,7 +1981,7 @@ class PCBModule:
         self.line_number: int = line_number
         self.module_lines: List[str] = module_lines
         self.module_prefix: str = module_prefix
-        self.path_id: int = path_id
+        self.path_id: str = path_id
         self.preceeding_lines: List[str] = preceeding_lines
         self.reference_name: str = reference_name
 
@@ -2003,7 +2003,7 @@ class PCBModule:
         module_start_line_index: int = 0
         module_lines: List[str] = []
         module_prefix: str = ""
-        path_id: int = 0
+        path_id: str = ""
         path_pattern: str = "(path /"
         pcb_line: str
         pcb_module: PCBModule
@@ -2024,12 +2024,8 @@ class PCBModule:
                     reference_end_index += reference_start_index
                     reference_name = pcb_line[reference_start_index:reference_end_index]
                 elif path_index >= 0:
-                    # We found "...(path /XXXXXXXX)"
-                    path_str: str = pcb_line[path_index+len(path_pattern):-1]
-                    try:
-                        path_id = int(path_str, 16)
-                    except ValueError:
-                        assert False, f"'{path_str}' in 'pcb_line' is not a hex number"
+                    # We found "...(path /XXXXXXXX/....)"
+                    path_id = pcb_line[path_index+len(path_pattern):-1]
                 elif pcb_line == module_end:
                     # We found the end of the module:
                     assert reference_name != "", "No reference in module"
@@ -2046,7 +2042,7 @@ class PCBModule:
                     reference_name = ""
                     module_prefix = ""
                     module_end = ""
-                    path_id = 0
+                    path_id = ""
                     edit_timestamp = 0
                     create_timestamp = 0
             else:
@@ -2079,7 +2075,7 @@ class PCBModule:
 
         # Create one last *final_module* to contain the remaining lines and return everything:
         final_pcb_module: PCBModule = PCBModule(file_path, -1, "",
-                                                preceeding_lines, module_lines, 0, 0, 0, "")
+                                                preceeding_lines, module_lines, 0, 0, "", "")
         ordered_pcb_modules.append(final_pcb_module)
         return pcb_modules_table, ordered_pcb_modules
 
@@ -3274,7 +3270,7 @@ class HR2Robot:
         # nucleo_offset2d: P2D = P2D(pi_x - 8.5, pi_y - 1.0)
         # nucleo_rotate: float = degrees90
         # print(f"HR2PiAssembly:nucleo_offset2d:{nucleo_offset2d}")
-        nucleo144: Nucleo144 = Nucleo144(scad_program, connectors)
+        nucleo144: Nucleo144 = Nucleo144(scad_program, "F767ZI", connectors)
 
         # Create the *romi_expansion_plate* before *master_board* so it can be passed in:
         plate: RomiExpansionPlate = RomiExpansionPlate(scad_program)
@@ -3434,7 +3430,7 @@ class Nucleo144:
     """Represents a STM32 Nucleo-144 development board."""
 
     # Nucleo144.__init__():
-    def __init__(self, scad_program: ScadProgram,
+    def __init__(self, scad_program: ScadProgram, cpu_name: str,
                  connectors: Connectors, tracing: str = "") -> None:
         """Initialize Nucleo144 and append to ScadProgram."""
         # Define various constants, particularly the various X/Y/Z coordinates of component
@@ -3715,18 +3711,20 @@ class Nucleo144:
             ])
 
         # Create *nucleo_mate_without_pcb_chunk*:
-        nucleo_mate_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("NUCLEO144_MATE", [
-            mount_holes_pcb_chunk,
-            cn11_mate_pcb_chunk,
-            cn12_mate_pcb_chunk,
-            spacers_chunk,
-        ])
+        nucleo_mate_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join(
+            f"NUCLEO_{cpu_name}_2xF2x35", [
+                mount_holes_pcb_chunk,
+                cn11_mate_pcb_chunk,
+                cn12_mate_pcb_chunk,
+                spacers_chunk,
+            ])
 
         # Create *nucleo_mate_with_nucleo_pcb_chunk*:
-        nucleo_mate_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("NUCLEO144_MATE", [
-            raised_nucleo_pcb_chunk,
-            nucleo_mate_without_nucleo_pcb_chunk,
-        ])
+        nucleo_mate_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join(
+            f"NUCLEO_{cpu_name}_2xF2x35", [
+                raised_nucleo_pcb_chunk,
+                nucleo_mate_without_nucleo_pcb_chunk,
+            ])
 
         # Create *nucleo_mate_with_nucleo_module:
         nucleo_mate_without_nucleo_pcb_chunk.footprint_generate(
@@ -3736,6 +3734,7 @@ class Nucleo144:
         # nucleo144: Nucleo144 = self
         # self.module: Module3D = nucleo_board
         # self.pcb: PCB = nucleo_pcb
+        self.cpu_name: str = cpu_name
         self.nucleo_module: Module3D = nucleo_module
         self.nucleo_pcb_chunk: PCBChunk = nucleo_pcb_chunk
         self.nucleo_mate_with_nucleo_pcb_chunk: PCBChunk = nucleo_mate_with_nucleo_pcb_chunk
@@ -3893,13 +3892,13 @@ class MasterBoard:
 
         # Create *nucleo144_mate_refererence* and associated *PCBChunk*:
         nucleo144_mate_reference: Reference = Reference(
-            "CN59", True, 0.0, origin2d,
+            "CN43", True, nucleo_rotate, nucleo_offset2d,
             nucleo144_mate_with_nucleo_pcb_chunk, "NUCLEO144;MORPHO144")
         nucleo144_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "Nucleo144 References", [], [], references=[nucleo144_mate_reference])
 
         # Place the ST Link assembly (ST adaptor and ST-Link):
-        st_mate_location: P2D = P2D(7.0 * 2.54, -47.0)
+        st_mate_location: P2D = P2D(15.0, -47.5)  # Trial and error
         st_mate_pcb_chunk: PCBChunk = (
             st_link.st_mate_pcb_chunk.reposition(origin2d, 0.0, st_mate_location))
         st_mate_reference: Reference = Reference(
@@ -4372,7 +4371,7 @@ class MasterBoard:
              "GV1", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
             ("NE Outer Bottom Center", False, P2D(47.0, 45.0), radians(-90),
              "GV2", grove20x20_pcb_chunk, ne_references, ne_grove_pcb_chunks),
-            ("Center NE Inner Bottom (Left)", False, P2D(47.0, 25.0), radians(180),
+            ("Center NE Inner Bottom (Left)", False, P2D(43.0, 25.0), radians(90),
              "GV3", left_grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
 
             # Note GV4/GV7 is the same Grove split across the center and nw PCB's:
@@ -4383,7 +4382,7 @@ class MasterBoard:
 
             ("Center SW Top", True, P2D(-48.0, -28.0), radians(-22.5),
              "GV5", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
-            ("Center SE Bottom", False, P2D(47.5, -24.25), radians(180),
+            ("Center SE Bottom", False, P2D(43.0, -24.25), radians(90),
              "GV6", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
         ]
 

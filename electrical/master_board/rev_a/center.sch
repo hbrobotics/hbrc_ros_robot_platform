@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 1 1
+Sheet 1 2
 Title "HR2 Center PCB"
 Date "2020-06-13"
 Rev "A"
@@ -331,4 +331,10 @@ F 4 "Pololu U3V70x Voltage Regulator Mating Connector" H 4450 4850 60  0001 L CN
 	1    4250 4900
 	1    0    0    -1  
 $EndComp
+$Sheet
+S 6000 5350 1150 950 
+U 5F3221A2
+F0 "Nucleo144" 50
+F1 "nucleo144.sch" 50
+$EndSheet
 $EndSCHEMATC
