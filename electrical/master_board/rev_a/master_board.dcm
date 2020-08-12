@@ -1,6 +1,6 @@
 EESchema-DOCLIB  Version 2.0
 #
-$CMP F767ZI;NUCLEO144
+$CMP NUCLEO-F767ZI;2xF2x35
 D NUCLEO144-F767ZI
 K Nucleo144 STM32F767ZI
 F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
@@ -18,6 +18,12 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
+$CMP GROVE;20x20
+D 
+K ~
+F Grove 20x20 Module
+$ENDCMP
+#
 $CMP STLINKCN3;F1X2
 D ST-Link Ground Pins
 K ~
@@ -30,22 +36,76 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
-$CMP HR2_Encoder;HR2Encoder
+$CMP RASPI;F2X20
+D 
+K ~
+F 
+$ENDCMP
+#
+$CMP HR2_Encoder;HR2:ENCODER
 D HR2 Encoder
 K ~
 F 
 $ENDCMP
 #
-$CMP HR2_EncoderMate;HR2EncoderMate
+$CMP HR2_EncoderMate;2XF1X3
 D HR2 Encoder Mating Connector
 K ~
 F 
+$ENDCMP
+#
+$CMP U3V70xMATE;F1x4+F1x5
+D 
+K ~
+F Pololu U3V70x Voltage Regulator Mating Connector
+$ENDCMP
+#
+$CMP HOLE;M2.5
+D 
+K ~
+F M2.5 Mounting Hole
 $ENDCMP
 #
 $CMP STLINKCN2;F1X2
 D ST-Link Ground Pins
 K ~
 F http://www.adam-tech.com/downloader.php?p=RS1-XX-G.pdf
+$ENDCMP
+#
+$CMP HOLE;M3.0
+D 
+K ~
+F M3 Mounting Hole
+$ENDCMP
+#
+$CMP STADAPTER;F1x2+F1x4
+D 
+K ~
+F ST Adapter Mating Connectors
+$ENDCMP
+#
+$CMP GROVE;20x20R
+D 
+K ~
+F Grove 20x20 Module
+$ENDCMP
+#
+$CMP NUCLEO-F767ZI;2xF2x35
+D NUCLEO144-F767ZI
+K Nucleo144 STM32F767ZI
+F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
+$ENDCMP
+#
+$CMP HOLE;M2
+D 
+K ~
+F M2 Mounting Hole
+$ENDCMP
+#
+$CMP GROVE;20x20L
+D 
+K ~
+F Grove 20x20 Module
 $ENDCMP
 #
 #End Doc Library
