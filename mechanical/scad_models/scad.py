@@ -3045,7 +3045,7 @@ class Scad3D(Scad):
     # Scad3D.__init__():
     def __init__(self, name: str) -> None:
         """Set the name of the 3-dimensional SCAD object."""
-        super().__init__(name)
+        super().__init__(name.replace(' ', '_').replace('+', '_'))
 
     # Scad3D.reposition():
     def reposition(self, name: str,
