@@ -39,6 +39,9 @@ case "$1" in
     "LED")
 	scad "LED"
 	;;
+    "encoder_bare")
+	scad "encoder_bare"
+	;;
     "encoder_board")
 	scad "encoder_board"
 	;;
@@ -69,23 +72,44 @@ case "$1" in
     "hr2_wheel_assembly")
 	scad "hr2_wheel_assembly"
 	;;
+    "master_bare")
+	scad "master_bare"
+	;;
     "master_board")
 	scad "master_board"
+	;;
+    "master_center_with_nucleo_bare")
+	scad "master_center_with_nucleo_bare"
 	;;
     "master_center_with_nucleo_board")
 	scad "master_center_with_nucleo_board"
 	;;
+    "master_center_without_nucleo_bare")
+	scad "master_center_without_nucleo_bare"
+	;;
     "master_center_without_nucleo_board")
 	scad "master_center_without_nucleo_board"
+	;;
+    "master_ne_bare")
+	scad "master_ne_bare"
 	;;
     "master_ne_board")
 	scad "master_ne_board"
 	;;
+    "master_nw_bare")
+	scad "master_nw_bare"
+	;;
     "master_nw_board")
 	scad "master_nw_board"
 	;;
+    "master_se_bare")
+	scad "master_se_bare"
+	;;
     "master_se_board")
 	scad "master_se_board"
+	;;
+    "master_sw_bare")
+	scad "master_sw_bare"
 	;;
     "master_sw_board")
 	scad "master_sw_board"
@@ -93,29 +117,56 @@ case "$1" in
     "master_union_board")
 	scad "master_union_board"
 	;;
+    "master_without_nucleo_bare")
+	scad "master_without_nucleo_bare"
+	;;
     "master_without_nucleo_board")
 	scad "master_without_nucleo_board"
+	;;
+    "mikrobus_l_bare")
+	scad "mikrobus_l_bare"
 	;;
     "mikrobus_l_board")
 	scad "mikrobus_l_board"
 	;;
+    "mikrobus_large_mate_bare")
+	scad "mikrobus_large_mate_bare"
+	;;
     "mikrobus_large_mate_board")
 	scad "mikrobus_large_mate_board"
+	;;
+    "mikrobus_m_bare")
+	scad "mikrobus_m_bare"
 	;;
     "mikrobus_m_board")
 	scad "mikrobus_m_board"
 	;;
+    "mikrobus_medium_mate_bare")
+	scad "mikrobus_medium_mate_bare"
+	;;
     "mikrobus_medium_mate_board")
 	scad "mikrobus_medium_mate_board"
+	;;
+    "mikrobus_s_bare")
+	scad "mikrobus_s_bare"
 	;;
     "mikrobus_s_board")
 	scad "mikrobus_s_board"
 	;;
+    "mikrobus_small_mate_bare")
+	scad "mikrobus_small_mate_bare"
+	;;
     "mikrobus_small_mate_board")
 	scad "mikrobus_small_mate_board"
 	;;
+    "nucleo_144_bare")
+	scad "nucleo_144_bare"
+	;;
     "nucleo_144_board")
 	scad "nucleo_144_board"
+	;;
+    "raspi_f2x20_bare")
+	scad "raspi_f2x20_bare"
 	;;
     "raspi_f2x20_board")
 	scad "raspi_f2x20_board"
@@ -135,11 +186,20 @@ case "$1" in
     "rpi4_usb_heat_sink")
 	scad "rpi4_usb_heat_sink"
 	;;
+    "sbc_other_pi_bare")
+	scad "sbc_other_pi_bare"
+	;;
     "sbc_other_pi_board")
 	scad "sbc_other_pi_board"
 	;;
+    "sbc_raspi4_bare")
+	scad "sbc_raspi4_bare"
+	;;
     "sbc_raspi4_board")
 	scad "sbc_raspi4_board"
+	;;
+    "sonar_centered_bare")
+	scad "sonar_centered_bare"
 	;;
     "sonar_centered_board")
 	scad "sonar_centered_board"
@@ -147,17 +207,32 @@ case "$1" in
     "sonar_vertical")
 	scad "sonar_vertical"
 	;;
+    "st_adapter_bare")
+	scad "st_adapter_bare"
+	;;
     "st_adapter_board")
 	scad "st_adapter_board"
+	;;
+    "st_link_bare")
+	scad "st_link_bare"
 	;;
     "st_link_board")
 	scad "st_link_board"
 	;;
+    "stadapter_f1x2+f1x4_bare")
+	scad "stadapter_f1x2+f1x4_bare"
+	;;
     "stadapter_f1x2+f1x4_board")
 	scad "stadapter_f1x2+f1x4_board"
 	;;
+    "u3v70x_bare")
+	scad "u3v70x_bare"
+	;;
     "u3v70x_board")
 	scad "u3v70x_board"
+	;;
+    "u3v70xmate_f1x4+f1x5_bare")
+	scad "u3v70xmate_f1x4+f1x5_bare"
 	;;
     "u3v70xmate_f1x4+f1x5_board")
 	scad "u3v70xmate_f1x4+f1x5_board"
@@ -171,6 +246,7 @@ case "$1" in
     *)
 	echo "Blue_20x20_Grove"
 	echo "LED"
+	echo "encoder_bare"
 	echo "encoder_board"
 	echo "expansion_flat"
 	echo "expansion_plate"
@@ -181,36 +257,60 @@ case "$1" in
 	echo "hr2_nucleo_assembly"
 	echo "hr2_pi_assembly"
 	echo "hr2_wheel_assembly"
+	echo "master_bare"
 	echo "master_board"
+	echo "master_center_with_nucleo_bare"
 	echo "master_center_with_nucleo_board"
+	echo "master_center_without_nucleo_bare"
 	echo "master_center_without_nucleo_board"
+	echo "master_ne_bare"
 	echo "master_ne_board"
+	echo "master_nw_bare"
 	echo "master_nw_board"
+	echo "master_se_bare"
 	echo "master_se_board"
+	echo "master_sw_bare"
 	echo "master_sw_board"
 	echo "master_union_board"
+	echo "master_without_nucleo_bare"
 	echo "master_without_nucleo_board"
+	echo "mikrobus_l_bare"
 	echo "mikrobus_l_board"
+	echo "mikrobus_large_mate_bare"
 	echo "mikrobus_large_mate_board"
+	echo "mikrobus_m_bare"
 	echo "mikrobus_m_board"
+	echo "mikrobus_medium_mate_bare"
 	echo "mikrobus_medium_mate_board"
+	echo "mikrobus_s_bare"
 	echo "mikrobus_s_board"
+	echo "mikrobus_small_mate_bare"
 	echo "mikrobus_small_mate_board"
+	echo "nucleo_144_bare"
 	echo "nucleo_144_board"
+	echo "raspi_f2x20_bare"
 	echo "raspi_f2x20_board"
 	echo "romi_base"
 	echo "rpi4_ethernet_heat_sink"
 	echo "rpi4_processor_heat_sink"
 	echo "rpi4_sdram_heat_sink"
 	echo "rpi4_usb_heat_sink"
+	echo "sbc_other_pi_bare"
 	echo "sbc_other_pi_board"
+	echo "sbc_raspi4_bare"
 	echo "sbc_raspi4_board"
+	echo "sonar_centered_bare"
 	echo "sonar_centered_board"
 	echo "sonar_vertical"
+	echo "st_adapter_bare"
 	echo "st_adapter_board"
+	echo "st_link_bare"
 	echo "st_link_board"
+	echo "stadapter_f1x2+f1x4_bare"
 	echo "stadapter_f1x2+f1x4_board"
+	echo "u3v70x_bare"
 	echo "u3v70x_board"
+	echo "u3v70xmate_f1x4+f1x5_bare"
 	echo "u3v70xmate_f1x4+f1x5_board"
 	echo "wheel_assembly"
 	echo "yplidar_x2_lidar"

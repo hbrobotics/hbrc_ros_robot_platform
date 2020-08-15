@@ -60,6 +60,13 @@ class Connectors:
 
         f1x4lp: F1x4LP = F1x4LP(scad_program)
 
+        # 1x1:
+        m1x1: RectangularConnector = RectangularConnector(
+            "M1x1", scad_program,
+            1, 1, pins_dx_dy, pcb_pin_height,
+            insulation_color="Maroon", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
         # Common 1x2 connectors:
         m1x2: RectangularConnector = RectangularConnector(
             "M1x2", scad_program,
@@ -159,6 +166,24 @@ class Connectors:
             insulation_color="Fuchsia", male_pin_height=4.04,
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
+        # Common 2x4 male jumper:
+        m2x4: RectangularConnector = RectangularConnector(
+            "M2x4", scad_program, 2, 4, pins_dx_dy, pcb_pin_height,
+            insulation_color="Fuchsia", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Common 2x5 male jumper:
+        m2x5: RectangularConnector = RectangularConnector(
+            "M2x5", scad_program, 2, 5, pins_dx_dy, pcb_pin_height,
+            insulation_color="Fuchsia", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Common 2x6 male jumper:
+        m2x6: RectangularConnector = RectangularConnector(
+            "M2x6", scad_program, 2, 6, pins_dx_dy, pcb_pin_height,
+            insulation_color="Fuchsia", male_pin_height=4.04,
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
         # Standard 2x20 RaspberryPi connectors
         m2x20: RectangularConnector = RectangularConnector(
             "M2x20", scad_program, 2, 20, pins_dx_dy, male_insulation_height,
@@ -210,6 +235,7 @@ class Connectors:
 
         # Load up *connectors* (i.e. *self*)
         # connectors: Connectors = self
+        self.m1x1: RectangularConnector = m1x1
         self.m1x2: RectangularConnector = m1x2
         self.f1x2: RectangularConnector = f1x2
         self.f1x2ra: RectangularConnector = f1x2ra
@@ -230,6 +256,9 @@ class Connectors:
         self.m1x8: RectangularConnector = m1x8
         self.f1x8: RectangularConnector = f1x8
         self.m2x2: RectangularConnector = m2x2
+        self.m2x4: RectangularConnector = m2x4
+        self.m2x5: RectangularConnector = m2x5
+        self.m2x6: RectangularConnector = m2x6
         self.m2x20: RectangularConnector = m2x20
         self.f2x20: RectangularConnector = f2x20
         self.m2x35_long: RectangularConnector = m2x35_long
@@ -1034,9 +1063,9 @@ class Reference:
         value: str = reference.value
 
         # Create *repositioned_reference* and return it:
-        repostioned_reference: Reference = Reference(
+        repositioned_reference: Reference = Reference(
             name, is_front, rotate + rotate_adjust, position + translate, pcb_chunk, value)
-        return repostioned_reference
+        return repositioned_reference
 
 
 # PCBChunk
@@ -1599,6 +1628,10 @@ class PCBChunk:
         # Extrude and *color* the *board_polygon*:
         extruded_pcb: LinearExtrude = LinearExtrude(f"Extruded {name} PCB", board_polygon, dz)
         colored_pcb: Color = Color(f"Colored {name} PCB", extruded_pcb, color)
+        bare_module3d: Module3D = Module3D(f"{name}_bare", [colored_pcb])
+        scad_program.append(bare_module3d)
+        scad_program.if3d.name_match_append(
+            f"{name.lower()}_bare", bare_module3d, [f"{name} Bare PCB"])
 
         # Group all of the *front_scads* into a *front_union* and construct *module*:
         front_scads_union: Union3D = Union3D(f"{name} Front Union", front_scads)
@@ -1608,7 +1641,10 @@ class PCBChunk:
         translated_back_scads_union: Translate3D = Translate3D(
             f"{name} Translated Back Scads Union", back_scads_union, P3D(0.0, 0.0, 0.0))
         module3d_scads: List[Scad3D] = [
-            colored_pcb, translated_front_scads_union, translated_back_scads_union]
+            bare_module3d.use_module_get(),  # colored_pcb,
+            translated_front_scads_union,
+            translated_back_scads_union
+        ]
         module3d: Module3D = Module3D(f"{name}_pcb", module3d_scads)
         scad_program.append(module3d)
         scad_program.if3d.name_match_append(f"{name.lower()}_board", module3d, [f"{name} Board"])
@@ -1649,7 +1685,7 @@ class PCBChunk:
                 reference_rotate = 0.0  # Kludge for now.
                 reference_pcb_chunk: PCBChunk = reference.pcb_chunk
                 if tracing:
-                    print(f"{tracing}Ref: name:'{reference_name}' postion:{reference_position} "
+                    print(f"{tracing}Ref: name:'{reference_name}' position:{reference_position} "
                           f"rotate:{degrees(reference_rotate)} is_front:{reference_is_front}")
 
                 # Make sure that there is *reference_pcb_module* that match *reference_name*:
@@ -3035,7 +3071,7 @@ class HR2BaseAssembly:
                     spacer = base_master_spacer
                     spacer_z = base_top_z
 
-            # Translate *spacer_scad* into postion and append to *spacer*:
+            # Translate *spacer_scad* into position and append to *spacer*:
             spacer_scad: UseModule3D = spacer.module.use_module_get()
             translated_spacer_scad: Scad3D = Translate3D(
                 f"Translated {spacer_name}", spacer_scad, P3D(position.x, position.y, spacer_z))
@@ -3781,6 +3817,16 @@ class MasterBoard:
         (master_exterior, center_exterior, ne_exterior, nw_exterior, se_exterior,
          sw_exterior) = master_board.exteriors_create(scad_program, pcb_dz)
 
+        # Install the various bridge connectors.  This call must occur after
+        # MasterBoard.exteriors_create():
+        center_bridges_pcb_chunk: PCBChunk
+        ne_bridges_pcb_chunk: PCBChunk
+        nw_bridges_pcb_chunk: PCBChunk
+        se_bridges_pcb_chunk: PCBChunk
+        sw_bridges_pcb_chunk: PCBChunk
+        (center_bridges_pcb_chunk, ne_bridges_pcb_chunk, nw_bridges_pcb_chunk, se_bridges_pcb_chunk,
+         sw_bridges_pcb_chunk) = master_board.bridges_install(scad_program, connectors)
+
         # Install various cut out slots, mount_holes and spacers:
         center_spacer_pcb_chunk: PCBChunk
         ne_spacer_pcb_chunk: PCBChunk
@@ -3922,12 +3968,13 @@ class MasterBoard:
 
         # Create *center_without_nucleo_pcb_chunk* that does not contain the the Nucleo-14:
         center_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center Without Nucleo", [
-            u3v70x_9v_pcb_chunk,
+            center_bridges_pcb_chunk,
             center_mikrobus_pcb_chunk,
             center_spacer_pcb_chunk,
             no_nucleo_pcb_chunk,
             nucleo144_mate_without_nucleo_pcb_chunk,
             nucleo144_mate_references_pcb_chunk,
+            u3v70x_9v_pcb_chunk,
         ])
         center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
         center_module_without_nucleo: Module3D = center_without_nucleo_pcb_chunk.pcb_update(
@@ -3936,6 +3983,7 @@ class MasterBoard:
 
         # Create *center_with_nucleo_pcb_chunk* that does contain the the Nucleo-14:
         center_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center With Nucleo", [
+            center_bridges_pcb_chunk,
             center_mikrobus_pcb_chunk,
             center_without_nucleo_pcb_chunk,
             nucleo144_mate_with_nucleo_pcb_chunk,
@@ -3945,6 +3993,7 @@ class MasterBoard:
 
         # Create *ne_pcb_chunk* and update its associated PCB:
         ne_pcb_chunk: PCBChunk = PCBChunk.join("Master NE", [
+            ne_bridges_pcb_chunk,
             ne_grove_pcb_chunk,
             ne_mikrobus_pcb_chunk,
             ne_leds_pcb_chunk,
@@ -3956,6 +4005,7 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, ne_exterior, "YellowGreen", ne_kicad_pcb_path, [])
 
         nw_pcb_chunk: PCBChunk = PCBChunk.join("Master NW", [
+            nw_bridges_pcb_chunk,
             nw_grove_pcb_chunk,
             nw_mikrobus_pcb_chunk,
             nw_leds_pcb_chunk,
@@ -3967,6 +4017,7 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, nw_exterior, "Orange", nw_kicad_pcb_path, [])
 
         se_pcb_chunk: PCBChunk = PCBChunk.join("Master SE", [
+            se_bridges_pcb_chunk,
             se_leds_pcb_chunk,
             se_mikrobus_pcb_chunk,
             se_spacer_pcb_chunk,
@@ -3976,6 +4027,7 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, se_exterior, "Purple", se_kicad_pcb_path, [])
 
         sw_pcb_chunk: PCBChunk = PCBChunk.join("Master SW", [
+            sw_bridges_pcb_chunk,
             sw_leds_pcb_chunk,
             sw_mikrobus_pcb_chunk,
             sw_spacer_pcb_chunk,
@@ -4044,6 +4096,8 @@ class MasterBoard:
         self.se_pcb_chunk: PCBChunk = se_pcb_chunk
         self.sw_module: Module3D = sw_module
         self.sw_pcb_chunk: PCBChunk = sw_pcb_chunk
+        self.center_pcb_north: float  # Filled in by MasterBoard.bridges_install()
+        self.center_pcb_south: float  # Filled in by MasterBoard.bridges_install()
         self.union_with_nucleo_module: Module3D = union_with_nucleo_module
         self.union_without_nucleo_module: Module3D = union_without_nucleo_module
 
@@ -4051,6 +4105,149 @@ class MasterBoard:
         if tracing:
             next_tracing = tracing + " "
             print(f"{tracing}<=MasterBoard.__init__(...)")
+
+    # MasterBaord.bridges_install():
+    def bridges_install(self, scad_program: "ScadProgram",
+                        connectors: Connectors) -> Tuple[PCBChunk, PCBChunk,
+                                                         PCBChunk, PCBChunk, PCBChunk]:
+        """Install the bridge connectors between PCB's."""
+        # Grab some values from *master_board* (i.e. *self*)
+        master_board: MasterBoard = self
+        center_pcb_north: float = master_board.center_pcb_north
+        center_pcb_south: float = master_board.center_pcb_south
+
+        # There are a total of 12 connectors that need to be possitioned:
+        # * 3 on the NE PCB
+        # * 2 on the NW PCB
+        # * 1 on the SE PCB
+        # * 1 on the SW PCB
+        # * 7 on the Center PCB
+        #   * 3 for the NE PCB
+        #   * 2 for the NW PCB
+        #   * 1 for the SE PCB
+        #   * 1 for the SW PCB
+
+        # Define some X coordinates:
+        ne_inner_x: float = 31.5  # mm
+        ne_middle_x: float = 44.50  # mm
+        ne_outer_x: float = 56.0  # mm
+        nw_inner_x: float = -50.5  # mm
+        nw_outer_x: float = -59.5  # mm
+        se_x: float = 18.0  # mm
+        sw_x: float = -se_x
+
+        # Define some Y coordinates:
+        center_ne_inner_y: float = center_pcb_north - 0.5 * 2.54
+        center_ne_middle_y: float = center_pcb_north - 0.5 * 2.54
+        center_ne_outer_y: float = center_pcb_north - 0.5 * 2.54
+        center_nw_inner_y: float = center_pcb_north - 2.5 * 2.54
+        center_nw_outer_y: float = center_pcb_north - 0.5 * 2.54
+        center_s_y: float = center_pcb_south + 0.5 * 2.54
+
+        ne_inner_y: float = center_pcb_north + 0.5 * 2.54
+        ne_middle_y: float = center_pcb_north + 0.5 * 2.54
+        ne_outer_y: float = center_pcb_north + 0.5 * 2.54
+
+        nw_inner_y: float = center_pcb_north + 2.5 * 2.54
+        nw_outer_y: float = center_pcb_north + 0.5 * 2.54
+
+        se_sw_y: float = center_pcb_south - 0.5 * 2.54
+
+        # Create 4 NE/NW PCB connector centers and 2 SE/SW PCB
+        ne_inner_center: P2D = P2D(ne_inner_x, ne_inner_y)
+        ne_middle_center: P2D = P2D(ne_middle_x, ne_middle_y)
+        ne_outer_center: P2D = P2D(ne_outer_x, ne_outer_y)
+        nw_inner_center: P2D = P2D(nw_inner_x, nw_inner_y)
+        nw_outer_center: P2D = P2D(nw_outer_x, nw_outer_y)
+
+        # Create 2 SE/SW connector centers:
+        se_center: P2D = P2D(se_x, se_sw_y)
+        sw_center: P2D = P2D(sw_x, se_sw_y)
+
+        # Create 6 center PCB connector connectors:
+        center_ne_inner_center: P2D = P2D(ne_inner_x, center_ne_inner_y)
+        center_ne_middle_center: P2D = P2D(ne_middle_x, center_ne_middle_y)
+        center_ne_outer_center: P2D = P2D(ne_outer_x, center_ne_outer_y)
+        center_nw_inner_center: P2D = P2D(nw_inner_x, center_nw_inner_y)
+        center_nw_outer_center: P2D = P2D(nw_outer_x, center_nw_outer_y)
+        center_se_center: P2D = P2D(se_x, center_s_y)
+        center_sw_center: P2D = P2D(sw_x, center_s_y)
+
+        # Create the connectors:
+        m1x1: RectangularConnector = connectors.m1x1
+        m1x2: RectangularConnector = connectors.m1x2
+        m1x5: RectangularConnector = connectors.m1x5
+        m1x8: RectangularConnector = connectors.m1x8
+        # m2x4: RectangularConnector = connectors.m2x4
+        m2x5: RectangularConnector = connectors.m2x5
+        # m2x6: RectangularConnector = connectors.m2x6
+
+        # Create the 6 Center *PCBChunk*'s:
+        degrees90: float = radians(90.0)
+        origin2d: P2D = P2D(0.0, 0.0)
+        # center_ne_inner_pcb_chunk: PCBChunk = (
+        #     m2x4.pcb_chunk.reposition(origin2d, degrees90, center_ne_inner_center))
+        center_ne_inner_pcb_chunk: PCBChunk = (
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, center_ne_inner_center))
+        center_ne_middle_pcb_chunk: PCBChunk = (
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, center_ne_middle_center))
+        center_ne_outer_pcb_chunk: PCBChunk = (
+            m1x5.pcb_chunk.reposition(origin2d, 0.0, center_ne_outer_center))
+        center_nw_inner_pcb_chunk: PCBChunk = (
+            m2x5.pcb_chunk.reposition(origin2d, degrees90, center_nw_inner_center))
+        center_nw_outer_pcb_chunk: PCBChunk = (
+            m1x2.pcb_chunk.reposition(origin2d, 0.0, center_nw_outer_center))
+        center_se_pcb_chunk: PCBChunk = (
+            m1x8.pcb_chunk.reposition(origin2d, 0.0, center_se_center))
+        center_sw_pcb_chunk: PCBChunk = (
+            m1x8.pcb_chunk.reposition(origin2d, 0.0, center_sw_center))
+
+        # Create the 2 NE *PCBChunk*'s, 2 NW *PCBChunk*'s, 1 SE *PCBChunk* and 1 SW *PCBChunk*:
+        # ne_inner_pcb_chunk: PCBChunk = (
+        #     m2x4.pcb_chunk.reposition(origin2d, degrees90, ne_inner_center))
+        ne_inner_pcb_chunk: PCBChunk = (
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, ne_inner_center))
+        ne_middle_pcb_chunk: PCBChunk = (
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, ne_middle_center))
+        ne_outer_pcb_chunk: PCBChunk = (
+            m1x5.pcb_chunk.reposition(origin2d, 0.0, ne_outer_center))
+        nw_inner_pcb_chunk: PCBChunk = (
+            m2x5.pcb_chunk.reposition(origin2d, degrees90, nw_inner_center))
+        nw_outer_pcb_chunk: PCBChunk = (
+            m1x2.pcb_chunk.reposition(origin2d, 0.0, nw_outer_center))
+        se_pcb_chunk: PCBChunk = (
+            m1x8.pcb_chunk.reposition(origin2d, 0.0, se_center))
+        sw_pcb_chunk: PCBChunk = (
+            m1x8.pcb_chunk.reposition(origin2d, 0.0, sw_center))
+
+        # Create the final *PCBChunk*'s:
+        final_center_pcb_chunk: PCBChunk = PCBChunk.join("Center Bridges", [
+            center_ne_inner_pcb_chunk,
+            center_ne_middle_pcb_chunk,
+            center_ne_outer_pcb_chunk,
+            center_nw_inner_pcb_chunk,
+            center_nw_outer_pcb_chunk,
+            center_se_pcb_chunk,
+            center_sw_pcb_chunk,
+        ])
+        final_ne_pcb_chunk: PCBChunk = PCBChunk.join("NE Bridges", [
+            ne_inner_pcb_chunk,
+            ne_middle_pcb_chunk,
+            ne_outer_pcb_chunk,
+        ])
+        final_nw_pcb_chunk: PCBChunk = PCBChunk.join("NW Bridges", [
+            nw_inner_pcb_chunk,
+            nw_outer_pcb_chunk,
+        ])
+        final_se_pcb_chunk: PCBChunk = PCBChunk.join("SE Bridges", [
+            se_pcb_chunk,
+        ])
+        final_sw_pcb_chunk: PCBChunk = PCBChunk.join("SE Bridges", [
+            sw_pcb_chunk,
+        ])
+
+        return (final_center_pcb_chunk, final_ne_pcb_chunk, final_nw_pcb_chunk,
+                final_se_pcb_chunk, final_sw_pcb_chunk)
 
     # MasterBoard.exteriors_create():
     def exteriors_create(self, scad_program: "ScadProgram",
@@ -4344,12 +4541,18 @@ class MasterBoard:
         # sw_exterior.point_append(N)
         sw_exterior.lock()
 
+        # Stuff useful vales into *master_board* (i.e. *self*):
+        # master_board: MasterBoard = self
+        self.center_pcb_north = center_pcb_north
+        self.center_pcb_south = center_pcb_south
+
         # Return the resulting exterior *SimplePolygon*'s:
         return master_exterior, center_exterior, ne_exterior, nw_exterior, se_exterior, sw_exterior
 
     # MasterBoard.groves_install():
     def groves_install(self, scad_program: ScadProgram) -> Tuple[PCBChunk, PCBChunk, PCBChunk]:
         """Install the Grove mounting holes."""
+        # Create the collections lists:
         center_grove_pcb_chunks: List[PCBChunk] = []
         center_references: List[Reference] = []
         ne_grove_pcb_chunks: List[PCBChunk] = []
@@ -4357,27 +4560,26 @@ class MasterBoard:
         nw_grove_pcb_chunks: List[PCBChunk] = []
         nw_references: List[Reference] = []
 
+        # Create the *Grove* and various *PCBChunk*'s:
         grove20x20: Grove = Grove(scad_program, 20, 20, "Blue")
         grove20x20_pcb_chunk: PCBChunk = grove20x20.pcb_chunk
         left_grove20x20_pcb_chunk: PCBChunk = grove20x20.left_pcb_chunk
-        right_grove20x20_pcb_chunk: PCBChunk = grove20x20.left_pcb_chunk
-        left_grove20x20_pcb_chunk = left_grove20x20_pcb_chunk
-        right_grove20x20_pcb_chunk = right_grove20x20_pcb_chunk
+        right_grove20x20_pcb_chunk: PCBChunk = grove20x20.right_pcb_chunk
 
         # Create a list grove placements:
         placements: List[Tuple[str, bool, P2D, float, str,
                                PCBChunk, List[Reference], List[PCBChunk]]] = [
-            ("NW Outer Bottom", False, P2D(-42.0, 53.0), radians(-90),
-             "GV1", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
-            ("NE Outer Bottom Center", False, P2D(47.0, 45.0), radians(-90),
+            ("NE Outer Bottom Center", False, P2D(47.75, 45.0), radians(-90),
              "GV2", grove20x20_pcb_chunk, ne_references, ne_grove_pcb_chunks),
-            ("Center NE Inner Bottom (Left)", False, P2D(43.0, 25.0), radians(90),
-             "GV3", left_grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+            ("Center NE Inner Bottom (Left)", False, P2D(47.75, 25.0), radians(180.0),
+             "GV3", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
 
             # Note GV4/GV7 is the same Grove split across the center and nw PCB's:
-            ("Center NW Inner Top (Left)", True, P2D(-48.5, 31.0), radians(22.5),
-             "GV4", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
-            ("NW NW Inner Bottom (Right)", True, P2D(-48.5, 31.0), radians(22.5),
+            ("NW Outer Bottom", False, P2D(-42.0, 53.0), radians(-90),
+             "GV1", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
+            ("Center NW Inner Top (Left)", True, P2D(-50.5, 34.5), radians(30.0),
+             "GV4", left_grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+            ("NW NW Inner Bottom (Right)", True, P2D(-50.5, 34.5), radians(30.0),
              "GV7", right_grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
 
             ("Center SW Top", True, P2D(-48.0, -28.0), radians(-22.5),
@@ -4408,10 +4610,11 @@ class MasterBoard:
                 reference: Reference = Reference(
                     reference_name, is_front, rotate, position, pcb_chunk, "HOLE;M2.5")
                 references.append(reference)
-                while rotate > radians(360):
-                    rotate -= radians(360)
+                degrees360: float = radians(360)
+                while rotate > degrees360:
+                    rotate -= degrees360
                 while rotate < 0.0:
-                    rotate += radians(360)
+                    rotate += degrees360
                 side_text: str = "Front" if is_front else "Back"
                 grove_file.write(f"{reference_name}: {side_text} {degrees(rotate):.1f}dg {name}\n")
 
@@ -4848,9 +5051,9 @@ class MasterBoard:
 
             if not is_front:
                 connector_pcb_chunk = connector_pcb_chunk.scads_x_flip().sides_swap()
-            repostioned_connector_pcb_chunk: PCBChunk = connector_pcb_chunk.reposition(
+            repositioned_connector_pcb_chunk: PCBChunk = connector_pcb_chunk.reposition(
                 origin2d, beam_angle + degrees90, sonar_translate)
-            pcb_chunks.append(repostioned_connector_pcb_chunk)
+            pcb_chunks.append(repositioned_connector_pcb_chunk)
         placements_file.close()
 
         center_references_pcb_chunk: PCBChunk = PCBChunk("Center References", [], [],
@@ -4954,6 +5157,9 @@ class MasterBoard:
                 else:
                     assert False, f"'{board_name}' is not valid"
 
+                # print(f"Base {base_spacer_name} ({base_reference_name}): "
+                #      f"{board_name} {base_position} |center_pcb_chunks|={len(center_pcb_chunks)}")
+
         # Create the *master_arm_spacer*:
         master_arm_spacer: Spacer = Spacer(
             scad_program, "Mater Arm Spacer", arm_spacer_dz, "M2.5")
@@ -4968,10 +5174,10 @@ class MasterBoard:
             plate_reference: str
             plate_board_name: str
             plate_position, plate_reference, plate_board_name = plate_spacer_tuple
+
             # The plate is rotated 180 degrees from the Pololu documentation, hence the minus sign:
             plate_position = -plate_position
             is_no_hole: bool = plate_spacer_name.endswith("NO_HOLE")
-            # print(f"Plate: {plate_reference}: {plate_board_name} {plate_position} {is_no_hole}")
 
             # *arm_spacer_scad* and *arm_spacer_pad* and stuff them onto the appropiate PCB:
             arm_spacer_scad: Scad3D = Translate3D(
@@ -4986,23 +5192,24 @@ class MasterBoard:
                 plate_reference, False, 0.0, plate_position, arm_spacer_pcb_chunk, "HOLE;M2.5")
             arm_spacer_references: List[Reference] = [arm_spacer_reference]
 
-            # If there *is_no_hole*, suppress both the reference and pad:
-            if is_no_hole:
-                arm_spacer_references = []
-                arm_spacer_pads = []
-
             # Install *PCBChunk* and *Reference* onto appropriate board:
             if plate_board_name == "center":
+                if not is_no_hole:
+                    center_references.extend(arm_spacer_references)
                 center_pcb_chunks.append(arm_spacer_pcb_chunk)
-                center_references.extend(arm_spacer_references)
             elif plate_board_name == "ne":
+                if not is_no_hole:
+                    ne_references.extend(arm_spacer_references)
                 ne_pcb_chunks.append(arm_spacer_pcb_chunk)
-                ne_references.extend(arm_spacer_references)
             elif plate_board_name == "nw":
+                if not is_no_hole:
+                    nw_references.extend(arm_spacer_references)
                 nw_pcb_chunks.append(arm_spacer_pcb_chunk)
-                nw_references.extend(arm_spacer_references)
             else:
                 assert False, f"'{plate_board_name}' is not a valid board name"
+
+            # print(f"Plate {plate_spacer_name} ({plate_reference}): "
+            #       f"{plate_position} {is_no_hole} |center_pcb_chunks|={len(center_pcb_chunks)}")
 
         # For debugging only:
         # reference: Reference
@@ -5938,6 +6145,8 @@ class RectangularConnector:
                 if True:
                     if row_index == 0 and column_index == 0:
                         first_footprint_pin = hole_center
+                        if columns == 1:
+                            last_footprint_pin = hole_center
                     else:
                         last_footprint_pin = hole_center
                     # swap_row_index: bool = False
@@ -6101,6 +6310,9 @@ class RectangularConnector:
                                        front_artworks=front_artworks)
         connector_module.tag_insert("PadsGroup", pads_group)
         scad_program.append(connector_module)
+
+        # Stuff some final values into *rectangular_connector* (i.e. *self*):
+        # rectangular_connector: RectangularConnector = self
         self.module: Module3D = connector_module
         self.pcb_chunk: PCBChunk = pcb_chunk
 
