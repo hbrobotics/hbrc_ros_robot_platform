@@ -1,0 +1,12 @@
+"BRIDGE_NE_OUTER;2xM1x1+M1x5", "CN", "HR2:BRIDGE_NE_OUTER_2xM1x1+M1x5", "", "", "NE Outer Bridge Connectors"
+"Pin", "Unit", "Type",      "Name", "Style", "Side"
+"1",   "A",    "power_out", "GND",  "line",  "right"
+"2",   "B",    "power_out", "5V",   "line",  "right"
+"3",   "C",    "input",     "ECHO", "line",  "right"
+"4",   "C",    "output",    "TRIG", "line",  "right"
+"5",   "C",    "output",    "LED1", "line",  "right"
+"6",   "C",    "output",    "LED2", "line",  "right"
+"7",   "C",    "output",    "LED3", "line",  "right"
+,,,,,,
+
+

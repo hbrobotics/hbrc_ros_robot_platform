@@ -1917,7 +1917,8 @@ class PCBChunk:
         return side_swapped_pcb_chunk
 
     # PCBChunk.reposition():
-    def reposition(self, center: P2D, rotate: float, translate: P2D) -> "PCBChunk":
+    def reposition(self, center: P2D, rotate: float, translate: P2D,
+                   reference_name: str = "", is_front: bool = True) -> "PCBChunk":
         """Return a repositioned PCBChunk."""
         # Unpack some values *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
@@ -1982,6 +1983,12 @@ class PCBChunk:
             front_artworks=repositioned_front_artworks, cuts=repositioned_cuts,
             back_artworks=repositioned_back_artworks, back_scads=repositioned_back_scads,
             references=repositioned_references)
+
+        # Perform any dereference.  Use *name* as the footprint name.
+        if reference_name != "":
+            repositioned_pcb_chunk = repositioned_pcb_chunk.reference(
+                reference_name, is_front, rotate, translate, name)
+
         return repositioned_pcb_chunk
 
 
@@ -4190,13 +4197,16 @@ class MasterBoard:
         center_ne_inner_pcb_chunk: PCBChunk = (
             m1x1.pcb_chunk.reposition(origin2d, 0.0, center_ne_inner_center))
         center_ne_middle_pcb_chunk: PCBChunk = (
-            m1x1.pcb_chunk.reposition(origin2d, 0.0, center_ne_middle_center))
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, center_ne_middle_center)).pads_rebase(1)
         center_ne_outer_pcb_chunk: PCBChunk = (
-            m1x5.pcb_chunk.reposition(origin2d, 0.0, center_ne_outer_center))
+            m1x5.pcb_chunk.reposition(origin2d, 0.0, center_ne_outer_center)).pads_rebase(2)
+
         center_nw_inner_pcb_chunk: PCBChunk = (
-            m2x5.pcb_chunk.reposition(origin2d, degrees90, center_nw_inner_center))
+            m2x5.pcb_chunk.artworks_x_mirror().
+            reposition(origin2d, -degrees90, center_nw_inner_center)).pads_rebase(2)
         center_nw_outer_pcb_chunk: PCBChunk = (
             m1x2.pcb_chunk.reposition(origin2d, 0.0, center_nw_outer_center))
+
         center_se_pcb_chunk: PCBChunk = (
             m1x8.pcb_chunk.reposition(origin2d, 0.0, center_se_center))
         center_sw_pcb_chunk: PCBChunk = (
@@ -4208,11 +4218,14 @@ class MasterBoard:
         ne_inner_pcb_chunk: PCBChunk = (
             m1x1.pcb_chunk.reposition(origin2d, 0.0, ne_inner_center))
         ne_middle_pcb_chunk: PCBChunk = (
-            m1x1.pcb_chunk.reposition(origin2d, 0.0, ne_middle_center))
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, ne_middle_center)).pads_rebase(1)
         ne_outer_pcb_chunk: PCBChunk = (
-            m1x5.pcb_chunk.reposition(origin2d, 0.0, ne_outer_center))
+            m1x5.pcb_chunk.reposition(origin2d, 0.0, ne_outer_center)).pads_rebase(2)
+
         nw_inner_pcb_chunk: PCBChunk = (
-            m2x5.pcb_chunk.reposition(origin2d, degrees90, nw_inner_center))
+            m2x5.pcb_chunk.artworks_x_mirror().
+            reposition(origin2d, -degrees90, nw_inner_center)).pads_rebase(2)
+
         nw_outer_pcb_chunk: PCBChunk = (
             m1x2.pcb_chunk.reposition(origin2d, 0.0, nw_outer_center))
         se_pcb_chunk: PCBChunk = (
@@ -4220,32 +4233,71 @@ class MasterBoard:
         sw_pcb_chunk: PCBChunk = (
             m1x8.pcb_chunk.reposition(origin2d, 0.0, sw_center))
 
-        # Create the final *PCBChunk*'s:
-        final_center_pcb_chunk: PCBChunk = PCBChunk.join("Center Bridges", [
+        # Create the centered *PCBChunk*'s, which have a reasonable origin for the footprint.
+        ne_inner_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NE_INNER_2xM1x1+M1x5", [
             center_ne_inner_pcb_chunk,
             center_ne_middle_pcb_chunk,
             center_ne_outer_pcb_chunk,
+        ]).reposition(origin2d, 0.0, -center_ne_middle_center)
+        nw_inner_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NW_INNER_M1x2+M2x5", [
             center_nw_inner_pcb_chunk,
             center_nw_outer_pcb_chunk,
+        ]).reposition(origin2d, 0.0, -center_nw_inner_center)
+        se_inner_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_SE_INNER_M1x8", [
             center_se_pcb_chunk,
+        ]).reposition(origin2d, 0.0, -center_se_center)
+        sw_inner_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_SW_INNER_M1x8", [
             center_sw_pcb_chunk,
-        ])
-        final_ne_pcb_chunk: PCBChunk = PCBChunk.join("NE Bridges", [
+        ]).reposition(origin2d, 0.0, -center_sw_center)
+
+        ne_outer_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NE_OUTER_2xM1x1+M1x5", [
             ne_inner_pcb_chunk,
             ne_middle_pcb_chunk,
             ne_outer_pcb_chunk,
-        ])
-        final_nw_pcb_chunk: PCBChunk = PCBChunk.join("NW Bridges", [
+        ]).reposition(origin2d, 0.0, -ne_middle_center)
+        nw_outer_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NW_OUTER_M1x2+M2x5", [
             nw_inner_pcb_chunk,
             nw_outer_pcb_chunk,
-        ])
-        final_se_pcb_chunk: PCBChunk = PCBChunk.join("SE Bridges", [
+        ]).reposition(origin2d, 0.0, -nw_inner_center)
+        se_outer_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_SE_OUTER_M1x8", [
             se_pcb_chunk,
-        ])
-        final_sw_pcb_chunk: PCBChunk = PCBChunk.join("SE Bridges", [
+        ]).reposition(origin2d, 0.0, -se_center)
+        sw_outer_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_SW_OUTER_M1x8", [
             sw_pcb_chunk,
-        ])
+        ]).reposition(origin2d, 0.0, -sw_center)
 
+        # Output the footprints:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        pretty_directory: Path = hr2_directory / "electrical" / "orders" / "order1" / "pretty"
+        ne_inner_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        nw_inner_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        se_inner_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        sw_inner_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        ne_outer_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        nw_outer_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        se_outer_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        sw_outer_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
+
+        # Create the final repositioned *PCBChunk*'s:
+        final_center_pcb_chunk: PCBChunk = PCBChunk.join("Center Bridges", [
+            ne_inner_bridge_pcb_chunk.reposition(
+                origin2d, 0.0, center_ne_middle_center, reference_name="CN101"),
+            nw_inner_bridge_pcb_chunk.reposition(
+                origin2d, 0.0, center_nw_inner_center, reference_name="CN102"),
+            se_inner_bridge_pcb_chunk.reposition(
+                origin2d, 0.0, center_se_center, reference_name="CN103"),
+            sw_inner_bridge_pcb_chunk.reposition(
+                origin2d, 0.0, center_sw_center, reference_name="CN104"),
+        ])
+        final_ne_pcb_chunk: PCBChunk = ne_outer_bridge_pcb_chunk.reposition(
+            origin2d, 0.0, ne_middle_center, reference_name="CN105")
+        final_nw_pcb_chunk: PCBChunk = nw_outer_bridge_pcb_chunk.reposition(
+            origin2d, 0.0, nw_inner_center, reference_name="CN106")
+        final_se_pcb_chunk: PCBChunk = se_outer_bridge_pcb_chunk.reposition(
+            origin2d, 0.0, se_center, reference_name="CN107")
+        final_sw_pcb_chunk: PCBChunk = sw_outer_bridge_pcb_chunk.reposition(
+            origin2d, 0.0, sw_center, reference_name="CN108")
         return (final_center_pcb_chunk, final_ne_pcb_chunk, final_nw_pcb_chunk,
                 final_se_pcb_chunk, final_sw_pcb_chunk)
 

@@ -6,10 +6,22 @@ K Nucleo144 STM32F767ZI
 F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
 $ENDCMP
 #
+$CMP BRIDGE_NW_INNER;M1x2+M2x5
+D NW Inner Bridge Connectors
+K ~
+F 
+$ENDCMP
+#
 $CMP HCSR04;F1X4
 D HC-SR04 Sonar (Normal Profile Receptacle)
 K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+$CMP BRIDGE_SE_INNER;M1x8
+D SE Inner Bridge Connector
+K ~
+F 
 $ENDCMP
 #
 $CMP HCSR04H;F1X4
@@ -94,6 +106,12 @@ $CMP NUCLEO-F767ZI;2xF2x35
 D NUCLEO144-F767ZI
 K Nucleo144 STM32F767ZI
 F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
+$ENDCMP
+#
+$CMP BRIDGE_NE_INNER;2xM1x1+M1x5
+D NE Inner Bridge Connectors
+K ~
+F 
 $ENDCMP
 #
 $CMP HOLE;M2
