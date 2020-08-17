@@ -136,7 +136,6 @@ F 4 "NW Outer Bridge Connectors" H 3000 2250 60  0001 L CNN "Field5"
 	1    0    0    -1  
 $EndComp
 NoConn ~ 3500 2500
-NoConn ~ 3500 2600
 NoConn ~ 3500 2700
 NoConn ~ 3500 2800
 NoConn ~ 3500 2900
@@ -145,4 +144,11 @@ NoConn ~ 3500 3100
 NoConn ~ 3500 3200
 NoConn ~ 3500 3300
 NoConn ~ 3500 3400
+Wire Wire Line
+	3500 2600 4050 2600
+NoConn ~ 3500 1900
+NoConn ~ 3500 2000
+NoConn ~ 4050 2600
+Text Label 3700 2600 0    50   ~ 0
+GND
 $EndSCHEMATC
