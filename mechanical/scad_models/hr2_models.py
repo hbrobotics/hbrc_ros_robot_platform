@@ -1610,10 +1610,11 @@ class PCBChunk:
         name: str = pcb_chunk.name
         # print(f"PCBChunk.pcb_update(): name:'{name}'")
         pads: List[Pad] = pcb_chunk.pads
-        references: List[Reference] = pcb_chunk.references
+        # references: List[Reference] = pcb_chunk.references
 
         # all_references: List[Reference] = references + more_references
         all_cuts: List[SimplePolygon] = cuts + [pcb_exterior]
+        all_cuts = all_cuts
 
         # Create the *board_polygon* fill it with *pads* and *cuts*:
         board_polygon: Polygon = Polygon(f"{name} Board Polygon", [pcb_exterior], lock=False)
@@ -1650,86 +1651,90 @@ class PCBChunk:
         scad_program.if3d.name_match_append(f"{name.lower()}_board", module3d, [f"{name} Board"])
 
         if isinstance(kicad_pcb_path, Path):
-            pcb_chunk.pcb_cuts_refereneces_update(kicad_pcb_path, pcb_exterior, pcb_origin,
-                                                  more_references, tracing=next_tracing)
+            pcb_chunk.pcb_cuts_refereneces_zones_update(
+                kicad_pcb_path, pcb_exterior, pcb_origin, more_references, tracing=next_tracing)
 
         # Read in the *previous_pcb_lines* associated with *kicad_pcb_path*:
-        if False and isinstance(kicad_pcb_path, Path):
-            assert kicad_pcb_path.is_file(), f"'{kicad_pcb_path}' does not exist."
-            previous_pcb_text: str
-            kicad_pcb_file: IO[Any]
-            with open(kicad_pcb_path, "r") as kicad_pcb_file:
-                previous_pcb_text = kicad_pcb_file.read()
-            previous_pcb_lines: List[str] = previous_pcb_text.splitlines()
+        # !!!!!!!!!!!!!!!!!!!! OLD CODE !!!!!!!!!!!!!!!!!!!!!!
+        # if False and isinstance(kicad_pcb_path, Path):
+        #    assert kicad_pcb_path.is_file(), f"'{kicad_pcb_path}' does not exist."
+        #    previous_pcb_text: str
+        #    kicad_pcb_file: IO[Any]
+        #    with open(kicad_pcb_path, "r") as kicad_pcb_file:
+        #        previous_pcb_text = kicad_pcb_file.read()
+        #    previous_pcb_lines: List[str] = previous_pcb_text.splitlines()
 
-            # Extract the *pcb_modules_table* and *ordered_pcb_modules* from *previous_pcb_lines*:
-            pcb_modules_table: Dict[str, PCBModule]
-            ordered_pcb_modules: List[PCBModule]
-            pcb_modules_table, ordered_pcb_modules = PCBModule.modules_extract(previous_pcb_lines)
-            reassembled_lines: List[str] = PCBModule.generate_lines(ordered_pcb_modules)
-            assert reassembled_lines == previous_pcb_lines
+        #    # Extract the *pcb_modules_table* and *ordered_pcb_modules* from *previous_pcb_lines*:
+        #    pcb_modules_table: Dict[str, PCBModule]
+        #    ordered_pcb_modules: List[PCBModule]
+        #    pcb_modules_table, ordered_pcb_modules = PCBModule.modules_extract(previous_pcb_lines)
 
-            # Remove the cut lines:
-            for pcb_module in ordered_pcb_modules:
-                pcb_module.cut_lines_strip()
+        #    # Verify that nothing got lost:
+        #    reassembled_lines: List[str] = PCBModule.lines_join(ordered_pcb_modules)
+        #    assert reassembled_lines == previous_pcb_lines
 
-            # Sweep through all of *references*:
-            reference: Reference
-            for reference in references:
-                # Unpack some values from *reference*:
-                reference_is_front: bool = reference.is_front
-                reference_name: str = reference.name
-                reference_position: P2D = reference.position
-                reference_rotate: float = reference.rotate
-                reference_value: str = reference.value
-                reference_rotate = 0.0  # Kludge for now.
-                reference_pcb_chunk: PCBChunk = reference.pcb_chunk
-                if tracing:
-                    print(f"{tracing}Ref: name:'{reference_name}' position:{reference_position} "
-                          f"rotate:{degrees(reference_rotate)} is_front:{reference_is_front}")
+        #    # Remove the cut lines:
+        #    for pcb_module in ordered_pcb_modules:
+        #        pcb_module.cut_lines_strip()
 
-                # Make sure that there is *reference_pcb_module* that match *reference_name*:
-                if reference_name in pcb_modules_table:
-                    # We have a match; now unpack some values form *reference_pcb_module*:
-                    reference_pcb_module: PCBModule = pcb_modules_table[reference_name]
-                    create_timestamp: int = reference_pcb_module.create_timestamp
-                    edit_timestamp: int = reference_pcb_module.edit_timestamp
-                    footprint_name: str = reference.pcb_chunk.name
-                    path_id: int = reference_pcb_module.path_id
-                    module_prefix: str = reference_pcb_module.module_prefix
+        #    # Sweep through all of *references*:
+        #    reference: Reference
+        #    for reference in references:
+        #        # Unpack some values from *reference*:
+        #        reference_is_front: bool = reference.is_front
+        #        reference_name: str = reference.name
+        #        reference_position: P2D = reference.position
+        #        reference_rotate: float = reference.rotate
+        #        reference_value: str = reference.value
+        #        reference_rotate = 0.0  # Kludge for now.
+        #        reference_pcb_chunk: PCBChunk = reference.pcb_chunk
+        #        if tracing:
+        #            print(f"{tracing}Ref: name:'{reference_name}' position:{reference_position} "
+        #                  f"rotate:{degrees(reference_rotate)} is_front:{reference_is_front}")
 
-                    # Create the *footprint_header_line*:
-                    library_name: str = "HR2"  # Kludge!
-                    if tracing:
-                        print(f"{tracing}Ref '{reference_name}' for '{path_name}'")
-                    footprint_header_line: str = (
-                        reference_pcb_chunk.footprint_header_line_generate(
-                            module_prefix, reference_is_front, library_name, footprint_name,
-                            edit_timestamp, create_timestamp, tracing=next_tracing))
+        #         # Make sure that there is *reference_pcb_module* that match *reference_name*:
+        #         if reference_name in pcb_modules_table:
+        #             # We have a match; now unpack some values form *reference_pcb_module*:
+        #             reference_pcb_module: PCBModule = pcb_modules_table[reference_name]
+        #             create_timestamp: int = reference_pcb_module.create_timestamp
+        #             edit_timestamp: int = reference_pcb_module.edit_timestamp
+        #             footprint_name: str = reference.pcb_chunk.name
+        #             path_id: int = reference_pcb_module.path_id
+        #             module_prefix: str = reference_pcb_module.module_prefix
 
-                    # Create the *footprint_body_lines*:
-                    footprint_mode: bool = False  # False implies PCB mode.
-                    footprint_body_lines: List[str] = (
-                        reference_pcb_chunk.footprint_body_lines_generate(
-                            module_prefix, footprint_mode, reference_is_front, pcb_origin,
-                            f"{library_name}:{footprint_name}", reference_name,
-                            reference_value, path_id, reference_rotate,
-                            reference_position, True, tracing=next_tracing))
-                    footprint_lines: List[str] = [footprint_header_line] + footprint_body_lines
-                    reference_pcb_module.module_lines = footprint_lines
-                else:
-                    # Obviously something is wrong:
-                    if tracing:
-                        print(f"{tracing}Reference '{reference_name}' not for '{kicad_pcb_path}'")
+        #             # Create the *footprint_header_line*:
+        #             library_name: str = "HR2"  # Kludge!
+        #             if tracing:
+        #                 print(f"{tracing}Ref '{reference_name}' for '{path_name}'")
+        #             footprint_header_line: str = (
+        #                 reference_pcb_chunk.footprint_header_line_generate(
+        #                     module_prefix, reference_is_front, library_name, footprint_name,
+        #                     edit_timestamp, create_timestamp, tracing=next_tracing))
 
-            # Insert the cuts into the *final_pcb_module*:
-            final_pcb_module: PCBModule = ordered_pcb_modules[-1]
-            final_pcb_module.cut_lines_insert(all_cuts, pcb_origin)
+        #             # Create the *footprint_body_lines*:
+        #             footprint_mode: bool = False  # False implies PCB mode.
+        #             footprint_body_lines: List[str] = (
+        #                 reference_pcb_chunk.footprint_body_lines_generate(
+        #                     module_prefix, footprint_mode, reference_is_front, pcb_origin,
+        #                     f"{library_name}:{footprint_name}", reference_name,
+        #                     reference_value, path_id, reference_rotate,
+        #                     reference_position, True, tracing=next_tracing))
+        #             footprint_lines: List[str] = [footprint_header_line] + footprint_body_lines
+        #             reference_pcb_module.module_lines = footprint_lines
+        #         else:
+        #             # Obviously something is wrong:
+        #             if tracing:
+        #                 print(f"{tracing}Reference '{reference_name}' not for '{kicad_pcb_path}'")
 
-            # Create *final_assembled_lines* and write them out:
-            final_reassembled_lines = PCBModule.generate_lines(ordered_pcb_modules)
-            with open(kicad_pcb_path, "w") as kicad_pcb_file:
-                kicad_pcb_file.write('\n'.join(final_reassembled_lines + [""]))
+        #     # Insert the cuts into the *final_pcb_module*:
+        #     last_pcb_module: PCBModule = ordered_pcb_modules[-1]
+        #     last_pcb_module.cut_lines_insert(all_cuts, pcb_origin, "GND")
+        #     # final_pcb_module.zone_lines_insert(all_cuts[0], "GND")
+
+        #     # Create *final_assembled_lines* and write them out:
+        #     final_reassembled_lines = PCBModule.generate_lines(ordered_pcb_modules)
+        #     with open(kicad_pcb_path, "w") as kicad_pcb_file:
+        #         kicad_pcb_file.write('\n'.join(final_reassembled_lines + [""]))
 
         # Wrap up any requested *tracing*:
         if tracing:
@@ -1739,13 +1744,13 @@ class PCBChunk:
         self.module: Module3D = module3d
         return module3d
 
-    # PCBChunk.pcb_cuts_references_update():
-    def pcb_cuts_refereneces_update(self,
-                                    kicad_pcb_path: Optional[Path],
-                                    pcb_exterior: SimplePolygon,
-                                    pcb_origin: P2D,
-                                    more_references: List[Reference] = [],
-                                    tracing: str = "") -> None:
+    # PCBChunk.pcb_cuts_references_zones_update():
+    def pcb_cuts_refereneces_zones_update(self,
+                                          kicad_pcb_path: Optional[Path],
+                                          pcb_exterior: SimplePolygon,
+                                          pcb_origin: P2D,
+                                          more_references: List[Reference] = [],
+                                          tracing: str = "") -> None:
         """Update reference positions and cut lines for a PCBChunk."""
         # Unpack some values from *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
@@ -1757,8 +1762,8 @@ class PCBChunk:
         path_text: str = kicad_pcb_path.name if isinstance(kicad_pcb_path, Path) else "None"
         next_tracing: str = tracing + " " if tracing else ""
         if tracing:
-            print(f"{tracing}=>PCBChunk.pcb_cuts_references_update('{name}', '{path_text}', *, "
-                  f"{pcb_origin}, |more_references|={len(references)}")
+            print(f"{tracing}=>PCBChunk.pcb_cuts_references_zones_update('{name}', '{path_text}', "
+                  f"*, {pcb_origin}, |more_references|={len(references)}")
 
         all_references: List[Reference] = references + more_references
         all_cuts: List[SimplePolygon] = cuts + [pcb_exterior]
@@ -1779,12 +1784,18 @@ class PCBChunk:
             ordered_pcb_modules: List[PCBModule]
             pcb_modules_table, ordered_pcb_modules = PCBModule.modules_extract(previous_pcb_lines,
                                                                                kicad_pcb_path)
-            reassembled_lines: List[str] = PCBModule.generate_lines(ordered_pcb_modules)
+            reassembled_lines: List[str] = PCBModule.lines_join(ordered_pcb_modules)
             assert reassembled_lines == previous_pcb_lines
 
             # Remove the cut lines:
             for pcb_module in ordered_pcb_modules:
                 pcb_module.cut_lines_strip()
+            if tracing:
+                print(f"{tracing}Removing cut lines")
+
+            # Extract the *net_numbers_table* from *ordered_pcb_modules*:
+            net_numbers_table: Dict[str, int] = PCBModule.net_numbers_table_get(ordered_pcb_modules)
+            net_numbers_table = net_numbers_table
 
             # Sweep through all of *references*:
             reference: Reference
@@ -1807,16 +1818,18 @@ class PCBChunk:
             # Insert the cuts into the *final_pcb_module*:
             final_pcb_module: PCBModule = ordered_pcb_modules[-1]
             final_pcb_module.cut_lines_insert(all_cuts, pcb_origin)
+            final_pcb_module.ground_zones_update(
+                ordered_pcb_modules, pcb_exterior, pcb_origin, tracing=next_tracing)
 
             # Create *final_assembled_lines* and write them out:
-            final_reassembled_lines = PCBModule.generate_lines(ordered_pcb_modules)
+            final_reassembled_lines = PCBModule.lines_join(ordered_pcb_modules)
             with open(kicad_pcb_path, "w") as kicad_pcb_file:
                 kicad_pcb_file.write('\n'.join(final_reassembled_lines + [""]))
 
         # Wrap up any requested *tracing*:
         if tracing:
-            print(f"{tracing}<=PCBChunk.pcb_cuts_references_update('{name}', '{path_text}', *, "
-                  f"{pcb_origin}, |more_references|={len(more_references)}")
+            print(f"{tracing}<=PCBChunk.pcb_cuts_references_zones_update('{name}', '{path_text}', "
+                  f"*, {pcb_origin}, |more_references|={len(references)}")
 
     # PCBChunk.reference():
     def reference(self, reference_name: str,
@@ -2012,7 +2025,7 @@ class PCBModule:
 
     # PCBModule.__init__():
     def __init__(self, file_path: Path, line_number: int,
-                 reference_name: str, preceeding_lines: List[str],
+                 reference_name: str, preceding_lines: List[str],
                  module_lines: List[str], edit_timestamp: int, create_timestamp: int,
                  path_id: str, module_prefix: str) -> None:
         """Initialize a Module."""
@@ -2025,7 +2038,7 @@ class PCBModule:
         self.module_lines: List[str] = module_lines
         self.module_prefix: str = module_prefix
         self.path_id: str = path_id
-        self.preceeding_lines: List[str] = preceeding_lines
+        self.preceding_lines: List[str] = preceding_lines
         self.reference_name: str = reference_name
 
     # PCBModule.modules_extract():
@@ -2050,7 +2063,7 @@ class PCBModule:
         path_pattern: str = "(path /"
         pcb_line: str
         pcb_module: PCBModule
-        preceeding_lines: List[str] = []
+        preceding_lines: List[str] = []
         reference_name: str = ""
         reference_pattern: str = "(fp_text reference "
         for pcb_line_index, pcb_line in enumerate(pcb_lines):
@@ -2073,7 +2086,7 @@ class PCBModule:
                     # We found the end of the module:
                     assert reference_name != "", "No reference in module"
                     pcb_module = PCBModule(file_path, module_start_line_index,
-                                           reference_name, preceeding_lines, module_lines,
+                                           reference_name, preceding_lines, module_lines,
                                            edit_timestamp, create_timestamp, path_id, module_prefix)
                     pcb_modules_table[reference_name] = pcb_module
                     ordered_pcb_modules.append(pcb_module)
@@ -2081,7 +2094,7 @@ class PCBModule:
                     # Reset everything to search for another module:
                     in_module = False
                     module_lines = []
-                    preceeding_lines = []
+                    preceding_lines = []
                     reference_name = ""
                     module_prefix = ""
                     module_end = ""
@@ -2114,22 +2127,22 @@ class PCBModule:
                     in_module = True
                     module_lines = [pcb_line]
                 else:
-                    preceeding_lines.append(pcb_line)
+                    preceding_lines.append(pcb_line)
 
         # Create one last *final_module* to contain the remaining lines and return everything:
         final_pcb_module: PCBModule = PCBModule(file_path, -1, "",
-                                                preceeding_lines, module_lines, 0, 0, "", "")
+                                                preceding_lines, module_lines, 0, 0, "", "")
         ordered_pcb_modules.append(final_pcb_module)
         return pcb_modules_table, ordered_pcb_modules
 
     # PCBModule.generate_lines():
     @staticmethod
-    def generate_lines(ordered_modules: List["PCBModule"]) -> List[str]:
+    def lines_join(ordered_modules: List["PCBModule"]) -> List[str]:
         """Return the lines associated with a list of PCBModule's."""
         # Sweep through *ordered_modules*, create *reassembled_lines* and return them:
         reassembled_lines: List[str] = []
         for module in ordered_modules:
-            reassembled_lines.extend(module.preceeding_lines)
+            reassembled_lines.extend(module.preceding_lines)
             reassembled_lines.extend(module.module_lines)
         return reassembled_lines
 
@@ -2138,13 +2151,13 @@ class PCBModule:
         """Remove cut-lines from a PCBModule."""
         # Grab some values from *pcb_module* (i.e. *self*):
         pcb_module: PCBModule = self
-        preceeding_lines: List[str] = pcb_module.preceeding_lines
+        preceding_lines: List[str] = pcb_module.preceding_lines
         stripped_pcb_lines: List[str] = []
         pcb_line: str
-        for pcb_line in preceeding_lines:
+        for pcb_line in preceding_lines:
             if pcb_line.find("(gr_line ") < 0 or pcb_line.find("(layer Edge.Cuts)") < 0:
                 stripped_pcb_lines.append(pcb_line)
-        pcb_module.preceeding_lines = stripped_pcb_lines
+        pcb_module.preceding_lines = stripped_pcb_lines
 
     # PCBModule.cuts_insert():
     def cut_lines_insert(self, cuts: List[SimplePolygon], offset: P2D):
@@ -2152,19 +2165,30 @@ class PCBModule:
         # Grab some values from *pcb_module* (i.e. *self*):
         pcb_module: PCBModule = self
         reference_name: str = pcb_module.reference_name
-        preceeding_lines: List[str] = pcb_module.preceeding_lines
+        preceding_lines: List[str] = pcb_module.preceding_lines
 
         # Require that this be the last *PCBModule" (i.e. empty reference name):
         assert reference_name == ""
 
-        # Since this is the last *PCBModule* *preceeding_lines* is actually *final_lines*:
-        final_lines: List[str] = preceeding_lines
+        # Search for the location where to insert cut lines:
+        first_zone_index: int = -1
+        last_close_parenthesis_index: int = -1
+        previous_line: str = ""
+        pcb_line: str
+        index: int
+        for index, pcb_line in enumerate(preceding_lines):
+            if pcb_line.startswith("  (zone (net") and first_zone_index < 0:
+                first_zone_index = index - 1 if previous_line == "" else index
+            elif pcb_line.startswith(")"):
+                last_close_parenthesis_index = index - 1 if previous_line == "" else index
+            previous_line = pcb_line
 
-        # Remove the last two lines (probably a blank line followed by the closing parenthesis):
-        last_line: str = final_lines.pop()
-        next_to_last_line: str = final_lines.pop()
+        insert_index: int = (first_zone_index if first_zone_index >= 0
+                             else last_close_parenthesis_index)
+        assert insert_index >= 0
 
         # Append the cut lines from *cuts* to *final_lines*:
+        cut_lines: List[str] = []
         offset_x = offset.x
         offset_y = offset.y
         width: float = 0.05
@@ -2172,7 +2196,6 @@ class PCBModule:
         cut: SimplePolygon
         for cut in cuts:
             cut_size: int = len(cut)
-            index: int
             for index in range(cut_size):
                 point1: P2D = cut[index]
                 point2: P2D = cut[(index + 1) % cut_size]
@@ -2183,11 +2206,12 @@ class PCBModule:
                                  f"{KicadPCB.number(offset_y - point2.y, 2)}) "
                                  f"(layer {layer}) "
                                  f"(width {KicadPCB.number(width, 2)}))")
-                final_lines.append(cut_line)
+                cut_lines.append(cut_line)
 
-        # Restore the final two lines:
-        final_lines.append(next_to_last_line)
-        final_lines.append(last_line)
+        # Create the *updated_lines* list and stuff back into *pcb_module*:
+        updated_lines: List[str] = (
+            preceding_lines[:insert_index] + cut_lines + preceding_lines[insert_index:])
+        pcb_module.preceding_lines = updated_lines
 
     # PCBModule.reference_position_update():
     def reference_position_update(self, reference_position: P2D, pcb_origin: P2D,
@@ -2202,7 +2226,7 @@ class PCBModule:
         module_lines: List[str] = pcb_module.module_lines
         # module_prefix: str = pcb_module.module_prefix
         # path_id: int = pcb_module.path_id
-        # preceeding_lines: List[str] = pcb_module.preceeding_lines
+        # preceding_lines: List[str] = pcb_module.preceding_lines
         reference_name: str = pcb_module.reference_name
 
         # Perform an requested *tracing*:
@@ -2243,6 +2267,154 @@ class PCBModule:
             print(f"{tracing}=>reference_position_update(*, "
                   f"'{reference_name}', {reference_position})")
         return changed
+
+    # PCBModule.net_numbers_table_get():
+    @staticmethod
+    def net_numbers_table_get(pcb_modules: List["PCBModule"]) -> Dict[str, int]:
+        """Return the net name to net numbers table."""
+        # Iterate over the *pcb_modules*:
+        pcb_module: PCBModule
+        net_numbers_table: Dict[str, int] = {}
+        for pcb_module in pcb_modules:
+            # Search for *pcb_line* that looks like "(net NUMBER "NAME")" or "(net NUMBER /NAME)":
+            net_pattern: str = "  (net "
+            net_pattern_size: int = len(net_pattern)
+            preceding_lines: List[str] = pcb_module.preceding_lines
+            pcb_line: str
+            for pcb_line in preceding_lines:
+                if pcb_line.startswith(net_pattern) and pcb_line.endswith(')'):
+                    # Now extract the *net_number*:
+                    tail_text: str = pcb_line[net_pattern_size:]
+                    space_index: int = tail_text.find(' ')
+                    assert space_index >= 0
+                    number_text: str = tail_text[:space_index]
+                    net_number: int = -1
+                    try:
+                        net_number = int(number_text)
+                    except ValueError:
+                        assert False, f"Unable to convert '{number_text} to a number"
+
+                    # Now extract the *net_name*:
+                    net_name: str = tail_text[space_index+1:-1]
+                    if net_name.startswith('"') and net_name.endswith('"'):
+                        net_name = net_name[1:-1]
+                    elif net_name.startswith('/'):
+                        net_name = net_name[1:]
+                    else:
+                        assert False, f"Strange Net name format '{net_name}'"
+
+                    # Stuff into *net_numbers_table*:
+                    net_numbers_table[net_name] = net_number
+
+        # All done, return the *net_numbers_table*:
+        return net_numbers_table
+
+    # PCBModule.ground_zones_update():
+    @staticmethod
+    def ground_zones_update(pcb_modules: "List[PCBModule]", zone_polygon: SimplePolygon,
+                            pcb_origin: P2D, tracing: str = "") -> None:
+        """Update the ground zone outline."""
+        # We are serching for:
+        #   (zone (net NUMBER) (net_name /GND) (layer X.Cu) ...  # X is B or F (i.e. Back/Front).
+        #     ...
+        #     (polygon
+        #        (pts
+        #          (xy X Y) ...   # Replace these with the new ones.
+        #        )
+        #     )
+        #     (filled_polygon     # The filled zone may not be present at first.
+        #       (pts
+        #          (xy X Y) ...   # Keep these and let KiCad do the update.
+        #       )
+        #     )
+        #   )
+        net_numbers_table: Dict[str, int] = PCBModule.net_numbers_table_get(pcb_modules)
+        if "GND" in net_numbers_table:
+            ground_net_number: int = net_numbers_table["GND"]
+            zone_size: int = len(zone_polygon)
+            pcb_origin_x: float = pcb_origin.x
+            pcb_origin_y: float = pcb_origin.y
+
+            zone_pattern = f"  (zone (net {ground_net_number}) (net_name /GND) (layer "
+            pcb_module: PCBModule
+            for pcb_module in pcb_modules:
+                # Search through *preceeding_lines* looking for a ground zone and updating them
+                # as appropriate.  Construct *updated_lines* as we sweep through:
+                updated_lines: List[str] = []
+                preceding_lines: List[str] = pcb_module.preceding_lines
+                zone_started: bool = False
+                polygon_started: bool = False
+                points_started: bool = False
+                new_xys_inserted: bool = False
+                xys_skipping: bool = False
+                pcb_line_index: int
+                pcb_line: str
+                for pcb_line_index, pcb_line in enumerate(preceding_lines):
+                    if tracing and zone_started:
+                        print(f"{tracing}[{pcb_line_index}]: '{pcb_line}'")
+                    if pcb_line.startswith(zone_pattern):
+                        # Start of a fill zone -- (zone ...:
+                        zone_started = True
+                        polygon_started = False
+                        points_started = False
+                        xys_skipping = False
+                        new_xys_inserted = False
+                        if tracing:
+                            print(f"{tracing}Zone started: '{pcb_line}'")
+                    elif pcb_line.startswith("    (polygon"):
+                        # Start of polygon outline (i.e. unfilled) -- (polygon ...:
+                        polygon_started = zone_started
+                        points_started = False
+                        xys_skipping = False
+                        if tracing:
+                            print(f"{tracing}Polygon started: '{pcb_line}'")
+                    elif pcb_line.startswith("      (pts"):
+                        # Start of points -- (pts ...
+                        points_started = polygon_started
+                        xys_skipping = False
+                        if tracing:
+                            print(f"{tracing}Points started: '{pcb_line}'")
+                    elif pcb_line.startswith("        (xy "):
+                        # Start of xy's -- (xy ...:
+                        xys_skipping = points_started
+                        if tracing:
+                            print(f"{tracing}xys started: '{pcb_line}'")
+
+                        # Insert new xy's here if they have not already been inserted:
+                        if not new_xys_inserted:
+                            index: int
+                            zone_xys: List[str] = [
+                                (f"(xy {KicadPCB.number(pcb_origin_x + zone_polygon[index].x, 1)} "
+                                 f"{KicadPCB.number(pcb_origin_y - zone_polygon[index].y, 1)})")
+                                for index in range(zone_size)]
+                            assert len(zone_xys) == zone_size
+                            zones_quads: List[List[str]] = [zone_xys[index:index+4]
+                                                            for index in range(0, zone_size, 4)]
+                            zones_quad: List[str]
+                            for zones_quad in zones_quads:
+                                updated_lines.append(f"        " + ' '.join(zones_quad))
+                            new_xys_inserted = True
+                    elif pcb_line.startswith("      )"):  # End of (pts ..
+                        if points_started and tracing:
+                            print(f"{tracing}points ended: '{pcb_line}'")
+                        new_xys_inserted = False
+                        xys_skipping = False
+                        points_started = False
+                    elif pcb_line.startswith("    )"):  # End of (polygon ...
+                        if polygon_started and tracing:
+                            print(f"{tracing}polygon ended: '{pcb_line}'")
+                        polygon_started = False
+                    elif pcb_line.startswith("  )"):  # End of (zone ...
+                        if zone_started and tracing:
+                            print(f"{tracing}zone ended: '{pcb_line}'")
+                        zone_started = False
+
+                    # Copy over *pcb_line* to *updated_lines* if we are not in *xys_skipping*:
+                    if not xys_skipping:
+                        updated_lines.append(pcb_line)
+
+                # Replace the updated_lines:
+                pcb_module.preceding_lines = updated_lines
 
 
 # Encoder:
@@ -9396,13 +9568,13 @@ class Footprint:
             # print("file_exists")
             with open(footprint_path, "r") as footprint_file:
                 previous_text = footprint_file.read()
-                previous_lines: List[str] = previous_text.split('\n')
-                # print(f"len(previous_lines):{len(previous_lines)}")
+                preceding_lines: List[str] = previous_text.split('\n')
+                # print(f"len(preceding_lines):{len(preceding_lines)}")
                 # print(f"len(lines):{len(lines)}")
                 # The +/- 2is because the last two lines have not been tacked onto *lines* yet:
-                line_lengths_match: bool = (len(previous_lines) - 2 == len(lines))
-                contents_match: bool = (previous_lines[1:-2] == lines[1:])
-                header_match: bool = footprint.header_match(previous_lines[0])
+                line_lengths_match: bool = (len(preceding_lines) - 2 == len(lines))
+                contents_match: bool = (preceding_lines[1:-2] == lines[1:])
+                header_match: bool = footprint.header_match(preceding_lines[0])
                 # print(f"line_lengths_match:{line_lengths_match}")
                 # print(f"header_match:{header_match}")
                 # print(f"contents_match:{contents_match}")

@@ -91,7 +91,6 @@ F 4 "SE Outer Bridge Connector" H 3600 2050 60  0001 L CNN "Field5"
 	1    3400 2300
 	1    0    0    -1  
 $EndComp
-NoConn ~ 4100 2300
 NoConn ~ 4100 2400
 NoConn ~ 4100 2500
 NoConn ~ 4100 2600
@@ -99,4 +98,9 @@ NoConn ~ 4100 2700
 NoConn ~ 4100 2800
 NoConn ~ 4100 2900
 NoConn ~ 4100 3000
+Wire Wire Line
+	4100 2300 4500 2300
+NoConn ~ 4500 2300
+Text Label 4200 2300 0    50   ~ 0
+GND
 $EndSCHEMATC
