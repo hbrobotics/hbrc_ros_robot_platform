@@ -933,7 +933,12 @@ class LED:
     # LED.__init__():
     def __init__(self, name: str, scad_program: "ScadProgram", color: str = "LightGreen") -> None:
         """Initialize a right angle LED."""
-        # Mfg Part #: TLPRG5600  Digi-Key part #: TLPG5600-ND
+        # Mfg Part #: TLPG5600  Digi-Key part #: TLPG5600-ND
+        # 200mA max continuous.  Shoot for 100mA max.
+        #
+        # Transistor: 2N7000  https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf
+        # SOT 23: 1=D 2=G 3=S (i.e. ground)
+        # KiCAD Package_TO_SOT_THT:TO-92_Inline
         # Points forward along the +X axis direction.
 
         # Create the LED *base*:
@@ -976,10 +981,11 @@ class LED:
 
         # Create the *led_pads*:
         pad_diameter: float = 1.80  # mm   (Guess for now)
+        # + = A = 2  ;  - = K = 1
         pad_drill: float = max(pin_dx, pin_dy) + 0.20  # mm (a little extra pin clearance)
-        positive_pad: Pad = Pad("+", pad_diameter, pad_diameter, pad_drill, positive_pin_position2d)
-        negative_pad: Pad = Pad("-", pad_diameter, pad_diameter, pad_drill, negative_pin_position2d)
-        led_pads: List[Pad] = [positive_pad, negative_pad]
+        negative_pad: Pad = Pad("1", pad_diameter, pad_diameter, pad_drill, negative_pin_position2d)
+        positive_pad: Pad = Pad("2", pad_diameter, pad_diameter, pad_drill, positive_pin_position2d)
+        led_pads: List[Pad] = [negative_pad, positive_pad]
 
         # Create the *led_artwork*:
         led_outline: SimplePolygon = Square("LED Outline", base_dx, base_dy)
