@@ -2356,8 +2356,6 @@ class PCBModule:
                 pcb_line_index: int
                 pcb_line: str
                 for pcb_line_index, pcb_line in enumerate(preceding_lines):
-                    if tracing and zone_started:
-                        print(f"{tracing}[{pcb_line_index}]: '{pcb_line}'")
                     if pcb_line.startswith(zone_pattern):
                         # Start of a fill zone -- (zone ...:
                         zone_started = True
@@ -2372,50 +2370,68 @@ class PCBModule:
                         polygon_started = zone_started
                         points_started = False
                         xys_skipping = False
-                        if tracing:
-                            print(f"{tracing}Polygon started: '{pcb_line}'")
                     elif pcb_line.startswith("      (pts"):
                         # Start of points -- (pts ...
                         points_started = polygon_started
                         xys_skipping = False
-                        if tracing:
-                            print(f"{tracing}Points started: '{pcb_line}'")
                     elif pcb_line.startswith("        (xy "):
                         # Start of xy's -- (xy ...:
                         xys_skipping = points_started
-                        if tracing:
-                            print(f"{tracing}xys started: '{pcb_line}'")
-
                         # Insert new xy's here if they have not already been inserted:
-                        if not new_xys_inserted:
+                        if xys_skipping and not new_xys_inserted:
                             index: int
                             zone_xys: List[str] = [
                                 (f"(xy {KicadPCB.number(pcb_origin_x + zone_polygon[index].x, 1)} "
                                  f"{KicadPCB.number(pcb_origin_y - zone_polygon[index].y, 1)})")
                                 for index in range(zone_size)]
-                            assert len(zone_xys) == zone_size
-                            zones_quads: List[List[str]] = [zone_xys[index:index+4]
-                                                            for index in range(0, zone_size, 4)]
-                            zones_quad: List[str]
-                            for zones_quad in zones_quads:
-                                updated_lines.append(f"        " + ' '.join(zones_quad))
+
+                            # This is weird sometime we get duplicate points in *zone_xys*.
+                            # This code removes adjacent values that are duplicates:
+                            culled_zone_xys: List[str] = zone_xys[:1]
+                            zone_text: str
+                            for zone_text in zone_xys[1:]:
+                                if culled_zone_xys[-1] != zone_text:
+                                    culled_zone_xys.append(zone_text)
+                            culled_zone_xys_size: int = len(culled_zone_xys)
+                            if tracing and zone_size != culled_zone_xys_size:
+                                print(f"{tracing}zone_size={zone_size} != "
+                                      f"{culled_zone_xys_size}= culled_zone_xys_size")
+
+                            # Organize the the values in groups of 5:
+                            zones_quints: List[List[str]] = [
+                                culled_zone_xys[index:index+5]
+                                for index in range(0, culled_zone_xys_size, 5)]
+                            if tracing:
+                                print(f"{tracing}zone_size={zone_size}")
+                                print(f"{tracing}zones_quints={zones_quints}")
+
+                            # Append the lines of *zones_quints* to *updated_lines*:
+                            zones_quint: List[str]
+                            zone_index: int
+                            for zone_index, zones_quint in enumerate(zones_quints):
+                                quint_line: str = f"        " + ' '.join(zones_quint)
+                                updated_lines.append(quint_line)
+                                if tracing:
+                                    print(f"[{pcb_line_index}]\tI[{zone_index}]\t{quint_line}")
                             new_xys_inserted = True
                     elif pcb_line.startswith("      )"):  # End of (pts ..
-                        if points_started and tracing:
-                            print(f"{tracing}points ended: '{pcb_line}'")
                         new_xys_inserted = False
                         xys_skipping = False
                         points_started = False
                     elif pcb_line.startswith("    )"):  # End of (polygon ...
-                        if polygon_started and tracing:
-                            print(f"{tracing}polygon ended: '{pcb_line}'")
                         polygon_started = False
                     elif pcb_line.startswith("  )"):  # End of (zone ...
-                        if zone_started and tracing:
-                            print(f"{tracing}zone ended: '{pcb_line}'")
                         zone_started = False
 
                     # Copy over *pcb_line* to *updated_lines* if we are not in *xys_skipping*:
+                    if tracing:
+                        zone_flag: str = 'Z' if zone_started else '-'
+                        polygon_flag: str = 'G' if polygon_started else '-'
+                        points_flag: str = 'P' if points_started else '-'
+                        skipping_flag: str = 'S' if xys_skipping else '-'
+                        print(f"[{pcb_line_index}]\t"
+                              f"{zone_flag}{polygon_flag}{points_flag}{skipping_flag}\t"
+                              f"{pcb_line}")
                     if not xys_skipping:
                         updated_lines.append(pcb_line)
 
