@@ -1,13 +1,13 @@
 "BRIDGE_SE_INNER;M1x8", "CN", "HR2:BRIDGE_SE_INNER_M1x8", "", "", "SE Inner Bridge Connector"
-"Pin", "Unit", "Type",     "Name", "Style", "Side"
-"1",   "A",    "power_in", "GND",  "line",  "right"
-"2",   "A",    "power_in", "9V",   "line",  "right"
-"3",   "A",    "input",    "LED1", "line",  "right"
-"4",   "A",    "input",    "LED2", "line",  "right"
-"5",   "A",    "input",    "LED3", "line",  "right"
-"6",   "A",    "input",    "LED4", "line",  "right"
-"7",   "A",    "input",    "LED5", "line",  "right"
-"8",   "A",    "passive",  "NC",   "line",  "right"
+"Pin", "Unit", "Type",     "Name",  "Style", "Side"
+"1",   "A",    "power_in", "GND",   "line",  "right"
+"2",   "A",    "power_in", "9V",    "line",  "right"
+"3",   "A",    "input",    "LED12", "line",  "right"
+"4",   "A",    "input",    "LED13", "line",  "right"
+"5",   "A",    "input",    "LED14", "line",  "right"
+"6",   "A",    "input",    "LED15", "line",  "right"
+"7",   "A",    "input",    "LED16", "line",  "right"
+"8",   "A",    "passive",  "NC",    "line",  "right"
 ,,,,,,
 
 

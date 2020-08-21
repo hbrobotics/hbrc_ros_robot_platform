@@ -1,13 +1,13 @@
 "BRIDGE_SW_OUTER;M1x8", "CN", "HR2:BRIDGE_SW_OUTER_M1x8", "", "", "SW Outer Bridge Connector"
-"Pin", "Unit", "Type",      "Name", "Style", "Side"
-"1",   "A",    "power_out", "GND",  "line",  "right"
-"2",   "A",    "power_out", "9V",   "line",  "right"
-"3",   "A",    "output",    "LED1", "line",  "right"
-"4",   "A",    "output",    "LED2", "line",  "right"
-"5",   "A",    "output",    "LED3", "line",  "right"
-"6",   "A",    "output",    "LED4", "line",  "right"
-"7",   "A",    "output",    "LED5", "line",  "right"
-"8",   "A",    "passive",   "NC",   "line",  "right"
+"Pin", "Unit", "Type",      "Name",  "Style", "Side"
+"1",   "A",    "power_out", "GND",   "line",  "right"
+"2",   "A",    "power_out", "9V",    "line",  "right"
+"3",   "A",    "output",    "LED7",  "line",  "right"
+"4",   "A",    "output",    "LED8",  "line",  "right"
+"5",   "A",    "output",    "LED9",  "line",  "right"
+"6",   "A",    "output",    "LED10", "line",  "right"
+"7",   "A",    "output",    "LED11", "line",  "right"
+"8",   "A",    "passive",   "NC",    "line",  "right"
 ,,,,,,
 
 

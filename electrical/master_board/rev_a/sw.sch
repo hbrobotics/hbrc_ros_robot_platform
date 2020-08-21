@@ -17,8 +17,8 @@ $Comp
 L HR2:HOLE;M2.5 H4
 U 1 1 5F2F7A6B
 P 2650 4450
-F 0 "H4" H 2600 4500 60  0000 L CNN
-F 1 "HOLE;M2.5" H 2450 4400 60  0000 L CNN
+F 0 "H4" H 2600 4500 50  0000 L CNN
+F 1 "HOLE;M2.5" H 2450 4400 50  0000 L CNN
 F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 2850 4500 60  0001 L CNN
 F 3 "M2.5 Mounting Hole" H 2850 4300 60  0001 L CNN
 	1    2650 4450
@@ -60,13 +60,13 @@ $EndComp
 $Comp
 L HR2:BRIDGE_SW_OUTER;M1x8 CN108
 U 1 1 5F387C15
-P 2600 3000
-F 0 "CN108" H 2950 2150 50  0000 C CNN
-F 1 "BRIDGE_SW_OUTER;M1x8" H 2950 3150 50  0000 C CNN
-F 2 "HR2:BRIDGE_SW_OUTER_M1x8" H 2800 3050 60  0001 L CNN
-F 3 "" H 2800 2850 60  0001 L CNN
-F 4 "SW Outer Bridge Connector" H 2800 2750 60  0001 L CNN "Field5"
-	1    2600 3000
+P 2500 3000
+F 0 "CN108" H 2850 2150 50  0000 C CNN
+F 1 "BRIDGE_SW_OUTER;M1x8" H 2850 3150 50  0000 C CNN
+F 2 "HR2:BRIDGE_SW_OUTER_M1x8" H 2700 3050 60  0001 L CNN
+F 3 "" H 2700 2850 60  0001 L CNN
+F 4 "SW Outer Bridge Connector" H 2700 2750 60  0001 L CNN "Field5"
+	1    2500 3000
 	1    0    0    1   
 $EndComp
 NoConn ~ 3300 2300
@@ -551,7 +551,7 @@ GND
 Text Label 3650 2900 0    50   ~ 0
 9V
 Text Notes 2800 6850 0    50   ~ 0
-Note: GRNRA = Green Right Angle ~0.254mm lead spacing
+Note: GRNRA = Green Right Angle 0.254mm (approx.) lead spacing
 Text Notes 2800 6600 0    50   ~ 0
 Note: LED's are labeled from 1 to 16 in a clockwise\ndirection starting in the NW quadrant near the X axis.
 Text Notes 2150 4250 0    50   ~ 0
