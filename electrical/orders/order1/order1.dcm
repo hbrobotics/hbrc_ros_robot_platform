@@ -72,18 +72,6 @@ K ~
 F 
 $ENDCMP
 #
-$CMP HR2_Encoder;HR2:ENCODER
-D HR2 Encoder
-K ~
-F 
-$ENDCMP
-#
-$CMP HR2_EncoderMate;2XF1X3
-D HR2 Encoder Mating Connector
-K ~
-F 
-$ENDCMP
-#
 $CMP U3V70xMATE;F1x4+F1x5
 D 
 K ~
@@ -104,6 +92,18 @@ $ENDCMP
 #
 $CMP BRIDGE_NE_OUTER;2xM1x1+M1x5
 D NE Outer Bridge Connectors
+K ~
+F 
+$ENDCMP
+#
+$CMP AH1806;SC59
+D AH1806 Omnipolar Hall Effect Switch
+K ~
+F https://www.diodes.com/assets/Datasheets/AH1806.pdf
+$ENDCMP
+#
+$CMP ENCODER;2xF1x3
+D HR2 Encoder Connector
 K ~
 F 
 $ENDCMP
@@ -148,6 +148,12 @@ $CMP HOLE;M2
 D 
 K ~
 F M2 Mounting Hole
+$ENDCMP
+#
+$CMP ENCODER;2xM1x3RA
+D HR2 Encoder Connectors
+K ~
+F 
 $ENDCMP
 #
 $CMP GROVE;20x20L

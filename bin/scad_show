@@ -39,11 +39,11 @@ case "$1" in
     "LED")
 	scad "LED"
 	;;
-    "encoder_bare")
-	scad "encoder_bare"
+    "encoder_2xm1x3ra_bare")
+	scad "encoder_2xm1x3ra_bare"
 	;;
-    "encoder_board")
-	scad "encoder_board"
+    "encoder_2xm1x3ra_board")
+	scad "encoder_2xm1x3ra_board"
 	;;
     "expansion_flat")
 	scad "expansion_flat"
@@ -246,8 +246,8 @@ case "$1" in
     *)
 	echo "Blue_20x20_Grove"
 	echo "LED"
-	echo "encoder_bare"
-	echo "encoder_board"
+	echo "encoder_2xm1x3ra_bare"
+	echo "encoder_2xm1x3ra_board"
 	echo "expansion_flat"
 	echo "expansion_plate"
 	echo "f1x4lp"

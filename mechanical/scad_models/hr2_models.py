@@ -2588,7 +2588,7 @@ class Encoder:
         encoder_pcb_path: Path = encoder_pcb_directory / "encoder.kicad_pcb"
 
         # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
-        encoder_pcb_chunk: PCBChunk = PCBChunk.join("Encoder", [
+        encoder_pcb_chunk: PCBChunk = PCBChunk.join("ENCODER_2xM1x3RA", [
             m1x3ra_pcb_chunk_north,
             m1x3ra_pcb_chunk_south,
             motor_slots_pcb_chunk,
@@ -2624,8 +2624,8 @@ class Encoder:
         repositioned_encoder_pcb_chunk: PCBChunk = PCBChunk("Repositioned Encoder", [],
                                                             [repositioned_use_module])
         encoder_pcb_chunk_mate: PCBChunk = PCBChunk.join(
-            "ENCODER_MATE", [north_f1x3_pcb_chunk, south_f1x3_pcb_chunk,
-                             repositioned_encoder_pcb_chunk])
+            "ENCODER_2xF1x4", [north_f1x3_pcb_chunk, south_f1x3_pcb_chunk,
+                               repositioned_encoder_pcb_chunk])
         encoder_pcb_chunk_mate.footprint_generate("HR2", encoder_pcb_pretty_directory)
 
         # encoder_module = encoder_pcb.scad_program_append(scad_program, "Purple")
