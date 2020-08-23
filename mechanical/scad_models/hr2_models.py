@@ -2536,7 +2536,7 @@ class Encoder:
         pcb_east_x: float = motor_casing_dz / 2.0
         pcb_header_dx: float = 6.5  # Trial and error
         pcb_corner_x: float = -2.5  # Trial and error
-        pcb_dy_extra: float = 7.0 * 2.54
+        pcb_dy_extra: float = 8.0 * 2.54
         pcb_dz: float = 1.6  # mm
         pcb_north_y: float = (motor_casing_dy + pcb_dy_extra) / 2.0
         pcb_north_corner_y: float = motor_casing_dy / 2.0
