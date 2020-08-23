@@ -2062,22 +2062,6 @@ class SimplePolygon(Scad2D):
         points = list(points[:])
         return points
 
-    # SimplePolygon.points_rotate():
-    def points_rotate(self, angle: float, center: P2D):
-        """Rotate all SimplePolygon points by an angle."""
-        # Grab some values from *simple_polygon* (i.e. *self*):
-        simple_polygon: SimplePolygon = self
-        locked: bool = simple_polygon.locked
-        points: List[P2D] = simple_polygon.points
-        if locked:
-            raise ValueError(f"'{simple_polygon.name}' is locked")
-        # For some reason, test coverage complains about the two variable declarations
-        # even thought the following code is covered.  Weird!!
-        index: int  # pragma: no cover
-        point: P2D  # pragma: no cover
-        for index, point in enumerate(points):
-            points[index] = point.rotate(angle, center)
-
     # SimplePolygon.points_scad_lines_append():
     def points_scad_lines_append(self, scad_lines: List[str], indent: str, start_index: int) -> int:
         """Append the Polygon points to a list of lines.
@@ -2223,13 +2207,18 @@ class SimplePolygon(Scad2D):
 
     # SimplePolygon.reposition():
     def reposition(self, center: P2D, rotate_angle: float,
-                   translate: P2D, lock: bool = True) -> "SimplePolygon":
+                   translate: P2D, lock: bool = True, tracing: str = "") -> "SimplePolygon":
         """Return rotated and translated SimplePolygon."""
         # Grab some values from *simple_polygon* (i.e. *self*):
         simple_polygon: SimplePolygon = self
         name: str = simple_polygon.name
         points: List[P2D] = simple_polygon.points
         repositioned_points: List[P2D] = []
+
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>SimplePolygon.repostion('{name}', {center}, "
+                  f"{degrees(rotate_angle)}deg, {translate}, {lock})")
 
         # Unpack some argument values:
         center_x: float = center.x
@@ -2253,6 +2242,11 @@ class SimplePolygon(Scad2D):
         # Create and return the result:
         repositioned_simple_polygon: SimplePolygon = SimplePolygon(f"Repositioned {name}",
                                                                    repositioned_points, lock=lock)
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=SimplePolygon.repostion('{name}', {center}, "
+                  f"{degrees(rotate_angle)}deg, {translate}, {lock})")
+
         return repositioned_simple_polygon
 
     # SimplePolygon.x_mirror():
@@ -2635,7 +2629,8 @@ class Square(SimplePolygon):
 
     # Square.__init__():
     def __init__(self, name: str, dx: float, dy: float, center: P2D = P2D(0.0, 0.0),
-                 rotate: float = 0.0, corner_radius: float = 0.0, corner_count: int = 3) -> None:
+                 rotate: float = 0.0, corner_radius: float = 0.0, corner_count: int = 3,
+                 tracing: str = "") -> None:
         """Create a translated/rotated rectangular SimplePolygon.
 
         Args:
@@ -2656,9 +2651,12 @@ class Square(SimplePolygon):
                 The number of points on along corner arc.
 
         """
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>Square('{name}', {dx:.2f}, {dy:.2f}, {center}, "
+                  f"{degrees(rotate):.2f}, {corner_radius:.2f}, {corner_count})")
+
         # Compute some intermediate values:
-        center_x: float = center.x
-        center_y: float = center.y
         half_dx: float = dx / 2.0
         half_dy: float = dy / 2.0
         half_pi: float = pi / 2.0
@@ -2690,22 +2688,22 @@ class Square(SimplePolygon):
         square: Square = self
         if corner_radius <= 0.0:
             # No *corner_radius*, so we cand do simple 4 point *square* (i.e. *self*):
-            square.point_append(P2D(center_x + half_dx, center_y + half_dy))
-            square.point_append(P2D(center_x + half_dx, center_y - half_dy))
-            square.point_append(P2D(center_x - half_dx, center_y - half_dy))
-            square.point_append(P2D(center_x - half_dx, center_y + half_dy))
+            square.point_append(P2D(half_dx, half_dy))
+            square.point_append(P2D(-half_dx, half_dy))
+            square.point_append(P2D(-half_dx, -half_dy))
+            square.point_append(P2D(half_dx, -half_dy))
         elif corner_radius == half_dx_dy_minimum:
             # A *square* (i.e. *self*) rectangle with fully rounded corners:
             if dx < dy:
                 # The rounded ends are on the top and bottom:
-                upper_center: P2D = P2D(center_x, center_y + half_dy - half_dx)
-                lower_center: P2D = P2D(center_x, center_y + half_dx - half_dy)
+                upper_center: P2D = P2D(0.0, half_dy - half_dx)
+                lower_center: P2D = P2D(0.0, -half_dy + half_dx)
                 square.arc_append(upper_center, corner_radius, 0.0, pi, 0.0)
                 square.arc_append(lower_center, corner_radius, pi, 2 * pi, 0.0)
             elif dy < dx:
                 # The rounded ends are on the left and right:
-                right_center: P2D = P2D(center_x + half_dx - half_dy, center_y)
-                left_center: P2D = P2D(center_x + half_dy - half_dx, center_y)
+                right_center: P2D = P2D(half_dx - half_dy, 0.0)
+                left_center: P2D = P2D(-half_dx + half_dy, 0.0)
                 square.arc_append(right_center, corner_radius, -half_pi, half_pi, 0.0)
                 square.arc_append(left_center, corner_radius, half_pi, 3 * half_pi, 0.0)
             else:  # pragma: no cover
@@ -2714,10 +2712,10 @@ class Square(SimplePolygon):
             # A significantly more complicated *Rectangle* with 4 rounded corners:
             corner_center_dx: float = half_dx - corner_radius
             corner_center_dy: float = half_dy - corner_radius
-            upper_right_center: P2D = P2D(center_x + corner_center_dx, center_y + corner_center_dy)
-            upper_left_center: P2D = P2D(center_x - corner_center_dx, center_y + corner_center_dy)
-            lower_left_center: P2D = P2D(center_x - corner_center_dx, center_y - corner_center_dy)
-            lower_right_center: P2D = P2D(center_x + corner_center_dx, center_y - corner_center_dy)
+            upper_right_center: P2D = P2D(corner_center_dx, corner_center_dy)
+            upper_left_center: P2D = P2D(-corner_center_dx, corner_center_dy)
+            lower_left_center: P2D = P2D(-corner_center_dx, -corner_center_dy)
+            lower_right_center: P2D = P2D(corner_center_dx, -corner_center_dy)
             square.arc_append(upper_right_center, corner_radius, 0.0, half_pi, 0.0)
             square.arc_append(upper_left_center, corner_radius, half_pi, pi, 0.0)
             square.arc_append(lower_left_center, corner_radius, pi, 3 * half_pi, 0.0)
@@ -2725,10 +2723,20 @@ class Square(SimplePolygon):
         else:  # pragma: no cover
             assert False, "Problem with corner_radius; this should not happen."
 
-        # If *rotate* is non-zero, we replace *square_points* with a verision where each
-        # point is rotated by *rotate* around *center*:
-        if rotate != 0.0:
-            square.points_rotate(rotate, center)
+        # The "square vertices are in the *points* attribute of the *SimplePolygon* polygon
+        # centered at the origin.  Now, rotate and translate all of the points to the desired
+        # location.
+        points_text: str = ""
+        if tracing:
+            points_text = ' '.join([f"{point}" for point in square.points]) + ']'
+            print(f"{tracing}points_before={points_text}")
+        origin2d = P2D(0.0, 0.0)
+        square.points = [point.rotate(rotate, origin2d) + center
+                         for point in square.points]
+
+        if tracing:
+            points_text = ' '.join([f"{point}" for point in square.points]) + ']'
+            print(f"{tracing}points_after={points_text}")
 
         # Load values into *square* (i.e. *self*) and *lock* it:
         self.center: P2D = center
@@ -2737,11 +2745,16 @@ class Square(SimplePolygon):
         self.dx: float = dx
         self.dy: float = dy
         self.rotate: float = rotate
-        square.lock()
+        square.lock()  # Lock the *SimplePolygon* super class.
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=Square('{name}', {dx:.2f}, {dy:.2f}, {center}, "
+                  f"{degrees(rotate):.2f}, {corner_radius:.2f}, {corner_count})")
 
     # Square.__str__():
     def __str__(self) -> str:
-        """Return a string representation of Circle*."""
+        """Return a string representation of *Square*."""
         # Grab some values from *square* (i.e. *self*):
         square: Square = self
         center: P2D = square.center
@@ -2751,6 +2764,7 @@ class Square(SimplePolygon):
         dy: float = square.dy
         name: str = square.name
         rotate: float = square.rotate
+        points: List[P2D] = square.points
 
         # Only provide *center_text*, *rotate_text*, and *corner_text* if appropriate:
         float_format: Callable[[float], str] = Scad.float_format
@@ -2760,10 +2774,13 @@ class Square(SimplePolygon):
                                    else f",corner_radius={float_format(corner_radius)}")
         corner_count_text: str = ("" if corner_radius <= 0.0 or corner_count == 3
                                   else f",corner_count={corner_count}")
+        point: P2D
+        points_text: str = ' '.join([str(point) for point in points])
 
         # Return the formatted string reprentation:
         return (f"Square('{name}',{float_format(dx)},{float_format(dy)}"
-                f"{center_text}{rotate_text}{corner_radius_text}{corner_count_text})")
+                f"{center_text}{rotate_text}{corner_radius_text}{corner_count_text})"
+                f"points={points_text}")
 
     # Square.copy():
     def copy(self, name: str, dx: Optional[float] = None, dy: Optional[float] = None,
@@ -2836,6 +2853,42 @@ class Square(SimplePolygon):
                            corner_radius, corner_count)
         return key
 
+    # Square.reposition():
+    def reposition(self, center: P2D, rotate_angle: float,
+                   translate: P2D, lock: bool = True, tracing: str = "") -> "Square":
+        """Return repositioned Square."""
+        # Grab values from *square* (i.e. *self*):
+        square: Square = self
+        square_center: P2D = square.center
+        square_corner_count: int = square.corner_count
+        square_corner_radius: float = square.corner_radius
+        square_dx: float = square.dx
+        square_dy: float = square.dy
+        square_name: str = square.name
+        square_rotate: float = square.rotate
+
+        # Perform and requested *tracing*:
+        next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>Square.reposition('{square_name}', {center}, "
+                  f"{degrees(rotate_angle):.1f}deg, {translate}, {lock})")
+            print(f"{tracing}square_center={square_center}")
+
+        # *center* is the point the square is to be rotated around.
+        # *square_center* is the current center of the square.
+        # *new_center* is the new center of the rotated square.
+        new_center: P2D = square_center.rotate(rotate_angle, center)
+        repositioned_square: Square = Square(
+            f"Repostioned {square_name}", square_dx, square_dy, center=new_center + translate,
+            rotate=square_rotate + rotate_angle, corner_radius=square_corner_radius,
+            corner_count=square_corner_count, tracing=next_tracing)
+
+        # Wrap up any requested *tracing* and return *repositioned_square*:
+        if tracing:
+            print(f"{tracing}<=Square.reposition('{square_name}', {center}, "
+                  f"{degrees(rotate_angle):.1f}deg, {translate}, {lock})")
+        return repositioned_square
+
     # Square.scad_lines_append():
     def scad_lines_append(self, scad_lines: List[str], indent: str) -> None:
         """Append Circle to lines list.
@@ -2846,7 +2899,6 @@ class Square(SimplePolygon):
             *indent* (*str*): The indentatation prefix for each line.
 
         """
-        # Grab some values from *circle* (i.e. *self*):
         # Grab some values from *square* (i.e. *self*):
         square: Square = self
         center: P2D = square.center
@@ -2948,7 +3000,7 @@ class Square(SimplePolygon):
         final_name: str = (new_name if replace is None
                            else name.replace(new_name, replace))
 
-        # Construct the final *x_mirrored_simple_polygon* and return it.
+        # Construct the final *y_mirrored_simple_polygon* and return it.
         new_center: P2D = P2D(-center.x, center.y)
         new_rotate: float = -rotate
         y_mirrored_square: Square = Square(final_name, dx, dy, new_center,

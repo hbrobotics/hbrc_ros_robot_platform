@@ -620,6 +620,7 @@ class Pad:
 
         # Perform any requested *tracing*:
         tracing = tracing if tracing else pad.trace
+        next_tracing: str = tracing + " " if tracing else ""
         if tracing:
             print(f"{tracing}=>Pad.hole_append('{name}', *)")
             print(f"{tracing}name='{name}' drill_diameter={drill_diameter:.2f} "
@@ -648,7 +649,8 @@ class Pad:
                     corner_radius: float = (pad_dx_dy_minimum - pad_extra) / 2.0
                     polygon.append(Square(f"{name} Slot",
                                           pad_dx - pad_extra, pad_dy - pad_extra,
-                                          pad_center, pad_rotate, corner_radius, 5))
+                                          pad_center, pad_rotate, corner_radius, 5,
+                                          tracing=next_tracing))
                     if tracing:
                         print(f"{tracing}Oval hole: ...")
                 else:
@@ -1169,21 +1171,52 @@ class PCBChunk:
         return x_mirrored_pcb_chunk
 
     # PCBChunk.artworks_y_mirror():
-    def artworks_y_mirror(self) -> "PCBChunk":
+    def artworks_y_mirror(self, tracing: str = "") -> "PCBChunk":
         """Return a PCBChunk with pads mirrored around the Y axis."""
         # Unpack some values from *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
+        name: str = pcb_chunk.name
         back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
         front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
 
+        # Perform any requested *tracing*:
+        if tracing:
+            print(f"{tracing}=>PCBChunk.artworks_y_mirror('{name}')")
+
         # Create *y_mirrored_pcb_chunk*, update the pads with Y axis mirrored ones, and return it:
-        y_mirrored_pcb_chunk: PCBChunk = pcb_chunk.copy()
         back_artwork: SimplePolygon
-        y_mirrored_pcb_chunk.back_artworks = [back_artwork.y_mirror("Y Mirrored Back Artwork")
-                                              for back_artwork in back_artworks]
+        original_back_artworks_text: str = ""
+        updated_back_artworks_text: str = ""
         front_artwork: SimplePolygon
-        y_mirrored_pcb_chunk.front_artworks = [front_artwork.y_mirror("Y Mirrored Front Artwork")
-                                               for front_artwork in front_artworks]
+        original_front_artworks_text: str = ""
+        updated_front_artworks_text: str = ""
+        y_mirrored_pcb_chunk: PCBChunk = pcb_chunk.copy()
+        if tracing:
+            original_back_artworks_text = ' '.join([str(back_artwork)
+                                                    for back_artwork in back_artworks])
+            original_front_artworks_text = ' '.join([str(front_artwork)
+                                                     for front_artwork in front_artworks])
+        back_artworks = [back_artwork.y_mirror("Y Mirrored Back Artwork")
+                         for back_artwork in back_artworks]
+        y_mirrored_pcb_chunk.back_artworks = back_artworks
+        front_artworks = [front_artwork.y_mirror("Y Mirrored Front Artwork")
+                          for front_artwork in front_artworks]
+        y_mirrored_pcb_chunk.front_artworks = front_artworks
+
+        # Do some additional tracing:
+        if tracing:
+            updated_back_artworks_text = ' '.join([str(back_artwork)
+                                                   for back_artwork in back_artworks])
+            updated_front_artworks_text = ' '.join([str(front_artwork)
+                                                    for front_artwork in front_artworks])
+            print(f"{tracing}original back_artworks ={original_back_artworks_text}")
+            print(f"{tracing}updated back_artworks  ={updated_back_artworks_text}")
+            print(f"{tracing}original front_artworks={original_front_artworks_text}")
+            print(f"{tracing}updated front_artworks ={updated_front_artworks_text}")
+        # Wrap any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=PCBChunk.artworks_y_mirror('{name}')")
+
         return y_mirrored_pcb_chunk
 
     # PCBChunk.copy():
@@ -1937,7 +1970,8 @@ class PCBChunk:
 
     # PCBChunk.reposition():
     def reposition(self, center: P2D, rotate: float, translate: P2D,
-                   reference_name: str = "", is_front: bool = True) -> "PCBChunk":
+                   reference_name: str = "", is_front: bool = True,
+                   tracing: str = "") -> "PCBChunk":
         """Return a repositioned PCBChunk."""
         # Unpack some values *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
@@ -1951,6 +1985,12 @@ class PCBChunk:
         parent: Optional[PCBChunk] = pcb_chunk.parent
         references: List[Reference] = pcb_chunk.references
         assert len(references) == 0, "References should never be repositioned."
+
+        # Perform any requested *tracing*:
+        next_tracing: str = tracing + " " if tracing else ""
+        if tracing:
+            print(f"{tracing}=>PCBChunk.reposition('{name}', {center}, {degrees(rotate):.1f}deg, "
+                  f"{translate}, '{reference_name}', {is_front})")
 
         # Mirror any operation to the *parent*:
         if isinstance(parent, PCBChunk):
@@ -1979,7 +2019,7 @@ class PCBChunk:
 
         front_artwork: SimplePolygon
         repositioned_front_artworks: List[SimplePolygon] = [
-            front_artwork.reposition(center, rotate, translate)
+            front_artwork.reposition(center, rotate, translate, tracing=next_tracing)
             for front_artwork in front_artworks]
 
         front_scad: Scad3D
@@ -2007,6 +2047,11 @@ class PCBChunk:
         if reference_name != "":
             repositioned_pcb_chunk = repositioned_pcb_chunk.reference(
                 reference_name, is_front, rotate, translate, name)
+
+        # Wrap up any requested *tracing*:
+        if tracing:
+            print(f"{tracing}<=PCBChunk.reposition('{name}', {center}, {degrees(rotate):.1f}deg, "
+                  f"{translate}, '{reference_name}', {is_front})")
 
         return repositioned_pcb_chunk
 
@@ -2547,7 +2592,7 @@ class Encoder:
 
         # Create *north_header* and *south_header* for (Digikey: 2057-PH1RB-03-UA-ND (Adam Tech))
         # and make sure the header pin holes are appended to *pcb_polygon*:
-        header_offset: float = 1.5 * 2.54  # Trail and error
+        header_offset: float = 2.0 * 2.54  # Trail and error
         north_header_center2d: P2D = P2D(pcb_connector_x + 0.5 * 2.54, pcb_north_y - header_offset)
         south_header_center2d: P2D = P2D(pcb_connector_x + 0.5 * 2.54, pcb_south_y + header_offset)
 
@@ -2555,18 +2600,22 @@ class Encoder:
         m1x3ra_pcb_chunk: PCBChunk = connectors.m1x3ra.pcb_chunk
         # m1x3ra_pcb_chunk.pads_show("m1x3ra_pcb:")
         # print(f"north_header_center2d:{north_header_center2d}")
-        m1x3ra_pcb_chunk_north: PCBChunk = (m1x3ra_pcb_chunk.
-                                            sides_swap().
-                                            pads_rebase(3).
-                                            pads_y_mirror().
-                                            scads_y_flip().
-                                            reposition(origin2d, -degrees90, north_header_center2d))
+        m1x3ra_pcb_chunk_north: PCBChunk = (
+            m1x3ra_pcb_chunk.
+            pads_rebase(3).
+            scads_x_flip().
+            sides_swap().
+            reposition(origin2d, degrees90, north_header_center2d)
+        )
+        north_header_center2d = north_header_center2d
         # m1x3ra_pcb_chunk_north.pads_show("m1x3ra_chunks_north:")
-        m1x3ra_pcb_chunk_south: PCBChunk = (m1x3ra_pcb_chunk.
-                                            sides_swap().
-                                            pads_y_mirror().
-                                            scads_y_flip().
-                                            reposition(origin2d, -degrees90, south_header_center2d))
+        m1x3ra_pcb_chunk_south: PCBChunk = (
+            m1x3ra_pcb_chunk.
+            scads_x_flip().
+            sides_swap().
+            reposition(origin2d, degrees90, south_header_center2d)
+        )
+        south_header_center2d = south_header_center2d
 
         # Create *motor_slots_pcb_chunk* (put "8" before "7" because the footprint looks better):
         north_motor_pad: Pad = Pad("8", pcb_pad_dx, pcb_pad_dy,
@@ -2577,7 +2626,9 @@ class Encoder:
                                                    [north_motor_pad, south_motor_pad], [])
 
         # Create the *shaft_hole_pcb_chunk*:
-        shaft_hole_pad: Pad = Pad("Encoder Shaft Hole", 0.0, 0.0, pcb_shaft_hole_diameter, origin2d)
+        shaft_center: P2D = origin2d
+        shaft_hole_pad: Pad = Pad(
+            "Encoder Shaft Hole", 0.0, 0.0, pcb_shaft_hole_diameter, shaft_center)
         shaft_hole_pcb_chunk: PCBChunk = PCBChunk("Encoder Shaft Hole", [shaft_hole_pad], [])
 
         # Figure out *encoder_pcb_directory* and *encoder_pcb_pretty_directory*:
@@ -2586,6 +2637,7 @@ class Encoder:
         encoder_pcb_directory: Path = hr2_directory / "electrical" / "encoder" / "rev_a"
         encoder_pcb_pretty_directory: Path = encoder_pcb_directory / "pretty"
         encoder_pcb_path: Path = encoder_pcb_directory / "encoder.kicad_pcb"
+        # print(f"encoder_pcb_path='{encoder_pcb_path}'")
 
         # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
         encoder_pcb_chunk: PCBChunk = PCBChunk.join("ENCODER_2xM1x3RA", [
@@ -2624,7 +2676,7 @@ class Encoder:
         repositioned_encoder_pcb_chunk: PCBChunk = PCBChunk("Repositioned Encoder", [],
                                                             [repositioned_use_module])
         encoder_pcb_chunk_mate: PCBChunk = PCBChunk.join(
-            "ENCODER_2xF1x4", [north_f1x3_pcb_chunk, south_f1x3_pcb_chunk,
+            "ENCODER_2xF1x3", [north_f1x3_pcb_chunk, south_f1x3_pcb_chunk,
                                repositioned_encoder_pcb_chunk])
         encoder_pcb_chunk_mate.footprint_generate("HR2", encoder_pcb_pretty_directory)
 
@@ -6442,7 +6494,7 @@ class RectangularConnector:
             # original_y_center: float = y_center
             if have_right_angle:
                 y_center -= right_angle_length
-            square: Square = Square("name", dx, dy, P2D(x_center, y_center))
+            square: Square = Square(name, dx, dy, P2D(x_center, y_center), tracing=next_tracing)
             front_artworks.append(square)
             circle: Circle
             if have_right_angle:
