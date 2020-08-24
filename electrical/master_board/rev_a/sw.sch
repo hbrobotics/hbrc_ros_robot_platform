@@ -90,14 +90,14 @@ L Device:R_US R34
 U 1 1 5F3A3A4B
 P 7850 3500
 F 0 "R34" V 7750 3400 50  0000 L CNN
-F 1 "330;1608" V 7950 3300 50  0000 L CNN
+F 1 "330Ω;1608" V 7950 3300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 7890 3490 50  0001 C CNN
 F 3 "~" H 7850 3500 50  0001 C CNN
 	1    7850 3500
 	0    1    1    0   
 $EndComp
 Text Notes 2800 6450 0    50   ~ 0
-Right Angle Green LED\nMfg Part #: TLPG5600\nDigi-Key part #: TLPG5600-ND\nForward Voltage Drop: 2.4V\nAbsolute max. current: 200mA\nTarget current: I=60mA\nR = (9V - 2.4V) / 75mA = 6.6V / .060A = 110Ohm\nW=I**2*R = (.060 * .060) * 110=.495W = .396W =.4W\nUse 3 330Ohm resistors in parallel to get 110Ohm\n1/8 Watt or larger should work.\n\n.\n
+Notes:\n1. GRNRA = Green Right Angle Green\n2. Nominal Part:\n     Mfg Part #: TLPG5600\n     Digi-Key part #: TLPG5600-ND\n     Forward Voltage Drop: 2.4V\n     Absolute max. current: 200mA\n     Target maximum current: I=60mA\n     Resistor: R = (9V - 2.4V) / 75mA = 6.6V / .060A = 110Ω\n     Watts: W = I**2*R = (.060 * .060) * 110 = .396W ~~=.4W\n     Use 3 x 330Ω in parallel to get 110Ω\n     Watts per resistor: Wr = .4W / 3 = .133W ~~= .125W\n     1/8W or larger should work.\n3. LED's and transistors are labeled from 1 to 16 in a clockwise\n     direction starting in the NW quadrant near the X axis.  The\n     resesitors are labeld Ra, Rb, and Rc, where a=3*n-2, b=3*n-1,\n     and c=3*n, where n is the LED number.
 Wire Wire Line
 	8100 4400 8100 4300
 $Comp
@@ -105,7 +105,7 @@ L Device:R_US R33
 U 1 1 5F3A820E
 P 7850 3200
 F 0 "R33" V 7750 3100 50  0000 L CNN
-F 1 "330;1608" V 7950 3000 50  0000 L CNN
+F 1 "330Ω;1608" V 7950 3000 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 7890 3190 50  0001 C CNN
 F 3 "~" H 7850 3200 50  0001 C CNN
 	1    7850 3200
@@ -116,7 +116,7 @@ L Device:R_US R35
 U 1 1 5F3A878F
 P 7850 3800
 F 0 "R35" V 7750 3700 50  0000 L CNN
-F 1 "330;1608" V 7950 3600 50  0000 L CNN
+F 1 "330Ω;1608" V 7950 3600 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 7890 3790 50  0001 C CNN
 F 3 "~" H 7850 3800 50  0001 C CNN
 	1    7850 3800
@@ -165,7 +165,7 @@ L Device:R_US R31
 U 1 1 5F3B5ACE
 P 6950 3500
 F 0 "R31" V 6850 3400 50  0000 L CNN
-F 1 "330;1608" V 7050 3300 50  0000 L CNN
+F 1 "330Ω;1608" V 7050 3300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6990 3490 50  0001 C CNN
 F 3 "~" H 6950 3500 50  0001 C CNN
 	1    6950 3500
@@ -178,7 +178,7 @@ L Device:R_US R30
 U 1 1 5F3B5AD9
 P 6950 3200
 F 0 "R30" V 6850 3100 50  0000 L CNN
-F 1 "330;1608" V 7050 3000 50  0000 L CNN
+F 1 "330Ω;1608" V 7050 3000 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6990 3190 50  0001 C CNN
 F 3 "~" H 6950 3200 50  0001 C CNN
 	1    6950 3200
@@ -189,7 +189,7 @@ L Device:R_US R32
 U 1 1 5F3B5AE3
 P 6950 3800
 F 0 "R32" V 6850 3700 50  0000 L CNN
-F 1 "330;1608" V 7050 3600 50  0000 L CNN
+F 1 "330Ω;1608" V 7050 3600 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6990 3790 50  0001 C CNN
 F 3 "~" H 6950 3800 50  0001 C CNN
 	1    6950 3800
@@ -249,7 +249,7 @@ L Device:R_US R25
 U 1 1 5F3B8D54
 P 5150 3500
 F 0 "R25" V 5050 3400 50  0000 L CNN
-F 1 "330;1608" V 5250 3300 50  0000 L CNN
+F 1 "330Ω;1608" V 5250 3300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 5190 3490 50  0001 C CNN
 F 3 "~" H 5150 3500 50  0001 C CNN
 	1    5150 3500
@@ -262,7 +262,7 @@ L Device:R_US R24
 U 1 1 5F3B8D5F
 P 5150 3200
 F 0 "R24" V 5050 3100 50  0000 L CNN
-F 1 "330;1608" V 5250 3000 50  0000 L CNN
+F 1 "330Ω;1608" V 5250 3000 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 5190 3190 50  0001 C CNN
 F 3 "~" H 5150 3200 50  0001 C CNN
 	1    5150 3200
@@ -273,7 +273,7 @@ L Device:R_US R26
 U 1 1 5F3B8D69
 P 5150 3800
 F 0 "R26" V 5050 3700 50  0000 L CNN
-F 1 "330;1608" V 5250 3600 50  0000 L CNN
+F 1 "330Ω;1608" V 5250 3600 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 5190 3790 50  0001 C CNN
 F 3 "~" H 5150 3800 50  0001 C CNN
 	1    5150 3800
@@ -322,7 +322,7 @@ L Device:R_US R22
 U 1 1 5F3BEA23
 P 4250 3500
 F 0 "R22" V 4150 3400 50  0000 L CNN
-F 1 "330;1608" V 4350 3300 50  0000 L CNN
+F 1 "330Ω;1608" V 4350 3300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 4290 3490 50  0001 C CNN
 F 3 "~" H 4250 3500 50  0001 C CNN
 	1    4250 3500
@@ -333,7 +333,7 @@ L Device:R_US R21
 U 1 1 5F3BEA2E
 P 4250 3200
 F 0 "R21" V 4150 3100 50  0000 L CNN
-F 1 "330;1608" V 4350 3000 50  0000 L CNN
+F 1 "330Ω;1608" V 4350 3000 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 4290 3190 50  0001 C CNN
 F 3 "~" H 4250 3200 50  0001 C CNN
 	1    4250 3200
@@ -344,7 +344,7 @@ L Device:R_US R23
 U 1 1 5F3BEA38
 P 4250 3800
 F 0 "R23" V 4150 3700 50  0000 L CNN
-F 1 "330;1608" V 4350 3600 50  0000 L CNN
+F 1 "330Ω;1608" V 4350 3600 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 4290 3790 50  0001 C CNN
 F 3 "~" H 4250 3800 50  0001 C CNN
 	1    4250 3800
@@ -419,7 +419,7 @@ L Device:R_US R29
 U 1 1 5F3B8D25
 P 6050 3800
 F 0 "R29" V 5950 3700 50  0000 L CNN
-F 1 "330;1608" V 6150 3600 50  0000 L CNN
+F 1 "330Ω;1608" V 6150 3600 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 3790 50  0001 C CNN
 F 3 "~" H 6050 3800 50  0001 C CNN
 	1    6050 3800
@@ -430,7 +430,7 @@ L Device:R_US R27
 U 1 1 5F3B8D1B
 P 6050 3200
 F 0 "R27" V 5950 3100 50  0000 L CNN
-F 1 "330;1608" V 6150 3000 50  0000 L CNN
+F 1 "330Ω;1608" V 6150 3000 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 3190 50  0001 C CNN
 F 3 "~" H 6050 3200 50  0001 C CNN
 	1    6050 3200
@@ -443,7 +443,7 @@ L Device:R_US R28
 U 1 1 5F3B8D10
 P 6050 3500
 F 0 "R28" V 5950 3400 50  0000 L CNN
-F 1 "330;1608" V 6150 3300 50  0000 L CNN
+F 1 "330Ω;1608" V 6150 3300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 3490 50  0001 C CNN
 F 3 "~" H 6050 3500 50  0001 C CNN
 	1    6050 3500
@@ -550,10 +550,6 @@ Text Label 3350 3000 0    50   ~ 0
 GND
 Text Label 3650 2900 0    50   ~ 0
 9V
-Text Notes 2800 6850 0    50   ~ 0
-Note: GRNRA = Green Right Angle 0.254mm (approx.) lead spacing
-Text Notes 2800 6600 0    50   ~ 0
-Note: LED's are labeled from 1 to 16 in a clockwise\ndirection starting in the NW quadrant near the X axis.
 Text Notes 2150 4250 0    50   ~ 0
 Note: Mounting Hole for above\narm expansion plates.
 Wire Wire Line

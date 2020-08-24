@@ -2536,7 +2536,7 @@ class Encoder:
         pcb_east_x: float = motor_casing_dz / 2.0
         pcb_header_dx: float = 6.5  # Trial and error
         pcb_corner_x: float = -2.5  # Trial and error
-        pcb_dy_extra: float = 7.0 * 2.54
+        pcb_dy_extra: float = 8.0 * 2.54
         pcb_dz: float = 1.6  # mm
         pcb_north_y: float = (motor_casing_dy + pcb_dy_extra) / 2.0
         pcb_north_corner_y: float = motor_casing_dy / 2.0
@@ -4392,14 +4392,16 @@ class MasterBoard:
         # Define some Y coordinates:
         center_ne_inner_y: float = center_pcb_north - 0.5 * 2.54
         center_ne_middle_y: float = center_pcb_north - 0.5 * 2.54
-        center_ne_outer_y: float = center_pcb_north - 0.5 * 2.54
+        center_ne_outer1_y: float = center_pcb_north - 0.5 * 2.54
+        center_ne_outer2_y: float = center_pcb_north - 1.5 * 2.54
         center_nw_inner_y: float = center_pcb_north - 2.5 * 2.54
         center_nw_outer_y: float = center_pcb_north - 0.5 * 2.54
         center_s_y: float = center_pcb_south + 0.5 * 2.54
 
         ne_inner_y: float = center_pcb_north + 0.5 * 2.54
         ne_middle_y: float = center_pcb_north + 0.5 * 2.54
-        ne_outer_y: float = center_pcb_north + 0.5 * 2.54
+        ne_outer1_y: float = center_pcb_north + 0.5 * 2.54
+        ne_outer2_y: float = center_pcb_north + 1.5 * 2.54
 
         nw_inner_y: float = center_pcb_north + 2.5 * 2.54
         nw_outer_y: float = center_pcb_north + 0.5 * 2.54
@@ -4409,7 +4411,8 @@ class MasterBoard:
         # Create 4 NE/NW PCB connector centers and 2 SE/SW PCB
         ne_inner_center: P2D = P2D(ne_inner_x, ne_inner_y)
         ne_middle_center: P2D = P2D(ne_middle_x, ne_middle_y)
-        ne_outer_center: P2D = P2D(ne_outer_x, ne_outer_y)
+        ne_outer1_center: P2D = P2D(ne_outer_x, ne_outer1_y)
+        ne_outer2_center: P2D = P2D(ne_outer_x + 2.54, ne_outer2_y)
         nw_inner_center: P2D = P2D(nw_inner_x, nw_inner_y)
         nw_outer_center: P2D = P2D(nw_outer_x, nw_outer_y)
 
@@ -4420,7 +4423,8 @@ class MasterBoard:
         # Create 6 center PCB connector connectors:
         center_ne_inner_center: P2D = P2D(ne_inner_x, center_ne_inner_y)
         center_ne_middle_center: P2D = P2D(ne_middle_x, center_ne_middle_y)
-        center_ne_outer_center: P2D = P2D(ne_outer_x, center_ne_outer_y)
+        center_ne_outer1_center: P2D = P2D(ne_outer_x, center_ne_outer1_y)
+        center_ne_outer2_center: P2D = P2D(ne_outer_x + 2.54, center_ne_outer2_y)
         center_nw_inner_center: P2D = P2D(nw_inner_x, center_nw_inner_y)
         center_nw_outer_center: P2D = P2D(nw_outer_x, center_nw_outer_y)
         center_se_center: P2D = P2D(se_x, center_s_y)
@@ -4444,14 +4448,16 @@ class MasterBoard:
             m1x1.pcb_chunk.reposition(origin2d, 0.0, center_ne_inner_center))
         center_ne_middle_pcb_chunk: PCBChunk = (
             m1x1.pcb_chunk.reposition(origin2d, 0.0, center_ne_middle_center)).pads_rebase(1)
-        center_ne_outer_pcb_chunk: PCBChunk = (
-            m1x5.pcb_chunk.reposition(origin2d, 0.0, center_ne_outer_center)).pads_rebase(2)
+        center_ne_outer1_pcb_chunk: PCBChunk = (
+            m1x5.pcb_chunk.reposition(origin2d, 0.0, center_ne_outer1_center)).pads_rebase(2)
+        center_ne_outer2_pcb_chunk: PCBChunk = (
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, center_ne_outer2_center)).pads_rebase(7)
 
         center_nw_inner_pcb_chunk: PCBChunk = (
             m2x5.pcb_chunk.artworks_x_mirror().
             reposition(origin2d, -degrees90, center_nw_inner_center)).pads_rebase(2)
         center_nw_outer_pcb_chunk: PCBChunk = (
-            m1x2.pcb_chunk.reposition(origin2d, 0.0, center_nw_outer_center))
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, center_nw_outer_center))
 
         center_se_pcb_chunk: PCBChunk = (
             m1x8.pcb_chunk.reposition(origin2d, 0.0, center_se_center))
@@ -4465,8 +4471,10 @@ class MasterBoard:
             m1x1.pcb_chunk.reposition(origin2d, 0.0, ne_inner_center))
         ne_middle_pcb_chunk: PCBChunk = (
             m1x1.pcb_chunk.reposition(origin2d, 0.0, ne_middle_center)).pads_rebase(1)
-        ne_outer_pcb_chunk: PCBChunk = (
-            m1x5.pcb_chunk.reposition(origin2d, 0.0, ne_outer_center)).pads_rebase(2)
+        ne_outer1_pcb_chunk: PCBChunk = (
+            m1x5.pcb_chunk.reposition(origin2d, 0.0, ne_outer1_center)).pads_rebase(2)
+        ne_outer2_pcb_chunk: PCBChunk = (
+            m1x1.pcb_chunk.reposition(origin2d, 0.0, ne_outer2_center)).pads_rebase(7)
 
         nw_inner_pcb_chunk: PCBChunk = (
             m2x5.pcb_chunk.artworks_x_mirror().
@@ -4480,10 +4488,11 @@ class MasterBoard:
             m1x8.pcb_chunk.reposition(origin2d, 0.0, sw_center))
 
         # Create the centered *PCBChunk*'s, which have a reasonable origin for the footprint.
-        ne_inner_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NE_INNER_2xM1x1+M1x5", [
+        ne_inner_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NE_INNER_3xM1x1+M1x5", [
             center_ne_inner_pcb_chunk,
             center_ne_middle_pcb_chunk,
-            center_ne_outer_pcb_chunk,
+            center_ne_outer1_pcb_chunk,
+            center_ne_outer2_pcb_chunk,
         ]).reposition(origin2d, 0.0, -center_ne_middle_center)
         nw_inner_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NW_INNER_M1x2+M2x5", [
             center_nw_inner_pcb_chunk,
@@ -4496,10 +4505,11 @@ class MasterBoard:
             center_sw_pcb_chunk,
         ]).reposition(origin2d, 0.0, -center_sw_center)
 
-        ne_outer_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NE_OUTER_2xM1x1+M1x5", [
+        ne_outer_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NE_OUTER_3xM1x1+M1x5", [
             ne_inner_pcb_chunk,
             ne_middle_pcb_chunk,
-            ne_outer_pcb_chunk,
+            ne_outer1_pcb_chunk,
+            ne_outer2_pcb_chunk,
         ]).reposition(origin2d, 0.0, -ne_middle_center)
         nw_outer_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NW_OUTER_M1x2+M2x5", [
             nw_inner_pcb_chunk,

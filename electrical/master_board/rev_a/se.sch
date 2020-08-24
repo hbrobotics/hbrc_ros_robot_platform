@@ -65,7 +65,6 @@ F 3 "~" H 8050 3800 50  0001 C CNN
 	1    8050 3800
 	0    -1   -1   0   
 $EndComp
-NoConn ~ 3250 1950
 Wire Wire Line
 	8050 4550 8050 4450
 Text Label 3700 4550 0    50   ~ 0
@@ -90,14 +89,14 @@ P 7800 3150
 AR Path="/5F3DFBDE/5F3FF723" Ref="R?"  Part="1" 
 AR Path="/5F3FF723" Ref="R37"  Part="1" 
 F 0 "R37" V 7700 3050 50  0000 L CNN
-F 1 "330;1608" V 7900 2950 50  0000 L CNN
+F 1 "330Ω;1608" V 7900 2950 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 7840 3140 50  0001 C CNN
 F 3 "~" H 7800 3150 50  0001 C CNN
 	1    7800 3150
 	0    1    1    0   
 $EndComp
 Text Notes 2750 6100 0    50   ~ 0
-Right Angle Green LED\nMfg Part #: TLPG5600\nDigi-Key part #: TLPG5600-ND\nForward Voltage Drop: 2.4V\nAbsolute max. current: 200mA\nTarget current: I=60mA\nR = (9V - 2.4V) / 75mA = 6.6V / .060A = 110Ohm\nW=I**2*R = (.060 * .060) * 110=.495W = .396W =.4W\nUse 3 330Ohm resistors in parallel to get 110Ohm\n1/8 Watt or larger should work.\n\n.\n
+Notes:\n1. GRNRA = Green Right Angle Green\n2. Nominal Part:\n     Mfg Part #: TLPG5600\n     Digi-Key part #: TLPG5600-ND\n     Forward Voltage Drop: 2.4V\n     Absolute max. current: 200mA\n     Target maximum current: I=60mA\n     Resistor: R = (9V - 2.4V) / 75mA = 6.6V / .060A = 110Ω\n     Watts: W = I**2*R = (.060 * .060) * 110 = .396W ~=.4W\n     Use 3 x 330Ω in parallel to get 110Ω\n     Watts per resistor: Wr = .4W / 3 = .133W ~= .125W\n     1/8W or larger should work.\n3. LED's are labeled from 1 to 16 in a counter-clockwise\n     direction starting in the NW quadrant nearest the X axis.
 Wire Wire Line
 	8050 4050 8050 3950
 $Comp
@@ -107,7 +106,7 @@ P 7800 2850
 AR Path="/5F3DFBDE/5F3FF72B" Ref="R?"  Part="1" 
 AR Path="/5F3FF72B" Ref="R38"  Part="1" 
 F 0 "R38" V 7700 2750 50  0000 L CNN
-F 1 "330;1608" V 7900 2650 50  0000 L CNN
+F 1 "330Ω;1608" V 7900 2650 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 7840 2840 50  0001 C CNN
 F 3 "~" H 7800 2850 50  0001 C CNN
 	1    7800 2850
@@ -120,7 +119,7 @@ P 7800 3450
 AR Path="/5F3DFBDE/5F3FF731" Ref="R?"  Part="1" 
 AR Path="/5F3FF731" Ref="R36"  Part="1" 
 F 0 "R36" V 7700 3350 50  0000 L CNN
-F 1 "330;1608" V 7900 3250 50  0000 L CNN
+F 1 "330Ω;1608" V 7900 3250 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 7840 3440 50  0001 C CNN
 F 3 "~" H 7800 3450 50  0001 C CNN
 	1    7800 3450
@@ -173,7 +172,7 @@ P 6900 3150
 AR Path="/5F3DFBDE/5F3FF74C" Ref="R?"  Part="1" 
 AR Path="/5F3FF74C" Ref="R40"  Part="1" 
 F 0 "R40" V 6800 3050 50  0000 L CNN
-F 1 "330;1608" V 7000 2950 50  0000 L CNN
+F 1 "330Ω;1608" V 7000 2950 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6940 3140 50  0001 C CNN
 F 3 "~" H 6900 3150 50  0001 C CNN
 	1    6900 3150
@@ -188,7 +187,7 @@ P 6900 2850
 AR Path="/5F3DFBDE/5F3FF753" Ref="R?"  Part="1" 
 AR Path="/5F3FF753" Ref="R41"  Part="1" 
 F 0 "R41" V 6800 2750 50  0000 L CNN
-F 1 "330;1608" V 7000 2650 50  0000 L CNN
+F 1 "330Ω;1608" V 7000 2650 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6940 2840 50  0001 C CNN
 F 3 "~" H 6900 2850 50  0001 C CNN
 	1    6900 2850
@@ -201,7 +200,7 @@ P 6900 3450
 AR Path="/5F3DFBDE/5F3FF759" Ref="R?"  Part="1" 
 AR Path="/5F3FF759" Ref="R39"  Part="1" 
 F 0 "R39" V 6800 3350 50  0000 L CNN
-F 1 "330;1608" V 7000 3250 50  0000 L CNN
+F 1 "330Ω;1608" V 7000 3250 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6940 3440 50  0001 C CNN
 F 3 "~" H 6900 3450 50  0001 C CNN
 	1    6900 3450
@@ -265,7 +264,7 @@ P 5100 3150
 AR Path="/5F3DFBDE/5F3FF77A" Ref="R?"  Part="1" 
 AR Path="/5F3FF77A" Ref="R46"  Part="1" 
 F 0 "R46" V 5000 3050 50  0000 L CNN
-F 1 "330;1608" V 5200 2950 50  0000 L CNN
+F 1 "330Ω;1608" V 5200 2950 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 5140 3140 50  0001 C CNN
 F 3 "~" H 5100 3150 50  0001 C CNN
 	1    5100 3150
@@ -280,7 +279,7 @@ P 5100 2850
 AR Path="/5F3DFBDE/5F3FF781" Ref="R?"  Part="1" 
 AR Path="/5F3FF781" Ref="R47"  Part="1" 
 F 0 "R47" V 5000 2750 50  0000 L CNN
-F 1 "330;1608" V 5200 2650 50  0000 L CNN
+F 1 "330Ω;1608" V 5200 2650 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 5140 2840 50  0001 C CNN
 F 3 "~" H 5100 2850 50  0001 C CNN
 	1    5100 2850
@@ -293,7 +292,7 @@ P 5100 3450
 AR Path="/5F3DFBDE/5F3FF787" Ref="R?"  Part="1" 
 AR Path="/5F3FF787" Ref="R45"  Part="1" 
 F 0 "R45" V 5000 3350 50  0000 L CNN
-F 1 "330;1608" V 5200 3250 50  0000 L CNN
+F 1 "330Ω;1608" V 5200 3250 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 5140 3440 50  0001 C CNN
 F 3 "~" H 5100 3450 50  0001 C CNN
 	1    5100 3450
@@ -346,7 +345,7 @@ P 4200 3150
 AR Path="/5F3DFBDE/5F3FF7A2" Ref="R?"  Part="1" 
 AR Path="/5F3FF7A2" Ref="R49"  Part="1" 
 F 0 "R49" V 4100 3050 50  0000 L CNN
-F 1 "330;1608" V 4300 2950 50  0000 L CNN
+F 1 "330Ω;1608" V 4300 2950 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 4240 3140 50  0001 C CNN
 F 3 "~" H 4200 3150 50  0001 C CNN
 	1    4200 3150
@@ -359,7 +358,7 @@ P 4200 2850
 AR Path="/5F3DFBDE/5F3FF7A8" Ref="R?"  Part="1" 
 AR Path="/5F3FF7A8" Ref="R50"  Part="1" 
 F 0 "R50" V 4100 2750 50  0000 L CNN
-F 1 "330;1608" V 4300 2650 50  0000 L CNN
+F 1 "330Ω;1608" V 4300 2650 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 4240 2840 50  0001 C CNN
 F 3 "~" H 4200 2850 50  0001 C CNN
 	1    4200 2850
@@ -372,7 +371,7 @@ P 4200 3450
 AR Path="/5F3DFBDE/5F3FF7AE" Ref="R?"  Part="1" 
 AR Path="/5F3FF7AE" Ref="R48"  Part="1" 
 F 0 "R48" V 4100 3350 50  0000 L CNN
-F 1 "330;1608" V 4300 3250 50  0000 L CNN
+F 1 "330Ω;1608" V 4300 3250 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 4240 3440 50  0001 C CNN
 F 3 "~" H 4200 3450 50  0001 C CNN
 	1    4200 3450
@@ -403,8 +402,6 @@ Wire Wire Line
 Connection ~ 4450 3450
 Wire Wire Line
 	3250 2550 3850 2550
-Wire Wire Line
-	3250 2650 3550 2650
 Wire Wire Line
 	8050 4550 7150 4550
 Wire Wire Line
@@ -451,7 +448,7 @@ P 6000 3450
 AR Path="/5F3DFBDE/5F3FF7D7" Ref="R?"  Part="1" 
 AR Path="/5F3FF7D7" Ref="R42"  Part="1" 
 F 0 "R42" V 5900 3350 50  0000 L CNN
-F 1 "330;1608" V 6100 3250 50  0000 L CNN
+F 1 "330Ω;1608" V 6100 3250 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6040 3440 50  0001 C CNN
 F 3 "~" H 6000 3450 50  0001 C CNN
 	1    6000 3450
@@ -464,7 +461,7 @@ P 6000 2850
 AR Path="/5F3DFBDE/5F3FF7DD" Ref="R?"  Part="1" 
 AR Path="/5F3FF7DD" Ref="R44"  Part="1" 
 F 0 "R44" V 5900 2750 50  0000 L CNN
-F 1 "330;1608" V 6100 2650 50  0000 L CNN
+F 1 "330Ω;1608" V 6100 2650 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6040 2840 50  0001 C CNN
 F 3 "~" H 6000 2850 50  0001 C CNN
 	1    6000 2850
@@ -479,7 +476,7 @@ P 6000 3150
 AR Path="/5F3DFBDE/5F3FF7E4" Ref="R?"  Part="1" 
 AR Path="/5F3FF7E4" Ref="R43"  Part="1" 
 F 0 "R43" V 5900 3050 50  0000 L CNN
-F 1 "330;1608" V 6100 2950 50  0000 L CNN
+F 1 "330Ω;1608" V 6100 2950 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 6040 3140 50  0001 C CNN
 F 3 "~" H 6000 3150 50  0001 C CNN
 	1    6000 3150
@@ -537,8 +534,6 @@ Wire Wire Line
 	7750 4250 7450 4250
 Wire Wire Line
 	4450 4550 3550 4550
-Wire Wire Line
-	3550 4550 3550 2650
 Connection ~ 4450 4550
 Connection ~ 5350 4550
 Connection ~ 6250 4550
@@ -579,12 +574,10 @@ Text Label 6600 4250 0    50   ~ 0
 LED13
 Text Label 7500 4250 0    50   ~ 0
 LED12
-Text Label 3300 2650 0    50   ~ 0
+Text Label 3300 1950 0    50   ~ 0
 GND
 Text Label 3650 2050 0    50   ~ 0
 9V
-Text Notes 2750 6500 0    50   ~ 0
-Note: GRNRA = Green Right Angle 0.254mm (approx.) lead spacing
 Text Notes 2750 6250 0    50   ~ 0
 Note: LED's are labeled from 1 to 16 in a clockwise\ndirection starting in the NW quadrant near the X axis.
 Text Notes 2100 3900 0    50   ~ 0
@@ -610,4 +603,10 @@ Wire Wire Line
 	3250 2150 7450 2150
 Wire Wire Line
 	7450 2150 7450 4250
+Wire Wire Line
+	3550 4550 3550 1950
+Wire Wire Line
+	3550 1950 3250 1950
+NoConn ~ 3250 2650
+NoConn ~ 1500 1800
 $EndSCHEMATC
