@@ -54,12 +54,6 @@ K ~
 F 
 $ENDCMP
 #
-$CMP STLINKCN3;F1X2
-D ST-Link Ground Pins
-K ~
-F http://www.adam-tech.com/downloader.php?p=RS1-XX-G.pdf
-$ENDCMP
-#
 $CMP HCSR04LP;F1X4
 D HC-SR04 Sonar (Low Profile Receptacle)
 K ~
@@ -82,12 +76,6 @@ $CMP HOLE;M2.5
 D 
 K ~
 F M2.5 Mounting Hole
-$ENDCMP
-#
-$CMP STLINKCN2;F1X2
-D ST-Link Ground Pins
-K ~
-F http://www.adam-tech.com/downloader.php?p=RS1-XX-G.pdf
 $ENDCMP
 #
 $CMP BRIDGE_NE_OUTER;3xM1x1+M1x5
@@ -114,10 +102,22 @@ K ~
 F M3 Mounting Hole
 $ENDCMP
 #
-$CMP STADAPTER;F1x2+F1x4
+$CMP STLINK;4xF1x2+F1x4+F1x6
 D 
 K ~
-F ST Adapter Mating Connectors
+F ST Adapter Mating Connector
+$ENDCMP
+#
+$CMP STADAPTER;M2x4RA
+D 
+K ~
+F ST Adapter Connector
+$ENDCMP
+#
+$CMP STADAPTER;M2x4RA
+D 
+K ~
+F ST Adapter Mating Connector
 $ENDCMP
 #
 $CMP GROVE;20x20R
@@ -154,6 +154,12 @@ $CMP ENCODER;2xM1x3RA
 D HR2 Encoder Connectors
 K ~
 F 
+$ENDCMP
+#
+$CMP STADAPTER;F2x4
+D 
+K ~
+F ST Adapter Mating Connector
 $ENDCMP
 #
 $CMP GROVE;20x20L
