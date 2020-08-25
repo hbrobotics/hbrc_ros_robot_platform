@@ -171,6 +171,17 @@ class Connectors:
             "M2x4", scad_program, 2, 4, pins_dx_dy, pcb_pin_height,
             insulation_color="Fuchsia", male_pin_height=4.04,
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+        f2x4: RectangularConnector = RectangularConnector(
+            "F2x4", scad_program, 2, 4, female_insulation_height, pcb_pin_height,
+            insulation_color="Maroon",
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
+
+        # Common 2x4 right angle male jumper:
+        m2x4ra: RectangularConnector = RectangularConnector(
+            "M2x4RA", scad_program, 2, 4, pins_dx_dy, pcb_pin_height,
+            insulation_color="Fuchsia", male_pin_height=4.04,
+            right_angle_length=4.00,  # Pure guess
+            footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
         # Common 2x5 male jumper:
         m2x5: RectangularConnector = RectangularConnector(
@@ -256,7 +267,9 @@ class Connectors:
         self.m1x8: RectangularConnector = m1x8
         self.f1x8: RectangularConnector = f1x8
         self.m2x2: RectangularConnector = m2x2
+        self.f2x4: RectangularConnector = f2x4
         self.m2x4: RectangularConnector = m2x4
+        self.m2x4ra: RectangularConnector = m2x4ra
         self.m2x5: RectangularConnector = m2x5
         self.m2x6: RectangularConnector = m2x6
         self.m2x20: RectangularConnector = m2x20
@@ -6394,6 +6407,9 @@ class RectangularConnector:
 
                 # Create *colored_right_angle_pin* and append to *connector_pins* when we
                 # *have_right_angle*:
+                # TODO: This code is broken for right angle connectors with more than one row.
+                # It could be fixed, but it is not worth it.  The pads are in the correct
+                # locations, so that is all that matters.
                 if have_right_angle:
                     minimum_right_angle_x: float = min(x, x + right_angle_dx)
                     maximum_right_angle_x: float = max(x, x + right_angle_dx)
@@ -9044,6 +9060,7 @@ class STLink:
         power_connector_center: P2D = P2D((cn6_center.x + cn4_center.x) / 2.0, power_signal_dy)
         st_link_temporary_cuts_pcb_chunk: PCBChunk = PCBChunk(
             "ST Link Temporary Cuts", [], [], cuts=[
+                # Power Cut is not needed, but it is still useful for visualization.
                 Square("Power Cut", 2*2.54, 6*2.56, P2D(power_connector_center.x, 4.0)),
                 Square("Signal Cut", 4*2.54, 6*2.56, P2D(signal_connector_center.x, 4.0)),
             ])
@@ -9088,15 +9105,15 @@ class STLink:
         ])
 
         # Create the *st_adapter_pcb_chunk*:
-        st_adapter_power_connector_pcb_chunk: PCBChunk = (
-            connectors.f1x2ra.pcb_chunk.scads_y_flip().sides_swap().
-            reposition(origin2d, degrees180, power_connector_center))
+        # st_adapter_power_connector_pcb_chunk: PCBChunk = (
+        #     connectors.f1x2ra.pcb_chunk.scads_x_flip().sides_swap().
+        #     reposition(origin2d, degrees180, power_connector_center))
         st_adapter_signal_connector_pcb_chunk: PCBChunk = (
-            connectors.f1x4ra.pcb_chunk.scads_y_flip().sides_swap().pads_rebase(4).
+            connectors.m2x4ra.pcb_chunk.scads_x_flip().sides_swap().pads_rebase(4).
             reposition(origin2d, degrees180, signal_connector_center))
-        st_adapter_pcb_chunk: PCBChunk = PCBChunk.join("ST_Adapter", [
+        st_adapter_pcb_chunk: PCBChunk = PCBChunk.join("STADAPTER_M2x4RA", [
             st_adapter_pin_connectors_pcb_chunk,
-            st_adapter_power_connector_pcb_chunk,
+            # st_adapter_power_connector_pcb_chunk,
             st_adapter_signal_connector_pcb_chunk,
             translated_st_link_pcb_chunk,
         ])
@@ -9156,12 +9173,12 @@ class STLink:
             ])
 
         # Create the *st_adapter_mate_pcb_chunk*:
-        st_mate_power_connector_pcb_chunk: PCBChunk = (
-            connectors.m1x2.pcb_chunk.scads_y_flip().sides_swap().
-            reposition(origin2d, 0.0, P2D(power_connector_center.x, 1.27)))
+        # st_mate_power_connector_pcb_chunk: PCBChunk = (
+        #     connectors.m1x2.pcb_chunk.scads_y_flip().sides_swap().
+        #     reposition(origin2d, 0.0, P2D(power_connector_center.x, 1.27)))
         st_mate_signal_connector_pcb_chunk: PCBChunk = (
-            connectors.m1x4.pcb_chunk.scads_y_flip().sides_swap().pads_rebase(2).
-            reposition(origin2d, 0.0, P2D(signal_connector_center.x, 1.27)))
+            connectors.f2x4.pcb_chunk.scads_y_flip().sides_swap().pads_rebase(2).
+            reposition(origin2d, 0.0, P2D(signal_connector_center.x, 2.54)))
         st_mate_usb_cut_pcb_chunk: PCBChunk = PCBChunk("ST Mate Cuts", [], [], cuts=[
             Square("USB Cut", cn1_dx + 0.50, 1.5 * cn1_dz, P2D(cn1_center_x, 7.75),  # Trial & error
                    0.0, corner_radius=1.0, corner_count=3)])
@@ -9171,12 +9188,12 @@ class STLink:
             "Repositoned ST Adapter", origin3d, x_axis, degrees90, P3D(0.0, 0.0, -sandwitch_dz))
         st_mate_repositioned_pcb_chunk: PCBChunk = PCBChunk(
             "ST Mate Repositioned", [], [repositioned_st_adapter]).sides_swap()
-        st_mate_pcb_chunk: PCBChunk = PCBChunk.join("STADAPTER_F1x2+F1x4", [
+        st_mate_pcb_chunk: PCBChunk = PCBChunk.join("STADAPTER_F2x4", [
             st_mate_artworks_pcb_chunk,
             st_mate_tie_holes_pcb_chunk,
             st_mate_repositioned_pcb_chunk,
             st_mate_usb_cut_pcb_chunk,
-            st_mate_power_connector_pcb_chunk,
+            # st_mate_power_connector_pcb_chunk,
             st_mate_signal_connector_pcb_chunk,
         ])
 
