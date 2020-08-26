@@ -1,4 +1,4 @@
-(module HR2:U3V70xMATE_F1x4+F1x5 (layer F.Cu) (tedit 5F41A4B6) (tstamp 5F321BA9)
+(module HR2:U3V70xMATE_F1x4+F1x5 (layer F.Cu) (tedit 5F45D9ED) (tstamp 5F321BA9)
   (fp_text reference REF** (at 0 -2) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.2)))
   )

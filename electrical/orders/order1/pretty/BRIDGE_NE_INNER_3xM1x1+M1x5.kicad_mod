@@ -1,4 +1,4 @@
-(module HR2:BRIDGE_NE_INNER_3xM1x1+M1x5 (layer F.Cu) (tedit 5F42C4D5) (tstamp 5F42C4D5)
+(module HR2:BRIDGE_NE_INNER_3xM1x1+M1x5 (layer F.Cu) (tedit 5F45D9ED) (tstamp 5F42C4D5)
   (fp_text reference REF** (at 0 -2) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.2)))
   )

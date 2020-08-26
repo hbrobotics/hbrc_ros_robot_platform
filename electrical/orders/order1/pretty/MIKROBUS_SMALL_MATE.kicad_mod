@@ -1,4 +1,4 @@
-(module HR2:MIKROBUS_SMALL_MATE (layer F.Cu) (tedit 5F41A4B6) (tstamp 5F306B6D)
+(module HR2:MIKROBUS_SMALL_MATE (layer F.Cu) (tedit 5F45D9ED) (tstamp 5F306B6D)
   (fp_text reference REF** (at 0 -2) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.2)))
   )

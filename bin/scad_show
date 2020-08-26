@@ -213,17 +213,17 @@ case "$1" in
     "st_link_board")
 	scad "st_link_board"
 	;;
+    "stadapter_bare")
+	scad "stadapter_bare"
+	;;
+    "stadapter_board")
+	scad "stadapter_board"
+	;;
     "stadapter_f2x4_bare")
 	scad "stadapter_f2x4_bare"
 	;;
     "stadapter_f2x4_board")
 	scad "stadapter_f2x4_board"
-	;;
-    "stadapter_m2x4ra_bare")
-	scad "stadapter_m2x4ra_bare"
-	;;
-    "stadapter_m2x4ra_board")
-	scad "stadapter_m2x4ra_board"
 	;;
     "u3v70x_bare")
 	scad "u3v70x_bare"
@@ -304,10 +304,10 @@ case "$1" in
 	echo "sonar_vertical"
 	echo "st_link_bare"
 	echo "st_link_board"
+	echo "stadapter_bare"
+	echo "stadapter_board"
 	echo "stadapter_f2x4_bare"
 	echo "stadapter_f2x4_board"
-	echo "stadapter_m2x4ra_bare"
-	echo "stadapter_m2x4ra_board"
 	echo "u3v70x_bare"
 	echo "u3v70x_board"
 	echo "u3v70xmate_f1x4+f1x5_bare"
