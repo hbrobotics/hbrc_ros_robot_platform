@@ -1165,6 +1165,29 @@ class PCBChunk:
                 f"R:{len(references)} P:{parent_text} V:'{value}')")
         return ""
 
+    # PCBChunk.artworks_reposition():
+    def artworks_reposition(self, center: P2D, rotate: float, translate: P2D) -> "PCBChunk":
+        """Return a PCBChunk with repositioned artworks."""
+        # Replace *pcb_chunk* (i.e. *self*) with a copy of itself.
+        pcb_chunk: PCBChunk = self
+        pcb_chunk = pcb_chunk.copy()
+
+        # Reposition the *back_artworks*:
+        back_artworks: List[SimplePolygon] = pcb_chunk.back_artworks
+        back_artwork: SimplePolygon
+        back_artworks = [back_artwork.reposition(center, rotate, translate)
+                         for back_artwork in back_artworks]
+        pcb_chunk.back_artworks = back_artworks
+
+        # Reposition the *front_artworks*:
+        front_artwork: SimplePolygon
+        front_artworks: List[SimplePolygon] = pcb_chunk.front_artworks
+        front_artworks = [front_artwork.reposition(center, rotate, translate)
+                          for front_artwork in front_artworks]
+        pcb_chunk.front_artworks = front_artworks
+
+        return pcb_chunk
+
     # PCBChunk.artworks_x_mirror():
     def artworks_x_mirror(self) -> "PCBChunk":
         """Return a PCBChunk with pads mirrored around the X axis."""
@@ -6481,14 +6504,17 @@ class RectangularConnector:
                     # footprint_column_index: int = (columns - column_index - 1
                     #                                if swap_column_index else column_index)
                     #                                if swap_column_index else column_index)
-                    pin_number: int = (footprint_pin_number +
-                                       column_index + 1 + row_index * columns)
+                    # pin_number: int = (footprint_pin_number +
+                    #                    column_index + row_index * columns + 1)
+                    # pin_number: int = (footprint_pin_number +
+                    #                   (column_index * columns) + row_index + 13)
                     # if transpose_rows_columns:
                     #    assert False
                     #    pin_number = footprint_pin_number + (footprint_row_index * columns +
                     #                                         columns - footprint_column_index - 1)
                     # else:
-                    pin_number = 1 + column_index + row_index * columns
+                    # pin_number = 1 + column_index + row_index * columns
+                    pin_number = 1 + row_index + column_index * rows
                     pad: Pad = Pad(f"{pin_number}", footprint_pad_diameter, footprint_pad_diameter,
                                    footprint_drill_diameter, hole_center, tracing=next_tracing)
                     pads_group.insert(pad)
@@ -9071,6 +9097,13 @@ class STLink:
         colored_cn1_cube: Color = Color("Colored CN1 USB Connector", cn1_cube, "Silver")
         st_link_scads_pcb_chunk: PCBChunk = PCBChunk("ST Link USB Scad", [], [colored_cn1_cube])
 
+        # Compute all directory and file names needed to generate footprint and update PCB's:
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY is not a defined environment variable."
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        st_adapter_directory: Path = hr2_directory / "electrical" / "st_adapter" / "rev_a"
+        st_adapter_kicad_pcb: Path = st_adapter_directory / "st_adapter.kicad_pcb"
+        st_adapter_pretty_directory: Path = st_adapter_directory / "pretty"
+
         # Create the *st_link_pcb_chunk* and associated *st_link_module*:
         st_link_pcb_chunk: PCBChunk = PCBChunk.join("ST_Link", [
             st_link_pin_connectors_pcb_chunk,
@@ -9078,7 +9111,7 @@ class STLink:
             st_link_temporary_cuts_pcb_chunk,
         ])
         st_link_module: Module3D = st_link_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, 1.6, st_link_exterior, "Brown", None, [])
+            scad_program, pcb_origin, 1.6, st_link_exterior, "SteelBlue", None, [])
 
         # Now create an *translated_st_link_pcb_chunk* which is the *st_link_module* offset
         # to fit nicely with the upcoming *st_adapter_pcb_chunk*:
@@ -9087,46 +9120,43 @@ class STLink:
         translated_st_link_pcb_chunk: PCBChunk = PCBChunk(
             "Translated ST Link", [], [xtranslated_st_link])
 
+        # Now that the ST-link board is done, it is time to work on the ST Adapter board:
+
         # Now create the *st_adapter_pin_connectors_pcb_chunk* need for the upcoming
         # *st_adapter_pcb_chunk*.  The pin are rebased using CNn=>(n x 10) and JPn=>(n * 100)
-        st_adapter_pin_connectors_pcb_chunk: PCBChunk = PCBChunk.join("ST Adapter PinConnectors", [
-            (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
-             reposition(origin2d, -degrees90, cn2_center).pads_rebase(20)),   # CN2
-            (connectors.f1x6.pcb_chunk.scads_y_flip().sides_swap().
-             reposition(origin2d, -degrees90, cn6_center).pads_rebase(60)),   # CN6
-            (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
-             reposition(origin2d, -degrees90, jp2_center).pads_rebase(200)),  # JP2
-            (connectors.f1x4.pcb_chunk.scads_y_flip().sides_swap().
-             reposition(origin2d, -degrees90, cn4_center).pads_rebase(40)),   # CN4
-            (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
-             reposition(origin2d, -degrees90, cn5_center).pads_rebase(50)),   # CN5
-            (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
-             reposition(origin2d, 0.0, jp1_center).pads_rebase(100)),         # JP1
-        ])
+        st_adapter_pin_connectors_pcb_chunk: PCBChunk = PCBChunk.join(
+            "STADAPTER_4xF1x2+F1x4+F1x6",
+            [
+                (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
+                 reposition(origin2d, -degrees90, cn2_center).pads_rebase(20)),   # CN2 (pin 1 up)
+                (connectors.f1x6.pcb_chunk.scads_y_flip().sides_swap().
+                 reposition(origin2d, -degrees90, cn6_center).pads_rebase(60)),   # CN6 (pin 1 up)
+                (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
+                 reposition(origin2d, degrees90, jp2_center).pads_rebase(200)),   # JP2 (pin 1 down)
+                (connectors.f1x4.pcb_chunk.scads_y_flip().sides_swap().
+                 reposition(origin2d, -degrees90, cn4_center).pads_rebase(40)),   # CN4 (pin 1 up)
+                (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
+                 reposition(origin2d, degrees90, cn5_center).pads_rebase(50)),    # CN5 (pin 1 down)
+                (connectors.f1x2.pcb_chunk.scads_y_flip().sides_swap().
+                 reposition(origin2d, 0.0, jp1_center).pads_rebase(100)),         # JP1 (pin 1 left)
+            ]
+        ).reference("CN1", False, 0.0, origin2d, "STADAPTER_4xF1x2+F1x4+F1x6")
+        st_adapter_pin_connectors_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory)
 
-        # Create the *st_adapter_pcb_chunk*:
-        # st_adapter_power_connector_pcb_chunk: PCBChunk = (
-        #     connectors.f1x2ra.pcb_chunk.scads_x_flip().sides_swap().
-        #     reposition(origin2d, degrees180, power_connector_center))
-        st_adapter_signal_connector_pcb_chunk: PCBChunk = (
-            connectors.m2x4ra.pcb_chunk.scads_x_flip().sides_swap().pads_rebase(4).
-            reposition(origin2d, degrees180, signal_connector_center))
-        st_adapter_pcb_chunk: PCBChunk = PCBChunk.join("STADAPTER_M2x4RA", [
+        # Create the *st_adapter_connector_pcb_chunk* which is the M2x4RA connector:
+        st_adapter_connector_pcb_chunk: PCBChunk = PCBChunk.join("STADAPTER_M2x4RA", [
+            connectors.m2x4ra.pcb_chunk.scads_x_flip().sides_swap().
+            artworks_reposition(origin2d, 0.0, P2D(0.0, -0.5 * 2.54)).  # Fix misplaced 2x4 artwork
+            reposition(origin2d, degrees180, signal_connector_center),
+        ]).reference("CN2", False, 0.0, origin2d, "STADAPTER_M2x4RA")
+        st_adapter_connector_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory)
+
+        # The *st_adapter_pcb_chunk* ...
+        st_adapter_pcb_chunk: PCBChunk = PCBChunk.join("STADAPTER", [
             st_adapter_pin_connectors_pcb_chunk,
-            # st_adapter_power_connector_pcb_chunk,
-            st_adapter_signal_connector_pcb_chunk,
+            st_adapter_connector_pcb_chunk,
             translated_st_link_pcb_chunk,
         ])
-
-        # Compute all directory and file names needed to generate footprint and update PCB's:
-        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY is not a defined environment variable."
-        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
-        st_adapter_directory: Path = hr2_directory / "electrical" / "st_adapter" / "rev_a"
-        st_adapter_kicad_pcb: Path = st_adapter_directory / "st_adapter.kicad_pcb"
-        st_adapter_pretty_directory: Path = st_adapter_directory / "pretty"
-
-        # Generate the footprint for *st_adapter_pcb_chunk*:
-        st_adapter_pcb_chunk.footprint_generate("HR2", st_adapter_pretty_directory)
 
         # Create *st_adapter_module* and update *st_adapter_kicad_pcb*:
         adapter_pcb_dy: float = pcb_dy

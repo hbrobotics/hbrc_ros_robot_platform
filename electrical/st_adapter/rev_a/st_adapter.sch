@@ -164,15 +164,35 @@ F 4 "ST Adapter Connector,ST Adapter Connector" H 2900 3150 60  0001 L CNN "manf
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4500 2350 4400 2350
+	4500 2350 4200 2350
 Wire Wire Line
-	4400 2350 4400 2450
+	4200 2350 4200 2450
 Wire Wire Line
-	4400 2450 4500 2450
+	4200 2450 4500 2450
 Wire Wire Line
-	4500 2550 4400 2550
+	4500 2550 4200 2550
 Wire Wire Line
-	4400 2550 4400 2650
+	4200 2550 4200 2650
 Wire Wire Line
-	4400 2650 4500 2650
+	4200 2650 4500 2650
+Text Label 3500 3900 0    50   ~ 0
+TX
+Text Label 3500 3800 0    50   ~ 0
+RX
+Text Label 3500 3700 0    50   ~ 0
+SWO
+Text Label 3500 3600 0    50   ~ 0
+NRST
+Text Label 3500 3500 0    50   ~ 0
+SWDIO
+Text Label 3500 3400 0    50   ~ 0
+GND
+Text Label 3500 3300 0    50   ~ 0
+SWCLK
+Text Label 3500 3200 0    50   ~ 0
+3V3
+Text Label 4250 2450 0    50   ~ 0
+SWDIOX
+Text Label 4250 2650 0    50   ~ 0
+SWCLKX
 $EndSCHEMATC
