@@ -118,7 +118,7 @@ F 4 "NW Outer Bridge Connectors" H 1500 2600 60  0001 L CNN "Field5"
 	2    1300 2850
 	1    0    0    -1  
 $EndComp
-Text Label 2050 3750 0    50   ~ 0
+Text Label 2100 3750 0    50   ~ 0
 GND
 $Comp
 L Transistor_FET:2N7000 Q4
@@ -359,8 +359,6 @@ Wire Wire Line
 	6800 5050 6800 4950
 Connection ~ 5900 5050
 Wire Wire Line
-	4000 3800 6300 3800
-Wire Wire Line
 	6300 3800 6300 4400
 Wire Wire Line
 	6300 4400 6500 4400
@@ -369,25 +367,21 @@ Wire Wire Line
 Wire Wire Line
 	2500 5050 5000 5050
 Connection ~ 5000 5050
-Text Label 2050 4300 0    50   ~ 0
+Text Label 2100 2850 0    50   ~ 0
 LED5
 Wire Wire Line
 	5350 4100 5350 4400
-Wire Wire Line
-	4000 4100 5350 4100
-Text Label 2050 4400 0    50   ~ 0
+Text Label 2100 2950 0    50   ~ 0
 LED4
 Text Label 2100 3050 0    50   ~ 0
 LED6
-Text Label 2050 3550 0    50   ~ 0
+Text Label 2100 3350 0    50   ~ 0
 TRIG
-Text Label 2050 3450 0    50   ~ 0
+Text Label 2100 3150 0    50   ~ 0
 5V
-Text Label 2050 3650 0    50   ~ 0
+Text Label 2100 3550 0    50   ~ 0
 ECHO
 NoConn ~ 6300 6300
-Wire Wire Line
-	2000 3750 2500 3750
 Wire Wire Line
 	2500 3750 2500 5050
 $Comp
@@ -404,35 +398,57 @@ F 5 "HC-SR04 Sonar (High Profile Receptacle)" H 3500 3200 60  0001 L CNN "Field5
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	2000 3450 2600 3450
-Wire Wire Line
-	2000 3550 2600 3550
-Wire Wire Line
-	2000 3650 2600 3650
-Wire Wire Line
 	2600 3750 2500 3750
+Connection ~ 4500 2600
+Text Label 2100 4400 0    50   ~ 0
+9V
+Wire Wire Line
+	2000 4400 3300 4400
+Wire Wire Line
+	3300 4400 3300 2600
+Wire Wire Line
+	3300 2600 4500 2600
+Wire Wire Line
+	2000 3750 2500 3750
 Connection ~ 2500 3750
 Wire Wire Line
-	2000 4400 4700 4400
+	2000 3550 2300 3550
 Wire Wire Line
-	2000 4300 4000 4300
+	2300 3550 2300 3650
 Wire Wire Line
-	4000 4300 4000 4100
+	2300 3650 2600 3650
 Wire Wire Line
-	2000 2950 4000 2950
+	2000 3350 2400 3350
 Wire Wire Line
-	4000 2950 4000 2600
+	2400 3350 2400 3550
 Wire Wire Line
-	4000 2600 4500 2600
-Connection ~ 4500 2600
-Text Label 2100 2950 0    50   ~ 0
-9V
-NoConn ~ 2000 3150
+	2400 3550 2600 3550
+Wire Wire Line
+	2600 3450 2500 3450
+Wire Wire Line
+	2500 3450 2500 3150
+Wire Wire Line
+	2500 3150 2000 3150
+Wire Wire Line
+	2000 2950 3600 2950
+Wire Wire Line
+	3600 2950 3600 4400
+Wire Wire Line
+	3600 4400 4700 4400
+Wire Wire Line
+	2000 2850 3700 2850
+Wire Wire Line
+	3700 2850 3700 4100
+Wire Wire Line
+	3700 4100 5350 4100
+Wire Wire Line
+	2000 3050 3800 3050
+Wire Wire Line
+	3800 3050 3800 3800
+Wire Wire Line
+	3800 3800 6300 3800
 NoConn ~ 2000 3250
-NoConn ~ 2000 3350
-NoConn ~ 2000 2850
-Wire Wire Line
-	2000 3050 4000 3050
-Wire Wire Line
-	4000 3050 4000 3800
+NoConn ~ 2000 3450
+NoConn ~ 2000 3650
+NoConn ~ 2000 4300
 $EndSCHEMATC
