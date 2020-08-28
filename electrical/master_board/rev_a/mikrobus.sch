@@ -1,0 +1,76 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A 11000 8500
+encoding utf-8
+Sheet 6 8
+Title "HR: Mikrobus"
+Date "2020-08-27"
+Rev "A"
+Comp "Home Brew Robotics Club"
+Comment1 "Copyright © 2020 by Home Brew Robotics Club"
+Comment2 "MIT License"
+Comment3 ""
+Comment4 ""
+$EndDescr
+NoConn ~ 5450 3200
+NoConn ~ 5450 3300
+NoConn ~ 5450 3400
+NoConn ~ 5450 3500
+NoConn ~ 5450 3600
+NoConn ~ 5450 3700
+NoConn ~ 5450 3800
+NoConn ~ 5450 4000
+NoConn ~ 5450 3900
+NoConn ~ 5450 4100
+NoConn ~ 6450 3200
+NoConn ~ 6450 3300
+NoConn ~ 6450 3400
+NoConn ~ 6450 3500
+NoConn ~ 6450 3600
+NoConn ~ 6450 3700
+NoConn ~ 6450 3800
+NoConn ~ 6450 3900
+NoConn ~ 6450 4000
+NoConn ~ 6450 4100
+NoConn ~ 6450 4200
+NoConn ~ 6450 4300
+NoConn ~ 6450 4400
+NoConn ~ 6450 4500
+NoConn ~ 6450 4600
+NoConn ~ 6450 4700
+NoConn ~ 5450 4200
+NoConn ~ 5450 4300
+NoConn ~ 5450 4400
+NoConn ~ 5450 4500
+NoConn ~ 5450 4600
+NoConn ~ 5450 4700
+$Comp
+L HR2:MIKROBUS_MATE;SMALL CN?
+U 1 1 5F4CFB97
+P 4650 3200
+AR Path="/5F4CFB97" Ref="CN?"  Part="1" 
+AR Path="/5F4CEE66/5F4CFB97" Ref="CN40"  Part="1" 
+F 0 "CN40" H 4950 3350 50  0000 C CNN
+F 1 "MIKROBUS_MATE;SMALL" H 5050 1550 50  0000 C CNN
+F 2 "HR2:MIKROBUS_SMALL_MATE" H 4850 3250 60  0001 L CNN
+F 3 "MikroBus Small Mate" H 4850 3050 60  0001 L CNN
+F 4 "MikroBus Small Mate" H 4850 2950 60  0001 L CNN "Field5"
+	1    4650 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:MIKROBUS_MATE;MEDIUM CN?
+U 1 1 5F4CFB9E
+P 5650 3200
+AR Path="/5F4CFB9E" Ref="CN?"  Part="1" 
+AR Path="/5F4CEE66/5F4CFB9E" Ref="CN41"  Part="1" 
+F 0 "CN41" H 5950 3350 50  0000 C CNN
+F 1 "MIKROBUS_MATE;MEDIUM" H 6100 1550 50  0000 C CNN
+F 2 "HR2:MIKROBUS_MEDIUM_MATE" H 5850 3250 60  0001 L CNN
+F 3 "MikroBus Mate Medium" H 5850 3050 60  0001 L CNN
+F 4 "MikroBus Mate Medium" H 5850 2950 60  0001 L CNN "Field5"
+	1    5650 3200
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC

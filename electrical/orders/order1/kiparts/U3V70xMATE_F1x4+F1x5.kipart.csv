@@ -4,7 +4,7 @@ Pin,Name,Type,Side,Unit,Style,Hidden
 2,GND,pwr_in,right,1,,
 3,GND,pwr_in,right,1,,
 4,VIN,pwr_in,right,1,,
-5,VIN,pwr_in,right,1,,
+5,VIN,pwr_out,right,1,,
 6,GND,pwr_in,right,1,,
 7,GND,pwr_in,right,1,,
 8,VOUT,pwr_out,right,1,,
