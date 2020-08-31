@@ -1,7 +1,0 @@
-AH1806;SC59,Q,HR2:SC59,https://www.diodes.com/assets/Datasheets/AH1806.pdf,AH1806,AH1806 Omnipolar Hall Effect Switch
-"Pin", "Name",   "Type",     "Side",  "Unit", "Style", "Hidden"
-"1",   "VDD",    "power_in", "right", "1",    ,
-"2",   "GND",    "power_in", "right", "1",    ,
-"3",   "OUTPUT", "out",      "right", "1",    ,
-,,,,,,
-

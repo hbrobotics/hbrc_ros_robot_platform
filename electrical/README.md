@@ -139,4 +139,12 @@ USB_Micro-B_Amphenol_10103594-0001LF_Horizontal
 4: ID
 5: GND
 
+H-Bridges
+
+MTS62C19A: Pretty complicated, current sense resistor.  $1.09
+TC78H651xxx: 7V max $1.25
+LV8549MC: 1 Amp total output. $1.29
+
+TI: DRV8870DDAR dumb dual H-bridge, NFET's; no thermal; $1.92
+
 -->

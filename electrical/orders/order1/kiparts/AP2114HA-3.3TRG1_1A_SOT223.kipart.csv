@@ -1,0 +1,7 @@
+"AP2114HA-3.3TRG1_1A;SOT223","VR", "Package_TO_SOT_SMD:SOT_223-3_TabPin2", "", "1A 3.3V LDO Voltage Linear Regulator", "1A 3.3V LDO Voltage Linear Regulator"
+"Pin", "Unit", "Type",      "Name", "Style", "Side"
+"1",   "A",    "power_in",  "VIN",  "line",  "left"
+"2",   "A",    "power_in",  "GND",  "line",  "bottom"
+"3",   "A",    "power_out", "VOUT", "line",  "right"
+,,,,,,
+
