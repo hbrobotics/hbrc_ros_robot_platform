@@ -1,8 +1,8 @@
 STADAPTER;F2x4,CN,HR2:STADAPTER_F2x4,ST Adapter Mating Connector,ST Adapter Mating Connector
 "Pin", "Name",  "Type",      "Side",  "Unit", "Style", "Hidden"
-"1",   "3V3",   "power_out", "right", "1",    ,
+"1",   "3V3",   "power_in", "right", "1",    ,
 "2",   "SWCLK", "out",       "right", "1",    ,
-"3",   "GND",   "power_out", "right", "1",    ,
+"3",   "GND",   "power_in", "right", "1",    ,
 "4",   "SWDIO", "passive",   "right", "1",    ,
 "5",   "NRST",  "passive",   "right", "1",    ,
 "6",   "SWO",   "passive",   "right", "1",    ,

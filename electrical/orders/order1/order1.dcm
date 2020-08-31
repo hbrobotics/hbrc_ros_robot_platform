@@ -24,6 +24,12 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
+$CMP AP2114HA-3.3TRG1_1A;SOT223
+D 1A 3.3V LDO Voltage Linear Regulator
+K ~
+F 
+$ENDCMP
+#
 $CMP BRIDGE_SE_OUTER;M1x8
 D SE Outer Bridge Connector
 K ~
@@ -66,6 +72,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP DRV8833PWPR;16HTSSOP
+D DualH-Bridge Motor Drive
+K ~
+F 
+$ENDCMP
+#
 $CMP U3V70xMATE;F1x4+F1x5
 D 
 K ~
@@ -84,12 +96,6 @@ K ~
 F 
 $ENDCMP
 #
-$CMP AH1806;SC59
-D AH1806 Omnipolar Hall Effect Switch
-K ~
-F https://www.diodes.com/assets/Datasheets/AH1806.pdf
-$ENDCMP
-#
 $CMP ENCODER;2xF1x3
 D HR2 Encoder Connector
 K ~
@@ -102,22 +108,10 @@ K ~
 F M3 Mounting Hole
 $ENDCMP
 #
-$CMP STLINK;4xF1x2+F1x4+F1x6
-D 
-K ~
-F ST Adapter Mating Connector
-$ENDCMP
-#
 $CMP STADAPTER;M2x4RA
 D 
 K ~
 F ST Adapter Connector
-$ENDCMP
-#
-$CMP STADAPTER;M2x4RA
-D 
-K ~
-F ST Adapter Mating Connector
 $ENDCMP
 #
 $CMP GROVE;20x20R

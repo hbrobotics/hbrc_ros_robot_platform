@@ -123,4 +123,28 @@ The design rules for schematic capture are:
 * Resistors use the older "3 hump" style.
 
 <!--
+
+[Raspian Shutdown Button](https://www.quartoknows.com/page/raspberry-pi-shutdown-button#:~:text=Press%20the%20shutdown%20button.,stopped%2C%20aborting%20the%20shutdown%20procedure.)
+
+USB2 Micro connector Pinouts:
+
+USB_Micro-B_Amphenol_10103594-0001LF_Horizontal
+
+  USB_MICRO_B;S+T:FCI_10118194_0001LF;CONN USB MICRO B RECPT SMT R/A 1:[bus_loki: N23]
+    Newark element14:67T2260 [Amphenol: 10118194-0001LF] 1/$0.403 10/$0.388 
+
+1: VBUS +
+2: D-
+3: D+
+4: ID
+5: GND
+
+H-Bridges
+
+MTS62C19A: Pretty complicated, current sense resistor.  $1.09
+TC78H651xxx: 7V max $1.25
+LV8549MC: 1 Amp total output. $1.29
+
+TI: DRV8870DDAR dumb dual H-bridge, NFET's; no thermal; $1.92
+
 -->
