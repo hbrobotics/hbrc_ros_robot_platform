@@ -1,0 +1,13 @@
+"MCP7940;SOIC8", "U", "IPC7351:SOIC127P600X175-8AN", "https://ww1.microchip.com/downloads/en/DeviceDoc/20005010H.pdf", "I2C Real-time Clock", "I2C Real Time Clock"
+"Pin", "Unit", "Type",           "Name", "Style", "Side"
+"1",   "A",    "passive",        "X1",   "line",  "right"
+"2",   "A",    "passive",        "X2",   "line",  "right"
+"3",   "A",    "passive",        "VBAT", "line",  "right"
+"4",   "A",    "power_in",       "GND",  "line",  "right"
+"5",   "A",    "bidirectional",  "SDA",  "line",  "right"
+"6",   "A",    "input",          "SCL",  "line",  "right"
+"7",   "A",    "open_collector", "MFP",  "line",  "right"
+"8",   "A",    "power_in",       "VCC",  "line",  "right"
+,,,,,,
+
+

@@ -147,4 +147,56 @@ LV8549MC: 1 Amp total output. $1.29
 
 TI: DRV8870DDAR dumb dual H-bridge, NFET's; no thermal; $1.92
 
+Grove:
+
+All:
+  pin3=VCC
+  pin4=GND
+Digital:
+  pin1=Dn (bi_directional)
+  pin2=Dn+2 (bi_directional)
+Analog:
+  pin1=An (Analog)
+  pin2=Dn+2 (Analog)
+UART:
+  pin1=RX
+  pin2=TX
+I2C:
+  pin1=SCL
+  pin2=SDA
+
+Part Number	Pin 1	Pin 2	Size	Part		Title
+101020000	RX	TX	N/S			Serial	Grove - Serial Camera Kit  Serial
+101020001	A0	NC	1x1	WSP2110		HCHO Sensor
+101020002	A0	NC	1x2			GROVE GAS SENSOR(O2)
+101020003	D0	NC	1x1			GROVE BUTTON (pull down resistor)
+101020004	D0	NC	1x1			GROVE SWITCH
+101020005	D0	NC	1x1	MVS0608.02	Collision
+101020006	A0	NC	1x2	MQ-3		Gas Sensor (alchool)
+101020008	A0	NC	1x3~			Moisture Sensor
+101020009						Line Finder (obsolete)
+101020010	A0	NC	1~x2~			Ultrasonic Ranger
+101020011	A0	NC	1x2	DHT11		Temp/Humidity Sensor
+101020012	A0	NC	--			Dust Sensor
+101020013	SCL	SDA	--	DS1307		Real Time Clock
+101020014				GL5528, LM358	Grove Light Sensor (Digi-Key discontinued)
+101020015	A0	NC	1x1	LM358, NCP18WF104	Temperature Sensor
+101020016	NC	SIG	1x1	TSOP382		Infrared Receiver
+101020017	A0	NC	1x1			Rotory Angle Sensor (potentiometer)
+101020018	A0	NC	1x1			Water Sensor
+101020019	A0	NC	1x2	AM2302		Humidity Sensor
+101020020	D0	NC	1x2			PIR Motion Sensor
+101020021						Air Quality Sensor  (obsolete)
+101020022						Light Sensor  (obsolete)
+101020023	A0	NC	1x1	LM386		Sound Sensor
+-
+101020025	D0	NC	1x1	LM386		Tilt Switch
+
+
+
+
+101020017	A0	NC	1x1			Rotary Angle Sensor (10K Pot)
+101020025	Dn	NC	1x1			Tilt Switch (digital)
+101020028	A0	A1	1x2			Thumb Joystick (2 20K Pot's)
+
 -->
