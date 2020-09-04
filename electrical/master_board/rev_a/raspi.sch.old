@@ -1,0 +1,419 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A 11000 8500
+encoding utf-8
+Sheet 3 8
+Title "HR2 Raspberry Pi"
+Date "2020-08-27"
+Rev "A"
+Comp "Home Brew Robotics Club"
+Comment1 "Copyright (c) 2020 by Home Brew Robotics Club"
+Comment2 "MIT License"
+Comment3 ""
+Comment4 ""
+$EndDescr
+NoConn ~ 4900 1800
+NoConn ~ 4900 2000
+NoConn ~ 4900 2200
+NoConn ~ 4900 2400
+NoConn ~ 4900 2800
+NoConn ~ 4900 2900
+NoConn ~ 4900 3000
+NoConn ~ 4900 3200
+NoConn ~ 4900 3300
+NoConn ~ 4900 3400
+NoConn ~ 4900 3500
+NoConn ~ 4900 3600
+NoConn ~ 4900 3800
+NoConn ~ 4900 3900
+NoConn ~ 4900 4000
+NoConn ~ 4900 4100
+NoConn ~ 4900 4600
+NoConn ~ 4900 4800
+NoConn ~ 4900 4900
+NoConn ~ 4900 5700
+NoConn ~ 4900 5500
+NoConn ~ 4900 5400
+NoConn ~ 4900 5300
+NoConn ~ 4900 5200
+NoConn ~ 4900 5000
+$Comp
+L HR2:RASPI;F2X20 CN57
+U 1 1 5F488CF3
+P 4000 1800
+F 0 "CN57" H 4450 1950 50  0000 C CNN
+F 1 "RASPI;F2X20" H 4450 -2250 50  0000 C CNN
+F 2 "HR2:RASPI_F2X20" H 4200 1850 60  0001 L CNN
+F 3 "Raspberry Pi F2x20 Connector (Row Swappped)" H 4200 1650 60  0001 L CNN
+	1    4000 1800
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Battery_Cell BT1
+U 1 1 5F4E022E
+P 6500 3300
+F 0 "BT1" H 6300 3450 50  0000 L CNN
+F 1 "3V_LITH_BAT;KEYSTONE1669_CR1632" H 5100 3250 50  0000 L CNN
+F 2 "" V 6500 3360 50  0001 C CNN
+F 3 "~" V 6500 3360 50  0001 C CNN
+	1    6500 3300
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:MCP7940;SOIC8 U2
+U 1 1 5F4F53A9
+P 8700 2700
+F 0 "U2" H 9150 1850 50  0000 C CNN
+F 1 "MCP7940;SOIC8" H 9050 2850 50  0000 C CNN
+F 2 "IPC7351:SOIC127P600X175-8AN" H 8900 2750 60  0001 L CNN
+F 3 "I2C Real-time Clock" H 8900 2550 60  0001 L CNN
+F 4 "I2C Real Time Clock" H 8900 2450 60  0001 L CNN "Field5"
+	1    8700 2700
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:Crystal X1
+U 1 1 5F4F5A10
+P 7650 3000
+F 0 "X1" H 7650 3150 50  0000 C CNN
+F 1 "32.768kHZ;3.2x1.5MM" H 7650 2850 50  0000 C CNN
+F 2 "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm_HandSoldering" H 7650 3000 50  0001 C CNN
+F 3 "~" H 7650 3000 50  0001 C CNN
+	1    7650 3000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C9
+U 1 1 5F5097A4
+P 8300 3250
+F 0 "C9" H 8150 3350 50  0000 L CNN
+F 1 "16pF;1608" H 8415 3205 50  0000 L CNN
+F 2 "" H 8338 3100 50  0001 C CNN
+F 3 "~" H 8300 3250 50  0001 C CNN
+	1    8300 3250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C8
+U 1 1 5F509B6B
+P 7000 3250
+F 0 "C8" H 6850 3350 50  0000 L CNN
+F 1 "16pF;1608" H 7115 3205 50  0000 L CNN
+F 2 "" H 7038 3100 50  0001 C CNN
+F 3 "~" H 7000 3250 50  0001 C CNN
+	1    7000 3250
+	1    0    0    -1  
+$EndComp
+Text Notes 7250 1200 0    50   ~ 0
+Crystal capacitors computation:\n1. Cload = (C1 * C2) / (C1 + C2), where:\n    Cload = crystal load capacitence (i.e. 7-9pF)  assume 8pF\n    C1 and C2 are two capactors connected to ground, one to each crystal side.\n2. Assume C1 = C2 and call it C.\n3. Cload = (C1 * C2) / (C1 + C2)  = (C * C) / (C + C)  = C^2/ 2C = C / 2.\n4. C = 2 * Cload  = 2 * 8pF = 16pF.
+Wire Wire Line
+	7800 3000 7900 3000
+Wire Wire Line
+	8300 3000 8300 3100
+Wire Wire Line
+	7500 3000 7400 3000
+Wire Wire Line
+	7000 3000 7000 3100
+Wire Wire Line
+	7000 3400 7000 3500
+Wire Wire Line
+	7000 3500 8300 3500
+Wire Wire Line
+	8300 3500 8300 3400
+Wire Wire Line
+	8000 2700 7900 2700
+Wire Wire Line
+	7900 2700 7900 3000
+Connection ~ 7900 3000
+Wire Wire Line
+	7900 3000 8300 3000
+Wire Wire Line
+	7400 3000 7400 2600
+Wire Wire Line
+	7400 2600 8000 2600
+Connection ~ 7400 3000
+Wire Wire Line
+	7400 3000 7000 3000
+Wire Wire Line
+	8000 2500 6500 2500
+Wire Wire Line
+	6500 2500 6500 3100
+Wire Wire Line
+	7000 3500 6750 3500
+Wire Wire Line
+	6500 3500 6500 3400
+Connection ~ 7000 3500
+Wire Wire Line
+	6750 3500 6750 2400
+Wire Wire Line
+	6750 2400 8000 2400
+Connection ~ 6750 3500
+Wire Wire Line
+	6750 3500 6500 3500
+$Comp
+L Device:R_US R15
+U 1 1 5F510131
+P 6700 1750
+F 0 "R15" H 6550 1850 50  0000 L CNN
+F 1 "3.9KΩ;1608" H 6750 1650 50  0000 L CNN
+F 2 "" V 6740 1740 50  0001 C CNN
+F 3 "~" H 6700 1750 50  0001 C CNN
+	1    6700 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R17
+U 1 1 5F510F46
+P 7300 1750
+F 0 "R17" H 7150 1850 50  0000 L CNN
+F 1 "3.9KΩ;1608" H 7350 1650 50  0000 L CNN
+F 2 "" V 7340 1740 50  0001 C CNN
+F 3 "~" H 7300 1750 50  0001 C CNN
+	1    7300 1750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8000 2000 7900 2000
+Wire Wire Line
+	7900 2000 7900 1500
+Wire Wire Line
+	7900 1500 7300 1500
+Wire Wire Line
+	7300 1500 7300 1600
+Wire Wire Line
+	8000 2200 7300 2200
+Wire Wire Line
+	7300 2200 7300 1900
+Wire Wire Line
+	8000 2300 6700 2300
+Wire Wire Line
+	6700 2300 6700 1900
+Wire Wire Line
+	7300 1500 6700 1500
+Wire Wire Line
+	6700 1500 6700 1600
+Connection ~ 7300 1500
+NoConn ~ 8000 2100
+$Comp
+L HR2:CAT24C32;SOIC8 U3
+U 1 1 5F50901B
+P 9100 5800
+F 0 "U3" H 9600 4950 50  0000 R CNN
+F 1 "CAT24C32;SOIC8" H 9750 5950 50  0000 R CNN
+F 2 "IPC7351:SOIC127P600X175-8AN" H 9300 5850 60  0001 L CNN
+F 3 "https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF" H 9300 5650 60  0001 L CNN
+F 4 "https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF" H 9300 5750 60  0001 L CNN "manf#"
+F 5 "32Kb I2C EEPROM" H 9300 5550 60  0001 L CNN "Field5"
+	1    9100 5800
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R_US R16
+U 1 1 5F50DB19
+P 7100 4850
+F 0 "R16" H 6950 4950 50  0000 L CNN
+F 1 "4.7KΩ;1608" H 7150 4750 50  0000 L CNN
+F 2 "" V 7140 4840 50  0001 C CNN
+F 3 "~" H 7100 4850 50  0001 C CNN
+	1    7100 4850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R18
+U 1 1 5F50E10E
+P 7700 4850
+F 0 "R18" H 7550 4950 50  0000 L CNN
+F 1 "100KΩ;1608" H 7750 4750 50  0000 L CNN
+F 2 "" V 7740 4840 50  0001 C CNN
+F 3 "~" H 7700 4850 50  0001 C CNN
+	1    7700 4850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8400 5100 8300 5100
+Wire Wire Line
+	8300 5100 8300 4600
+Wire Wire Line
+	8300 4600 7700 4600
+Wire Wire Line
+	7100 4600 7100 4700
+Wire Wire Line
+	7700 4700 7700 4600
+Connection ~ 7700 4600
+Wire Wire Line
+	7700 4600 7100 4600
+$Comp
+L Device:R_US R14
+U 1 1 5F50FCF9
+P 6500 4850
+F 0 "R14" H 6350 4950 50  0000 L CNN
+F 1 "4.7KΩ;1608" H 6550 4750 50  0000 L CNN
+F 2 "" V 6540 4840 50  0001 C CNN
+F 3 "~" H 6500 4850 50  0001 C CNN
+	1    6500 4850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6500 4700 6500 4600
+Wire Wire Line
+	6500 4600 7100 4600
+Connection ~ 7100 4600
+Wire Wire Line
+	8400 5200 7700 5200
+Wire Wire Line
+	7700 5200 7700 5000
+Wire Wire Line
+	8400 5300 7100 5300
+Wire Wire Line
+	7100 5300 7100 5000
+Wire Wire Line
+	8400 5400 6500 5400
+Wire Wire Line
+	6500 5400 6500 5000
+Wire Wire Line
+	8400 5500 8300 5500
+Wire Wire Line
+	8300 5500 8300 5600
+Wire Wire Line
+	8300 5800 8400 5800
+Wire Wire Line
+	8400 5700 8300 5700
+Connection ~ 8300 5700
+Wire Wire Line
+	8300 5700 8300 5800
+Wire Wire Line
+	8400 5600 8300 5600
+Connection ~ 8300 5600
+Wire Wire Line
+	8300 5600 8300 5700
+Text Notes 7450 6200 0    50   ~ 0
+Note: As per Raspberry PI I2C specification, the EEPROM\n            address is 0x50 (i.e. A0=A1=A2=0=Ground.)
+Wire Wire Line
+	4900 4400 6000 4400
+Wire Wire Line
+	6000 4400 6000 5400
+Connection ~ 6500 5400
+Wire Wire Line
+	7100 5300 6100 5300
+Wire Wire Line
+	6100 5300 6100 4500
+Wire Wire Line
+	6100 4500 4900 4500
+Connection ~ 7100 5300
+Wire Wire Line
+	4900 2300 5000 2300
+Wire Wire Line
+	5000 2300 5000 2600
+Wire Wire Line
+	5000 5600 4900 5600
+Wire Wire Line
+	4900 5100 5000 5100
+Connection ~ 5000 5100
+Wire Wire Line
+	5000 5100 5000 5600
+Wire Wire Line
+	4900 4700 5000 4700
+Connection ~ 5000 4700
+Wire Wire Line
+	5000 4700 5000 5100
+Wire Wire Line
+	4900 1900 5000 1900
+Wire Wire Line
+	5000 1900 5000 2100
+Wire Wire Line
+	5000 2100 4900 2100
+Wire Wire Line
+	8300 5600 5000 5600
+Connection ~ 5000 5600
+Wire Wire Line
+	6500 3500 5000 3500
+Connection ~ 6500 3500
+Connection ~ 5000 3500
+Wire Wire Line
+	5000 3500 5000 4200
+Text HLabel 5500 2500 2    50   Output ~ 0
+SBC_TX
+Wire Wire Line
+	4900 2500 5500 2500
+Text Label 5100 2500 0    50   ~ 0
+SBC_TX
+Text HLabel 5500 2700 2    50   Output ~ 0
+SBC_RX
+Wire Wire Line
+	4900 2700 5500 2700
+Text Label 5100 2700 0    50   ~ 0
+SBC_RX
+Wire Wire Line
+	4900 2600 5000 2600
+Connection ~ 5000 2600
+Wire Wire Line
+	5000 2600 5000 3100
+Text HLabel 5500 1900 2    50   Input ~ 0
+5V
+Wire Wire Line
+	5000 1900 5500 1900
+Connection ~ 5000 1900
+Text Label 5100 1900 0    50   ~ 0
+5V
+Text HLabel 5500 6000 2    50   Input ~ 0
+GND
+Wire Wire Line
+	5000 5600 5000 6000
+Wire Wire Line
+	5000 6000 5500 6000
+Text Label 5100 6000 0    50   ~ 0
+GND
+Wire Wire Line
+	4900 4200 5000 4200
+Connection ~ 5000 4200
+Wire Wire Line
+	5000 4200 5000 4700
+NoConn ~ 4900 4300
+Wire Wire Line
+	4900 3100 5000 3100
+Connection ~ 5000 3100
+Wire Wire Line
+	5000 3100 5000 3500
+Connection ~ 4900 5600
+Wire Wire Line
+	4900 5600 4400 5600
+Wire Wire Line
+	6000 5400 6500 5400
+Wire Wire Line
+	8300 4600 9000 4600
+Wire Wire Line
+	9000 4600 9000 1500
+Wire Wire Line
+	9000 1500 7900 1500
+Connection ~ 8300 4600
+Connection ~ 7900 1500
+Text HLabel 9400 1500 2    50   Input ~ 0
+3.3V
+Wire Wire Line
+	9000 1500 9400 1500
+Connection ~ 9000 1500
+Text Label 9100 1500 0    50   ~ 0
+3.3V
+$Comp
+L Device:Jumper_NO_Small JP?
+U 1 1 5F563C70
+P 8000 5800
+F 0 "JP?" H 8000 5900 50  0000 C CNN
+F 1 "JUMPER;M1x2" H 8000 5700 50  0000 C CNN
+F 2 "" H 8000 5800 50  0001 C CNN
+F 3 "~" H 8000 5800 50  0001 C CNN
+	1    8000 5800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8100 5800 8300 5800
+Connection ~ 8300 5800
+Wire Wire Line
+	7700 5200 7700 5800
+Wire Wire Line
+	7700 5800 7900 5800
+Connection ~ 7700 5200
+Text Notes 7950 1750 0    50   ~ 0
+32Kb I2C Serial Memory
+$EndSCHEMATC

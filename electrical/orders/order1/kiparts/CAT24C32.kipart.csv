@@ -1,0 +1,12 @@
+"CAT24C32;SOIC8", "U", "IPC7351:SOIC127P600X175-8AN", "https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF", "32Kb I2C EEPROM", "32Kb I2C EEPROM"
+"Pin", "Unit", "Type",           "Name", "Style", "Side"
+"1",   "A",    "input",          "A0",   "line",  "right"
+"2",   "A",    "input",          "A1",   "line",  "right"
+"3",   "A",    "input",          "A2",   "line",  "right"
+"4",   "A",    "power_in",       "VSS",  "line",  "right"
+"5",   "A",    "bidirectional",  "SDA",  "line",  "right"
+"6",   "A",    "input",          "SCL",  "line",  "right"
+"7",   "A",    "input",          "WP",   "line",  "right"
+"8",   "A",    "power_in",       "VCC",  "line",  "right"
+,,,,,,
+

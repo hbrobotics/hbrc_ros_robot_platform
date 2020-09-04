@@ -78,6 +78,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP CAT24C32;SOIC8
+D 32Kb I2C EEPROM
+K ~
+F https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF
+$ENDCMP
+#
 $CMP U3V70xMATE;F1x4+F1x5
 D 
 K ~

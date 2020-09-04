@@ -4,7 +4,7 @@ U3V70xMATE;F1x4+F1x5,CN,HR2:U3V70xMATE_F1x4+F1x5,Pololu U3V70x Voltage Regulator
 "2",   "GND",    "power_in",  "right", "1",    ,
 "3",   "GND",    "power_in",  "right", "1",    ,
 "4",   "VIN",    "power_in",  "right", "1",    ,
-"5",   "VIN",    "power_out", "right", "1",    ,
+"5",   "VIN",    "power_in", "right", "1",    ,
 "6",   "GND",    "power_in",  "right", "1",    ,
 "7",   "GND",    "power_in",  "right", "1",    ,
 "8",   "VOUT",   "power_in",  "right", "1",    ,
