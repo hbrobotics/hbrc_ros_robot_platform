@@ -199,4 +199,156 @@ Part Number	Pin 1	Pin 2	Size	Part		Title
 101020025	Dn	NC	1x1			Tilt Switch (digital)
 101020028	A0	A1	1x2			Thumb Joystick (2 20K Pot's)
 
+Timer Notes:
+
+There are at total of 14 timer modules in STM32F767:
+* 2 Advanced 16-bit timers (TIM1/TIM8): 4-inputs and 6-outputs. (Has PWM shoot through protection!)
+* 4 Medium 16/32-bit timers (TIM2/TIM3/TIM4/TIM5): 4-inputs and 4-outputs:
+  * TIM3/TIM4: 16-bit timers
+  * TIM2/TIM8: 32-bit timers
+* 2 Basic 16-bit timers: (TIM6/TIM7): 0-inputs and 0-outputs.  Internal timers only.
+* 6 General Purpose 16-bit Counters (TIM9/TIM10/TIM11/TIM12/TIM13/TIM14):
+  * TIM9/TIM12: 2-inputs and 2-outputs
+  * TIM10/TIM11/TIM13/TIM14: 1-input and 1-output
+Thus, the total number of counters is 14.  Note that typically, the input and the output
+pin are one and the same, so it can only be used as either an input or an output but not both.
+Also, only the first 6 counters listed above support encoder mode.
+By the way, this is a lot of counters to pay around with!
+
+The devices that need timing support are:
+* 1 Lidar:
+  Some of the less expensive Lidars out there need a PWM signal for the motor control.
+* 16 LED's:
+  There is GPIO pin dedictated to each LED.
+  It would be nice to be able to PWM the LED's.
+  After some thought, the conclusion is to put all 16 LED's on one 16-bit port
+  and use DMA triggered off of a timer to transfer a 16-bit wide LED "waveform" to the the port.
+  The LED "waveform" send bit0 to LED1, bit1 to LED2, ..., bit15 to LED16.
+  This is very similar to the writing a wave form out to a DAC to play a
+  (sound)[https://vivonomicon.com/2019/07/05/bare-metal-stm32-programming-part-9-dma-megamix/]
+  The DMA is put into circular mode and the timer can be adjusted to tweak the waveform "frequency".
+  If this does not work, PWM is probably out.
+* 7 Sonar's:
+  There is one trigger and one echo line per sonar.
+  Again the concept is to detect the echos using the External Interrupt functionality.
+  It is a little strange because, there are 16 pin change interrupts and they can be
+  mappped to pretty my any GPIO pin.  It is only possible to select one pin N form PA, ..., PJ
+  for external interrupt.  Thus, PA0, PB1, ..., PJ15, would work or PA0, PA1, ..., PA15,
+  of some mixture of PA0, PB1, PA2, PC3, ...., PB15.  The SYSCFG registers are used to set
+  the pin selections up in addition to the Extended Interrupts (EXTI).  There needs to be one
+  a free running timer to time length of the echo pulses.
+* 4 Servos:
+  There a 3 servos for the arm and 1 extra server.
+  Accurate pulse widths between 1ms and 2s are very desirble to prevent servo chatter.
+  Servos only need to be updated approximately every 20ms with a pulse that is between 1ms and 2ms.
+  Making the pulse width very accurate is a requirement,
+  but the inter pulse time is not that critical.
+* 2 Encoders:
+  There are 2 encoders and each encoder requres two inputs signals.
+  The encoder mode for the STM requires 2 timer inputs per encoder.
+* 2 Motors:
+  There are two drive motors.
+  Each motor driver has two inputs where one input is active PWM and the other side
+  is either high or low.
+  There is no need to PWM both inputs at the same time.
+  Another way to to think of it is that one side will fractional PWM
+  and the other side will be either 100% or 0% PWM.
+  This will chew up 4 timer outputs for both motors.
+
+The summary is:
+* LED's:    0 inputs, 0 outputs, 1 timer needed trigger DMA to write to LED's.
+* Sonars:   0 inputs, 0 outputs, 1 EXTI interrupt + 1 free running timer.
+* Servos:   0 inputs, 4 outputs, 0 interrupts (PWM) + 1 32-bit timer module with 4 PWM's enabled.
+* Encoders: 4 inputs, 0 outputs, 2 timer modules (1 per encoder) + 1 timer (sysclock?) for PID loop.
+* Motors:   0 inputs, 4 outputs, 0 interrupts (PWM) + 1 timer module with 4 PWM's enabled.
+
+Lidar Notes:
+
+Lidars are kind of a mess.  All of them have different interfaces.  The right strategy
+is a daughter board strategy.  The maximum number of pins seems to be 7:
+  * VCC (5V)
+  * GND (0V)
+  * TX (3.3V)
+  * RX (3.3V)
+  * MOTOR_PWM (3.3v)
+  * MOTOR_EN (3.3v)
+  * DEV_EN (3.3V)
+This board can be quite small.
+
+* YDLIDAR X2:
+  * Cost: $69US
+  * Range: 8m
+  * Voltage 4.8V - 5V - 5.2
+  * Start current: 300mA - 400mA - 500 mA
+  * Working current: 200mA - 350mA - 380 mA
+  * RPM: 5Hz - 8Hz
+  * Pins:
+    * M_CTR (PWM or volatage) 0V - 1.8V 3.3V. 0% duty cylce => full speed .
+    * GND
+    * Tx  (115200 8N1) 1.8V -3.3V - 3.5V
+    * VCC
+
+* YDLIDAR X4:
+  * Cost: $99US
+  * Range 10m
+  * Scan Rate: 6-12Hz
+  * Volatage: 4.8V - 5V - 5.2V
+  * Start Current: 400mA - 450mA - 480mA
+  * Working Current: 330mA - 350mA - 380mA
+  * Pins:  PH1.25-8P
+    * VCC 5V
+    * Tx 3.3V 128000 8N1
+    * Rx 3.3V
+    * GND
+    * M_EN (Motor Enable) 3.3V
+    * DEV_EN (Device Enable) 3.3V
+    * M_SCTP (Motor Speed Control) Voltage or PWM 0-3.3
+    * NC
+  
+* RPLidar A1M8:
+  * Cost: $99US
+  * 115200 8N1
+  * Voltage: 5V(typical) - 9V
+  * MOTOCTL: 0V - VMOTO
+  * VCC_5: 5V
+  * TX: 0-5V
+  * RX 0-5V
+  * Start Current 500mA - 600mA
+  * Working current: 300mA - 350mA
+  * Pins
+    * Connector 1:  PH1.25-4P
+      * TX 115200 8N1 3.3V
+      * RX
+      * VCC
+      * GND
+    * Connector2:  PH1.25-3P
+      * VMOTOR 5V (9V max)
+      * MOTOCTL
+      * GND
+
+* YDLIDAR G2:
+  * Cost: $159US
+  * Range: 12m
+  * Scan Rate: 5-12Hz
+  * Voltage 4.8-5.0-5.2V
+  * Start Current: 550mA-600ma-650mA
+  * Sleep: <50mA
+  * Working Current: 250mA-300mA-350mA
+  * Pins: PH1.125-5P
+    * NC
+    * GND
+    * Rx (230400 8N1) 3.3V
+    * Tx
+    * VCC
+
+* YDLIDAR G4:
+  * Cost $304.20US
+  * Range: 16m
+  * Scan Rate: 5-7-10Hz
+  * Voltage: 4.8-5-5.2V
+  * Start Current: 700-800-850mA
+  * Standby Current: < 50mA
+  * Working Current: 350-400-450mA
+  * Pins same as G2
+
 -->
