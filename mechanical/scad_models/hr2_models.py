@@ -3750,6 +3750,100 @@ class Lidar:
         self.module = lidar_module
 
 
+# LidarAdapter:
+class LidarAdapter:
+    """Represents a Lidar Adapter Board."""
+
+    # LidarAdapter.__init__():
+    def __init__(self, scad_program: ScadProgram, connectors: Connectors, pcb_origin: P2D) -> None:
+        """Initialize a LidarAdpater."""
+        pcb_dx: float = 7.0 * 2.54
+        pcb_dy: float = 4.0 * 2.54
+        pcb_dz: float = 1.6
+
+        lidar_adapter_exterior: SimplePolygon = Square(
+            "Lidar Adapter Exterior", pcb_dx, pcb_dy, corner_radius=1.0, corner_count=3)
+
+        power_center: P2D = P2D(-1.5 * 2.54, -1.5 * 2.54)
+        tx_rx_center: P2D = P2D(1.0 * 2.54, -1.5 * 2.54)
+        pwm_enable_center: P2D = P2D(0.0 * 2.54, 1.5 * 2.54)
+
+        # PH1.25-P8 connector use by YDLidar X4:
+        ph7_dx: float = 15.9
+        ph7_dy: float = 4.5
+        ph7_dz: float = 6.0
+        ph7_cube: Cube = Cube(
+            "PH1.25-P8", ph7_dx, ph7_dy, ph7_dz, center=P3D(0.0, 0.0, ph7_dz / 2))
+        colored_ph7: Scad3D = Color("Colored ph1_25_p7", ph7_cube, "Beige")
+        hole_diameter: float = 2.7  # mm  for M2.5 hardware
+        edge_offset: float = .75 * hole_diameter
+        east_hole_x: float = pcb_dx / 2.0 - edge_offset
+        west_hole_x: float = -east_hole_x
+        hole_y: float = pcb_dy / 2.0 - edge_offset
+        east_hole_pad: Pad = Pad(
+            "East Lidar Mount Hole", 0.0, 0.0, hole_diameter, P2D(east_hole_x, hole_y))
+        west_hole_pad: Pad = Pad(
+            "West Lidar Mount Hole", 0.0, 0.0, hole_diameter, P2D(west_hole_x, hole_y))
+        mount_holes: List[Pad] = [east_hole_pad, west_hole_pad]
+        ph7_pcb_chunk = PCBChunk("PH1.25-8P", mount_holes, [colored_ph7])
+
+        origin2d: P2D = P2D(0.0, 0.0)
+        lidar_adapter_pcb_chunk: PCBChunk = PCBChunk.join("Lidar Adapter", [
+            ph7_pcb_chunk,
+            (connectors.m1x2.pcb_chunk.
+             sides_swap().
+             scads_x_flip().
+             reposition(origin2d, 0.0, power_center, is_front=False, reference_name="CN201")),
+            (connectors.m1x2.pcb_chunk.
+             sides_swap().
+             scads_x_flip().
+             pads_rebase(2).
+             reposition(origin2d, 0.0, tx_rx_center, is_front=False, reference_name="CN202")),
+            (connectors.m1x3.pcb_chunk.
+             sides_swap().
+             scads_x_flip().
+             pads_rebase(4).
+             reposition(origin2d, 0.0, pwm_enable_center, is_front=False, reference_name="CN203")),
+        ])
+        lidar_adapter_module = lidar_adapter_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, lidar_adapter_exterior, "Indigo", None, [])
+
+        # Now translate *lidar_adapter_scad* up so it fits on top of the mate:
+        lidar_adapter_scad: Scad3D = lidar_adapter_module.use_module_get()
+        lidar_adapter_translate: P3D = P3D(0.0, 0.0, 8.75)
+        translated_lidar_adapter_scad: Scad3D = Translate3D(
+            "Translated Lidar Adapter", lidar_adapter_scad, lidar_adapter_translate)
+        translated_adapter_pcb_chunk: PCBChunk = PCBChunk(
+            "Traslated Lidar Adapter", mount_holes, [translated_lidar_adapter_scad])
+        print(f"mount_holes:{mount_holes}")
+        print(f"translated_adapter_pcb_chunk:{translated_adapter_pcb_chunk}")
+
+        lidar_adapter_mate_pcb_chunk: PCBChunk = PCBChunk.join("LIDAR_ADAPTER_2xF1x2+Fx3", [
+            (connectors.f1x2.pcb_chunk.
+             reposition(origin2d, 0.0, power_center)),
+            (connectors.f1x2.pcb_chunk.
+             pads_rebase(2).
+             reposition(origin2d, 0.00, tx_rx_center)),
+            (connectors.f1x3.pcb_chunk.
+             pads_rebase(4).
+             reposition(origin2d, 0.0, pwm_enable_center)),
+            translated_adapter_pcb_chunk,
+        ])
+        assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
+        hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
+        pretty_directory: Path = hr2_directory / "electrical" / "orders" / "order1" / "pretty"
+        lidar_adapter_mate_pcb_chunk.footprint_generate("HR2", pretty_directory)
+        lidar_adapter_mate_module = lidar_adapter_mate_pcb_chunk.pcb_update(
+            scad_program, pcb_origin, pcb_dz, lidar_adapter_exterior, "Tan", None, [])
+
+        # Load values into *lidar_adapter* (i.e. *self*):
+        # lidar_adapter: LidarAdapter = self
+        self.lidar_adapter_module: Module3D = lidar_adapter_module
+        self.lidar_adapter_pcb_chunk: PCBChunk = lidar_adapter_pcb_chunk
+        self.lidar_adapter_mate_module: Module3D = lidar_adapter_mate_module
+        self.lidar_adapter_mate_pcb_chunk: PCBChunk = lidar_adapter_mate_pcb_chunk
+
+
 # Nucleo144:
 class Nucleo144:
     """Represents a STM32 Nucleo-144 development board."""
@@ -4241,18 +4335,34 @@ class MasterBoard:
         st_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "ST_Mate References", [], [], references=[st_mate_reference])
 
+        # Create the Lidar Adapter assembly:
+        # lidar_adapter_center: P2D = P2D(-44.75, 17.5)  # Old location
+        lidar_adapter_center: P2D = P2D(-31.50, -41.00)
+        lidar_adapter: LidarAdapter = LidarAdapter(scad_program, connectors, pcb_origin)
+        lidar_adapter_mate_pcb_chunk: PCBChunk = (
+            lidar_adapter.lidar_adapter_mate_pcb_chunk.
+            reposition(origin2d, 0.0, lidar_adapter_center))
+        print(f"lidar_adapter_mate_pcb_chunk:{lidar_adapter_mate_pcb_chunk}")
+        lidar_adapter_mate_reference: Reference = Reference(
+            "CN204", True, 0.0, lidar_adapter_center,
+            lidar_adapter_mate_pcb_chunk, "LIDAR_ADAPTER_MATE;2xF1x2+F1x3")
+        lidar_adapter_mate_references_pcb_chunk: PCBChunk = PCBChunk(
+            "Lidar Adapter Mate References", [], [], references=[lidar_adapter_mate_reference])
+
         # Create *no_nucleo_chunk* which contains all the *PCBChunk*'s except the
         # Nucleo-144:
         no_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("No Nucelo Center", [
-            encoder_references_pcb_chunk,
-            east_encoder_mate_pcb_chunk,
             center_grove_pcb_chunk,
-            west_encoder_mate_pcb_chunk,
             center_sonars_pcb_chunk,
-            st_mate_pcb_chunk,
-            st_mate_references_pcb_chunk,
+            east_encoder_mate_pcb_chunk,
+            encoder_references_pcb_chunk,
+            lidar_adapter_mate_pcb_chunk,
+            lidar_adapter_mate_references_pcb_chunk,
             raspi4b_mate_pcb_chunk,
             raspi4b_mate_references_pcb_chunk,
+            st_mate_pcb_chunk,
+            st_mate_references_pcb_chunk,
+            west_encoder_mate_pcb_chunk,
         ])
 
         # Create *center_without_nucleo_pcb_chunk* that does not contain the the Nucleo-14:
@@ -4260,6 +4370,8 @@ class MasterBoard:
             center_bridges_pcb_chunk,
             center_mikrobus_pcb_chunk,
             center_spacer_pcb_chunk,
+            # lidar_adapter_mate_pcb_chunk,
+            # lidar_adapter_mate_references_pcb_chunk,
             no_nucleo_pcb_chunk,
             nucleo144_mate_without_nucleo_pcb_chunk,
             nucleo144_mate_references_pcb_chunk,
@@ -4275,6 +4387,8 @@ class MasterBoard:
             center_bridges_pcb_chunk,
             center_mikrobus_pcb_chunk,
             center_without_nucleo_pcb_chunk,
+            # lidar_adapter_mate_pcb_chunk,
+            # lidar_adapter_mate_references_pcb_chunk,
             nucleo144_mate_with_nucleo_pcb_chunk,
         ])
         center_module_with_nucleo: Module3D = center_with_nucleo_pcb_chunk.pcb_update(
@@ -5460,7 +5574,7 @@ class MasterBoard:
         sw_references: List[Reference] = []
 
         # Iterate through *base_spacer_positions* and install the mounting holes:
-        hole_diameter: float = 2.7  # M2.5 spacer hole diameter
+        hole_diameter: float = 2.4  # Nylon tie width.
         base_spacer_name: str
         base_spacer_tuple: Tuple[P2D, str, float, str]
         for base_spacer_name, base_spacer_tuple in base_spacer_positions.items():
