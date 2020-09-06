@@ -132,6 +132,12 @@ K Nucleo144 STM32F767ZI
 F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
 $ENDCMP
 #
+$CMP LIDAR_ADAPTER;2xF1x2
+D 
+K ~
+F Lidar Adapter Connectors
+$ENDCMP
+#
 $CMP BRIDGE_NE_INNER;3xM1x1+M1x5
 D NE Inner Bridge Connectors
 K ~
