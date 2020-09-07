@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 5 8
+Sheet 3 8
 Title "HR2: Power"
 Date "2020-08-27"
 Rev "A"
@@ -271,7 +271,7 @@ F 4 "1A 3.3V LDO Voltage Linear Regulator" H 6500 4500 60  0001 L CNN "Field5"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7800 4400 8750 4400
+	7800 4400 8300 4400
 Connection ~ 7800 4400
 Wire Wire Line
 	8200 3100 8200 3200
@@ -430,4 +430,11 @@ Wire Wire Line
 Connection ~ 8300 6000
 Wire Wire Line
 	8300 6000 8000 6000
+Wire Wire Line
+	8300 4750 8300 4400
+Connection ~ 8300 4400
+Wire Wire Line
+	8300 4400 8750 4400
+Text Notes 8300 4600 0    50   ~ 0
+KLUDGE
 $EndSCHEMATC

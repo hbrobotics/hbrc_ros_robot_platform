@@ -84,6 +84,12 @@ K ~
 F https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF
 $ENDCMP
 #
+$CMP SN74HCS595;TTSOP16
+D Tri-State 8-Bit Shift Register
+K ~
+F 
+$ENDCMP
+#
 $CMP U3V70xMATE;F1x4+F1x5
 D 
 K ~
@@ -118,6 +124,12 @@ $CMP STADAPTER;M2x4RA
 D 
 K ~
 F ST Adapter Connector
+$ENDCMP
+#
+$CMP CD450B;TTSOP16
+D Hex Level Shifter
+K ~
+F 
 $ENDCMP
 #
 $CMP GROVE;20x20R

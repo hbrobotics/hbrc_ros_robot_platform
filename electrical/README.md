@@ -261,6 +261,8 @@ The summary is:
 * Servos:   0 inputs, 4 outputs, 0 interrupts (PWM) + 1 32-bit timer module with 4 PWM's enabled.
 * Encoders: 4 inputs, 0 outputs, 2 timer modules (1 per encoder) + 1 timer (sysclock?) for PID loop.
 * Motors:   0 inputs, 4 outputs, 0 interrupts (PWM) + 1 timer module with 4 PWM's enabled.
+* Lidar:    0 inputs, 1 output, 0 interrupts (PWM)
+* HAL:      Needs TIM6.
 
 Lidar Notes:
 
@@ -350,5 +352,77 @@ This board can be quite small.
   * Standby Current: < 50mA
   * Working Current: 350-400-450mA
   * Pins same as G2
+
+ZIO Notes:
+
+The Nucleo-144 ZIO connector are labeled CN7-CN10 and are meant to be compatible with Arduino
+shields.  These connectors are double row connectors to provide more expansion pins for ZIO
+enabled boards.  The goal is to eventually have one or more FPGA boards that plug into the
+ZIO connectors to access and control the entire robot.  Thus, when there are functions on the
+STM32F767 that pins that are not connected to a ZIO pin an extra wire needs to be run to an
+unused ZIO pin.  A further constraint is to try and avoid the Arduino lines A0-A7/D0-D15
+so that there are no Arduino shield conflicts.  This is likely to be an over constrained problem
+that will require compromises.
+
+The dense table below lists each of the 7 16-bit I/O ports PA-PG and which ZIO pins they
+are connected to.  The Arduino compatibility pins are marked with @Ax or @Dxx to mark the
+Arduino Analog I/O pins.  The pins that can swapped around using solder bridges are indicated
+with a footnote (xx).  Obviously, not all pins of the STM32F676ZI are available on the ZIO pins.
+
+PA:                      PB:                   PC:               PD:
+CN10:29: PA0             CN10:31: PB0          CN9:3:   PC0 @A1  CN9:25:  PD0
+-------: PA1             CN10:7:  PB1          -------: PC1      CN9:27:  PD1
+-------: P2              CN10:15: PB2          CN10:9:  PC2      CN8:12:  PD2
+CN9:1:   PA3 @A0         CN7:15:  PB3          CN9:5:   PC3 @A2  CN9:10:  PD3
+CN7:17:  PA4             CN7:19:  PB4          -------: PC4      CN9:8:   PD4
+CN7:10:  PA5 @D13        CN7:13:  PB5(1) @D10  -------: PC5      CN9:6:   PD5
+CN7:12:  PA6 @D12        CN10:13: PB6          CN7:1:   PC6      CN9:4:   PD6
+CN9:14:  PA7 (1,2) @D11  -------: PB7          CN7:11:  PC7      CN9:2:   PD7
+-------: PA8             CN7:2:   PB8(1) @D15  CN8:2:   PC8      -------: PD8
+-------: PA9             CN7:4:   PB9(1) @D14  CN8:4:   PC9      -------: PD9
+-------: PA10            CN10:32  PB10         CN8:6:   PC10     -------: PD10
+-------: PA11            CN7:34:  PB11         CN8:8:   PC11     CN10:23: PD11
+-------: PA12            CN7:7:   PB12         CN8:10:  PC12     CN10:21: PD12
+-------: PA13            CN7:5:   PB13(4)      -------: PC13     CN10:19: PD13
+-------: PA14            -------: PB14         -------: PC14     CN7:16:  PD14 @D10
+CN7:9:   PA15            CN7:3:   PB15         -------: PC15     CN7:18:  PD15 @D9
+                                      
+PE:                      PF:                   PG:               Misc:
+CN10:34: PE0             CN9:21:  PF0          CN9:29:  PG0      CN8:5    NRST @NRST
+-------: PE1             CN9:19:  PF1          CN9:30:  PG1
+CN10:25: PE2(3)          CN9:17:  PF2          CN8:14:  PG2
+CN9:22:  PE3             CN9:7:   PF3 @A7      CN8:16:  PG3
+CN9:16:  PE4             CN7:11:  PF4          -------: PG4
+CN9:18:  PE5             CN9:9:   PF5(1)  @A4  -------: PG5
+CN9:20:  PE6             -------: PF6          -------: PG6
+CN10:20: PE7             CN9:26:  PF7          -------: PG7
+CN10:18: PE8             CN9:24:  PF8          -------: PG8
+CN10:4:  PE9  @D6        CN9:28:  PF9          CN10:16: PG9  @D0
+CN10:24: PE10            CN9:11:  PF10(1) @A5  -------: PG10
+CN10:6:  PE11 @D5        -------: PF11         -------: PG11
+CN10:26: PE12            CN7:20:  PF12    @D8  -------: PG12
+CN10:10: PE13 @D3        CN10:2:  PF13    @D7  -------: PG13
+CN10:28: PE14            CN10:8:  PF14    @D4  CN10:14: PG14 @D1
+CN10:30: PE15            CN10:12: PF15    @D2  -------: PG15
+
+Footnotes:
+(1) For more details refer to Table 12: Solder bridges.
+(2) PA7 is used as D11 and connected to CN7 pin 14 by default, if JP6 is ON, it is also connected to
+    both Ethernet PHY as RMII_DV and CN9 pin 15.  In this case only one function of the Ethernet or
+    D11 must be used.
+(3) PE2 is connected to both CN9 pin 14 (SAI_A_MCLK) and CN10 pin 25 (QSPI_BK1_IO2).  Only one
+    function must be used at one time.
+(4) PB13 is used as I2S_A_CK and connected to CN7 pin 5 by default, if JP7 is ON, it is also
+    connected to Ethernet PHY as RMII_TXD1. In this case, only one function of the Ethernet or
+    I2S_A must be used.
+
+SPI Devices: 
+
+The STM32F676 has 6 SPI interfaces and support NSS and TI mode.
+* SPI1, SPI4, SPI5, and SPI6 can operate at 54MBits/sec.
+* SPI2 and SPI3 can operate at 25Mbits/sec.
+The STM32F676 has 3 S2C interfaces:
+* SPI1, SPI2, SPI3.
+
 
 -->
