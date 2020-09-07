@@ -1,5 +1,11 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP POWER_PFET_GSD
+D Power PFET (GSD pinout)
+K ~
+F Power PFG (GSD pinout)
+$ENDCMP
+#
 $CMP NUCLEO-F767ZI;2xF2x35
 D NUCLEO144-F767ZI
 K Nucleo144 STM32F767ZI
@@ -82,6 +88,12 @@ $CMP CAT24C32;SOIC8
 D 32Kb I2C EEPROM
 K ~
 F https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF
+$ENDCMP
+#
+$CMP USB_B_MINI_POWER_SLAVE
+D USB_Mini Power (Slave)
+K ~
+F 
 $ENDCMP
 #
 $CMP SN74HCS595;TTSOP16

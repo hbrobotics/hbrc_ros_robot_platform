@@ -1,0 +1,9 @@
+"USB_B_MINI_POWER_SLAVE", "CN", "Connector:USB_B_Mini", "", "USB_Mini Power (Slave)", "USB_Mini Power (Slave)"
+"Pin", "Unit", "Type",       "Name",   "Style", "Side"
+"1",   "A",    "power_in",   "VBUS",   "line",  "right"
+"2",   "A",    "no_connect", "D-",     "line",  "right"
+"3",   "A",    "no_connect", "D+",     "line",  "right"
+"4",   "A",    "no_connect", "ID",     "line",  "right"
+"5",   "A",    "power_in",   "GND",    "line",  "right"
+"6",   "A",    "power_in",   "SHIELD", "line",  "right"
+,,,,,,

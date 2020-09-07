@@ -264,6 +264,17 @@ The summary is:
 * Lidar:    0 inputs, 1 output, 0 interrupts (PWM)
 * HAL:      Needs TIM6.
 
+Tentative Timer bindings are:
+* LED's: TIM7: We just need an internal clock, that can trigger a 16-bit DMA transfer to a SPI.
+* Sonars: We just just need a course trigger pulse, that can be done using systick in RTOS.
+  After that, there needs to be a free running timer that we can read on an interrupt for
+  each edge transition of the echo return.
+* Servos: TIM2: We need 32-bits.  There are 4 servos, so all 4 channels are used.
+* Encoders: TIM3/TIM4: Only of two of the 4 possible pins are consumed for each.
+* Motors: TIM8
+* Lidar: TIM9
+There are plenty of timers left.
+
 Lidar Notes:
 
 Lidars are kind of a mess.  All of them have different interfaces.  The right strategy
@@ -416,7 +427,7 @@ Footnotes:
     connected to Ethernet PHY as RMII_TXD1. In this case, only one function of the Ethernet or
     I2S_A must be used.
 
-SPI Devices: 
+SPI Devices:
 
 The STM32F676 has 6 SPI interfaces and support NSS and TI mode.
 * SPI1, SPI4, SPI5, and SPI6 can operate at 54MBits/sec.

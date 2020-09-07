@@ -15,7 +15,7 @@ Comment4 ""
 $EndDescr
 Text HLabel 8750 3200 2    50   Output ~ 0
 9V
-Text HLabel 8750 4400 2    50   Output ~ 0
+Text HLabel 8750 4300 2    50   Output ~ 0
 5V
 Wire Wire Line
 	7600 3100 8200 3100
@@ -27,25 +27,14 @@ NoConn ~ 7600 3900
 Wire Wire Line
 	8000 6000 8000 4200
 $Comp
-L Device:Q_PMOS_GDS Q2
-U 1 1 5F4A99AA
-P 3400 4500
-F 0 "Q2" V 3600 4600 50  0000 C CNN
-F 1 "   FDN360P;SOT23" V 3300 4250 50  0000 C CNN
-F 2 "" H 3600 4600 50  0001 C CNN
-F 3 "~" H 3400 4500 50  0001 C CNN
-	1    3400 4500
-	0    -1   -1   0   
-$EndComp
-$Comp
 L Device:R_US R1
 U 1 1 5F4AAFD8
-P 2750 4650
-F 0 "R1" H 2600 4750 50  0000 L CNN
-F 1 "100KΩ;1608" H 2800 4550 50  0000 L CNN
-F 2 "" V 2790 4640 50  0001 C CNN
-F 3 "~" H 2750 4650 50  0001 C CNN
-	1    2750 4650
+P 2950 4650
+F 0 "R1" H 2800 4750 50  0000 L CNN
+F 1 "100KΩ;1608" H 3000 4550 50  0000 L CNN
+F 2 "" V 2990 4640 50  0001 C CNN
+F 3 "~" H 2950 4650 50  0001 C CNN
+	1    2950 4650
 	1    0    0    -1  
 $EndComp
 Text Notes 2000 6600 0    50   ~ 0
@@ -53,16 +42,16 @@ Note: Power On/Off circuit is from David  Jones EEVBlog #262
 $Comp
 L Device:Q_NPN_BEC Q1
 U 1 1 5F4ABAA0
-P 2850 5200
-F 0 "Q1" H 2750 5350 50  0000 L CNN
-F 1 "2N2222;SOT23" H 2300 5050 50  0000 L CNN
-F 2 "" H 3050 5300 50  0001 C CNN
-F 3 "~" H 2850 5200 50  0001 C CNN
-	1    2850 5200
+P 3050 5200
+F 0 "Q1" H 2950 5350 50  0000 L CNN
+F 1 "2N2222;SOT23" H 2500 5050 50  0000 L CNN
+F 2 "" H 3250 5300 50  0001 C CNN
+F 3 "~" H 3050 5200 50  0001 C CNN
+	1    3050 5200
 	-1   0    0    -1  
 $EndComp
-Text Notes 2000 6900 0    50   ~ 0
-Note: The bipolar transtistors are generic small signal NPN SOT23\nin a BEC (i.e. pin1 = Base, pin 2 = Emitter, pi 3 = Collector) configuration.\nPretty much any NPN will do, so substitutions should be pretty safe.
+Text Notes 3050 5900 0    50   ~ 0
+Note: The bipolar transtistors are generic\n  small signal NPN SOT23 in a BEC (i.e\n  pin1 = Base, pin 2 = Emitter,\n  pi 3 = Collector) configuration.\n  Pretty much any NPN will do, so\n  substitutions should be pretty safe.
 $Comp
 L Device:Q_NPN_BEC Q3
 U 1 1 5F4AC33E
@@ -108,24 +97,20 @@ F 3 "~" H 4800 4750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3200 4400 3100 4400
+	2950 4300 2950 4500
 Wire Wire Line
-	2750 4400 2750 4500
+	2950 4800 2950 4900
 Wire Wire Line
-	2750 4800 2750 4900
+	2950 4900 3600 4900
 Wire Wire Line
-	2750 4900 3400 4900
+	3600 4900 3600 4800
 Wire Wire Line
-	3400 4900 3400 4700
+	2950 5000 2950 4900
+Connection ~ 2950 4900
 Wire Wire Line
-	2750 5000 2750 4900
-Connection ~ 2750 4900
+	4200 4600 4200 4300
 Wire Wire Line
-	4200 4600 4200 4400
-Wire Wire Line
-	4200 4400 3600 4400
-Wire Wire Line
-	3050 5200 4200 5200
+	3250 5200 4200 5200
 Wire Wire Line
 	4200 5200 4200 4900
 $Comp
@@ -143,19 +128,15 @@ Wire Wire Line
 	4200 5200 4300 5200
 Connection ~ 4200 5200
 Wire Wire Line
-	3100 4400 3100 4200
+	2950 3300 5300 3300
 Wire Wire Line
-	3100 4200 5300 4200
+	5300 3300 5300 4600
+Connection ~ 2950 4300
 Wire Wire Line
-	5300 4200 5300 4600
-Connection ~ 3100 4400
+	4200 4300 4800 4300
 Wire Wire Line
-	3100 4400 2750 4400
-Wire Wire Line
-	4200 4400 4800 4400
-Wire Wire Line
-	4800 4400 4800 4600
-Connection ~ 4200 4400
+	4800 4300 4800 4600
+Connection ~ 4200 4300
 Wire Wire Line
 	4700 5200 5300 5200
 Wire Wire Line
@@ -185,43 +166,42 @@ Wire Wire Line
 Wire Wire Line
 	5300 6000 5300 5700
 Wire Wire Line
-	2750 5400 2750 6000
+	2950 5400 2950 6000
 Wire Wire Line
-	2750 6000 4800 6000
+	2950 6000 4800 6000
 Connection ~ 4800 6000
-Connection ~ 2750 4400
-Connection ~ 4800 4400
+Connection ~ 4800 4300
 Wire Wire Line
 	4800 5600 4800 5500
 Connection ~ 4800 5500
 $Comp
 L Connector:USB_B_Mini CN1
 U 1 1 5F4B0748
-P 2000 4600
-F 0 "CN1" H 2057 5067 50  0000 C CNN
-F 1 "AMP10103594-0001LF;USB1x6H" H 1200 4250 50  0000 C CNN
-F 2 "" H 2150 4550 50  0001 C CNN
-F 3 "~" H 2150 4550 50  0001 C CNN
-	1    2000 4600
+P 2000 4500
+F 0 "CN1" H 1900 4850 50  0000 C CNN
+F 1 "AMP10103594-0001LF;USB1x6H" H 1200 4150 50  0000 C CNN
+F 2 "" H 2150 4450 50  0001 C CNN
+F 3 "~" H 2150 4450 50  0001 C CNN
+	1    2000 4500
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2300 4400 2750 4400
+	2300 4300 2950 4300
+NoConn ~ 2300 4500
 NoConn ~ 2300 4600
 NoConn ~ 2300 4700
-NoConn ~ 2300 4800
 Wire Wire Line
-	1900 5000 1900 5100
+	1900 4900 1900 5000
 Wire Wire Line
-	1900 5100 2000 5100
+	1900 5000 2000 5000
 Wire Wire Line
-	2000 5100 2000 5000
+	2000 5000 2000 4900
 Wire Wire Line
-	1900 5100 1900 6000
+	1900 5000 1900 6000
 Wire Wire Line
-	1900 6000 2750 6000
-Connection ~ 1900 5100
-Connection ~ 2750 6000
+	1900 6000 2950 6000
+Connection ~ 1900 5000
+Connection ~ 2950 6000
 Wire Wire Line
 	8750 6000 8300 6000
 Connection ~ 5300 6000
@@ -255,9 +235,9 @@ Connection ~ 7800 3600
 Wire Wire Line
 	7800 3600 7800 3500
 Wire Wire Line
-	4800 4400 6150 4400
+	4800 4300 6150 4300
 Wire Wire Line
-	7800 3600 7800 4400
+	7800 3600 7800 4300
 $Comp
 L HR2:AP2114HA-3.3TRG1_1A;SOT223 VR1
 U 1 1 5F4C5F9D
@@ -270,9 +250,7 @@ F 4 "1A 3.3V LDO Voltage Linear Regulator" H 6500 4500 60  0001 L CNN "Field5"
 	1    6300 4750
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	7800 4400 8300 4400
-Connection ~ 7800 4400
+Connection ~ 7800 4300
 Wire Wire Line
 	8200 3100 8200 3200
 Wire Wire Line
@@ -311,14 +289,14 @@ F 3 "~" H 7800 5050 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	6150 4850 6150 4750
-Connection ~ 6150 4400
+Connection ~ 6150 4300
 Wire Wire Line
-	6150 4400 7800 4400
+	6150 4300 7800 4300
 Wire Wire Line
 	6300 4750 6150 4750
 Connection ~ 6150 4750
 Wire Wire Line
-	6150 4750 6150 4400
+	6150 4750 6150 4300
 Wire Wire Line
 	7800 4900 7800 4750
 Wire Wire Line
@@ -340,7 +318,7 @@ Wire Wire Line
 	6150 6000 5300 6000
 Text Label 8600 3200 0    50   ~ 0
 9V
-Text Label 8600 4400 0    50   ~ 0
+Text Label 8600 4300 0    50   ~ 0
 5V
 Text Label 8550 6000 0    50   ~ 0
 GND
@@ -351,7 +329,7 @@ Wire Wire Line
 Connection ~ 7800 4750
 Text Label 8550 4750 0    50   ~ 0
 3.3V
-Text Label 2350 4400 0    50   ~ 0
+Text Label 2600 4300 0    50   ~ 0
 USB5V
 $Comp
 L Device:CP1 C7
@@ -430,11 +408,56 @@ Wire Wire Line
 Connection ~ 8300 6000
 Wire Wire Line
 	8300 6000 8000 6000
+$Comp
+L HR2:POWER_PFET_GSD Q2
+U 1 1 5F56BDDA
+P 3100 4300
+F 0 "Q2" H 3350 4450 50  0000 C CNN
+F 1 "PFET_6A_GSD;SOT23" H 4050 4450 50  0000 C CNN
+F 2 "HR2:" H 3300 4350 60  0001 L CNN
+F 3 "Power PFG (GSD pinout)" H 3300 4150 60  0001 L CNN
+F 4 "Power PFG (GSD pinout)" H 3300 4250 60  0001 L CNN "manf#"
+F 5 "Power PFET (GSD pinout)" H 3300 4050 60  0001 L CNN "Field5"
+	1    3100 4300
+	1    0    0    -1  
+$EndComp
 Wire Wire Line
-	8300 4750 8300 4400
-Connection ~ 8300 4400
+	3100 4300 2950 4300
 Wire Wire Line
-	8300 4400 8750 4400
-Text Notes 8300 4600 0    50   ~ 0
-KLUDGE
+	2950 4300 2950 3300
+Wire Wire Line
+	4100 4300 4200 4300
+Wire Wire Line
+	7800 4300 8750 4300
+Text Notes 3000 3900 0    50   ~ 0
+Note: The PFET's in the KiCAD library have passive pins\n  for design rule checks.  A PFET with Power In on the\n  Source and Power Out on the Drain is needed.\n  It was easier to do an ugly box than a pretty PFET.\n  Deal with it.
+$Comp
+L HR2:USB_B_MINI_POWER_SLAVE CN2
+U 1 1 5F56C48C
+P 1600 3300
+F 0 "CN2" H 1850 3450 50  0000 C CNN
+F 1 "AMP10103594-0001LF;USB1x6H" H 1200 2650 50  0000 C CNN
+F 2 "Connector:USB_B_Mini" H 1800 3350 60  0001 L CNN
+F 3 "USB_Mini Power (Slave)" H 1800 3150 60  0001 L CNN
+F 4 "USB_Mini Power (Slave)" H 1800 3050 60  0001 L CNN "Field5"
+	1    1600 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2400 3700 2500 3700
+Wire Wire Line
+	2500 3700 2500 3800
+Wire Wire Line
+	2500 5000 2000 5000
+Connection ~ 2000 5000
+Wire Wire Line
+	2400 3800 2500 3800
+Connection ~ 2500 3800
+Wire Wire Line
+	2500 3800 2500 5000
+Wire Wire Line
+	2400 3300 2950 3300
+Connection ~ 2950 3300
+Text Notes 950  3000 0    50   ~ 0
+Note: When the motors are running full bore\n  up a hill, the current drain becomes significant.\n  Use to two USB connectors to maximize current\n  from the USB battery pack.
 $EndSCHEMATC

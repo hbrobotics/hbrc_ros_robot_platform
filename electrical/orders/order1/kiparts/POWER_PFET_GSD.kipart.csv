@@ -1,0 +1,6 @@
+"POWER_PFET_GSD", "Q", "HR2:", "Power PFG (GSD pinout)", "", "Power PFET (GSD pinout)"
+"Pin", "Unit", "Type",      "Name", "Style", "Side"
+"1",   "A",    "passive",   "G",    "line",  "bottom"
+"2",   "A",    "power_in",  "S",    "line",  "left"
+"3",   "A",    "power_out", "D",    "line",  "right"
+,,,,,,
