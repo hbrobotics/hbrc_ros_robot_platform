@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 4 8
+Sheet 3 8
 Title "HR: Mikrobus"
 Date "2020-08-27"
 Rev "A"

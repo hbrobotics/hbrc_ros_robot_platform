@@ -266,13 +266,31 @@ The summary is:
 
 Tentative Timer bindings are:
 * LED's: TIM7: We just need an internal clock, that can trigger a 16-bit DMA transfer to a SPI.
-* Sonars: We just just need a course trigger pulse, that can be done using systick in RTOS.
+* Sonars: TIM14 We just just need a course trigger pulse, that can be done using systick in RTOS.
   After that, there needs to be a free running timer that we can read on an interrupt for
   each edge transition of the echo return.
 * Servos: TIM2: We need 32-bits.  There are 4 servos, so all 4 channels are used.
-* Encoders: TIM3/TIM4: Only of two of the 4 possible pins are consumed for each.
-* Motors: TIM8
-* Lidar: TIM9
+* Encoders: TIM3,TIM4,TIM8: Only of two of the 4 possible pins are consumed for each.
+* Motors:  TIM8
+* Lidar:
+* HAL: TIM6
+
+In timer order:
+* TIM1:
+* TIM2: Servos (Need all 4 channels)
+* TIM3: Encoders
+* TIM4: Encoders
+* TIM5:
+* TIM6: HAL
+* TIM7: LED's
+* TIM8: Motors
+* TIM9:
+* TIM10:
+* TIM11:
+* TIM12:
+* TIM13:
+* TIM14: LED's
+
 There are plenty of timers left.
 
 Lidar Notes:

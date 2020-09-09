@@ -120,6 +120,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP SERVO;M1x3
+D 
+K ~
+F Servo M1X3
+$ENDCMP
+#
 $CMP ENCODER;2xF1x3
 D HR2 Encoder Connector
 K ~
