@@ -20,107 +20,93 @@ FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TOR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 -->
+<!-- <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 100 characters >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> -->
 
-# HBRC ROS Robot Electical Issues
+# HR2 Electrical Directory
 
-{Wayne: This text is a bit out of date...}
+The overall architecture of the `electrical/` directory is:
 
-The organization of this directory is organized around PCB's (Printed Circuit Boards) and
-orders (PCB/Part orders.)  The KiCad printed circuit board software is exclusively used.
-Each PCB is given PCB specific sub-directory (e.g. `master_board` or `encoder`).  Furthermore,
-each PCB has a separate revision directory of the form `rev_` followed by a lower case letter
-(e.g. `rev_a`, `rev_b`, etc.)  All of the KiCad files and sub-directories are installed
-under these revision sub-directories.  In each, revision sub-directory, there are three
-special sub-directories called `pretty`, `sweet` and `kiparts`:
+* `README.md`:
+  A this document written in markdown format.
+* `docs/`:
+  A sub-directory containing documentation.
+* `orders/`:
+  A sub-directory contain per order information.
+  This includes schematic symbols, PCB footprints, and parts ordering information.
+* `master_board/`:
+  The design files for the main HR2 master PCB.
+  The master board also has the `STM32CubeIDE` project file for pin assignment
+  and associated firmware generation to configure the microcontroller.
+* `st_adapter/`:
+  The design files for the ST-Link adapter PCB.
+* `encoder/`:
+  The design files for shaft encoder PCB.
+Over time, additional PCB's a will be added.
 
-* `pretty`: A sub-directory containing KiCad component footprints.
+Each PCB directory is broken into revision sub-directories:
 
-* `sweet`: A sub-directory contains KiCad schematic symbols.
+  * `rev_a/`:
+    This is the first PCB revision.
+  * `rev_b/`
+    This is the second PCB revision
+    (only started after the first version has been built.)
+  * etc.
 
-* `kiparts`: A sub-directory of `.csv` (Comma Separated Values) that are used
-  to construct some of the parts in the `sweet` directory.
+The `orders` sub-directory is broken into a sequence of sub-directories labeled
+`order1/`, `order2/`, `order3/`, ...
+The `order`*N* sub-directory attempts to capture all of the schematics symbols,
+PCB footprints, and electrical/mechanical parts that are all ordered together
+(e.g. PCB Gerbers go to PCB fabrication and parts lists go to parts vendors.)
+The requirement is that all PCB's share a consistent set of PCB footprints,
+schematic symbols, and electrical parts.
 
-The `orders` directory is organized PCB and part orders.  Each order has a
-separate sub-directory called `orderN`, where N is an integer starting from 1
-(e.g. `order1`, `order2`, etc.)  Each `orderN` directory contains a `pretty`, `sweet`,
-and `kiparts` sub-directory that contains, KiCad footprints, KiCad Schematic symbols,
-and `kipart` `.csv` files respectively.
+After the orders go out.  All of the existing PCB's and contents of the
+associated files are locked down into a `git` repository.  This is so that
+subsequent revisions do not the existing designs.  For the next revisions,
+a new `order`*N+1* sub-directory is created.  Many of the symbols from the
+previous `order`*N* sub-directory into the `order`*N+1* sub-directory,
+where they can be freely modified to without breaking any of the older revisions.
 
-Here is the punch line.  Each PCB board revision `pretty`, `sweet` and `kiparts`
-sub-directory is actually a symbolic link to an order directory.  What this ensures
-is that ***ALL*** KiCad footprints/schematic and kiparts are the same and shared
-across a single order.  Once an order is made, all of the KiCAD files and order
-files are locked down ***HARD*** and never edited again.  This way we can safely
-come back and look at older revisions.  This also means that any footprints and
-schematic symbols from the KiCad libraries are copied over into the order directories.
+The contents of an `order`*N*`/` directory are:
 
-In general, you should just use what you want when designing a board.  The order
-person will get everything locked down before shipping the board orders and PCB
-orders out.
-
-Here is a crufty ASCII art directory tree:
-
-     electrical/
-     +- master_board/
-     |  +- rev_a/
-     |  |  +- pretty => ../../orders/order1/pretty
-     |  |  +- sweet -> ../../orders/order1/sweet
-     |  |  +- kiparts -> ../../orders/order1/kiparts
-     |  +- rev_b/
-     |     +- pretty => ../../orders/order2/pretty
-     |     +- sweet -> ../../orders/order2/sweet
-     |     +- kiparts -> ../../orders/order2/kiparts
-     +- encoder/
-     |  +- rev_a/
-     |     +- pretty => ../../orders/order2/pretty
-     |     +- sweet -> ../../orders/order2/sweet
-     |     +- kiparts -> ../../orders/order2/kiparts	
-     +- orders/
-           +- order1/
-           |  +- pretty/
-           |  +- sweet/
-           |  +- kiparts/
-           +- order2/
-              +- pretty/
-              +- sweet/
-              +- kiparts/
-
-This is a program called [`kipart`](https://kipart.readthedocs.io/en/latest/)
-that takes a `.csv` file and generates a KiCad schematic part file.  Since
-many schematics are full of square modules, program generates the square
-schematic symbols with the right pin names, numbers, and signal types.  It
-is generally easier to use `kipart` to manage KiCad schematic symbols than
-to use the KiCad schematic symbol library.  There is a `makefile` that runs
-`kipart` over all of the `.csv` files in the `kiparts` sub-directory.
-
-Finally, there is the microcontroller.  The microcontroller is from the
-STM Electronics family of microcontrollers.  There is a tool called `STM32CubeMX`
-that is used to configure the pin bindings of the microcontroller.  The main
-content of the file has a suffix of `.ioc`.  The `STM32CubeMX` program reads
-and manipulates the `.ioc` file.  In addition, you can generate a `.csv` file
-that has a summary of the pin bindings from the `.ioc` file.  The `kicube32`
-program reads this `.csv` file and generates another `.csv` file that contains
-the schematic symbols for the processor.
-
-Thus the flow is:
-
-     .ioc => STMCubeMX => .csv => kicbube32 -> .csv -> kipart -> .lib -> KiCad
-
-Whew.  This is all automated using the `make` program and appropriate `Makefile`'s.
-
+* `Makefile`:
+  This is used by the `make` program to build everything.
+* `pretty/` sub-directory:
+  This is a sub-directory where all of the shared KiCad PCB footprints live.
+* `kiparts/` sub_directory:
+  This is a sub-directory of `.csv` files,
+  that specify the various rectangular schematic symbols definitions are stored.
+  There is a program called [`kipart`](https://kipart.readthedocs.io/en/latest/)
+  that takes a `.csv` file and generates a bot the `.lib` and `.dcm` file.
+  Since many schematics are full of square modules, program generates the square
+  schematic symbols with the right pin names, numbers, and signal types,
+  it is generally easier to use `kipart` to manage KiCad schematic symbols than
+  to use the KiCad schematic symbol library.
+* `order`*N*`.lib`:
+  This is the library of generated schematic symbols.
+* `order`*N*`.dcm`:
+  This is the schematics symbol documentation file.
+  
 The design rules for schematic capture are:
 
-* All text is horizontal (no exceptions) and the same size.
-* All net names are upper case letters and digits.  A lower case `n` can be used
+* Almost all text is horizontal.
+  The only  exceptions only allowed for "stock" schematic symbola) that come with KiCad.
+* Most rectangular symbols have wires coming out vertically connections are horizontal.
+  There can be an occasional exception.
+* All net names are upper case letters and digits.  An lower case `n` can be used
   as a prefix indicate an active low logic line.
-* No rectangular symbols have wires coming out vertically connections are horizontal.
-* All wire are on a rectangular grid.
+* All wires are on a rectangular grid.
 * When possible try to organize the schematic such that inputs are on the left
   and outputs are on the right.
 * Hierarchical design is used to organize the sheets.
 * Try to keep "air wires" to a minimum.
+  Instead use "blue" buses to help reduce the wire mazes.
 * Make all power and ground connections explicit.
-* Resistors use the older "3 hump" style.
+* Footprint names are metric (e.g. 1608 instead of 0603.)
+* Footprint names are of the form *part_name*`;`*footprint_name*.
+* Resistors use the older American "3 hump" style of resistor.
+* Resistance values use the ISO unit symbol of Ω.
+* Capacitance values use the units of µF, nF, and pF.
 
 <!--
 
@@ -199,68 +185,9 @@ Part Number	Pin 1	Pin 2	Size	Part		Title
 101020025	Dn	NC	1x1			Tilt Switch (digital)
 101020028	A0	A1	1x2			Thumb Joystick (2 20K Pot's)
 
-Timer Notes:
 
-There are at total of 14 timer modules in STM32F767:
-* 2 Advanced 16-bit timers (TIM1/TIM8): 4-inputs and 6-outputs. (Has PWM shoot through protection!)
-* 4 Medium 16/32-bit timers (TIM2/TIM3/TIM4/TIM5): 4-inputs and 4-outputs:
-  * TIM3/TIM4: 16-bit timers
-  * TIM2/TIM8: 32-bit timers
-* 2 Basic 16-bit timers: (TIM6/TIM7): 0-inputs and 0-outputs.  Internal timers only.
-* 6 General Purpose 16-bit Counters (TIM9/TIM10/TIM11/TIM12/TIM13/TIM14):
-  * TIM9/TIM12: 2-inputs and 2-outputs
-  * TIM10/TIM11/TIM13/TIM14: 1-input and 1-output
-Thus, the total number of counters is 14.  Note that typically, the input and the output
-pin are one and the same, so it can only be used as either an input or an output but not both.
-Also, only the first 6 counters listed above support encoder mode.
-By the way, this is a lot of counters to pay around with!
 
-The devices that need timing support are:
-* 1 Lidar:
-  Some of the less expensive Lidars out there need a PWM signal for the motor control.
-* 16 LED's:
-  There is GPIO pin dedictated to each LED.
-  It would be nice to be able to PWM the LED's.
-  After some thought, the conclusion is to put all 16 LED's on one 16-bit port
-  and use DMA triggered off of a timer to transfer a 16-bit wide LED "waveform" to the the port.
-  The LED "waveform" send bit0 to LED1, bit1 to LED2, ..., bit15 to LED16.
-  This is very similar to the writing a wave form out to a DAC to play a
-  (sound)[https://vivonomicon.com/2019/07/05/bare-metal-stm32-programming-part-9-dma-megamix/]
-  The DMA is put into circular mode and the timer can be adjusted to tweak the waveform "frequency".
-  If this does not work, PWM is probably out.
-* 7 Sonar's:
-  There is one trigger and one echo line per sonar.
-  Again the concept is to detect the echos using the External Interrupt functionality.
-  It is a little strange because, there are 16 pin change interrupts and they can be
-  mappped to pretty my any GPIO pin.  It is only possible to select one pin N form PA, ..., PJ
-  for external interrupt.  Thus, PA0, PB1, ..., PJ15, would work or PA0, PA1, ..., PA15,
-  of some mixture of PA0, PB1, PA2, PC3, ...., PB15.  The SYSCFG registers are used to set
-  the pin selections up in addition to the Extended Interrupts (EXTI).  There needs to be one
-  a free running timer to time length of the echo pulses.
-* 4 Servos:
-  There a 3 servos for the arm and 1 extra server.
-  Accurate pulse widths between 1ms and 2s are very desirble to prevent servo chatter.
-  Servos only need to be updated approximately every 20ms with a pulse that is between 1ms and 2ms.
-  Making the pulse width very accurate is a requirement,
-  but the inter pulse time is not that critical.
-* 2 Encoders:
-  There are 2 encoders and each encoder requres two inputs signals.
-  The encoder mode for the STM requires 2 timer inputs per encoder.
-* 2 Motors:
-  There are two drive motors.
-  Each motor driver has two inputs where one input is active PWM and the other side
-  is either high or low.
-  There is no need to PWM both inputs at the same time.
-  Another way to to think of it is that one side will fractional PWM
-  and the other side will be either 100% or 0% PWM.
-  This will chew up 4 timer outputs for both motors.
-
-The summary is:
-* LED's:    0 inputs, 0 outputs, 1 timer needed trigger DMA to write to LED's.
-* Sonars:   0 inputs, 0 outputs, 1 EXTI interrupt + 1 free running timer.
-* Servos:   0 inputs, 4 outputs, 0 interrupts (PWM) + 1 32-bit timer module with 4 PWM's enabled.
-* Encoders: 4 inputs, 0 outputs, 2 timer modules (1 per encoder) + 1 timer (sysclock?) for PID loop.
-* Motors:   0 inputs, 4 outputs, 0 interrupts (PWM) + 1 timer module with 4 PWM's enabled.
+There are plenty of timers left.
 
 Lidar Notes:
 
@@ -350,5 +277,14 @@ This board can be quite small.
   * Standby Current: < 50mA
   * Working Current: 350-400-450mA
   * Pins same as G2
+
+SPI Devices:
+
+The STM32F676 has 6 SPI interfaces and support NSS and TI mode.
+* SPI1, SPI4, SPI5, and SPI6 can operate at 54MBits/sec.
+* SPI2 and SPI3 can operate at 25Mbits/sec.
+The STM32F676 has 3 S2C interfaces:
+* SPI1, SPI2, SPI3.
+
 
 -->

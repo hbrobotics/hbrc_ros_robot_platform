@@ -1,5 +1,11 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP POWER_PFET_GSD
+D Power PFET (GSD pinout)
+K ~
+F Power PFG (GSD pinout)
+$ENDCMP
+#
 $CMP NUCLEO-F767ZI;2xF2x35
 D NUCLEO144-F767ZI
 K Nucleo144 STM32F767ZI
@@ -84,6 +90,18 @@ K ~
 F https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF
 $ENDCMP
 #
+$CMP USB_B_MINI_POWER_SLAVE
+D USB_Mini Power (Slave)
+K ~
+F 
+$ENDCMP
+#
+$CMP SN74HCS595;TTSOP16
+D Tri-State 8-Bit Shift Register
+K ~
+F 
+$ENDCMP
+#
 $CMP U3V70xMATE;F1x4+F1x5
 D 
 K ~
@@ -102,6 +120,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP SERVO;M1x3
+D 
+K ~
+F Servo M1X3
+$ENDCMP
+#
 $CMP ENCODER;2xF1x3
 D HR2 Encoder Connector
 K ~
@@ -118,6 +142,12 @@ $CMP STADAPTER;M2x4RA
 D 
 K ~
 F ST Adapter Connector
+$ENDCMP
+#
+$CMP CD450B;TTSOP16
+D Hex Level Shifter
+K ~
+F 
 $ENDCMP
 #
 $CMP GROVE;20x20R

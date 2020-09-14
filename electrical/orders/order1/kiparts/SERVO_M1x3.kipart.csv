@@ -1,0 +1,7 @@
+"SERVO;M1x3","CN","Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical","Servo M1X3","Servo M1X3"
+"Pin", "Unit", "Name",  "Type",     "Style", "Side"
+"1",   "A",    "GND",   "power_in", "line",  "right"
+"2",   "A",    "VCC",   "power_in", "line",  "right"
+"3",   "A",    "PWM",   "input",    "line",  "right"
+,,,,,,
+
