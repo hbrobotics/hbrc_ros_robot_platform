@@ -233,17 +233,17 @@ The peripherals of interest to the HR2 Master board are:
 There are at total of 15 timer modules in STM32F767.
 These are summarized in the table below:
 
-     Kind       Count  Names               Size     Encoder  Outputs
-     =====================================================================
-     Low Power  1      LPRTIM              16-bits  Yes      ?
-     Advanced   2      TIM1/8              16-bits  Yes      4
-     Medium32   2      TIM2/3/4/5          32-bits  Yes      4
-     Medium16   2      TIM2/3/4/5          16-bits  Yes      4
-     Basic      2      TIM6/7              16-bits  No       0 (internal only)
-     Simple2    2      TIM9/12             16-bits  No       2       
-     Simple1    4      TIM10/11/13/14      16-bits  No       1
+     Kind       Count  Names             Size     Encoder  Inputs + Outputs
+     ============================================================================
+     Advanced   2      TIM1/8            16-bits  Yes      4 + 6 (2 inverted)
+     Medium32   2      TIM2/5            32-bits  Yes      4 + 4
+     Medium16   2      TIM3/4            16-bits  Yes      4 + 4
+     Basic      2      TIM6/7            16-bits  No       0 + 0 (internal only)
+     Simple2    2      TIM9/12           16-bits  No       2 + 2      
+     Simple1    4      TIM10/11/13/14    16-bits  No       1 + 1
+     Low Power  1      LPTIM             16-bits  Yes      2 + 1
 
-When the encoder function is used they have the following extra constraints:
+When the time encoder function is used, they have the following extra constraints:
 
 * Only CH1 and CH2 can be used for the encoder inputs.
 
@@ -300,7 +300,7 @@ The HR2 has the following timer needs:
   There needs to be one a free running timer to time length of the echo pulses.
   This uses up 14 GPI pins and maybe one internal timer.
 
-The summary is:
+The Timer requirements summary is:
 
      Function  Inputs  Outputs  Timers  Notes
      ===========================================================================================
@@ -314,8 +314,6 @@ The summary is:
 
 It turns out that timer pin binding for the HR2 is extremely difficult due to the
 a variety of reasons.
-
-
 
 ### SPI (Serial Peripheral Interface)
 
@@ -368,11 +366,11 @@ The USART requirements are:
 ## ZIO Connectors Mapping Table
 
 In the
-[STM32 Nucleo-144 Board User Manual](../../docs/stm32_nucleo_144_manual.pdf),
+[STM32 Nucleo-144 Board User Manual](../docs/stm32_nucleo_144_manual.pdf),
 there is a table that corresponds to the Morpho connectors.
 On pages 38 through 41 are Morpho pin-outs for the Nucleo144-STM32F767F.
 These pages were extracted into small and easily searchable
-[STM32 Nucleo-144 Board User Manual Pages 38-41](../../docs/stm32_nucleo_144_manual_pages38-41.pdf)
+[STM32 Nucleo-144 Board User Manual Pages 38-41](../docs/stm32_nucleo_144_manual_pages38-41.pdf)
 file by reading the file into `libreoffice` and writing out just pages 38 through 41.
 Using this file it is possible to easily find connector/port/Arduino bindings.
 A dense table is shown below where the Arduino signals are prefixed with an `@`:
@@ -433,90 +431,116 @@ The ZIO Mapping Table Footnotes are:
 
 The alternative functions table is used as part of the pin binding process.
 
+The Alternative Functions table generated as follows:
 
-The process of figuring this all out takes multiple steps.
+1. Start up `stm32cubeide` program that resides in the HR2 `.../bin/` directory.
 
-1. Generate an `stm32f767_af.csv` file, using the `stm32cubeide` program that
-   resides in the HR2 `bin/` directory.
-   This program is executed and configured to use an STM32F767 processor.
-   Next, once you have a graphical representation of the chip show,
-   you click on the [Pinout] menu and select Export pinout with Alt Functions.
-   This is saved to the file `stm32f767_af.csv`.
+2. Start a dummy project that uses the STM32F767 processor with an 144-LPQF package. 
 
-2. Next, the STM32F676 reference manual is read to figure out what timers are available
-   are available and what are their various constraints.
-   There are a lot of different.
-   
+3  Once you have a graphical representation of the chip shows,
+   click on the [Pinout] menu and select `Export pinout with Alt Functions`.
+   This file was saved to the file `(stm32f767_af.csv)[stm32f767_af.csv]`.
 
+## `pins_bind.py`
 
-Thus, the total number of counters is 14.  Note that typically, the input and the output
-pin are one and the same, so it can only be used as either an input or an output but not both.
-Also, only the first 6 counters listed above support encoder mode.
-By the way, this is a lot of counters to pay around with!
+To add with the pin binding process there is a program entitled
+(pinsbind.py)[pinsbind.py].
+This file can be executed by the `(Makefile)[Makefile]` in the same directory.
+This program reads the previously generated (stm32f767_af.csv) and the pin binds
+requested in the `pins_bind.py` file and generates the final pin bindings.
 
-Tentative Timer bindings are:
-* LED's: TIM7: We just need an internal clock, that can trigger a 16-bit DMA transfer to a SPI.
-* Sonars: TIM14 We just just need a course trigger pulse, that can be done using systick in RTOS.
-  After that, there needs to be a free running timer that we can read on an interrupt for
-  each edge transition of the echo return.
-* Servos: TIM2: We need 32-bits.  There are 4 servos, so all 4 channels are used.
-* Encoders: TIM3,TIM4,TIM8: Only of two of the 4 possible pins are consumed for each.
-* Motors: 
-* Lidar:
-* HAL: TIM6
+The trick to using the program is to specify the order in which to bind the pins.
 
-Servos (Need all 4 channels)
+The tricky thing to figure out was the timer bindings.
+It was not possible to accomplish the task without cross connecting two non-Zio Morpho connector
+pins to ZIO pins.
 
-In timer order:
-LPTIM1:
-    LPTIM1_IN1: ('+PD12:AF3', '-PG12:AF3')
-    LPTIM1_IN2: ('-PE1:AF3',)
-TIM1:
-    TIM1_CH1: ('-PA8:AF1',)
-    TIM1_CH2: ('-PA9:AF1',)
-    TIM1_CH3: ('-PA10:AF1',)
-    TIM1_CH4: ('+PE14:AF1', '-PA11:AF1')
-    TIM1_CH4: ('+PE14:AF1',)
-TIM2: LMOTOR
-    TIM2_CH2: ('-PA1:AF1', '+PB3:AF1')
-    TIM2_CH3: ('-PA2:AF1', '+PB10:AF1')
-    TIM2_CH4: ('+PB11:AF1',)
-TIM3: LENCODER
-    TIM3_CH1: ('+PC6:AF2', '+PB4:AF2')
-    TIM3_CH2: ('+PC7:AF2', '+PB5:AF2')
-    TIM3_CH3: ('+PB0:AF2', '+PC8:AF2')
-    TIM3_CH4: ('+PB1:AF2', '+PC9:AF2')
-TIM4: RENCODER
-    TIM4_CH1: ('+PD12:AF2', '+PB6:AF2')
-    TIM4_CH2: ('+PD13:AF2', '-PB7:AF2')
-    TIM4_CH3: ()
-    TIM4_CH4: ()
-TIM5:
-    TIM5_CH1: ('+PA0:AF2',)
-    TIM5_CH2: ('-PA1:AF2',)
-    TIM5_CH3: ('-PA2:AF2',)
-    TIM5_CH4: ()
-TIM6: HAL
-TIM7: LEDS
-TIM8: SERVOS
-    TIM8_CH1: ('+PC6:AF3',)
-    TIM8_CH2: ('+PC7:AF3',)
-    TIM8_CH3: ('+PC8:AF3',)
-    TIM8_CH4: ('+PC9:AF3',)
-TIM9: RMOTOR
-    TIM9_CH1: ('+PE5:AF3', '-PA2:AF3')
-    TIM9_CH2: ('+PE6:AF3',)
-TIM10:
-    TIM10_CH1: ('-PF6:AF3',)
-TIM11:
-    TIM11_CH1: ('+PF7:AF3',)
-TIM12:
-    TIM12_CH1: ('-PB14:AF9',)
-    TIM12_CH2: ('+PB15:AF9',)
-TIM13:
-    TIM13_CH1: ('+PF8:AF9',)
-TIM14:
-    TIM14_CH1: ('+PF9:AF9',)
+## Timer Bindings
+
+The connectivity of the Timers to the Zio connectors is listed alphabetical order below.
+The assignments are summarized below with further discussion immediately following:
+
+* `LPTIM: LENCODER`
+  * `LPTIM_IN1: PD12:AF3 (LENCODER_A)`
+  * `[LPTIM_IN2: PE:AF3] (LENCODER_B)` [Morpho pin shorted to TIM8_CH3 below]
+
+* `TIM1: LMOTOR`
+  * `[TIM1_CH1: PA8:AF1] [Morpho pin]`
+  * `[TIM1_CH2: PA9:AF1] [Morpho pin]`
+  * `[TIM1_CH3: PA10:AF1] (LMOTOR+)` [Morpho pin shorted to TIM8_CH4 below]
+  * `TIM1_CH4: PE14:AF1 (LMOTOR-)`
+
+* `TIM2: SERVOS (32-bits)`
+  * `TIM2_CH2: PB3:AF1 (SERVO2)`
+  * `TIM2_CH3: PB10:AF1 (SERVO3)`
+  * `TIM2_CH4: PB11:AF1 (SERVO4)`
+
+* `TIM3: Unused`
+  * No Zio pins available
+
+* `TIM4: LIDAR`
+  * `TIM4_CH2: PE14:AF1 (LIDAR_PWM)`
+
+* `TIM5: SERVOS (32-bits)`
+  * `TIM5_CH1: PA0:AF2 (SERVO1)`
+
+* `TIM6: HAL (internal only)`
+
+* `TIM7: LEDS (internal only)`
+
+* `TIM8: RENCODER`
+  * `TIM8_CH1: PC6:AF3 (RENCODER_A)`
+  * `TIM8_CH2: PC7:AF3 (RENCODER_B)`
+  * `TIM8_CH3: PC8:AF3` (unusable due to encoder) [Shorted to Morpho pin for LPTIM_IN1 above]
+  * `TIM8_CH4: PC9:AF3` (unusable due to encoder) [Shorted to Morpho pin for TIM1_CH3 above]
+
+* `TIM9: RMOTOR`
+   * `TIM9_CH1`: PE5:AF3 (RMOTOR+)
+   * `TIM9_CH2`: PE6:AF3 (RMOTOR-)
+
+* `TIM10: (Unused)`
+   * `[TIM10_CH1: PF6:AF3] [Morpho pin available])`
+
+* `TIM11: (Unused)`
+   * `TIM11_CH1: PF7:AF3 (unused)`
+
+* `TIM12: (Unused)`
+   * `[TIM12_CH1: PB14:AF9] [Morpho pin]`
+   * `TIM12_CH2: PB15:AF9 (unused)`
+
+* `TIM13: (Unused)`
+   * `TIM13_CH1: PF8:AF9 (unused)`
+
+* `TIM14: (Unused) (unused)`
+  *  `TIM14_CH1: PF9:AF9 (unused)`
+
+The summary of how the timer binding went is summarized below:
+
+* Servos:
+  The servos work best with 32-bit counters (i.e. TIM2/5).  It turns out that
+  there are exactly 4 Zio availble pins to TIM2/5, so that are used for the servos.
+
+* Encoders:
+  The encoders are a real challenge.
+  TIM8 has CH1/2 available on the Zio so the get assigned to the RENCODER.
+  The none of the other encoder enabled timers (TIM1/2/3/4/5/6/8) have both CH1/2 available.
+  This is fixed by shorting a Morpho pin to LPTIM1_IN2.
+  This allows TIM1 to be used for LENCODER.
+
+* Motors:
+  It is a requirement that each motor have both its +/- outputs on the same timer.
+  There is a real dirth of timers with two measly channels on the same counter.
+  TIM9 meets the requirement and gets RMOTOR.
+  This is fixed by shorting a Morpho pin to TIM_CH3.
+
+* LED's:
+  The LED's just need an internal timer to trigger the DMA peripheral.
+  TIM6 is used by HAL, so TIM7 will have to do.
+  No actual pin needs to bound since the signal is strictly internal.
+
+Additional pin binding comes next...
+
+<!--
 
 UART's:
 
@@ -546,9 +570,6 @@ UART7:
 UART8:
     UART8_RX: ('+PE0:AF8',)
     UART8_TX: ('-PE1:AF8',)
-
-
-
 
 
 ## Rev. A
@@ -604,5 +625,7 @@ The code in the HR2 `mechanical` directory is responsible for generating KiCad f
 outlines, mounting holes, and any associated cut-outs into the associated `.kicad_pcb` files.
 This code ensures that everything is placed in the same locations on the master board and
 the other 5 boards.
+
+-->
 
 

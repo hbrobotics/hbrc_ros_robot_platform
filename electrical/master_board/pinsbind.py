@@ -68,19 +68,39 @@ def main() -> None:
 
     # See the *PinBind* definition above for an explanation of the entries below:
     pin_binds: List[PinBind] = [
-        ("TIM2_CH2", "LMOTOR+", zio_signals, ""),
-        ("TIM2_CH3", "LMOTOR-", zio_signals, ""),
-        # ###( "TIM2_CH4", "LMOTOR", zio_signals, ""),
-        ("TIM3_CH1", "LENCODER_A", zio_signals, ""),
-        ("TIM3_CH2", "LENCODER_B", zio_signals, ""),
-        ("TIM4_CH1", "RENCODER_A", zio_signals, ""),
-        ("TIM4_CH2", "RENCODER_B", zio_signals, ""),
-        ("TIM8_CH1", "SERVO1", zio_signals, ""),
-        ("TIM8_CH2", "SERVO2", zio_signals, ""),
-        ("TIM8_CH3", "SERVO3", zio_signals, ""),
-        ("TIM8_CH4", "SERVO4", zio_signals, ""),
+        # The servos work best with 32-bit counters (i.e. TIM2/5).  It turns out that
+        # there are exactly 4 Zio availble pins to TIM2/5, so that are used for the servos.
+        ("TIM5_CH1", "SERVO1", zio_signals, ""),
+        ("TIM2_CH2", "SERVO2", zio_signals, ""),
+        ("TIM2_CH3", "SERVO3", zio_signals, ""),
+        ("TIM2_CH4", "SERVO4", zio_signals, ""),
+
+        # The encoders are a real challenge.  TIM8 has CH1/2 available on the Zio so the
+        # get assigned to the RENCODER.  The none of the other encoder enabled timers
+        # (TIM1/2/3/4/5/6/8) have both CH1/2 available.  This is fixed by shorting a Morpho
+        # pin to LPTIM1_IN2.  This allows TIM1 to be used for LENCODER.
+        ("LPTIM1_IN1", "LENCODER_A", zio_signals, ""),
+        ("LPTIM1_IN2", "LENCODER_B", morpho_signals, ""),
+        ("TIM8_CH1", "RENCODER_A", zio_signals, ""),
+        ("TIM8_CH2", "RENCODER_B", zio_signals, ""),
+
+        # It is a requirement that each motor have both its +/- outputs on the same timer.
+        # There is a real dirth of timers with two measly channels on the same counter.
+        # TIM9 meets the requirement and gets RMOTOR.  This is fixed by shorting a Morpho
+        # pin to TIM_CH3.
+        ("TIM1_CH3", "LMOTOR+", morpho_signals, ""),
+        ("TIM1_CH4", "LMOTOR-", zio_signals, ""),
         ("TIM9_CH1", "RMOTOR+", zio_signals, ""),
         ("TIM9_CH2", "RMOTOR-", zio_signals, ""),
+
+        # The LED's just need an internal timer to trigger the DMA peripheral.
+        # TIM6 is used by HAL, so TIM7 will have to do.
+
+        # The Lidar just needs one dedicated timer.
+        # There are plenty to choose from, so TIM4_CH2 is used.
+        ("TIM4_CH2", "LIDAR_PWM", zio_signals, ""),
+
+        # UARTS's come next.
         ("UART5_TX", "D0_TX", arduino_signals, ""),
         ("UART5_RX", "D1_RX", arduino_signals, ""),
         ("USART3_RX", "STLINK_RX", morpho_signals, ""),  # Nucleo-144 manual says it Must be USART3
@@ -125,6 +145,9 @@ def main() -> None:
     for signal_binding in signal_bindings:
         print(f"{signal_binding}")
     print("")
+
+    # signals_print(zio_signals, "Zio")
+    # signals_print(morpho_signals, "Morpho")
 
 
 # The functions after main() are listed alphabetically to make them easier to find.
@@ -346,52 +369,16 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
                 # print(f"Signal {signal} no takers found")
                 pass
 
-    return signal_bindings_table, pin_bindings_table
-
-
-"""
-    # Now sweep through the *pin_bindings* and attempt to match each *signal_name*:
-        assert signal_name not in signal_bindings_table, f"Trying to bind '{signal_name}' twice."
-        # print(f"signal_name='{signal_name}'")
-        signal: TextTuple
-        # Sweep through *signals* which has been preordered such signals with the fewest available
-        # options are selected first.
-        for signal in signals:
-            # print(f"signal={signal}, signal[0]='{signal[0]}'")
-            # Remember *signal* is a tuple of the form ("SIGNAL_NAME", "ANOTATED_PIN1", ...):
-            if signal_name == signal[0]:
-                # We have a match:
-                print(f">>>> found '{signal_name}' signal={signal}")
-                annotated_pin_name: Text
-                pin_name: Text
-                for annotated_pin_name in signal[1:]:
-                    pin_name = pin_name_deannotate(annotated_pin_name)
-                    if (
-                            pin_name not in pin_bindings_table and
-                            signal_name not in signal_bindings_table):
-                        # We have a match; perform the binding:
-                        binding = (signal_name, annotated_pin_name[1:], schematic_name)
-                        signal_bindings_table[signal_name] = binding
-                        pin_bindings_table[pin_name] = binding
-                        print(f"    Bind: '{pin_name}' signal={signal} binding={binding}")
-                        break
-                    else:
-                        print(f"    No bind: '{pin_name}' signal={signal}")
-                else:
-                    print(f"    No bind:: '{pin_name}' signal={signal}")
-                    for annotated_pin_name in signal[1:]:
-                        pin_name = pin_name_deannotate(annotated_pin_name)
-                        assert pin_name in pin_bindings_table, "Huh?"
-                        print(f"    {pin_name} is already bound to {pin_bindings_table[pin_name]}")
-                    # signals_print(signals, "Bind: All Pins Previously Bound")
-                    assert False, f"Unable to bind {signal_name} to {signal}"
-                break
-        else:
-            signals_print(signals, "Bind: Can not find")
-            assert False, f"Unable to find signal {signal_name} to bind to"
+    # Now look for pins that did not get bound:
+    unbound_pins: int = 0
+    for pin_bind in pin_binds:
+        signal_name, schematic_name, signals, force_pin_name = pin_bind
+        if signal_name not in signal_bindings_table:
+            print(f"{signal_name} did not get assigned to a pin")
+            unbound_pins += 1
+    assert unbound_pins == 0, f"{unbound_pins} pin(s) did not get bound."
 
     return signal_bindings_table, pin_bindings_table
-"""
 
 
 def pin_name_deannotate(annotated_pin_name: Text) -> Text:

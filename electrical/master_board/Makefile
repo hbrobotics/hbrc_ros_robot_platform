@@ -20,7 +20,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 all:
-	mypy pins_bind.py
-	flake8 --max-line-length=100 pins_bind.py
-	pydocstyle pins_bind.py
-	python pins_bind.py
+	mypy pinsbind.py
+	flake8 --max-line-length=100 pinsbind.py
+	pydocstyle pinsbind.py
+	python pinsbind.py
