@@ -43,14 +43,21 @@ The Nucleo-144 has two groups of connectors:
 * Morpho Connectors:
   The Nucleo-144 has two Morpho connectors are called CN11 and CN12,
   each of which is a 2x35 pin connector.
+  In general, the Morpho connectors connect to almost (but not quite all) of the associated
+  STM32F microcontroller mounted on the Nucleo-144 board.
   The Nucleo-144 board ships without having either of the CN11 and CN12 connectors populated.
+  It is necessary to solder connectors for CN11 and CN12.
   The master PCB sits under the Nucleo-144 and uses two female 2x35 headers to connect to the
   Nucleo-144 Morpho connectors.
-  The Nucleo-144 is sufficiently big that it needs to positioned above the drive motors.
-  For this reason, the Nucleo-144 needs long pins to bridge the distance between the CN11/CN12
-  connectors to the master PCB.
+  For the HR2, the Nucleo-144 is sufficiently big that it needs to positioned
+  above the HR2 drive motors.
+  For this reason, the Nucleo-144 needs long pins to bridge the distance
+  between the CN11/CN12 connectors and to the master PCB.
   This is accomplished with two 2x35 male "wire-wrap" pin headers that are soldered to the
   bottom of the Nucleo-144 in CN11 and CN12.
+  (Wire-wrap was a popular technology for prototyping electronics back in the 70's and 80's and
+  it is still used occasionally to this day.)
+  The Morpho connectors are dedicated to be used to connect the Nucleo-144 to the master PCB.
 
 * Zio Connectors:
   The Nucleo-144 has four Zio female pin connectors are called CN7 through CN10.
@@ -63,7 +70,8 @@ The Nucleo-144 has two groups of connectors:
   CN7-CN10 Zio pins.
 
 The ultimate goal of the HR2 is to support daughter boards that plug onto the Zio connectors.
-The are broad classes of daughter boards:
+
+The are two broad classes of daughter boards:
 
 * Arduino Shields:
   An Arduino shield has 3 categories of pins:
@@ -86,8 +94,6 @@ The are broad classes of daughter boards:
   host an Arduino shield on top if it so desires.
 
 What all of this means is that ZIO connectors are a central design constraint for the HR2.
-In general, the Morpho connectors connect to almost (but not quite all) of the associated
-STM32F microcontroller mounted on the Nucleo-144 board.
 Since there are fewer ZIO pins, not all of the signals on the Morpho pins can be mapped
 to the ZIO pins.
 
@@ -256,7 +262,7 @@ The HR2 has the following timer needs:
   pulse width modulated.
   This chewed up way too many timers and there was no way to make all of the pin
   bindings work.
-  Ultimately, the adopted strategy is to put the LED's onto latchable 16-bit shift register
+  Ultimately, the adopted strategy is to put the LED's onto latch-able 16-bit shift register
   that can is controlled by a filled using an SPI device.
   This reduces the pin requirements from 16 to 3 (SCK, SDA, and NSS.)
   The LED wave forms are copied from memory to the SPI device using the DMA device.
@@ -276,7 +282,7 @@ The HR2 has the following timer needs:
   This will chew up a total of 4 timer outputs for both motors.
 * 4 Servos:
   There a 3 servos for the arm and 1 extra servo.
-  Accurate pulse widths between 1ms and 2s are very desirble to prevent servo chatter.
+  Accurate pulse widths between 1ms and 2s are very desirable to prevent servo chatter.
   Servos only need to be updated approximately every 20ms with a pulse that is between 1ms and 2ms.
   Making the pulse width very accurate is a requirement,
   but the inter pulse time is not that critical.
@@ -305,6 +311,10 @@ The summary is:
      Motors:   0       4        1 or 2  1 timer w/4 channels or 2 timers w/2 channels
      Sonars:   0       0        1       1 free running needed for interrupt driven echo signals
      Servos:   0       4        1 or 2  32-bit timers strongly preferred.
+
+It turns out that timer pin binding for the HR2 is extremely difficult due to the
+a variety of reasons.
+
 
 
 ### SPI (Serial Peripheral Interface)
