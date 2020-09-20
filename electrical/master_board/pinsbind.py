@@ -27,19 +27,25 @@
 #        flake8 --max-line-length=100 pins_bind.py   # Search for misc. errors (unsed variables,...)
 #        pydocstyle pins_bind.py                     # Make sure the doc strings are consistent.
 #        python pins_bind.py                         # Run the program
+#
+# Note: that this file is formated to stay with 100 characters as enforced by flake8.
 
 """Figure out pin binding for Morpho/Zio connectors."""
 
 # Use type hints for mypy program.
-from typing import Dict, IO, List, Text, Tuple
+from typing import Dict, IO, List, Set, Text, Tuple
 import csv  # .csv file parser (CSV => Comma Separated Values)
 
+# Some type definitions:
 # Define TextTuple as an abreviation.  In general, Tuples are needed to support Python sorting.
-TextTuple = Tuple[Text, ...]  # Helper type to make the code easier to read. Immutable.
-# A Binding is a ("SIGNAL_NAME", "ANNOTATED_PIN_NAME", "SCHMEATIC_NAME") tuple.  Immutable.
+TextTuple = Tuple[Text, ...]  # Helper type to make the code easier to read.
+# A Binding is a ("SIGNAL_NAME", "ANNOTATED_PIN_NAME", "SCHEMATIC_NAME") tuple.
 Binding = Tuple[Text, Text, Text]
-Row = TextTuple  # A helper type for a row from the alternate functions table. Immutable
-Signals = Tuple[TextTuple, ...]  # Signal lists are organized a tuple of text tuples. Immutable.
+Row = TextTuple  # A helper type for a row read from a `.csv` file.
+# A Signal is a ("SIGNAL_NAME", "ANNOTATED_PIN_NAME1", ..., "ANNOTATED_PIN_NAMEn")
+# There is always a signal name and 0, 1 or more annotated pin names.
+Signal = TextTuple
+Signals = Tuple[TextTuple, ...]  # Signal lists are organized a tuple of text tuples.
 
 # A PinBind represnt a request to bind an internal signal to a schematics symbol with contraints
 # using the following tuple format:
@@ -49,68 +55,162 @@ Signals = Tuple[TextTuple, ...]  # Signal lists are organized a tuple of text tu
 #    "SCHEMATIC_NAME" is the schemtatic name.
 #    "SIGNALS" is one of the signals subset (e.g. Arduino, Zio, or Morpho)
 #    "FORCE_PIN_NAME" force the signal to be bound to a particular pin.
-PinBind = Tuple[Text, Text, Tuple[TextTuple, ...], Text]
+PinBind = Tuple[Text, Text, Signals, Text]
 
 
 def main() -> None:
     """Figure out pin binding for Morpho/ZIO connectors."""
     # Construct the *zios_table*:
     zios_table: Dict[Text, Text] = zios_table_create()
+    all_signals: Signals = all_signals_extract(zios_table)
+
+    # The "arduino" pins are the Zio connector signal pins that map to the
+    # Arduino A0-A5 and D0-D15 pins.
+    # Extract *arduino_set* and *arduino_signals* from *all_signals*:
+    arduino_set: Set[Text]
+    arduino_signals: Signals
+    arduino_signals, arduino_set = signals_subset(all_signals, '@', "Arduino")
+    print(f"arduino_set={len(arduino_set)}:{sorted(list(arduino_set))}")
+
+    # The daughter pins are the Zio connector signal pins that do not map to Arduino pins.
+    # Extract *daughter_set* and *daughter_signals* from *all_signals*:
+    daughter_set: Set[Text]
+    daugther_signals: Signals
+    daughter_signals, daughter_set = signals_subset(all_signals, '+', "Zio")
+    print(f"daughter_set={len(daughter_set)}:{sorted(list(daughter_set))}")
+
+    # The morpho pins are the morpho connector signal pins that do not map to any of the zioc
+    # connector pins.
+    # Extract the *morpho_set* and the *morpho_signals* from *all_signals*:
+    morpho_set: Set[Text]
+    morpho_signals: Signals
+    morpho_signals, morpho_set = signals_subset(all_signals, '-', "Morpho")
+    print(f"morpho_set={len(morpho_set)}:{sorted(list(morpho_set))}")
+
+    # Nucleo pins are pins that are pre-wired by the Nucleo board:
+    nucleo_set: Set[Text] = nucleo_set_create()
+    print(f"nucleo_set={len(nucleo_set)}:{sorted(list(nucleo_set))}")
+
+    # Look for pins that are used are prebound by Nucleo:
+    print(f"nucleo_arduino_pins={sorted(list(nucleo_set & arduino_set))}")
+    print(f"nucleo_daughter_pins={sorted(list(nucleo_set & daughter_set))}")
+    print(f"nucleo_morpho_pins={sorted(list(nucleo_set & morpho_set))}")
+
+    # Compute some sets to check for issues (yes at least one was found and fixed):
+    # morpho_set: Set[Text] = morpho_set_extract()
+    # morpho_only_set: Set[Text] = morpho_set - zios_set
+    # assert morpho_only_set & zios_set == set()
+    # weird_set = zios_set - morpho_set
+    # assert weird_set == set(), f"weird_set={weird_set}"
+    # print(f"morpho_set={sorted(list(morpho_set))}")
+    # print(f"morpho_only_set={sorted(list(morpho_only_set))}")
+
+    # zios_overlap: Set[Text] = zios_set & nucleo_set
+    # print(f"zios_overlap={sorted(list(zios_overlap))}")
+    # morpho_available: Set[Text] = morpho_set - nucleo_set
+    # print(f"morpho_available={sorted(list(morpho_available))}")
 
     # Read in *all_singals and subset into *arduino_signals*, *morpho_signals* and *zio_signals*:
-    all_signals: Signals = extract_all_signals(zios_table)
-    arduino_signals: Signals = signals_subset(all_signals, '@', "Arduino")
-    morpho_signals: Signals = signals_subset(all_signals, '-', "Morpho")
-    zio_signals: Signals = signals_subset(all_signals, '+', "Zio")
-    arduino_signals = arduino_signals
-    morpho_signals = morpho_signals
-    zio_signals = zio_signals
 
     # See the *PinBind* definition above for an explanation of the entries below:
     pin_binds: List[PinBind] = [
+        # Bind the arduino pins using the force pin name (4th field.)
+        ("UART6_RX", "D0_RX", arduino_signals, "PG9"),
+        ("URAR6_TX", "D1_TX", arduino_signals, "PG14"),
+        ("@D2", "D2", arduino_signals, "PF15"),
+        ("@D3", "D3", arduino_signals, "PE13"),    # ~TIM1_CH3  (~ means PWM)
+        ("@D4", "D4", arduino_signals, "PF14"),
+        ("@D5", "D5", arduino_signals, "PE11"),    # ~TIM1_CH2
+        ("@D6", "D6", arduino_signals, "PE9"),     # ~TIM1_CH1
+        ("@D7", "D7", arduino_signals, "PF13"),
+        ("@D8", "D8", arduino_signals, "PF12"),    # Some signal names below have been "scrunched".
+        ("@D9", "D9", arduino_signals, "PD15"),    # ~TIM4_CH4
+        ("@D10", "D10", arduino_signals, "PD14"),  # ~SPI1NSS:PA4/15,PG10 SPI6NSS:PA4/8/15 TIM4CH3
+        ("@D11", "D11", arduino_signals, "PA7"),   # ~SPI1MOSI,SPI6_MOSI,TIM3CH2, TIM14CH1 RMIICRSDV
+        ("@D12", "D12", arduino_signals, "PA6"),   # SPI1_MISO, SPI6_MISO
+        ("@D13", "D13", arduino_signals, "PA5"),   # SPI1_SCK, SPI6_SCK
+        ("@D14", "D14", arduino_signals, "PB9"),
+        ("@D15", "D15", arduino_signals, "PB8"),
+        ("@D18", "D18", arduino_signals, "PB13"),
+        ("@D19", "D19", arduino_signals, "PB12"),
+        ("ADC123_IN3", "A0", arduino_signals, "PA3"),   # PA3 ADC123_IN3
+        ("ADC123_IN10", "A1", arduino_signals, "PC0"),  # PC0 ADD123_IN10
+        ("ADC123_IN13", "A2", arduino_signals, "PC3"),  # PC3 ADC123_IN13
+        ("ADC3_IN9", "A3", arduino_signals, "PF3"),     # PF3 ADC3_IN9
+        ("ADC3_IN15", "A4", arduino_signals, "PF5"),    # PF5 ADC3_IN15
+        ("ADC3_IN8", "A5", arduino_signals, "PF10"),    # PF10 ADC3_IN8
+
+        # The Nucleo Pins should be bound next, since they tend not too overlap with the
+        # Zio pins (with the 1 big exception of PA7.
+
+        ("USER_BTN", ":USER_SW1", morpho_signals, "PC13"),
+        ("RCC_OSC32_IN", ":RCC_OSC_IN", morpho_signals, "PC14"),
+        ("RCC_OSC32_OUT", ":RCC_OSC_OUT", morpho_signals, "PC15"),
+        # ("OSC_IN", ":OCS_IN", morpho_signals, "PH0"),    # Do not bother with PH0
+        # ("OSC_OUT", ":OSC_OUT", morpho_signals, "PH1"),  # Do not bother with PH1
+        ("RMII_MDC", ":RMII_MDC", morpho_signals, "PC1"),
+        ("RMII_REF_CLK", ":RMI_REF_CLK", morpho_signals, "PA1"),
+        ("RMII_MDIO", ":RMII_MDIO", morpho_signals, "PA2"),
+        # ("RMII_CRS_DV", ":RMII_CRS_DV", morpho_signals, "PA7"),  # ZIO overlap @D11
+        ("RMII_RXD0", ":RMII_RXD0", morpho_signals, "PC4"),
+        ("RMII_RXD1", ":RMII_RXD1", morpho_signals, "PC5"),
+        ("LD1", ":LD1", morpho_signals, "PB0"),  # ZIO overlap CN10-31
+        ("USB_POWERSWITCHON", ":USB_PWR_SW", morpho_signals, "PG6"),
+        ("USB_OVERCURRENT", ":USB_OVERDRAW", morpho_signals, "PG7"),
+        ("USB_SOF", ":USB_SOF", morpho_signals, "PA8"),
+        ("USB_VBUS", ":USB_VBUS:", morpho_signals, "PA9"),
+        ("USB_ID", ":USB_ID", morpho_signals, "PA10"),
+        ("USB_DM", ":USB_DM", morpho_signals, "PA11"),
+        ("USB_DP", ":USB_DP", morpho_signals, "PA12"),
+        ("TMS", ":TMS", morpho_signals, "PA13"),
+        ("TCK", ":TCK", morpho_signals, "PA14"),
+        ("RMII_TX_EN", "RMII_TX_EN", morpho_signals, "PG11"),
+        ("RMII_TXD0", "RMII_TXD0", morpho_signals, "PG13"),
+        # ("SWO", "SW0", morpho_signals, "PB3"),  # CN7-15 Not needed because SWO is unimplemented.
+        ("LD2 (Blue)", ":LED_BLUE", morpho_signals, "PB7"),
+
         # The servos work best with 32-bit counters (i.e. TIM2/5).  It turns out that
         # there are exactly 4 Zio availble pins to TIM2/5, so that are used for the servos.
-        ("TIM5_CH1", "SERVO1", zio_signals, ""),
-        ("TIM2_CH2", "SERVO2", zio_signals, ""),
-        ("TIM2_CH3", "SERVO3", zio_signals, ""),
-        ("TIM2_CH4", "SERVO4", zio_signals, ""),
+        ("TIM5_CH1", "SERVO1", daughter_signals, ""),
+        ("TIM2_CH2", "SERVO2", daughter_signals, ""),
+        ("TIM2_CH3", "SERVO3", daughter_signals, ""),
+        ("TIM2_CH4", "SERVO4", daughter_signals, ""),
 
         # The encoders are a real challenge.  TIM8 has CH1/2 available on the Zio so the
         # get assigned to the RENCODER.  The none of the other encoder enabled timers
         # (TIM1/2/3/4/5/6/8) have both CH1/2 available.  This is fixed by shorting a Morpho
         # pin to LPTIM1_IN2.  This allows TIM1 to be used for LENCODER.
-        ("LPTIM1_IN1", "LENCODER_A", zio_signals, ""),
+        ("LPTIM1_IN1", "LENCODER_A", daughter_signals, ""),
         ("LPTIM1_IN2", "LENCODER_B", morpho_signals, ""),
-        ("TIM8_CH1", "RENCODER_A", zio_signals, ""),
-        ("TIM8_CH2", "RENCODER_B", zio_signals, ""),
+        ("TIM8_CH1", "RENCODER_A", daughter_signals, ""),
+        ("TIM8_CH2", "RENCODER_B", daughter_signals, ""),
 
         # It is a requirement that each motor have both its +/- outputs on the same timer.
         # There is a real dirth of timers with two measly channels on the same counter.
         # TIM9 meets the requirement and gets RMOTOR.  This is fixed by shorting a Morpho
         # pin to TIM_CH3.
-        ("TIM1_CH3", "LMOTOR+", morpho_signals, ""),
-        ("TIM1_CH4", "LMOTOR-", zio_signals, ""),
-        ("TIM9_CH1", "RMOTOR+", zio_signals, ""),
-        ("TIM9_CH2", "RMOTOR-", zio_signals, ""),
+        # ("TIM1_CH3", "LMOTOR+", morpho_signals, ""),   #### PROBLEM !!!!!
+        ("TIM1_CH4", "LMOTOR-", daughter_signals, ""),
+        ("TIM9_CH1", "RMOTOR+", daughter_signals, ""),
+        ("TIM9_CH2", "RMOTOR-", daughter_signals, ""),
 
         # The LED's just need an internal timer to trigger the DMA peripheral.
         # TIM6 is used by HAL, so TIM7 will have to do.
 
         # The Lidar just needs one dedicated timer.
         # There are plenty to choose from, so TIM4_CH2 is used.
-        ("TIM4_CH2", "LIDAR_PWM", zio_signals, ""),
+        ("TIM4_CH2", "LIDAR_PWM", daughter_signals, ""),
 
         # UARTS's come next.
-        ("UART5_TX", "D0_TX", arduino_signals, ""),
-        ("UART5_RX", "D1_RX", arduino_signals, ""),
         ("USART3_RX", "STLINK_RX", morpho_signals, ""),  # Nucleo-144 manual says it Must be USART3
         ("USART3_TX", "STLINK_TX", morpho_signals, ""),
-        ("USART1_RX", "SBC_RX", morpho_signals, ""),
-        ("USART1_TX", "SBC_TX", morpho_signals, ""),
-        ("USART1_RX", "SBC_RX", morpho_signals, ""),
+        # ("USART1_RX", "SBC_RX", morpho_signals, ""),
         ("USART1_TX", "SBC_TX", morpho_signals, ""),
     ]
     signal_bindings_table, pin_bindings_table = pins_bind(pin_binds)
+
+    # print(f"len(signal_bindings_table)={len(signal_bindings_table)}")
+    # print(f"len(pin_bindings_table)={len(pin_bindings_table)}")
 
     Quad = Tuple[Text, int, Text, Text]
 
@@ -138,6 +238,7 @@ def main() -> None:
     print("")
 
     print("Signal Bindings:")
+    print(f"len(signal_bindings_table)={len(signal_bindings_table)}")
     signal_binding: Binding
     signal_bindings: List[Binding] = [signal_binding
                                       for signal_binding in signal_bindings_table.values()]
@@ -146,29 +247,26 @@ def main() -> None:
         print(f"{signal_binding}")
     print("")
 
-    # signals_print(zio_signals, "Zio")
+    pin_bindings_size = len(pin_bindings)
+    signal_bindings_size = len(signal_bindings)
+    assert pin_bindings_size == signal_bindings_size, (
+        f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
+
+    unused_set: Set[Text] = set(list(pin_bindings_table.keys()))
+    unused_arduino_set: Set[Text] = arduino_set - unused_set
+    unused_daughter_set: Set[Text] = daughter_set - unused_set
+    unused_morpho_set: Set[Text] = morpho_set - unused_set
+    assert len(unused_arduino_set) == 0
+    print(f"unused_morpho_set: {len(unused_morpho_set)}: {unused_morpho_set}")
+    print(f"unused_daughter_set: {len(unused_daughter_set)}: {unused_daughter_set}")
+
+    # signals_print(daughter_signals, "Zio")
     # signals_print(morpho_signals, "Morpho")
 
 
 # The functions after main() are listed alphabetically to make them easier to find.
 
-def alternate_functions_csv_read() -> Tuple[Row, Tuple[Row, ...]]:
-    """Read the alternate functions table."""
-    # Read in *rows* from "stm32f7676_af.csv" file:
-    rows: List[Tuple[Text, ...]] = []
-    csv_file: IO[Text]
-    with open("stm32f767_af.csv", "r") as csv_file:
-        af_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-        for row_list in af_reader:
-            rows.append(tuple(row_list))
-
-    # The first row is the column *headings* and the remaining rows are the *data_rows*:
-    headings: Row = rows[0]
-    data_rows: Tuple[Row, ...] = tuple(rows[1:])
-    return headings, data_rows
-
-
-def extract_all_signals(zios_table: Dict[Text, Text]) -> Tuple[TextTuple, ...]:
+def all_signals_extract(zios_table: Dict[Text, Text]) -> Tuple[TextTuple, ...]:
     """Return the extracted signals as a sorted tuple.
 
     The signals table maps an internal signals table to tuple of the form:
@@ -279,6 +377,84 @@ def extract_all_signals(zios_table: Dict[Text, Text]) -> Tuple[TextTuple, ...]:
     return tuple(sorted(signals))
 
 
+def alternate_functions_csv_read() -> Tuple[Row, Tuple[Row, ...]]:
+    """Read the alternate functions table."""
+    # Read in *rows* from "stm32f7676_af.csv" file:
+    rows: List[TextTuple] = []
+    csv_file: IO[Text]
+    with open("stm32f767_af.csv", "r") as csv_file:
+        af_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+        for row_list in af_reader:
+            rows.append(tuple(row_list))
+
+    # The first row is the column *headings* and the remaining rows are the *data_rows*:
+    headings: Row = rows[0]
+    data_rows: Tuple[Row, ...] = tuple(rows[1:])
+    return headings, data_rows
+
+
+def morpho_set_extract() -> Set[Text]:
+    """Return the Morph pin names read from .csv file."""
+    # Read in *rows* from "morpho_.csv" file:
+    rows: List[TextTuple] = []
+    csv_file: IO[Text]
+    with open("morpho_pins.csv", "r") as csv_file:
+        af_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+        for row_list in af_reader:
+            rows.append(tuple(row_list))
+
+    # The first row is the column *headings* and the remaining rows are the *data_rows*:
+    data_rows: Tuple[Row, ...] = tuple(rows[1:])
+
+    morpho_set: Set[Text] = set()
+    data_row: TextTuple
+    for data_row in data_rows:
+        if len(data_row) >= 4:
+            pin_name = data_row[2]
+            if pin_name.startswith('@'):
+                pin_name = pin_name[1:]
+            if (
+                    len(pin_name) >= 3 and pin_name[0] == 'P' and
+                    pin_name[1] in "ABCDEFG" and pin_name[2:].isdigit()):
+                morpho_set |= set([pin_name])
+    return morpho_set
+
+
+def nucleo_set_create() -> Set[Text]:
+    """Return the Pins used by the Nucleo-144."""
+    pin_number_name_uses: List[Tuple[int, Text, Text]] = [
+        (7, "PC13", "USER_Btn"),
+        (8, "PC14", "RCC_OSC32_IN"),
+        (9, "PC15", "RCC_OSC32_OUT"),
+        (23, "PH0", "OSC_IN"),
+        (24, "PH1", "OSC_OUT"),
+        (27, "PC1", "RMII_MDC"),
+        (35, "PA1", "RMII_REF_CLK"),
+        (36, "PA2", "RMII_MDIO"),
+        (43, "PA7", "RMII_CRS_DV"),  # ZIO overlap @D11
+        (44, "PC4", "RMII_RXD0"),
+        (45, "PC5", "RMII_RXD1"),
+        (46, "PB0", "LD1"),  # ZIO overlap CN10-31
+        (91, "PG6", "USB_PowerSwitchOn"),
+        (92, "PG7", "USB_OverCurrent"),
+        (100, "PA8", "USB_SOF"),
+        (101, "PA9", "USB_VBUS"),
+        (102, "PA10", "USB_ID"),
+        (103, "PA11", "USB_DM"),
+        (104, "PA12", "USB_DP"),
+        (105, "PA13", "TMS"),
+        (109, "PA14", "TCK"),
+        (126, "PG11", "RMII_TX_EN"),
+        (128, "PG13", "RMII_TXD0"),
+        (133, "PB3", "SWO"),  # CN7-15
+        (137, "PB7", "LD2 (Blue)"),  # Correct
+    ]
+    pin_number_name_use: Tuple[int, Text, Text]
+    nucleo_set: Set[Text] = {pin_number_name_use[1]
+                             for pin_number_name_use in pin_number_name_uses}
+    return nucleo_set
+
+
 def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text, Binding]]:
     """Bind needed signals to specific pins.
 
@@ -305,6 +481,7 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
     # so they can be used a dictionary key.  So, we can build *signals_table* which
     # is keyed by off of these three values to build lists of *PinBind*'s that are
     # isolated to a single *Signals* instance.  The *PinBind*'s order must be preserved.
+    binding: Binding
     pin_bind: PinBind
     signal_name: Text
     schematic_name: Text
@@ -314,9 +491,19 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
     for pin_bind in pin_binds:
         # Unpack *pin_bind*:
         signal_name, schematic_name, signals, force_pin_name = pin_bind
-        if signals not in signals_table:
-            signals_table[signals] = []
-        signals_table[signals].append(pin_bind)
+        if force_pin_name != "":
+            binding = (signal_name, f"{force_pin_name}:AF15", schematic_name)
+            # print(f"signal_name={signal_name} schematic_name={schematic_name} "
+            #       f"force_pin_name={force_pin_name} binding={binding}")
+            assert force_pin_name not in pin_bindings_table, f"Duplicate pin? -- '{force_pin_name}'"
+            pin_bindings_table[force_pin_name] = binding
+            assert force_pin_name not in signal_bindings_table
+            signal_bindings_table[signal_name] = binding
+        else:
+            if signals not in signals_table:
+                signals_table[signals] = []
+            signals_table[signals].append(pin_bind)
+    assert len(signal_bindings_table) == len(pin_bindings_table), f"Early binding failed {binding}"
 
     # Now we can sweep through the *signals_table* and find try to allocate the associated
     # *PinBind*'s.  The order that the *signals* comes out of the iterator is semi-random,
@@ -334,37 +521,40 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
             desired_signal_name: Text = signal[0]
             annotated_pin_names: TextTuple = signal[1:]
             for signal_name, schematic_name, duplicate_signals, force_pin_name in pin_binds_list:
-                # print(f"    Attempting to bind '{signal_name}'")
-                assert signals == duplicate_signals, "Something is very confused!"
-                match: bool = False
-                if signal_name == desired_signal_name:
-                    # We have a signal match; attempt to do a binding:
-                    # print(f"    Found '{signal_name}' signal={signal}")
-                    annotated_pin_name: Text
-                    pin_name: Text
-                    for annotated_pin_name in annotated_pin_names:
-                        pin_name = pin_name_deannotate(annotated_pin_name)
-                        if (
-                                pin_name not in pin_bindings_table and
-                                signal_name not in signal_bindings_table):
-                            # We have a match; perform the binding:
-                            binding = (signal_name, annotated_pin_name[1:], schematic_name)
-                            signal_bindings_table[signal_name] = binding
-                            pin_bindings_table[pin_name] = binding
-                            # print(f"    >>> Bind: '{pin_name}' signal={signal} binding={binding}")
-                            match = True
-                            break
-                    else:
-                        # print(f"    No bind:: signal={signal}")
+                if force_pin_name == "":
+                    # print(f"    Attempting to bind '{signal_name}'")
+                    assert signals == duplicate_signals, "Something is very confused!"
+                    match: bool = False
+                    if signal_name == desired_signal_name:
+                        # We have a signal match; attempt to do a binding:
+                        # print(f"    Found '{signal_name}' signal={signal}")
+                        annotated_pin_name: Text
+                        pin_name: Text
+                        assert len(signal_bindings_table) == len(pin_bindings_table), "Not OK"
                         for annotated_pin_name in annotated_pin_names:
                             pin_name = pin_name_deannotate(annotated_pin_name)
-                            assert pin_name in pin_bindings_table, f"Pin {pin_name} not bound????"
-                            previous_binding: Binding = pin_bindings_table[pin_name]
-                            print(f"    {pin_name} is already bound to {previous_binding}")
-                            # signals_print(signals, "Bind: All Pins Previously Bound")
-                        assert False, f"Unable to bind {signal_name} to {signal}"
-                    if match:
-                        break
+                            if (
+                                    pin_name not in pin_bindings_table and
+                                    signal_name not in signal_bindings_table):
+                                # We have a match; perform the binding:
+                                binding = (signal_name, annotated_pin_name[1:], schematic_name)
+                                signal_bindings_table[signal_name] = binding
+                                pin_bindings_table[pin_name] = binding
+                                # print(f"    >>> Bind: '{pin_name}' "
+                                #       f"signal={signal} binding={binding}")
+                                match = True
+                                break
+                        else:
+                            print(f"    {signal_name} wants to bind to {annotated_pin_names}")
+                            for annotated_pin_name in annotated_pin_names:
+                                pin_name = pin_name_deannotate(annotated_pin_name)
+                                assert pin_name in pin_bindings_table, f"Pin {pin_name} not bound?"
+                                previous_binding: Binding = pin_bindings_table[pin_name]
+                                print(f"    {pin_name} is already bound to {previous_binding}")
+                                # signals_print(signals, "Bind: All Pins Previously Bound")
+                            assert False, f"Unable to bind {signal_name} to {signal}"
+                        if match:
+                            break
             else:
                 # print(f"Signal {signal} no takers found")
                 pass
@@ -378,6 +568,17 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
             unbound_pins += 1
     assert unbound_pins == 0, f"{unbound_pins} pin(s) did not get bound."
 
+    for signal_name, binding in signal_bindings_table.items():
+        assert signal_name == binding[0]
+    for pin_name, binding in pin_bindings_table.items():
+        assert pin_name == binding[1].split(':')[0]
+
+    signal_bindings_size = len(signal_bindings_table)
+    pin_bindings_size = len(pin_bindings_table)
+    # print(f"pinsbind: pin_bindings_size={pin_bindings_size}")
+    # print(f"pinsbind: signal_bindings_size={signal_bindings_size}")
+    assert signal_bindings_size == pin_bindings_size, (
+        f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
     return signal_bindings_table, pin_bindings_table
 
 
@@ -423,10 +624,10 @@ def signals_print(signals: Tuple[TextTuple, ...], title: Text) -> None:
     print("")
 
 
-def signals_subset(
-        signals: Tuple[TextTuple, ...], pattern: Text, title: Text) -> Tuple[TextTuple, ...]:
+def signals_subset(signals: Signals, pattern: Text, title: Text) -> Tuple[Signals, Set[Text]]:
     """Return a subset of signals based on a pattern."""
     culled_signals: List[TextTuple] = []
+    pin_names_set: Set[Text] = set()
     signal_pins: TextTuple
     for signal_pins in signals:
         signal_name: Text = signal_pins[0]
@@ -434,10 +635,18 @@ def signals_subset(
         culled_signal_pins: List[Text] = [signal_name]
         annotated_pin_name: Text
         for annotated_pin_name in annotated_pin_names:
-            flag: Text = annotated_pin_name[0]
+            flag_pin_name_af: List[Text] = annotated_pin_name.split(':')
+            assert len(flag_pin_name_af) == 2, f"Bad signal '{flag_pin_name_af}'"
+            flag_pin_name: Text = flag_pin_name_af[0]
+            # af: Text = flag_pin_name_af[1]  # No used!
+            flag: Text = flag_pin_name[0]
             assert flag in "@+-", f"Flag '{flag}' must be one of '@', '+', or '-'"
+            pin_name: Text = flag_pin_name[1:]
+            assert (len(pin_name) >= 3 and pin_name[0] == 'P' and pin_name[1] in "ABCDEFG" and
+                    pin_name[2:].isdigit()), f"Bad pin name from '{pin_name}'"
             if flag in pattern:
                 culled_signal_pins.append(annotated_pin_name)
+                pin_names_set |= set([pin_name])  # Need to enclose in list to avoid set of letters.
 
         # Only keep result that have at least one annotated pin name:
         if len(culled_signal_pins) > 1:
@@ -456,7 +665,7 @@ def signals_subset(
 
     # Uncomment for debugging:
     # signals_print(final_culled_signals, title)
-    return final_culled_signals
+    return final_culled_signals, pin_names_set
 
 
 def zios_table_create() -> Dict[Text, Text]:
