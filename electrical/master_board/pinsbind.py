@@ -225,6 +225,8 @@ def main() -> None:
         (":SPI1_MOSI", "D11_PWM_MOSI+", arduino_signals, "PA15"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
 
     ]
+    signal_bindings_table: Dict[Text, Tuple[Binding, ...]]
+    pin_bindings_table: Dict[Text, Binding]
     signal_bindings_table, pin_bindings_table = pins_bind(pin_binds)
 
     # print(f"len(signal_bindings_table)={len(signal_bindings_table)}")
@@ -256,20 +258,27 @@ def main() -> None:
         print(f"{quad}")
     print("")
 
-    print("Signal Bindings:")
     print(f"len(signal_bindings_table)={len(signal_bindings_table)}")
+    schematic_bindings: List[Binding] = []
+    signal_bindings: List[Binding] = []
     signal_binding: Binding
-    signal_bindings: List[Binding] = [signal_binding
-                                      for signal_binding in signal_bindings_table.values()]
+    schematic_binding: Binding
+    bindings_tuple: Tuple[Binding, ...]
+    for bindings_tuple in signal_bindings_table.values():
+        for signal_binding in bindings_tuple:
+            signal_bindings.append(signal_binding)
+            schematic_binding = (signal_binding[2], signal_binding[0], signal_binding[1])
+            schematic_bindings.append(schematic_binding)
     signal_bindings = sorted(signal_bindings)
+    schematic_bindings = sorted(schematic_bindings)
+
+    print("Signal Bindings:")
     for signal_binding in signal_bindings:
         print(f"{signal_binding}")
     print("")
 
     print("Schematic Bindings:")
-    signal_bindings = [(signal_binding[2], signal_binding[0], signal_binding[1])
-                       for signal_binding in signal_bindings_table.values()]
-    for signal_binding in sorted(signal_bindings):
+    for schematic_binding in schematic_bindings:
         print(f"{signal_binding}")
     print("")
 
@@ -490,7 +499,8 @@ def nucleo_set_create() -> Set[Text]:
     return nucleo_set
 
 
-def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text, Binding]]:
+def pins_bind(pin_binds: List[PinBind]) -> Tuple[
+        Dict[Text, Tuple[Binding, ...]], Dict[Text, Binding]]:
     """Bind needed signals to specific pins.
 
     Args:
@@ -508,7 +518,7 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
     """
     # Initialize empty *pin_bindings_table* and *signal_bindings_table*:
     pin_bindings_table: Dict[Text, Binding] = {}
-    signal_bindings_table: Dict[Text, Binding] = {}
+    signal_bindings_table: Dict[Text, Tuple[Binding, ...]] = {}
 
     # This step is pretty obscure.  We need to partion the *pin_binds* by it *signal*
     # (type *Signals*) component, which is one of *arduino_signals*, *daughter_signals*,
@@ -535,7 +545,7 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
             assert force_pin_name not in pin_bindings_table, f"Duplicate pin? -- '{force_pin_name}'"
             pin_bindings_table[force_pin_name] = binding
             assert force_pin_name not in signal_bindings_table
-            signal_bindings_table[signal_name] = binding
+            signal_bindings_table[signal_name] = (binding,)
         else:
             if signals not in signals_table:
                 signals_table[signals] = []
@@ -575,7 +585,7 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
                                     signal_name not in signal_bindings_table):
                                 # We have a match; perform the binding:
                                 binding = (signal_name, annotated_pin_name[1:], schematic_name)
-                                signal_bindings_table[signal_name] = binding
+                                signal_bindings_table[signal_name] = (binding,)
                                 pin_bindings_table[pin_name] = binding
                                 # print(f"    >>> Bind: '{pin_name}' "
                                 #       f"signal={signal} binding={binding}")
@@ -605,8 +615,10 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[Dict[Text, Binding], Dict[Text,
             unbound_pins += 1
     assert unbound_pins == 0, f"{unbound_pins} pin(s) did not get bound."
 
-    for signal_name, binding in signal_bindings_table.items():
-        assert signal_name == binding[0]
+    bindings: Tuple[Binding, ...]
+    for signal_name, bindings in signal_bindings_table.items():
+        for binding in bindings:
+            assert signal_name == binding[0]
     for pin_name, binding in pin_bindings_table.items():
         assert pin_name == binding[1].split(':')[0]
 
