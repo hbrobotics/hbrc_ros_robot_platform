@@ -133,11 +133,11 @@ The following pin terminology is introduced.
 * Arduino Pins:
   The Arduino signal pins are the pins that are reserved to connect to an Arduino shield.
   As mentioned above,
-  the pins are further sub-divided into "analog" pins (A0-A5), and "digital" pins (D0-D15).
+  the pins are further sub-divided into "analog" pins (A0-A5), and "digital" pins (D0-D13).
   Note that the "analog" pins can be connected to an A/D converter,
   but they can also be used as digital I/O pins.
   Two of the "analog" pins are bound to an I2C peripheral.
-  There are 6 "analog" pins and 16 "digital" pins, for a total 22 Arduino pins.
+  There are 6 "analog" pins and 14 "digital" pins, for a total of 20 Arduino pins.
 
 * Daughter Pins:
   The daughter pins are the remaining signal pins on the Zio connectors that are not
@@ -170,7 +170,7 @@ The following pin terminology is introduced.
     PB3 is connected to the SWO signal that technically is used by the ST-Link.
     However, the SWO signal is currently not used by the ST-Link, so it is actually available.
 
-  By the way, the pin pin name convetions are described it greater detail below.
+By the way, the pin name conventions are described it greater detail below.
 
 To summarize, the Ardunio, Daughter, and Morpho pin sets are mutually exclusive with no overlap.
 The Nucleo pins are mostly in the Morpho pin set with just the three exceptions,
@@ -319,10 +319,10 @@ The peripherals of interest to the HR2 Master board are:
 * Digital I/O pins:
   Some pins are dedicated to simple digital I/O.
 
-* External Interupt pins:
+* External Interrupt pins:
   Most pins can also be used to generate external interrupt signals.
 
-A brief discriptiong of the various peripherals follows below:
+A brief descriptions of the various peripherals follows below:
 
 ### Timers
 
@@ -464,15 +464,16 @@ The HR2 requirements for USART's are:
 
 The USART requirements are:
 
-* SBC (Single Board Computer):
-  The single board computer (e.g. Raspberry Pi) needs to be able to talk to the microcontroller.
-
 * Arduino Shield USART:
   Many Arduino shields need a dedicated serial connection.
+  For the Nucleo, UART6 is connected to these pins.
 
 * ST-Link debug USART:
   The ST-Link supports a serial port over USB.
   This is traditionally USART3.
+
+* SBC (Single Board Computer):
+  The single board computer (e.g. Raspberry Pi) needs to be able to talk to the microcontroller.
 
 * Lidar:
   Many LIDAR's generate a pretty high stream of data over a serial link for their point cloud.
@@ -484,8 +485,6 @@ The USART requirements are:
 
 * FTDI Debug USART (Morpho Only):
   This yet another USART that can be used for debugging.
-
-##########################
 
 * FPGA USART (Zio Only):
   This is a dedicated USART for talking to the FPGA.
@@ -515,8 +514,8 @@ The dense table is shown below where the Arduino signals are prefixed with an `@
         PA9:  -------            PB9:  CN7-4:   (1) @D14  PC9:  CN8-4:        PD9:  -------:
         PA10: -------            PB10: CN10-32            PC10: CN8-6:        PD10: -------:
         PA11: -------            PB11: CN7-34:            PC11: CN8-8:        PD11: CN10-23:
-        PA12: -------            PB12: CN7-7:   @D19      PC12: CN8-10:       PD12: CN10-21:
-        PA13: -------            PB13: CN7-5:   @D18      PC13: -------:      PD13: CN10-19:
+        PA12: -------            PB12: CN7-7:             PC12: CN8-10:       PD12: CN10-21:
+        PA13: -------            PB13: CN7-5:             PC13: -------:      PD13: CN10-19:
         PA14: -------            PB14: -------:           PC14: -------:      PD14: CN7-16:  @D10
         PA15: CN7-9:             PB15: CN7-3:             PC15: -------:      PD15: CN7-18:  @D9
 
@@ -583,8 +582,8 @@ The following order is used:
 * Arduino pins:
   The Arduino pins are totally fixed, so they get bound first.
 
-* Morpho pins:
-  The Morpho pins are totally fixed, so they go in next.
+* Nucleo pins:
+  The Nucleo pins are totally fixed, so they go in next.
   The PA7 pin for RMII_CRS_DV, is left as an Arduino pin.
   Over time, some of the Morpho pins are likely to get used for other purposes.
   It is likely the TMS/TCK will go first, followed by the USB signals.
@@ -592,22 +591,25 @@ The following order is used:
 
 * STLINK:
   It is really important that the ST-Link work.
-  This involves 3 software download and debug pins called SWCLK, SWDIO, and NRST.
+  This just involves 3 software download and debug pins called SWCLK (PA14), SWDIO (PA13), and NRST.
+  The SWCLK and SWDIO pins must be bound early.
   In addition there are two pins connected to a UART on the STLink board.
   Traditionally, these are connected to UART3 on the Nucleo chip,
   but this is not a hard requirement.
   Finally, there is a pin called SWO that is reserved by currently unused by the STLink.
-  So the SWO pin is actually free for now.
+  So, the SWO pin is actually free to use and does not need to be bound.
 
 * Ethernet:
   Keeping the Nucleo Ethernet connector alive is more important than
   keeping the USB connector alive.
-  With the exception of the Arduino D11 ping, his pins only affects the Morpho pins
+  With the exception of the Arduino D11 pin (i.e PA7),
+  there should be no problems avoiding the Ethernet pins.
   
 * USB:
   The Nucleo USB connector can be bound next.
   However, it option if some Morpho pins are needed for something else.
-  The USB is less interesting than the 
+  The USB is less interesting than the Ethernet,
+  so the USB pins are going to be raided before the Ethernet pins.
 
 * Arduino:
   The Arduino pins are fixed and can not be moved.
@@ -616,117 +618,136 @@ The following order is used:
   The requirements are:
 
   * A2D inputs (A0-A5):
-    (A0=ADC123IN(PA3), A1=ADC123_IN1(PC0), 
+    (A0=ADC123IN(PA3), A1=ADC123_IN1(PC0), A2=ADC123_IN113(PC3),
+    A3=ADC_IN9(PF3), A4=ADC_IN15(PF5), A5=ADC_IN8(PF10).
 
   * PWM output pins:
     (D3=TIM1_CH3, D5=TIM1_CH2, D6: TIM_CH1, D9=TIM4_CH4, D10=TIM4_CH3, D11=TIM3_CH1)
-    Notice that TIM1_CH[1|2|3] TIM4_CH[3|4], and TIM3_CH1 are used.
-    This is going to make timer allocation a huge nightmare.
-    
+
   * SPI I/O pins:
     (D10=SPI[1|6]_NSS, DD11=SPI[1|6]_MOSI, D12=SPI[1|6]_MISO, D13=SPI[1|6]_SCK)
 
   * I2C I/O pins:
     (A4:I2C?/SDA A5:I2C?/SCL)
 
-  The nudeo does not currently route and I2C device to A4/A5;
-  this is a problem that needs to be solved.
+  The Nucleo does not currently does route any I2C peripheral to A4/A5;
+  this is a problem that needs to be solved wiring a couple of I2C signal pins
+  to a couple of spare daughter pins.
 
 * Timers:
-  Timers are a nightmare.
+  Timers are a nightmare that are discussed below.
+  Frankly, everything was eventually figured out.
 
-  
+* I2C, SPI, UARTS, SONARS.
 
-The order in which pins are bound is 
 
 The trick to using the program is to specify the order in which to bind the pins.
 
 The tricky thing to figure out was the timer bindings.
-It was not possible to accomplish the task without cross connecting two non-Zio Morpho connector
-pins to ZIO pins.
+It was not possible to accomplish the task without cross connecting one Morpho pin
+to a Daughter pin.
 
-## Timer Bindings
+## Timer Peripheral Bindings
 
 The connectivity of the Timers to the Zio connectors is listed alphabetical order below.
+In the assignments below, square brackets ([...]) indicate a Morpho pin,
+curly braces ({...}) mean an Ardunio pin, and angle brackets (<...>) mean a Daughter pin.
+The schematic symbol name is in parentheses (...).
 The assignments are summarized below with further discussion immediately following:
 
-* `LPTIM: LENCODER`
-  * `LPTIM_IN1: PD12:AF3 (LENCODER_A)`
-  * `[LPTIM_IN2: PE:AF3] (LENCODER_B)` [Morpho pin shorted to TIM8_CH3 below]
+* LPTIM: LENCODER
+  * LPTIM_IN1: <PD12:AF3> (LENCODER_A) ; Or [PG12:AF3]
+  * LPTIM_IN2: [PE1:AF3] (LENCODER_B) [Morpho pin needs to be shorted to Daughter pin ??]
 
-* `TIM1: LMOTOR`
-  * `[TIM1_CH1: PA8:AF1] [Morpho pin]`
-  * `[TIM1_CH2: PA9:AF1] [Morpho pin]`
-  * `[TIM1_CH3: PA10:AF1] (LMOTOR+)` [Morpho pin shorted to TIM8_CH4 below]
-  * `TIM1_CH4: PE14:AF1 (LMOTOR-)`
+* TIM1: Ardunio PWM
+  * TIM1_CH1: {PE9:AF3} (D6_PWM) ; [or PA8:AF1]
+  * TIM1_CH2: {PE11:AF3} (D2_PWM) ; [or PA9:AF1]
+  * TIM1_CH3: {PE13:AF3} (D3_PWM) ; [or PA10:AF1]
+  * TIM1_CH4: (unused) ; {or PE14:AF1} [or PA11:AF1]
 
-* `TIM2: SERVOS (32-bits)`
-  * `TIM2_CH2: PB3:AF1 (SERVO2)`
-  * `TIM2_CH3: PB10:AF1 (SERVO3)`
-  * `TIM2_CH4: PB11:AF1 (SERVO4)`
+* TIM2: SERVOS (32-bits)
+  * TIM2_CH1: (unused) <or Daughter PA0:AF1, PA15:AF1> {or PA0:AF1}
+  * TIM2_CH2: <PB3:AF1> (SERVO2) [or PA1:AF1]
+  * TIM2_CH3: <PB10:AF1> (SERVO3) [or PA2:AF1]
+  * TIM2_CH4: <PB11:AF1> (SERVO4) {or PA3:AF1}
 
-* `TIM3: Unused`
-  * No Zio pins available
+* TIM3: LMOTOR + RMOTOR
+  * TIM3_CH1: <PB4:AF2> (LMOTOR+) <or Daughter PC6:AF2> {or PA6:AF2}
+  * TIM3_CH2: <PB5:AF2> (LMOTOR-) <or Daughter PC7:AF2> {or PA7:AF2}
+  * TIM3_CH3: <PC8:AF2> (RMOTOR+) <or Daughter PB0:AF2>
+  * TIME_CH4: <PB1:AF2> (RMOTOR-) <or Daughter PB1:AF2>
 
-* `TIM4: LIDAR`
-  * `TIM4_CH2: PE14:AF1 (LIDAR_PWM)`
+* TIM4: Arduino PWM
+  * TIM4_CH1: (unused) <or Daughter PD12:AF2 or PB6:AF2>
+  * TIM4_CH2: (unused) <or Daughter PD13:AF2> [or PB7:AF2]
+  * TIM4_CH3: <PD14:AF2> (D10_PWM) {or PB8:AF2}
+  * TIM4_CH4: <PD15:AF2> (D9_PWM) {or PB9:AF2}
 
-* `TIM5: SERVOS (32-bits)`
-  * `TIM5_CH1: PA0:AF2 (SERVO1)`
+* TIM5: SERVOS (32-bits)
+  * TIM5_CH1: <PA0:AF2> (SERVO1)
+  * TIM5_CH2: (unused) [or PA1:AF2]
+  * TIM5_CH3: (unused) [or PA2:AF2]
+  * TIM5_CH4: (unused) {or PA3:AF2}
 
-* `TIM6: HAL (internal only)`
+* TIM6: HAL (internal only)
 
-* `TIM7: LEDS (internal only)`
+* TIM7: LEDS (internal only)
 
-* `TIM8: RENCODER`
-  * `TIM8_CH1: PC6:AF3 (RENCODER_A)`
-  * `TIM8_CH2: PC7:AF3 (RENCODER_B)`
-  * `TIM8_CH3: PC8:AF3` (unusable due to encoder) [Shorted to Morpho pin for LPTIM_IN1 above]
-  * `TIM8_CH4: PC9:AF3` (unusable due to encoder) [Shorted to Morpho pin for TIM1_CH3 above]
+* TIM8: RENCODER
+  * TIM8_CH1: <PC6:AF3> (RENCODER_A)
+  * TIM8_CH2: <PC7:AF3> (RENCODER_B)
+  * TIM8_CH3: (unused due to encoder) <or PC8:AF3>
+  * TIM8_CH4: (unused due to encoder) <or PC9:AF3>
 
-* `TIM9: RMOTOR`
-   * `TIM9_CH1`: PE5:AF3 (RMOTOR+)
-   * `TIM9_CH2`: PE6:AF3 (RMOTOR-)
+* TIM9: Unused
+   * TIM9_CH1: (unused) <or Daughter PE5:AF3> [or PA2:AF3]
+   * TIM9_CH2: (unused) <or Daughter PE6:AF3> [or PA3:AF3]
 
-* `TIM10: (Unused)`
-   * `[TIM10_CH1: PF6:AF3] [Morpho pin available])`
+* TIM10: (Unused)
+   * TIM10_CH1: (unused) [or Morpho PF6:AF3] {or PB8:AF3}
 
-* `TIM11: (Unused)`
-   * `TIM11_CH1: PF7:AF3 (unused)`
+* TIM11: (Unused)
+   * TIM11_CH1: (unused) <or Daughter PF7:AF3> {or PB9:AF3}
 
-* `TIM12: (Unused)`
-   * `[TIM12_CH1: PB14:AF9] [Morpho pin]`
-   * `TIM12_CH2: PB15:AF9 (unused)`
+* TIM12: (Unused)
+   * TIM12_CH1: (unused) [or Morpho PB14:AF9]
+   * TIM12_CH2: (unused) <or Daughter PB15:AF9>
 
-* `TIM13: (Unused)`
-   * `TIM13_CH1: PF8:AF9 (unused)`
+* TIM13: LIDAR
+   * TIM13_CH1: <PF8:AF9> (LIDAR_PWM) {or PA7:AF9}
 
-* `TIM14: (Unused) (unused)`
-  *  `TIM14_CH1: PF9:AF9 (unused)`
+* TIM14: Arduino PWM
+  *  TIM14_CH1: <PF9:AF9> (D11_PWM) <or PA7:AF9>
 
 The summary of how the timer binding went is summarized below:
 
 * Servos:
   The servos work best with 32-bit counters (i.e. TIM2/5).  It turns out that
-  there are exactly 4 Zio availble pins to TIM2/5, so that are used for the servos.
+  there are exactly 4 Zio available pins to TIM2/5, so that are used for the servos.
 
 * Encoders:
   The encoders are a real challenge.
-  TIM8 has CH1/2 available on the Zio so the get assigned to the RENCODER.
+  TIM8 has CH1/2 available on the Zio, so it got assigned to the RENCODER.
   The none of the other encoder enabled timers (TIM1/2/3/4/5/6/8) have both CH1/2 available.
   This is fixed by shorting a Morpho pin to LPTIM1_IN2.
-  This allows TIM1 to be used for LENCODER.
+  This allows LPTIM1 to be used for LENCODER.
 
 * Motors:
-  It is a requirement that each motor have both its +/- outputs on the same timer.
-  There is a real dirth of timers with two measly channels on the same counter.
-  TIM9 meets the requirement and gets RMOTOR.
-  This is fixed by shorting a Morpho pin to TIM_CH3.
+  Motors turned out to be easy.  They were all assigned to TIM_3_CH1/2/3/4.
 
 * LED's:
   The LED's just need an internal timer to trigger the DMA peripheral.
   TIM6 is used by HAL, so TIM7 will have to do.
   No actual pin needs to bound since the signal is strictly internal.
+
+* Lidar:
+  The Lidar was stuffed onto TIM14_CH1, but there are many other options.
+
+There are some timers left over, but not many -- TIM9/10/11/12/13/14.
+That is it.
+In general, Timer pin binding was every bit of a nightmare as expected.
+
+## SPI Peripherals
 
 
 
