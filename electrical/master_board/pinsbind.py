@@ -184,7 +184,8 @@ def main() -> None:
         # (TIM1/2/3/4/5/6/8) have both CH1/2 available.  This is fixed by shorting a Morpho
         # pin to LPTIM1_IN2.  This allows TIM1 to be used for LENCODER.
         ("LPTIM1_IN1", "LENCODER_A", daughter_signals, ""),
-        ("LPTIM1_IN2", "LENCODER_B", morpho_signals, ""),
+        ("LPTIM1_IN2", "LENCODER_B", morpho_signals, "PE1"),    # LPTIM1_IN2 only on PE1.
+        ("LPTIM1_IN2", "LENCODER_B", daughter_signals, "PA4"),  # Short these two lines together
         ("TIM8_CH1", "RENCODER_A", daughter_signals, ""),
         ("TIM8_CH2", "RENCODER_B", daughter_signals, ""),
 
@@ -264,7 +265,10 @@ def main() -> None:
     signal_binding: Binding
     schematic_binding: Binding
     bindings_tuple: Tuple[Binding, ...]
+    shorts: List[Tuple[Binding, ...]] = []
     for bindings_tuple in signal_bindings_table.values():
+        if len(bindings_tuple) > 1:
+            shorts.append(bindings_tuple)
         for signal_binding in bindings_tuple:
             signal_bindings.append(signal_binding)
             schematic_binding = (signal_binding[2], signal_binding[0], signal_binding[1])
@@ -279,13 +283,18 @@ def main() -> None:
 
     print("Schematic Bindings:")
     for schematic_binding in schematic_bindings:
-        print(f"{signal_binding}")
+        print(f"{schematic_binding}")
     print("")
 
-    pin_bindings_size = len(pin_bindings)
-    signal_bindings_size = len(signal_bindings)
-    assert pin_bindings_size == signal_bindings_size, (
-        f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
+    print("Shorts:")
+    for bindings_tuple in shorts:
+        print(f"{bindings_tuple}")
+    print("")
+
+    # pin_bindings_size = len(pin_bindings)
+    # signal_bindings_size = len(signal_bindings)
+    # assert pin_bindings_size == signal_bindings_size, (
+    #     f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
 
     unused_set: Set[Text] = set(list(pin_bindings_table.keys()))
     unused_arduino_set: Set[Text] = arduino_set - unused_set
@@ -539,18 +548,35 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
         # Unpack *pin_bind*:
         signal_name, schematic_name, signals, force_pin_name = pin_bind
         if force_pin_name != "":
+            short_trace: bool = signal_name == "LPTIM1_IN2"
+            if short_trace:
+                print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< shorted pins")
             binding = (signal_name, f"{force_pin_name}:AF15", schematic_name)
             # print(f"signal_name={signal_name} schematic_name={schematic_name} "
             #       f"force_pin_name={force_pin_name} binding={binding}")
-            assert force_pin_name not in pin_bindings_table, f"Duplicate pin? -- '{force_pin_name}'"
-            pin_bindings_table[force_pin_name] = binding
-            assert force_pin_name not in signal_bindings_table
-            signal_bindings_table[signal_name] = (binding,)
+            if force_pin_name not in pin_bindings_table:
+                if short_trace:
+                    print(f"insert {binding} into pins_binding table for '{force_pin_name}'")
+                pin_bindings_table[force_pin_name] = binding
+            if signal_name in signal_bindings_table:
+                # Shorted pins:
+                previous_binding_tuple: Tuple[Binding, ...] = signal_bindings_table[signal_name]
+                new_binding_tuple: Tuple[Binding, ...] = previous_binding_tuple + (binding,)
+                signal_bindings_table[signal_name] = new_binding_tuple
+                if short_trace:
+                    print(f"Insert {new_binding_tuple} into signal_bindings_table['{signal_name}']")
+            else:
+                signal_bindings_table[signal_name] = (binding,)
+            if short_trace:
+                print(f"pin_bindings_table[{force_pin_name}]]:{pin_bindings_table[force_pin_name]}")
+                print(f"signal_bindings_table[{signal_name}]]:{signal_bindings_table[signal_name]}")
+                print(f"End short trace for {signal_name}")
+                print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< shorted pins")
         else:
             if signals not in signals_table:
                 signals_table[signals] = []
             signals_table[signals].append(pin_bind)
-    assert len(signal_bindings_table) == len(pin_bindings_table), f"Early binding failed {binding}"
+    # assert len(signal_bindings_table) == len(pin_bindings_table),f"Early binding failed {binding}"
 
     # Now we can sweep through the *signals_table* and find try to allocate the associated
     # *PinBind*'s.  The order that the *signals* comes out of the iterator is semi-random,
@@ -577,7 +603,7 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
                         # print(f"    Found '{signal_name}' signal={signal}")
                         annotated_pin_name: Text
                         pin_name: Text
-                        assert len(signal_bindings_table) == len(pin_bindings_table), "Not OK"
+                        # assert len(signal_bindings_table) == len(pin_bindings_table), "Not OK"
                         for annotated_pin_name in annotated_pin_names:
                             pin_name = pin_name_deannotate(annotated_pin_name)
                             if (
@@ -622,12 +648,12 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
     for pin_name, binding in pin_bindings_table.items():
         assert pin_name == binding[1].split(':')[0]
 
-    signal_bindings_size = len(signal_bindings_table)
-    pin_bindings_size = len(pin_bindings_table)
+    # signal_bindings_size = len(signal_bindings_table)
+    # pin_bindings_size = len(pin_bindings_table)
     # print(f"pinsbind: pin_bindings_size={pin_bindings_size}")
     # print(f"pinsbind: signal_bindings_size={signal_bindings_size}")
-    assert signal_bindings_size == pin_bindings_size, (
-        f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
+    # assert signal_bindings_size == pin_bindings_size, (
+    #     f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
     return signal_bindings_table, pin_bindings_table
 
 
