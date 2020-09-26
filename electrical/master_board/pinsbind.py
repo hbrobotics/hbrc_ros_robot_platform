@@ -35,6 +35,7 @@
 # Use type hints for mypy program.
 from typing import Dict, IO, List, Set, Text, Tuple
 import csv  # .csv file parser (CSV => Comma Separated Values)
+import itertools
 
 # Some type definitions:
 
@@ -113,239 +114,45 @@ def main() -> None:
     non_connector_nucleo_set: Set[Text] = nucleo_set - connector_set
     print(f"non_connector_nucleo_set={sorted(list(non_connector_nucleo_set))}")
 
-    # See the *PinBind* definition above for an explanation of the entries below.
-    # This is an ordered set of attempts to bind a pin.  The pins are bound in order
-    # of importance (e.g. Arduino 1st, Nucleo 2nd, timers 3rd, etc.
-    pin_binds: List[PinBind] = [
-        # ("SPI2_MISO", ":SPI2_MISO", daughter_signals, ""),
-        # ("SPI2_MOSI", ":SPI2_MOSI", daughter_signals, ""),
-        # ("SPI2_SCK", ":SPI2_SCK", daughter_signals, ""),
-        # ("SPI2_NSS", ":SPI2_NSS", daughter_signals, ""),
+    # Create *periperal_permutations* list that lists all the possible permutations of
+    # each peripheral class:
+    i2c_want: int = 2
+    spi_want: int = 3
+    uart_want: int = 4
+    peripheral_permutations: Tuple[TextTuple, ...] = peripheral_permutations_get(
+        i2c_want, spi_want, uart_want)
+    assert len(peripheral_permutations) == 1, "Should only have 1 permutation"
 
-        # ("SPI3_MISO", ":SPI3_MISO", daughter_signals, ""),
-        # ("SPI3_MOSI", ":SPI3_MOSI", daughter_signals, ""),
-        # ("SPI3_SCK", ":SPI3_SCK", daughter_signals, ""),
-        # ("SPI3_NSS", ":SPI3_NSS", daughter_signals, ""),
-
-        # ("SPI4_MISO", ":SPI4_MISO", daughter_signals, ""),
-        # ("SPI4_MOSI", ":SPI4_MOSI", daughter_signals, ""),
-        # ("SPI4_SCK", ":SPI4_SCK", daughter_signals, ""),
-        # ("SPI4_NSS", ":SPI4_NSS", daughter_signals, ""),
-
-        # SPI5 needs to use a Morpho pin:
-        # ("SPI5_MISO", ":SPI5_MISO", daughter_signals, ""),
-        # ("SPI5_MOSI", ":SPI5_MOSI", daughter_signals, ""),
-        # ("SPI5_SCK", ":SPI5_SCK", daughter_signals, ""),
-        # ("SPI5_NSS", ":SPI5_NSS", morpho_signals, ""),  # Note: SPI5 appears to require a Morpho!
-
-        # SPI6 interferes with TIM6 which must be used by the servos:
-        # ("SPI6_MISO", ":SPI6_MISO", daughter_signals, ""),
-        # ("SPI6_MOSI", ":SPI6_MOSI", daughter_signals, ""),
-        # ("SPI6_SCK", ":SPI6_SCK", daughter_signals, ""),  # Note: TIM2_CH2 needs this pin.
-        # ("SPI6_NSS", ":SPI6_NSS", daughter_signals, ""),
-
-        # ("I2C1_SCL", ":I2C1SL", daughter_signals, ""),
-        # ("I2C1_SDA", ":I2C1DA", daughter_signals, ""),
-
-        # ("I2C2_SCL", ":I2C2SL", daughter_signals, ""),
-        # ("I2C2_SDA", ":I2C2DA", daughter_signals, ""),
-
-        # ("I2C3_SCL", ":I2C3SL", morpho_signals, ""),
-        # ("I2C3_SDA", ":I2C3DA", daughter_signals, ""),
-
-        # ("I2C4_SCL", ":I2C4SL", daughter_signals, ""),
-        # ("I2C4_SDA", ":I2C4DA", daughter_signals, ""),
-
-        # Bind the arduino pins using the force pin name (4th field.)
-        ("UART6_RX", "D0_RX", arduino_signals, "PG9"),
-        ("UART6_TX", "D1_TX", arduino_signals, "PG14"),
-        (":D2", "D2", arduino_signals, "PF15"),
-        ("TIM1_CH3", "D3_PWM", arduino_signals, "PE13"),        # ~TIM1_CH3  (~ means PWM)
-        (":D4", "D4", arduino_signals, "PF14"),
-        ("TIM1_CH2", "D5_PWM", arduino_signals, "PE11"),        # ~TIM1_CH2
-        ("TIM1_CH1", "D6_PWM", arduino_signals, "PE9"),         # ~TIM1_CH1
-        (":D7", "D7", arduino_signals, "PF13"),
-        (":D8", "D8", arduino_signals, "PF12"),
-        ("TIM4_CH4", "D9_PWM", arduino_signals, "PD15"),        # ~TIM4_CH4
-        ("TIM4_CH3", "D10_PWM_NSS", arduino_signals, "PD14"),   # ~TIM4_CH3 (SPI[1|6]_NSS)
-        ("SPI1_MOSI", "D11_PWM_MOSI", arduino_signals, "PA7"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
-        #                                                       # TIM3_CH2, TIM14_CH1, RMII_CRS_DV
-        ("SPI1_MISO", "D12_MISO", arduino_signals, "PA6"),      # SPI1_MISO, SPI6_MISO
-        ("SPI1_SCK", "D13_SCK", arduino_signals, "PA5"),        # SPI1_SCK, SPI6_SCK
-        (":D14", "D14", arduino_signals, "PB9"),
-        (":D15", "D15", arduino_signals, "PB8"),
-        ("ADC123_IN3", "A0", arduino_signals, "PA3"),           # PA3 ADC123_IN3
-        ("ADC123_IN10", "A1", arduino_signals, "PC0"),          # PC0 ADD123_IN10
-        ("ADC123_IN13", "A2", arduino_signals, "PC3"),          # PC3 ADC123_IN13
-        ("ADC3_IN9", "A3", arduino_signals, "PF3"),             # PF3 ADC3_IN9
-        ("ADC3_IN15", "A4_SDA", arduino_signals, "PF5"),        # PF5 ADC3_IN15
-        ("ADC3_IN8", "A5_SCL", arduino_signals, "PF10"),        # PF10 ADC3_IN8
-
-        # The Nucleo Pins should be bound next, since they tend not too overlap with the Zio pins
-        # (with the 1 big exception of PA7 which everybody wants to use.)  Over time some of these
-        # pins can be sniped for other purposes.  For now they can be left allocated.
-        ("USER_BTN", ":USER_SW1", morpho_signals, "PC13"),
-        ("RCC_OSC32_IN", ":RCC_OSC_IN", morpho_signals, "PC14"),
-        ("RCC_OSC32_OUT", ":RCC_OSC_OUT", morpho_signals, "PC15"),
-        # ("OSC_IN", ":OCS_IN", morpho_signals, "PH0"),    # Do not bother with PH0
-        # ("OSC_OUT", ":OSC_OUT", morpho_signals, "PH1"),  # Do not bother with PH1
-        ("RMII_MDC", ":RMII_MDC", morpho_signals, "PC1"),
-        ("RMII_REF_CLK", ":RMI_REF_CLK", morpho_signals, "PA1"),
-        ("RMII_MDIO", ":RMII_MDIO", morpho_signals, "PA2"),
-        # ("RMII_CRS_DV", ":RMII_CRS_DV", morpho_signals, "PA7"),  # ZIO overlap @D11
-        ("RMII_RXD0", ":RMII_RXD0", morpho_signals, "PC4"),
-        ("RMII_RXD1", ":RMII_RXD1", morpho_signals, "PC5"),
-        ("LD1", ":LD1", morpho_signals, "PB0"),  # ZIO overlap CN10-31
-        ("USB_POWERSWITCHON", ":USB_PWR_SW", morpho_signals, "PG6"),
-        ("USB_OVERCURRENT", ":USB_OVERDRAW", morpho_signals, "PG7"),
-        ("USB_SOF", ":USB_SOF", morpho_signals, "PA8"),
-        ("USB_VBUS", ":USB_VBUS:", morpho_signals, "PA9"),
-        ("USB_ID", ":USB_ID", morpho_signals, "PA10"),
-        ("USB_DM", ":USB_DM", morpho_signals, "PA11"),
-        ("USB_DP", ":USB_DP", morpho_signals, "PA12"),
-        ("SYS_JTMS-SWDIO", "SWDIO", morpho_signals, "PA13"),  # ST_LINK
-        ("SYS_JTCK-SWCLK", "SWCLK", morpho_signals, "PA14"),  # ST_LINK
-        ("RMII_TX_EN", "RMII_TX_EN", morpho_signals, "PG11"),
-        ("RMII_TXD0", "RMII_TXD0", morpho_signals, "PG13"),
-        # ("SWO", "SW0", morpho_signals, "PB3"),  # CN7-15 Not needed because SWO is unimplemented.
-        ("LD2 (Blue)", ":LED_BLUE", morpho_signals, "PB7"),
-
-        # The servos work best with 32-bit counters (i.e. TIM2/5).  It turns out that
-        # there are exactly 4 Zio availble pins to TIM2/5, so that are used for the servos.
-        ("TIM5_CH1", "SERVO1", daughter_signals, ""),
-        ("TIM2_CH2", "SERVO2", daughter_signals, ""),
-        ("TIM2_CH3", "SERVO3", daughter_signals, ""),
-        ("TIM2_CH4", "SERVO4", daughter_signals, ""),
-
-        # The encoders are a real challenge.  TIM8 has CH1/2 available on the Zio so the
-        # get assigned to the RENCODER.  The none of the other encoder enabled timers
-        # (TIM1/2/3/4/5/6/8) have both CH1/2 available.  This is fixed by shorting a Morpho
-        # pin to LPTIM1_IN2.  This allows TIM1 to be used for LENCODER.
-        ("LPTIM1_IN1", "LENCODER_A", daughter_signals, ""),
-        ("LPTIM1_IN2", "LENCODER_B", morpho_signals, "PE1"),    # LPTIM1_IN2 only on PE1.
-        ("LPTIM1_IN2", "LENCODER_B", daughter_signals, "PA4"),  # Short these two lines together
-        ("TIM8_CH1", "RENCODER_A", daughter_signals, ""),
-        ("TIM8_CH2", "RENCODER_B", daughter_signals, ""),
-
-        # It is a requirement that each motor have both its +/- outputs on the same timer.
-        # There is a real dirth of timers with two measly channels on the same counter.
-        # TIM9 meets the requirement and gets RMOTOR.  This is fixed by shorting a Morpho
-        # pin to TIM_CH3.
-        ("TIM3_CH1", "LMOTOR+", daughter_signals, ""),
-        ("TIM3_CH2", "LMOTOR-", daughter_signals, ""),
-        ("TIM3_CH3", "RMOTOR+", daughter_signals, ""),
-        ("TIM3_CH4", "RMOTOR-", daughter_signals, ""),
-
-        # The Lidar just needs one dedicated timer.
-        # There are plenty to choose from, so TIM4_CH2 is used.
-        ("TIM4_CH2", "LIDAR_PWM", daughter_signals, ""),
-
-        # The LED's just need an internal timer to trigger the DMA peripheral.
-        # TIM6 is used by HAL, so TIM7 will have to do.
-
-        # UARTS's come next.  Note that the signal names swapped from the peripheral names:
-        # # ("USART1_RX", "U1_TX", daughter_signals, ""),
-        # # ("USART1_TX", "U1_RX", daughter_signals, ""),
-        # # ("USART2_RX", "U2_RX", daughter_signals, ""),
-        # # ("USART2_TX", "U2_TX", daughter_signals, ""),
-        # # ("USART3_RX", "STLINK_TX", morpho_signals, ""),  # Nucleo manual expects USART3
-        # # ("USART3_TX", "STLINK_RX", morpho_signals, ""),
-        # # ("UART4_RX", "U4_TX", daughter_signals, ""),
-        # # ("UART4_TX", "U4_RX", daughter_signals, ""),
-        # # ("UART5_RX", "U5_TX", daughter_signals, ""),
-        # # ("UART5_TX", "U5_RX", daughter_signals, ""),
-        # ## ("UART6_RX", "D0_TX", arduino_signals, "PG9"),  # Already done with Arduino
-        # ## ("UART6_TX", "D1_RX", arduino_signals, "PG14"),
-        # # ("UART7_RX", "U7_TX", daughter_signals, ""),  # Works
-        # # ("UART7_TX", "U7_RX", daughter_signals, ""),
-        # ("UART8_RX", "U8_RT", morpho_signals, ""),  # Conflicts with LPTIM_IN1 on PE1
-        # ("UART8_TX", "U8_RX", morpho_signals, ""),  # No work around. UART8 is not avaiable.
-
-        # # (":SPI1_MOSI", "D11_PWM_MOSI+", arduino_signals, "PA15"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
-
-    ]
-
-    # Perform the pin bindings and get the resulting pin and signals tables:
     signal_bindings_table: Dict[Text, Tuple[Binding, ...]]
     pin_bindings_table: Dict[Text, Binding]
-    signal_bindings_table, pin_bindings_table = pins_bind(pin_binds)
+    unbound_signals: List[Text]
 
-    # print(f"len(signal_bindings_table)={len(signal_bindings_table)}")
-    # print(f"len(pin_bindings_table)={len(pin_bindings_table)}")
+    peripheral_permutation: TextTuple
+    permutation_scores: List[Tuple[int, TextTuple, TextTuple]] = []
+    for peripheral_permutation in peripheral_permutations:
+        # Create the *pin_binds* from *peripheral_permuatation*:
+        pin_binds: List[PinBind] = pin_binds_get(peripheral_permutations, arduino_signals,
+                                                 daughter_signals, morpho_signals)
 
-    Quad = Tuple[Text, int, Text, Text]
+        # Perform the pin bindings and get the resulting pin and signals tables:
+        signal_bindings_table, pin_bindings_table, unbound_signals = pins_bind(pin_binds)
+        permutation_score: Tuple[int, TextTuple, TextTuple] = (
+            len(unbound_signals), tuple(unbound_signals), peripheral_permutation
+            )
+        permutation_scores.append(permutation_score)
 
-    def binding_extract(binding: Binding) -> Quad:
-        signal_name: Text
-        pin_name_with_af: Text
-        schematic_name: Text
-        signal_name, pin_name_with_af, schematic_name = binding
-        pin_name: Text
-        af: Text
-        pin_name, af = tuple(pin_name_with_af.split(':'))
-        port_name: Text = pin_name[:2]
-        digits: Text = pin_name[2:]
-        assert digits.isdigit(), f"'pnwa:'{pin_name_with_af}' pn:'{pin_name}' digits='{digits}'"
-        pin_number: int = int(digits)
-        return (port_name, pin_number, signal_name, schematic_name)
-
-    print("Pin Bindings:")
-    pin_bindings: List[Quad] = [binding_extract(binding)
-                                for binding in pin_bindings_table.values()]
-
-    pin_bindings = sorted(pin_bindings)
-    quad: Quad
-    for quad in pin_bindings:
-        print(f"{quad}")
-    print("")
-
-    print(f"len(signal_bindings_table)={len(signal_bindings_table)}")
-    schematic_bindings: List[Binding] = []
-    signal_bindings: List[Binding] = []
-    signal_binding: Binding
-    schematic_binding: Binding
-    bindings_tuple: Tuple[Binding, ...]
-    shorts: List[Tuple[Binding, ...]] = []
-    for bindings_tuple in signal_bindings_table.values():
-        if len(bindings_tuple) > 1:
-            shorts.append(bindings_tuple)
-        for signal_binding in bindings_tuple:
-            signal_bindings.append(signal_binding)
-            schematic_binding = (signal_binding[2], signal_binding[0], signal_binding[1])
-            schematic_bindings.append(schematic_binding)
-    signal_bindings = sorted(signal_bindings)
-    schematic_bindings = sorted(schematic_bindings)
-
-    print("Signal Bindings:")
-    for signal_binding in signal_bindings:
-        print(f"{signal_binding}")
-    print("")
-
-    print("Schematic Bindings:")
-    for schematic_binding in schematic_bindings:
-        print(f"{schematic_binding}")
-    print("")
-
-    print("Shorts:")
-    for bindings_tuple in shorts:
-        print(f"{bindings_tuple}")
-    print("")
-
-    # pin_bindings_size = len(pin_bindings)
-    # signal_bindings_size = len(signal_bindings)
-    # assert pin_bindings_size == signal_bindings_size, (
-    #     f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
-
-    unused_set: Set[Text] = set(list(pin_bindings_table.keys()))
-    unused_arduino_set: Set[Text] = arduino_set - unused_set
-    unused_daughter_set: Set[Text] = daughter_set - unused_set
-    unused_morpho_set: Set[Text] = morpho_set - unused_set
-    print(f"unused_arduino_set= {len(unused_arduino_set)}: {sorted(list(unused_arduino_set))}")
-    print(f"unused_morpho_set: {len(unused_morpho_set)}: {sorted(list(unused_morpho_set))}")
-    print(f"unused_daughter_set: {len(unused_daughter_set)}: {sorted(list(unused_daughter_set))}")
-
-    # signals_print(daughter_signals, "Zio")
-    # signals_print(morpho_signals, "Morpho")
+    # Now process the permutation scores looking for any full match:
+    permutation_scores = sorted(permutation_scores)
+    permutation_score0: Tuple[int, TextTuple, TextTuple] = permutation_scores[0]
+    if permutation_score0[0] == 0:
+        # We have a winner:
+        peripheral_permutation = permutation_score0[2]
+        summary_show(peripheral_permutation,
+                     arduino_signals, daughter_signals, morpho_signals,
+                     arduino_set, daughter_set, morpho_set)
+    else:
+        # Not so good:
+        assert False
 
 
 # The functions after main() are listed alphabetically to make them easier to find.
@@ -548,8 +355,205 @@ def nucleo_set_create() -> Set[Text]:
     return nucleo_set
 
 
+def ordered_permutations(peripherals: List[Text], count: int) -> Tuple[Text, ...]:
+    """Return a sorted list of unique permutations."""
+    permuation: List[Text]
+    permutations_set: Set[Text] = set()
+    for permutation in itertools.permutations(peripherals, count):
+        sorted_permutation: Text = ':'.join(sorted(permutation))
+        permutations_set.add(sorted_permutation)
+    ordered_permutations: List[Text] = sorted(list(permutations_set))
+    return tuple(ordered_permutations)
+
+
+def peripheral_permutations_get(
+        i2cs_count: int, spis_count: int, uarts_count: int) -> Tuple[Tuple[Text, ...], ...]:
+    """Return permuation list for I2C, SPI, and UART peripherals."""
+    # These are the list of peripherals to permuate:
+    i2cs: List[Text] = ["I2C1", "I2C2"]
+    spis: List[Text] = ["SPI1", "SPI2", "SPI3"]
+    uarts: List[Text] = ["UART1", "UART2", "UART3", "UART4"]
+
+    # Create the permutations first:
+    i2c_permutations: Tuple[Text, ...] = ordered_permutations(i2cs, i2cs_count)
+    spi_permutations: Tuple[Text, ...] = ordered_permutations(spis, spis_count)
+    uart_permutations: Tuple[Text, ...] = ordered_permutations(uarts, uarts_count)
+
+    # Just iterate over all possible permutations of each peripher type:
+    peripheral_permutations: List[Tuple[Text, ...]] = []
+    uart_permutation: Text
+    i2c_permutation: Text
+    spi_permutation: Text
+    for uart_permutation in uart_permutations:
+        for i2c_permutation in i2c_permutations:
+            for spi_permutation in spi_permutations:
+                peripheral_permutation: Tuple[Text, ...] = tuple(sorted(
+                    uart_permutation.split(':') +
+                    i2c_permutation.split(':') +
+                    spi_permutation.split(':')
+                ))
+                peripheral_permutations.append(peripheral_permutation)
+    return tuple(peripheral_permutations)
+
+
+def pin_binds_get(peripheral_permutations: Tuple[Tuple[Text, ...], ...], arduino_signals: Signals,
+                  daughter_signals: Signals, morpho_signals: Signals) -> List[PinBind]:
+    """Return a list of pin pindings based on a permutation list."""
+    # See the *PinBind* definition at the being of this program.
+    # This is an ordered set of attempts to bind a pin.  The pins are bound in order
+    # of importance (e.g. Arduino 1st, Nucleo 2nd, timers 3rd, etc.
+    pin_binds: List[PinBind] = [
+        # ("SPI2_MISO", ":SPI2_MISO", daughter_signals, ""),
+        # ("SPI2_MOSI", ":SPI2_MOSI", daughter_signals, ""),
+        # ("SPI2_SCK", ":SPI2_SCK", daughter_signals, ""),
+        # ("SPI2_NSS", ":SPI2_NSS", daughter_signals, ""),
+
+        # ("SPI3_MISO", ":SPI3_MISO", daughter_signals, ""),
+        # ("SPI3_MOSI", ":SPI3_MOSI", daughter_signals, ""),
+        # ("SPI3_SCK", ":SPI3_SCK", daughter_signals, ""),
+        # ("SPI3_NSS", ":SPI3_NSS", daughter_signals, ""),
+
+        # ("SPI4_MISO", ":SPI4_MISO", daughter_signals, ""),
+        # ("SPI4_MOSI", ":SPI4_MOSI", daughter_signals, ""),
+        # ("SPI4_SCK", ":SPI4_SCK", daughter_signals, ""),
+        # ("SPI4_NSS", ":SPI4_NSS", daughter_signals, ""),
+
+        # SPI5 needs to use a Morpho pin:
+        # ("SPI5_MISO", ":SPI5_MISO", daughter_signals, ""),
+        # ("SPI5_MOSI", ":SPI5_MOSI", daughter_signals, ""),
+        # ("SPI5_SCK", ":SPI5_SCK", daughter_signals, ""),
+        # ("SPI5_NSS", ":SPI5_NSS", morpho_signals, ""),  # Note: SPI5 appears to require a Morpho!
+
+        # SPI6 interferes with TIM6 which must be used by the servos:
+        # ("SPI6_MISO", ":SPI6_MISO", daughter_signals, ""),
+        # ("SPI6_MOSI", ":SPI6_MOSI", daughter_signals, ""),
+        # ("SPI6_SCK", ":SPI6_SCK", daughter_signals, ""),  # Note: TIM2_CH2 needs this pin.
+        # ("SPI6_NSS", ":SPI6_NSS", daughter_signals, ""),
+
+        # ("I2C1_SCL", ":I2C1SL", daughter_signals, ""),
+        # ("I2C1_SDA", ":I2C1DA", daughter_signals, ""),
+
+        # ("I2C2_SCL", ":I2C2SL", daughter_signals, ""),
+        # ("I2C2_SDA", ":I2C2DA", daughter_signals, ""),
+
+        # ("I2C3_SCL", ":I2C3SL", morpho_signals, ""),
+        # ("I2C3_SDA", ":I2C3DA", daughter_signals, ""),
+
+        # ("I2C4_SCL", ":I2C4SL", daughter_signals, ""),
+        # ("I2C4_SDA", ":I2C4DA", daughter_signals, ""),
+
+        # Bind the arduino pins using the force pin name (4th field.)
+        ("UART6_RX", "D0_RX", arduino_signals, "PG9"),
+        ("UART6_TX", "D1_TX", arduino_signals, "PG14"),
+        (":D2", "D2", arduino_signals, "PF15"),
+        ("TIM1_CH3", "D3_PWM", arduino_signals, "PE13"),        # ~TIM1_CH3  (~ means PWM)
+        (":D4", "D4", arduino_signals, "PF14"),
+        ("TIM1_CH2", "D5_PWM", arduino_signals, "PE11"),        # ~TIM1_CH2
+        ("TIM1_CH1", "D6_PWM", arduino_signals, "PE9"),         # ~TIM1_CH1
+        (":D7", "D7", arduino_signals, "PF13"),
+        (":D8", "D8", arduino_signals, "PF12"),
+        ("TIM4_CH4", "D9_PWM", arduino_signals, "PD15"),        # ~TIM4_CH4
+        ("TIM4_CH3", "D10_PWM_NSS", arduino_signals, "PD14"),   # ~TIM4_CH3 (SPI[1|6]_NSS)
+        ("SPI1_MOSI", "D11_PWM_MOSI", arduino_signals, "PA7"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
+        #                                                       # TIM3_CH2, TIM14_CH1, RMII_CRS_DV
+        ("SPI1_MISO", "D12_MISO", arduino_signals, "PA6"),      # SPI1_MISO, SPI6_MISO
+        ("SPI1_SCK", "D13_SCK", arduino_signals, "PA5"),        # SPI1_SCK, SPI6_SCK
+        (":D14", "D14", arduino_signals, "PB9"),
+        (":D15", "D15", arduino_signals, "PB8"),
+        ("ADC123_IN3", "A0", arduino_signals, "PA3"),           # PA3 ADC123_IN3
+        ("ADC123_IN10", "A1", arduino_signals, "PC0"),          # PC0 ADD123_IN10
+        ("ADC123_IN13", "A2", arduino_signals, "PC3"),          # PC3 ADC123_IN13
+        ("ADC3_IN9", "A3", arduino_signals, "PF3"),             # PF3 ADC3_IN9
+        ("ADC3_IN15", "A4_SDA", arduino_signals, "PF5"),        # PF5 ADC3_IN15
+        ("ADC3_IN8", "A5_SCL", arduino_signals, "PF10"),        # PF10 ADC3_IN8
+
+        # The Nucleo Pins should be bound next, since they tend not too overlap with the Zio pins
+        # (with the 1 big exception of PA7 which everybody wants to use.)  Over time some of these
+        # pins can be sniped for other purposes.  For now they can be left allocated.
+        ("USER_BTN", ":USER_SW1", morpho_signals, "PC13"),
+        ("RCC_OSC32_IN", ":RCC_OSC_IN", morpho_signals, "PC14"),
+        ("RCC_OSC32_OUT", ":RCC_OSC_OUT", morpho_signals, "PC15"),
+        # ("OSC_IN", ":OCS_IN", morpho_signals, "PH0"),    # Do not bother with PH0
+        # ("OSC_OUT", ":OSC_OUT", morpho_signals, "PH1"),  # Do not bother with PH1
+        ("RMII_MDC", ":RMII_MDC", morpho_signals, "PC1"),
+        ("RMII_REF_CLK", ":RMI_REF_CLK", morpho_signals, "PA1"),
+        ("RMII_MDIO", ":RMII_MDIO", morpho_signals, "PA2"),
+        # ("RMII_CRS_DV", ":RMII_CRS_DV", morpho_signals, "PA7"),  # ZIO overlap @D11
+        ("RMII_RXD0", ":RMII_RXD0", morpho_signals, "PC4"),
+        ("RMII_RXD1", ":RMII_RXD1", morpho_signals, "PC5"),
+        ("LD1", ":LD1", morpho_signals, "PB0"),  # ZIO overlap CN10-31
+        ("USB_POWERSWITCHON", ":USB_PWR_SW", morpho_signals, "PG6"),
+        ("USB_OVERCURRENT", ":USB_OVERDRAW", morpho_signals, "PG7"),
+        ("USB_SOF", ":USB_SOF", morpho_signals, "PA8"),
+        ("USB_VBUS", ":USB_VBUS:", morpho_signals, "PA9"),
+        ("USB_ID", ":USB_ID", morpho_signals, "PA10"),
+        ("USB_DM", ":USB_DM", morpho_signals, "PA11"),
+        ("USB_DP", ":USB_DP", morpho_signals, "PA12"),
+        ("SYS_JTMS-SWDIO", "SWDIO", morpho_signals, "PA13"),  # ST_LINK
+        ("SYS_JTCK-SWCLK", "SWCLK", morpho_signals, "PA14"),  # ST_LINK
+        ("RMII_TX_EN", "RMII_TX_EN", morpho_signals, "PG11"),
+        ("RMII_TXD0", "RMII_TXD0", morpho_signals, "PG13"),
+        # ("SWO", "SW0", morpho_signals, "PB3"),  # CN7-15 Not needed because SWO is unimplemented.
+        ("LD2 (Blue)", ":LED_BLUE", morpho_signals, "PB7"),
+
+        # The servos work best with 32-bit counters (i.e. TIM2/5).  It turns out that
+        # there are exactly 4 Zio availble pins to TIM2/5, so that are used for the servos.
+        ("TIM5_CH1", "SERVO1", daughter_signals, ""),
+        ("TIM2_CH2", "SERVO2", daughter_signals, ""),
+        ("TIM2_CH3", "SERVO3", daughter_signals, ""),
+        ("TIM2_CH4", "SERVO4", daughter_signals, ""),
+
+        # The encoders are a real challenge.  TIM8 has CH1/2 available on the Zio so the
+        # get assigned to the RENCODER.  The none of the other encoder enabled timers
+        # (TIM1/2/3/4/5/6/8) have both CH1/2 available.  This is fixed by shorting a Morpho
+        # pin to LPTIM1_IN2.  This allows TIM1 to be used for LENCODER.
+        ("LPTIM1_IN1", "LENCODER_A", daughter_signals, ""),
+        ("LPTIM1_IN2", "LENCODER_B", morpho_signals, "PE1"),    # LPTIM1_IN2 only on PE1.
+        ("LPTIM1_IN2", "LENCODER_B", daughter_signals, "PA4"),  # Short these two lines together
+        ("TIM8_CH1", "RENCODER_A", daughter_signals, ""),
+        ("TIM8_CH2", "RENCODER_B", daughter_signals, ""),
+
+        # It is a requirement that each motor have both its +/- outputs on the same timer.
+        # There is a real dirth of timers with two measly channels on the same counter.
+        # TIM9 meets the requirement and gets RMOTOR.  This is fixed by shorting a Morpho
+        # pin to TIM_CH3.
+        ("TIM3_CH1", "LMOTOR+", daughter_signals, ""),
+        ("TIM3_CH2", "LMOTOR-", daughter_signals, ""),
+        ("TIM3_CH3", "RMOTOR+", daughter_signals, ""),
+        ("TIM3_CH4", "RMOTOR-", daughter_signals, ""),
+
+        # The Lidar just needs one dedicated timer.
+        # There are plenty to choose from, so TIM4_CH2 is used.
+        ("TIM4_CH2", "LIDAR_PWM", daughter_signals, ""),
+
+        # The LED's just need an internal timer to trigger the DMA peripheral.
+        # TIM6 is used by HAL, so TIM7 will have to do.
+
+        # UARTS's come next.  Note that the signal names swapped from the peripheral names:
+        # # ("USART1_RX", "U1_TX", daughter_signals, ""),
+        # # ("USART1_TX", "U1_RX", daughter_signals, ""),
+        # # ("USART2_RX", "U2_RX", daughter_signals, ""),
+        # # ("USART2_TX", "U2_TX", daughter_signals, ""),
+        # # ("USART3_RX", "STLINK_TX", morpho_signals, ""),  # Nucleo manual expects USART3
+        # # ("USART3_TX", "STLINK_RX", morpho_signals, ""),
+        # # ("UART4_RX", "U4_TX", daughter_signals, ""),
+        # # ("UART4_TX", "U4_RX", daughter_signals, ""),
+        # # ("UART5_RX", "U5_TX", daughter_signals, ""),
+        # # ("UART5_TX", "U5_RX", daughter_signals, ""),
+        # ## ("UART6_RX", "D0_TX", arduino_signals, "PG9"),  # Already done with Arduino
+        # ## ("UART6_TX", "D1_RX", arduino_signals, "PG14"),
+        # # ("UART7_RX", "U7_TX", daughter_signals, ""),  # Works
+        # # ("UART7_TX", "U7_RX", daughter_signals, ""),
+        # ("UART8_RX", "U8_RT", morpho_signals, ""),  # Conflicts with LPTIM_IN1 on PE1
+        # ("UART8_TX", "U8_RX", morpho_signals, ""),  # No work around. UART8 is not avaiable.
+
+        # # (":SPI1_MOSI", "D11_PWM_MOSI+", arduino_signals, "PA15"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
+    ]
+    return pin_binds
+
+
 def pins_bind(pin_binds: List[PinBind]) -> Tuple[
-        Dict[Text, Tuple[Binding, ...]], Dict[Text, Binding]]:
+        Dict[Text, Tuple[Binding, ...]], Dict[Text, Binding], List[Text]]:
     """Bind needed signals to specific pins.
 
     Args:
@@ -689,7 +693,7 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
         print(f"pinsbind: signal_bindings_size={signal_bindings_size}")
         print(f"pinsbind: shorts_count={shorts_count}")
         assert False, "Inconsistency between pins and signal bindings table"
-    return signal_bindings_table, pin_bindings_table
+    return signal_bindings_table, pin_bindings_table, unbound_names
 
 
 def pin_name_deannotate(annotated_pin_name: Text) -> Text:
@@ -780,6 +784,97 @@ def signals_subset(signals: Signals, pattern: Text, title: Text) -> Tuple[Signal
     # Uncomment for debugging:
     # signals_print(final_culled_signals, title)
     return final_culled_signals, pin_names_set
+
+
+def summary_show(peripheral_permutation: TextTuple,
+                 arduino_signals: Signals, daughter_signals: Signals, morpho_signals: Signals,
+                 arduino_set: Set[Text], daughter_set: Set[Text], morpho_set: Set[Text]) -> None:
+    """Show a summary of what worked."""
+    # print(f"len(signal_bindings_table)={len(signal_bindings_table)}")
+    # print(f"len(pin_bindings_table)={len(pin_bindings_table)}")
+
+    Quad = Tuple[Text, int, Text, Text]
+
+    def binding_extract(binding: Binding) -> Quad:
+        signal_name: Text
+        pin_name_with_af: Text
+        schematic_name: Text
+        signal_name, pin_name_with_af, schematic_name = binding
+        pin_name: Text
+        af: Text
+        pin_name, af = tuple(pin_name_with_af.split(':'))
+        port_name: Text = pin_name[:2]
+        digits: Text = pin_name[2:]
+        assert digits.isdigit(), f"'pnwa:'{pin_name_with_af}' pn:'{pin_name}' digits='{digits}'"
+        pin_number: int = int(digits)
+        return (port_name, pin_number, signal_name, schematic_name)
+
+    # Recompute the various tables from *peripheral_permuation*:
+    pin_binds: List[PinBind] = pin_binds_get((peripheral_permutation,),
+                                             arduino_signals, daughter_signals, morpho_signals)
+    signal_bindings_table: Dict[Text, Tuple[Binding, ...]]
+    pin_bindings_table: Dict[Text, Binding]
+    unbound_signals: List[Text]
+    signal_bindings_table, pin_bindings_table, unbound_signals = pins_bind(pin_binds)
+
+    print("Pin Bindings:")
+    pin_bindings: List[Quad] = [binding_extract(binding)
+                                for binding in pin_bindings_table.values()]
+
+    pin_bindings = sorted(pin_bindings)
+    quad: Quad
+    for quad in pin_bindings:
+        print(f"{quad}")
+    print("")
+
+    print(f"len(signal_bindings_table)={len(signal_bindings_table)}")
+    schematic_bindings: List[Binding] = []
+    signal_bindings: List[Binding] = []
+    signal_binding: Binding
+    schematic_binding: Binding
+    bindings_tuple: Tuple[Binding, ...]
+    shorts: List[Tuple[Binding, ...]] = []
+    for bindings_tuple in signal_bindings_table.values():
+        if len(bindings_tuple) > 1:
+            shorts.append(bindings_tuple)
+        for signal_binding in bindings_tuple:
+            signal_bindings.append(signal_binding)
+            schematic_binding = (signal_binding[2], signal_binding[0], signal_binding[1])
+            schematic_bindings.append(schematic_binding)
+    signal_bindings = sorted(signal_bindings)
+    schematic_bindings = sorted(schematic_bindings)
+
+    print("Signal Bindings:")
+    for signal_binding in signal_bindings:
+        print(f"{signal_binding}")
+    print("")
+
+    print("Schematic Bindings:")
+    for schematic_binding in schematic_bindings:
+        print(f"{schematic_binding}")
+    print("")
+
+    print("Shorts:")
+    for bindings_tuple in shorts:
+        print(f"{bindings_tuple}")
+    print("")
+
+    # pin_bindings_size = len(pin_bindings)
+    # signal_bindings_size = len(signal_bindings)
+    # assert pin_bindings_size == signal_bindings_size, (
+    #     f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
+
+    unused_set: Set[Text] = set(list(pin_bindings_table.keys()))
+    unused_arduino_set: Set[Text] = arduino_set - unused_set
+    unused_daughter_set: Set[Text] = daughter_set - unused_set
+    unused_morpho_set: Set[Text] = morpho_set - unused_set
+    print(f"unused_arduino_set= {len(unused_arduino_set)}: {sorted(list(unused_arduino_set))}")
+    print(f"unused_morpho_set: {len(unused_morpho_set)}: {sorted(list(unused_morpho_set))}")
+    print(f"unused_daughter_set: {len(unused_daughter_set)}: {sorted(list(unused_daughter_set))}")
+    print("")
+
+    # signals_print(daughter_signals, "Zio")
+    # signals_print(morpho_signals, "Morpho")
 
 
 def zios_table_create() -> Dict[Text, Text]:
