@@ -638,11 +638,58 @@ The following order is used:
   Timers are a nightmare that are discussed below.
   Frankly, everything was eventually figured out.
 
-* I2C, SPI, UARTS, SONARS.
+* I2C:
+  There are 4 I2C's (I2C1/2/3/4.)
+  The minimum requirements are for 2 I2C's --
+  One for the Arduino A4/A5 pins and one for other Grove and Mikrobus purposes.
+  A third I2C would be nice to provide an alternative I2C bus in case there is a conflict
+  from either the Grove ando Mikrobus modules.
+
+* SPI:
+  There are 6 SPI'2 (SPI1/2/3/45/6.)
+  The minimum  requirements are for 3 SPI'2 --
+  One for the Arduino pins (must be SPI1 or SPI6), another for the LED's, and third
+  one for the MicroBus connectors.
+  Having a forth SPI, would so the each Mikrobus connector could have its own.
+  
+* UARTS
+
+* SONARS:
+  There are 7 sonars.
+  They need a total of 14 I/O pins -- 7 trigger pins and 7 input pins.
+
+
+* Miscellaneous Pins:
+  There are modest number of pins required for:
+
+  * Lidar (2 or 3):
+    The dumb lidars need a couple of enable pins and maybe a FET to turn power on and off.
+
+  * Raspberry Pi (2):
+    The Raspberry Pin needs an alive pin and a shut down pin.
+
+  * Power supply (1):
+    It would be nice if either the FPGA or the Nucelo to turn power off.
+    This is one FET.
+
+  * WOW Bus (2):
+    It would be nice to have 2 pins -- one to turn on the termination and another
+    to enable a FET to send power to the module on the bus.
+
+  * Buttons (2):
+    It would be nice to have 2 general purpose buttons.
+
+  * LED's (2):
+    It woulb be nice two have to LED's for blinky purposes.
+
+  * LCD Display (1):
+    IT would be nice to have a FET that can turn off the LCD display.
+
+This adds up to 13 pins.
+We are going to run out of pins, so trade-offs need to be made.
 
 
 The trick to using the program is to specify the order in which to bind the pins.
-
 The tricky thing to figure out was the timer bindings.
 It was not possible to accomplish the task without cross connecting one Morpho pin
 to a Daughter pin.

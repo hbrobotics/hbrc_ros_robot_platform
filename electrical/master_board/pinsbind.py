@@ -37,11 +37,22 @@ from typing import Dict, IO, List, Set, Text, Tuple
 import csv  # .csv file parser (CSV => Comma Separated Values)
 
 # Some type definitions:
+
+# An ANNOTATED_PIN_NAME has the form ".P[A-F][0-9]+:AF[0-9]+" (using regular expression format).
+# The first character is '@' for an Arduino pin, '+' for a daughter pin (i.e. a Zio pin that
+# that is not an Arduino pin), and '-' for a Morpho pin that is not connected to the Zio connectors.
+# There is a single letter after the 'P' that is the a port name (e.g. 'PA' - 'PF').
+# Lastly there is an alternate function designator which is 'AF' followed by by a number between
+# 0 and 14.  For example "@PD14:AF11" is an arduino ('@') pin connected to pin name 'PD14',
+# using alternate function "AF11".
+
 # Define TextTuple as an abreviation.  In general, Tuples are needed to support Python sorting.
 TextTuple = Tuple[Text, ...]  # Helper type to make the code easier to read.
+
 # A Binding is a ("SIGNAL_NAME", "ANNOTATED_PIN_NAME", "SCHEMATIC_NAME") tuple.
 Binding = Tuple[Text, Text, Text]
 Row = TextTuple  # A helper type for a row read from a `.csv` file.
+
 # A Signal is a ("SIGNAL_NAME", "ANNOTATED_PIN_NAME1", ..., "ANNOTATED_PIN_NAMEn")
 # There is always a signal name and 0, 1 or more annotated pin names.
 Signal = TextTuple
@@ -54,7 +65,8 @@ Signals = Tuple[TextTuple, ...]  # Signal lists are organized a tuple of text tu
 #    "SIGNAL_NAME" is the internal signal name.
 #    "SCHEMATIC_NAME" is the schemtatic name.
 #    "SIGNALS" is one of the signals subset (e.g. Arduino, Zio, or Morpho)
-#    "FORCE_PIN_NAME" force the signal to be bound to a particular pin.
+#    "FORCE_PIN_NAME" When non-empty, force a signal binding to a specific pin.
+#                     The same signal can be bound to more that one pin using this feature.
 PinBind = Tuple[Text, Text, Signals, Text]
 
 
@@ -101,23 +113,49 @@ def main() -> None:
     non_connector_nucleo_set: Set[Text] = nucleo_set - connector_set
     print(f"non_connector_nucleo_set={sorted(list(non_connector_nucleo_set))}")
 
-    # morpho_set: Set[Text] = morpho_set_extract()
-    # morpho_only_set: Set[Text] = morpho_set - zios_set
-    # assert morpho_only_set & zios_set == set()
-    # weird_set = zios_set - morpho_set
-    # assert weird_set == set(), f"weird_set={weird_set}"
-    # print(f"morpho_set={sorted(list(morpho_set))}")
-    # print(f"morpho_only_set={sorted(list(morpho_only_set))}")
-
-    # zios_overlap: Set[Text] = zios_set & nucleo_set
-    # print(f"zios_overlap={sorted(list(zios_overlap))}")
-    # morpho_available: Set[Text] = morpho_set - nucleo_set
-    # print(f"morpho_available={sorted(list(morpho_available))}")
-
-    # Read in *all_singals and subset into *arduino_signals*, *morpho_signals* and *zio_signals*:
-
-    # See the *PinBind* definition above for an explanation of the entries below:
+    # See the *PinBind* definition above for an explanation of the entries below.
+    # This is an ordered set of attempts to bind a pin.  The pins are bound in order
+    # of importance (e.g. Arduino 1st, Nucleo 2nd, timers 3rd, etc.
     pin_binds: List[PinBind] = [
+        # ("SPI2_MISO", ":SPI2_MISO", daughter_signals, ""),
+        # ("SPI2_MOSI", ":SPI2_MOSI", daughter_signals, ""),
+        # ("SPI2_SCK", ":SPI2_SCK", daughter_signals, ""),
+        # ("SPI2_NSS", ":SPI2_NSS", daughter_signals, ""),
+
+        # ("SPI3_MISO", ":SPI3_MISO", daughter_signals, ""),
+        # ("SPI3_MOSI", ":SPI3_MOSI", daughter_signals, ""),
+        # ("SPI3_SCK", ":SPI3_SCK", daughter_signals, ""),
+        # ("SPI3_NSS", ":SPI3_NSS", daughter_signals, ""),
+
+        # ("SPI4_MISO", ":SPI4_MISO", daughter_signals, ""),
+        # ("SPI4_MOSI", ":SPI4_MOSI", daughter_signals, ""),
+        # ("SPI4_SCK", ":SPI4_SCK", daughter_signals, ""),
+        # ("SPI4_NSS", ":SPI4_NSS", daughter_signals, ""),
+
+        # SPI5 needs to use a Morpho pin:
+        # ("SPI5_MISO", ":SPI5_MISO", daughter_signals, ""),
+        # ("SPI5_MOSI", ":SPI5_MOSI", daughter_signals, ""),
+        # ("SPI5_SCK", ":SPI5_SCK", daughter_signals, ""),
+        # ("SPI5_NSS", ":SPI5_NSS", morpho_signals, ""),  # Note: SPI5 appears to require a Morpho!
+
+        # SPI6 interferes with TIM6 which must be used by the servos:
+        # ("SPI6_MISO", ":SPI6_MISO", daughter_signals, ""),
+        # ("SPI6_MOSI", ":SPI6_MOSI", daughter_signals, ""),
+        # ("SPI6_SCK", ":SPI6_SCK", daughter_signals, ""),  # Note: TIM2_CH2 needs this pin.
+        # ("SPI6_NSS", ":SPI6_NSS", daughter_signals, ""),
+
+        # ("I2C1_SCL", ":I2C1SL", daughter_signals, ""),
+        # ("I2C1_SDA", ":I2C1DA", daughter_signals, ""),
+
+        # ("I2C2_SCL", ":I2C2SL", daughter_signals, ""),
+        # ("I2C2_SDA", ":I2C2DA", daughter_signals, ""),
+
+        # ("I2C3_SCL", ":I2C3SL", morpho_signals, ""),
+        # ("I2C3_SDA", ":I2C3DA", daughter_signals, ""),
+
+        # ("I2C4_SCL", ":I2C4SL", daughter_signals, ""),
+        # ("I2C4_SDA", ":I2C4DA", daughter_signals, ""),
+
         # Bind the arduino pins using the force pin name (4th field.)
         ("UART6_RX", "D0_RX", arduino_signals, "PG9"),
         ("UART6_TX", "D1_TX", arduino_signals, "PG14"),
@@ -129,7 +167,7 @@ def main() -> None:
         (":D7", "D7", arduino_signals, "PF13"),
         (":D8", "D8", arduino_signals, "PF12"),
         ("TIM4_CH4", "D9_PWM", arduino_signals, "PD15"),        # ~TIM4_CH4
-        ("TIM4_CH3", "D10_PWM_NSS", arduino_signals, "PD14"),   # ~TIM4CH3 (SPI[1|6]_NSS)
+        ("TIM4_CH3", "D10_PWM_NSS", arduino_signals, "PD14"),   # ~TIM4_CH3 (SPI[1|6]_NSS)
         ("SPI1_MOSI", "D11_PWM_MOSI", arduino_signals, "PA7"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
         #                                                       # TIM3_CH2, TIM14_CH1, RMII_CRS_DV
         ("SPI1_MISO", "D12_MISO", arduino_signals, "PA6"),      # SPI1_MISO, SPI6_MISO
@@ -206,26 +244,28 @@ def main() -> None:
         # TIM6 is used by HAL, so TIM7 will have to do.
 
         # UARTS's come next.  Note that the signal names swapped from the peripheral names:
-        ("USART1_RX", "U1_TX", daughter_signals, ""),
-        ("USART1_TX", "U1_RX", daughter_signals, ""),
-        ("USART2_RX", "U2_RX", daughter_signals, ""),
-        ("USART2_TX", "U2_TX", daughter_signals, ""),
-        ("USART3_RX", "STLINK_TX", morpho_signals, ""),  # Nucleo manual expects USART3
-        ("USART3_TX", "STLINK_RX", morpho_signals, ""),
-        ("UART4_RX", "U4_TX", daughter_signals, ""),
-        ("UART4_TX", "U4_RX", daughter_signals, ""),
-        ("UART5_RX", "U5_TX", daughter_signals, ""),
-        ("UART5_TX", "U5_RX", daughter_signals, ""),
-        # ## ("UART6_RX", "D0_TX", arduino_signals, "PG9"),  # Already done
+        # # ("USART1_RX", "U1_TX", daughter_signals, ""),
+        # # ("USART1_TX", "U1_RX", daughter_signals, ""),
+        # # ("USART2_RX", "U2_RX", daughter_signals, ""),
+        # # ("USART2_TX", "U2_TX", daughter_signals, ""),
+        # # ("USART3_RX", "STLINK_TX", morpho_signals, ""),  # Nucleo manual expects USART3
+        # # ("USART3_TX", "STLINK_RX", morpho_signals, ""),
+        # # ("UART4_RX", "U4_TX", daughter_signals, ""),
+        # # ("UART4_TX", "U4_RX", daughter_signals, ""),
+        # # ("UART5_RX", "U5_TX", daughter_signals, ""),
+        # # ("UART5_TX", "U5_RX", daughter_signals, ""),
+        # ## ("UART6_RX", "D0_TX", arduino_signals, "PG9"),  # Already done with Arduino
         # ## ("UART6_TX", "D1_RX", arduino_signals, "PG14"),
-        ("UART7_RX", "U7_TX", daughter_signals, ""),  # Works
-        ("UART7_TX", "U7_RX", daughter_signals, ""),
+        # # ("UART7_RX", "U7_TX", daughter_signals, ""),  # Works
+        # # ("UART7_TX", "U7_RX", daughter_signals, ""),
         # ("UART8_RX", "U8_RT", morpho_signals, ""),  # Conflicts with LPTIM_IN1 on PE1
         # ("UART8_TX", "U8_RX", morpho_signals, ""),  # No work around. UART8 is not avaiable.
 
-        (":SPI1_MOSI", "D11_PWM_MOSI+", arduino_signals, "PA15"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
+        # # (":SPI1_MOSI", "D11_PWM_MOSI+", arduino_signals, "PA15"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
 
     ]
+
+    # Perform the pin bindings and get the resulting pin and signals tables:
     signal_bindings_table: Dict[Text, Tuple[Binding, ...]]
     pin_bindings_table: Dict[Text, Binding]
     signal_bindings_table, pin_bindings_table = pins_bind(pin_binds)
@@ -514,6 +554,7 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
 
     Args:
         pin_binds: An ordered list of PinBind's.
+
     Returns:
         signal_bindings_table (Dict[Text, Binding]):
             A table of Binding's keyed by the signal name.
@@ -543,40 +584,31 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
     schematic_name: Text
     signals: Signals
     force_pin_name: Text
+    shorts_count: int = 0
     signals_table: Dict[Signals, List[PinBind]] = {}
     for pin_bind in pin_binds:
         # Unpack *pin_bind*:
         signal_name, schematic_name, signals, force_pin_name = pin_bind
         if force_pin_name != "":
-            short_trace: bool = signal_name == "LPTIM1_IN2"
-            if short_trace:
-                print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< shorted pins")
             binding = (signal_name, f"{force_pin_name}:AF15", schematic_name)
             # print(f"signal_name={signal_name} schematic_name={schematic_name} "
             #       f"force_pin_name={force_pin_name} binding={binding}")
             if force_pin_name not in pin_bindings_table:
-                if short_trace:
-                    print(f"insert {binding} into pins_binding table for '{force_pin_name}'")
                 pin_bindings_table[force_pin_name] = binding
             if signal_name in signal_bindings_table:
-                # Shorted pins:
+                # This is a shorted pin and it is treated specially:
                 previous_binding_tuple: Tuple[Binding, ...] = signal_bindings_table[signal_name]
                 new_binding_tuple: Tuple[Binding, ...] = previous_binding_tuple + (binding,)
                 signal_bindings_table[signal_name] = new_binding_tuple
-                if short_trace:
-                    print(f"Insert {new_binding_tuple} into signal_bindings_table['{signal_name}']")
+                shorts_count += 1
             else:
                 signal_bindings_table[signal_name] = (binding,)
-            if short_trace:
-                print(f"pin_bindings_table[{force_pin_name}]]:{pin_bindings_table[force_pin_name]}")
-                print(f"signal_bindings_table[{signal_name}]]:{signal_bindings_table[signal_name]}")
-                print(f"End short trace for {signal_name}")
-                print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< shorted pins")
         else:
             if signals not in signals_table:
                 signals_table[signals] = []
             signals_table[signals].append(pin_bind)
-    # assert len(signal_bindings_table) == len(pin_bindings_table),f"Early binding failed {binding}"
+    assert len(signal_bindings_table) + shorts_count == len(pin_bindings_table), (
+        f"Early binding failed {binding}")
 
     # Now we can sweep through the *signals_table* and find try to allocate the associated
     # *PinBind*'s.  The order that the *signals* comes out of the iterator is semi-random,
@@ -585,7 +617,6 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
     pin_binds_list: List[PinBind]
     for signals, pin_binds_list in signals_table.items():
         index += 1
-        # signals_print(signals, f"######################### Signals table {index} being processed")
         # Now sweep through *signals* which has been presorted so that the hardest to bind
         # signals (i.e. the ones with the fewest available pins come first):
         duplicate_signals: Signals
@@ -633,14 +664,16 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
                 pass
 
     # Now look for pins that did not get bound:
-    unbound_pins: int = 0
+    unbound_names: List[Text] = []
     for pin_bind in pin_binds:
         signal_name, schematic_name, signals, force_pin_name = pin_bind
         if signal_name not in signal_bindings_table:
-            print(f"{signal_name} did not get assigned to a pin")
-            unbound_pins += 1
-    assert unbound_pins == 0, f"{unbound_pins} pin(s) did not get bound."
+            unbound_names.append(signal_name)
+    if len(unbound_names) > 0:
+        signal_names = sorted(unbound_names)
+        raise RuntimeError(f"Unbound pins: {signal_names}")
 
+    # Sweep through pin and signal bindings table looking for any last issues:
     bindings: Tuple[Binding, ...]
     for signal_name, bindings in signal_bindings_table.items():
         for binding in bindings:
@@ -648,12 +681,14 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
     for pin_name, binding in pin_bindings_table.items():
         assert pin_name == binding[1].split(':')[0]
 
-    # signal_bindings_size = len(signal_bindings_table)
-    # pin_bindings_size = len(pin_bindings_table)
-    # print(f"pinsbind: pin_bindings_size={pin_bindings_size}")
-    # print(f"pinsbind: signal_bindings_size={signal_bindings_size}")
-    # assert signal_bindings_size == pin_bindings_size, (
-    #     f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
+    # One last sanity check on the pin and signal bindings table before returning them:
+    signal_bindings_size = len(signal_bindings_table)
+    pin_bindings_size = len(pin_bindings_table)
+    if signal_bindings_size + shorts_count != pin_bindings_size:
+        print(f"pinsbind: pin_bindings_size={pin_bindings_size}")
+        print(f"pinsbind: signal_bindings_size={signal_bindings_size}")
+        print(f"pinsbind: shorts_count={shorts_count}")
+        assert False, "Inconsistency between pins and signal bindings table"
     return signal_bindings_table, pin_bindings_table
 
 
