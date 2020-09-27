@@ -116,22 +116,22 @@ def main() -> None:
 
     # Create *periperal_permutations* list that lists all the possible permutations of
     # each peripheral class:
-    i2c_want: int = 2
-    spi_want: int = 3
-    uart_want: int = 4
+    i2cs_want: int = 2  # One bound to Arduino and one for everything else.
+    spis_want: int = 2  # + SPI1 is already  bound to Arduino
+    uarts_want: int = 5  # + UART6 is already bound to Arduino
     peripheral_permutations: Tuple[TextTuple, ...] = peripheral_permutations_get(
-        i2c_want, spi_want, uart_want)
-    assert len(peripheral_permutations) == 1, "Should only have 1 permutation"
+        i2cs_want, spis_want, uarts_want)
+    print(f"len(peripheral_permutations)={len(peripheral_permutations)}")
 
     signal_bindings_table: Dict[Text, Tuple[Binding, ...]]
     pin_bindings_table: Dict[Text, Binding]
-    unbound_signals: List[Text]
+    unbound_signals: TextTuple
 
     peripheral_permutation: TextTuple
     permutation_scores: List[Tuple[int, TextTuple, TextTuple]] = []
     for peripheral_permutation in peripheral_permutations:
         # Create the *pin_binds* from *peripheral_permuatation*:
-        pin_binds: List[PinBind] = pin_binds_get(peripheral_permutations, arduino_signals,
+        pin_binds: List[PinBind] = pin_binds_get(peripheral_permutation, arduino_signals,
                                                  daughter_signals, morpho_signals)
 
         # Perform the pin bindings and get the resulting pin and signals tables:
@@ -143,16 +143,23 @@ def main() -> None:
 
     # Now process the permutation scores looking for any full match:
     permutation_scores = sorted(permutation_scores)
-    permutation_score0: Tuple[int, TextTuple, TextTuple] = permutation_scores[0]
-    if permutation_score0[0] == 0:
+    initial_unbound_signals_size: int
+    permutation: TextTuple
+    initial_unbound_signals_size, unbound_signals, permutation = permutation_scores[0]
+    if initial_unbound_signals_size == 0:
         # We have a winner:
-        peripheral_permutation = permutation_score0[2]
-        summary_show(peripheral_permutation,
+        summary_show(permutation,
                      arduino_signals, daughter_signals, morpho_signals,
                      arduino_set, daughter_set, morpho_set)
     else:
         # Not so good:
-        assert False
+        permutation_record: Tuple[int, TextTuple, TextTuple]
+        print("Unbound siginals:")
+        unbound_signals_size: int
+        for unbound_signals_size, unbound_signals, permutation in permutation_scores:
+            if unbound_signals_size > initial_unbound_signals_size:
+                break
+            print(f"{unbound_signals}: {permutation}")
 
 
 # The functions after main() are listed alphabetically to make them easier to find.
@@ -355,94 +362,62 @@ def nucleo_set_create() -> Set[Text]:
     return nucleo_set
 
 
-def ordered_permutations(peripherals: List[Text], count: int) -> Tuple[Text, ...]:
+def ordered_permutations(peripherals: TextTuple, count: int) -> TextTuple:
     """Return a sorted list of unique permutations."""
     permuation: List[Text]
     permutations_set: Set[Text] = set()
     for permutation in itertools.permutations(peripherals, count):
         sorted_permutation: Text = ':'.join(sorted(permutation))
         permutations_set.add(sorted_permutation)
-    ordered_permutations: List[Text] = sorted(list(permutations_set))
-    return tuple(ordered_permutations)
+    ordered_permutations: TextTuple = tuple(sorted(list(permutations_set)))
+    return ordered_permutations
 
 
 def peripheral_permutations_get(
-        i2cs_count: int, spis_count: int, uarts_count: int) -> Tuple[Tuple[Text, ...], ...]:
+        i2cs_count: int, spis_count: int, uarts_count: int) -> Tuple[TextTuple, ...]:
     """Return permuation list for I2C, SPI, and UART peripherals."""
     # These are the list of peripherals to permuate:
-    i2cs: List[Text] = ["I2C1", "I2C2"]
-    spis: List[Text] = ["SPI1", "SPI2", "SPI3"]
-    uarts: List[Text] = ["UART1", "UART2", "UART3", "UART4"]
+    i2cs: TextTuple = ("I2C1", "I2C2", "I2C3", "I2C4")  # I2C3 needs a morpho pin
+    spis: TextTuple = ("SPI2", "SPI3", "SPI4", "SPI5")  # SPI1 and SPI6 prebound to arduino
+    # UART6 is already connected to Arduino pins already
+    # UART8 Conflicts with LPTIM_IN1 on PE1 and there is no work around.  UART8 is not avaiable.
+    uarts: TextTuple = ("USART1", "USART2", "USART3", "USART4", "UART5", "UART7")
 
     # Create the permutations first:
-    i2c_permutations: Tuple[Text, ...] = ordered_permutations(i2cs, i2cs_count)
-    spi_permutations: Tuple[Text, ...] = ordered_permutations(spis, spis_count)
-    uart_permutations: Tuple[Text, ...] = ordered_permutations(uarts, uarts_count)
+    i2c_permutations: TextTuple = ordered_permutations(i2cs, i2cs_count)
+    spi_permutations: TextTuple = ordered_permutations(spis, spis_count)
+    # print(f"spi_pemutations={spi_permutations}")
+    uart_permutations: TextTuple = ordered_permutations(uarts, uarts_count)
 
     # Just iterate over all possible permutations of each peripher type:
-    peripheral_permutations: List[Tuple[Text, ...]] = []
+    peripheral_permutations: List[TextTuple] = []
     uart_permutation: Text
     i2c_permutation: Text
     spi_permutation: Text
-    for uart_permutation in uart_permutations:
-        for i2c_permutation in i2c_permutations:
-            for spi_permutation in spi_permutations:
-                peripheral_permutation: Tuple[Text, ...] = tuple(sorted(
+    for i2c_permutation in i2c_permutations:
+        for spi_permutation in spi_permutations:
+            for uart_permutation in uart_permutations:
+                peripheral_permutation: TextTuple = tuple(sorted(
                     uart_permutation.split(':') +
                     i2c_permutation.split(':') +
                     spi_permutation.split(':')
                 ))
+                # print(f"Peripheral Permutation: {peripheral_permutation}")
                 peripheral_permutations.append(peripheral_permutation)
     return tuple(peripheral_permutations)
 
 
-def pin_binds_get(peripheral_permutations: Tuple[Tuple[Text, ...], ...], arduino_signals: Signals,
+def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
                   daughter_signals: Signals, morpho_signals: Signals) -> List[PinBind]:
     """Return a list of pin pindings based on a permutation list."""
     # See the *PinBind* definition at the being of this program.
     # This is an ordered set of attempts to bind a pin.  The pins are bound in order
     # of importance (e.g. Arduino 1st, Nucleo 2nd, timers 3rd, etc.
-    pin_binds: List[PinBind] = [
-        # ("SPI2_MISO", ":SPI2_MISO", daughter_signals, ""),
-        # ("SPI2_MOSI", ":SPI2_MOSI", daughter_signals, ""),
-        # ("SPI2_SCK", ":SPI2_SCK", daughter_signals, ""),
-        # ("SPI2_NSS", ":SPI2_NSS", daughter_signals, ""),
+    peripheral_set: Set[Text] = set(peripheral_permutation)
+    pin_binds: List[PinBind] = []
 
-        # ("SPI3_MISO", ":SPI3_MISO", daughter_signals, ""),
-        # ("SPI3_MOSI", ":SPI3_MOSI", daughter_signals, ""),
-        # ("SPI3_SCK", ":SPI3_SCK", daughter_signals, ""),
-        # ("SPI3_NSS", ":SPI3_NSS", daughter_signals, ""),
-
-        # ("SPI4_MISO", ":SPI4_MISO", daughter_signals, ""),
-        # ("SPI4_MOSI", ":SPI4_MOSI", daughter_signals, ""),
-        # ("SPI4_SCK", ":SPI4_SCK", daughter_signals, ""),
-        # ("SPI4_NSS", ":SPI4_NSS", daughter_signals, ""),
-
-        # SPI5 needs to use a Morpho pin:
-        # ("SPI5_MISO", ":SPI5_MISO", daughter_signals, ""),
-        # ("SPI5_MOSI", ":SPI5_MOSI", daughter_signals, ""),
-        # ("SPI5_SCK", ":SPI5_SCK", daughter_signals, ""),
-        # ("SPI5_NSS", ":SPI5_NSS", morpho_signals, ""),  # Note: SPI5 appears to require a Morpho!
-
-        # SPI6 interferes with TIM6 which must be used by the servos:
-        # ("SPI6_MISO", ":SPI6_MISO", daughter_signals, ""),
-        # ("SPI6_MOSI", ":SPI6_MOSI", daughter_signals, ""),
-        # ("SPI6_SCK", ":SPI6_SCK", daughter_signals, ""),  # Note: TIM2_CH2 needs this pin.
-        # ("SPI6_NSS", ":SPI6_NSS", daughter_signals, ""),
-
-        # ("I2C1_SCL", ":I2C1SL", daughter_signals, ""),
-        # ("I2C1_SDA", ":I2C1DA", daughter_signals, ""),
-
-        # ("I2C2_SCL", ":I2C2SL", daughter_signals, ""),
-        # ("I2C2_SDA", ":I2C2DA", daughter_signals, ""),
-
-        # ("I2C3_SCL", ":I2C3SL", morpho_signals, ""),
-        # ("I2C3_SDA", ":I2C3DA", daughter_signals, ""),
-
-        # ("I2C4_SCL", ":I2C4SL", daughter_signals, ""),
-        # ("I2C4_SDA", ":I2C4DA", daughter_signals, ""),
-
-        # Bind the arduino pins using the force pin name (4th field.)
+    # Bind the arduino pins using the force pin name (4th field.)
+    pin_binds.extend([
         ("UART6_RX", "D0_RX", arduino_signals, "PG9"),
         ("UART6_TX", "D1_TX", arduino_signals, "PG14"),
         (":D2", "D2", arduino_signals, "PF15"),
@@ -466,10 +441,12 @@ def pin_binds_get(peripheral_permutations: Tuple[Tuple[Text, ...], ...], arduino
         ("ADC3_IN9", "A3", arduino_signals, "PF3"),             # PF3 ADC3_IN9
         ("ADC3_IN15", "A4_SDA", arduino_signals, "PF5"),        # PF5 ADC3_IN15
         ("ADC3_IN8", "A5_SCL", arduino_signals, "PF10"),        # PF10 ADC3_IN8
+    ])
 
-        # The Nucleo Pins should be bound next, since they tend not too overlap with the Zio pins
-        # (with the 1 big exception of PA7 which everybody wants to use.)  Over time some of these
-        # pins can be sniped for other purposes.  For now they can be left allocated.
+    # The Nucleo Pins should be bound next, since they tend not too overlap with the Zio pins
+    # (with the 1 big exception of PA7 which everybody wants to use.)  Over time some of these
+    # pins can be sniped for other purposes.  For now they can be left allocated.
+    pin_binds.extend([
         ("USER_BTN", ":USER_SW1", morpho_signals, "PC13"),
         ("RCC_OSC32_IN", ":RCC_OSC_IN", morpho_signals, "PC14"),
         ("RCC_OSC32_OUT", ":RCC_OSC_OUT", morpho_signals, "PC15"),
@@ -484,7 +461,7 @@ def pin_binds_get(peripheral_permutations: Tuple[Tuple[Text, ...], ...], arduino
         ("LD1", ":LD1", morpho_signals, "PB0"),  # ZIO overlap CN10-31
         ("USB_POWERSWITCHON", ":USB_PWR_SW", morpho_signals, "PG6"),
         ("USB_OVERCURRENT", ":USB_OVERDRAW", morpho_signals, "PG7"),
-        ("USB_SOF", ":USB_SOF", morpho_signals, "PA8"),
+        # ("USB_SOF", ":USB_SOF", morpho_signals, "PA8"),
         ("USB_VBUS", ":USB_VBUS:", morpho_signals, "PA9"),
         ("USB_ID", ":USB_ID", morpho_signals, "PA10"),
         ("USB_DM", ":USB_DM", morpho_signals, "PA11"),
@@ -495,7 +472,10 @@ def pin_binds_get(peripheral_permutations: Tuple[Tuple[Text, ...], ...], arduino
         ("RMII_TXD0", "RMII_TXD0", morpho_signals, "PG13"),
         # ("SWO", "SW0", morpho_signals, "PB3"),  # CN7-15 Not needed because SWO is unimplemented.
         ("LD2 (Blue)", ":LED_BLUE", morpho_signals, "PB7"),
+    ])
 
+    # Do the timers:
+    pin_binds.extend([
         # The servos work best with 32-bit counters (i.e. TIM2/5).  It turns out that
         # there are exactly 4 Zio availble pins to TIM2/5, so that are used for the servos.
         ("TIM5_CH1", "SERVO1", daughter_signals, ""),
@@ -528,32 +508,129 @@ def pin_binds_get(peripheral_permutations: Tuple[Tuple[Text, ...], ...], arduino
 
         # The LED's just need an internal timer to trigger the DMA peripheral.
         # TIM6 is used by HAL, so TIM7 will have to do.
+    ])
 
-        # UARTS's come next.  Note that the signal names swapped from the peripheral names:
-        # # ("USART1_RX", "U1_TX", daughter_signals, ""),
-        # # ("USART1_TX", "U1_RX", daughter_signals, ""),
-        # # ("USART2_RX", "U2_RX", daughter_signals, ""),
-        # # ("USART2_TX", "U2_TX", daughter_signals, ""),
-        # # ("USART3_RX", "STLINK_TX", morpho_signals, ""),  # Nucleo manual expects USART3
-        # # ("USART3_TX", "STLINK_RX", morpho_signals, ""),
-        # # ("UART4_RX", "U4_TX", daughter_signals, ""),
-        # # ("UART4_TX", "U4_RX", daughter_signals, ""),
-        # # ("UART5_RX", "U5_TX", daughter_signals, ""),
-        # # ("UART5_TX", "U5_RX", daughter_signals, ""),
-        # ## ("UART6_RX", "D0_TX", arduino_signals, "PG9"),  # Already done with Arduino
-        # ## ("UART6_TX", "D1_RX", arduino_signals, "PG14"),
-        # # ("UART7_RX", "U7_TX", daughter_signals, ""),  # Works
-        # # ("UART7_TX", "U7_RX", daughter_signals, ""),
-        # ("UART8_RX", "U8_RT", morpho_signals, ""),  # Conflicts with LPTIM_IN1 on PE1
-        # ("UART8_TX", "U8_RX", morpho_signals, ""),  # No work around. UART8 is not avaiable.
+    if False and "SPI1" in peripheral_set:    # SPI1 is bound to the arduino pins:
+        pin_binds.extend([
+            ("SPI1_MISO", ":SPI1_MISO", daughter_signals, ""),
+            ("SPI1_MOSI", ":SPI1_MOSI", daughter_signals, ""),
+            ("SPI1_SCK", ":SPI1_SCK", daughter_signals, ""),
+            ("SPI1_NSS", ":SPI1_NSS", daughter_signals, ""),
+        ])
 
-        # # (":SPI1_MOSI", "D11_PWM_MOSI+", arduino_signals, "PA15"),  # ~SPI1/6_MOSI, SPI1/6_MOSI,
-    ]
+    if "SPI2" in peripheral_set:
+        pin_binds.extend([
+            ("SPI2_MISO", ":SPI2_MISO", daughter_signals, ""),
+            ("SPI2_MOSI", ":SPI2_MOSI", daughter_signals, ""),
+            ("SPI2_SCK", ":SPI2_SCK", daughter_signals, ""),
+            ("SPI2_NSS", ":SPI2_NSS", daughter_signals, ""),
+        ])
+    if "SPI3" in peripheral_set:
+        pin_binds.extend([
+            ("SPI3_MISO", ":SPI3_MISO", daughter_signals, ""),
+            ("SPI3_MOSI", ":SPI3_MOSI", daughter_signals, ""),
+            ("SPI3_SCK", ":SPI3_SCK", daughter_signals, ""),
+            ("SPI3_NSS", ":SPI3_NSS", daughter_signals, ""),
+        ])
+    if "SPI4" in peripheral_set:
+        pin_binds.extend([
+            ("SPI4_MISO", ":SPI4_MISO", daughter_signals, ""),
+            ("SPI4_MOSI", ":SPI4_MOSI", daughter_signals, ""),
+            ("SPI4_SCK", ":SPI4_SCK", daughter_signals, ""),
+            ("SPI4_NSS", ":SPI4_NSS", daughter_signals, ""),
+        ])
+    if "SPI5" in peripheral_set:
+        # SPI5 needs to use a Morpho pin:
+        pin_binds.extend([
+            ("SPI5_MISO", ":SPI5_MISO", daughter_signals, ""),
+            ("SPI5_MOSI", ":SPI5_MOSI", daughter_signals, ""),
+            ("SPI5_SCK", ":SPI5_SCK", daughter_signals, ""),
+            ("SPI5_NSS", ":SPI5_NSS", morpho_signals, ""),  # Note: SPI5 needs a Morpho pin!
+        ])
+
+    if False and "SPI6" in peripheral_set:
+        # SPI6 interferes with TIM6 which must be used by the servos:
+        pin_binds.extend([
+            ("SPI6_MISO", ":SPI6_MISO", daughter_signals, ""),
+            ("SPI6_MOSI", ":SPI6_MOSI", daughter_signals, ""),
+            ("SPI6_SCK", ":SPI6_SCK", daughter_signals, ""),  # Note: TIM2_CH2 needs this pin.
+            ("SPI6_NSS", ":SPI6_NSS", daughter_signals, ""),
+        ])
+
+    if "I2C1" in peripheral_set:
+        pin_binds.extend([
+            ("I2C1_SCL", ":I2C1SL", daughter_signals, ""),
+            ("I2C1_SDA", ":I2C1DA", daughter_signals, ""),
+        ])
+
+    if "I2C2" in peripheral_set:
+        pin_binds.extend([
+            ("I2C2_SCL", ":I2C2SL", daughter_signals, ""),
+            ("I2C2_SDA", ":I2C2DA", daughter_signals, ""),
+        ])
+
+    if "I2C3" in peripheral_set:
+        pin_binds.extend([
+            ("I2C3_SCL", ":I2C3SL", morpho_signals, ""),
+            ("I2C3_SDA", ":I2C3DA", daughter_signals, ""),
+        ])
+
+    if "I2C4" in peripheral_set:
+        pin_binds.extend([
+            ("I2C4_SCL", ":I2C4SL", daughter_signals, ""),
+            ("I2C4_SDA", ":I2C4DA", daughter_signals, ""),
+        ])
+
+    # UARTS's come next.  Note that the schematic signal names swapped from the peripheral names:
+    if "USART1" in peripheral_set:
+        pin_binds.extend([
+            ("USART1_RX", "U1_TX", daughter_signals, ""),
+            ("USART1_TX", "U1_RX", daughter_signals, ""),
+        ])
+    if "USART2" in peripheral_set:
+        pin_binds.extend([
+            ("USART2_RX", "U2_RX", daughter_signals, ""),
+            ("USART2_TX", "U2_TX", daughter_signals, ""),
+        ])
+    if "USART3" in peripheral_set:
+        pin_binds.extend([
+            ("USART3_RX", "STLINK_TX", morpho_signals, ""),  # Nucleo manual expects USART3
+            ("USART3_TX", "STLINK_RX", morpho_signals, ""),
+        ])
+    if "USART4" in peripheral_set:
+        pin_binds.extend([
+            ("USART4_RX", "U4_TX", daughter_signals, ""),
+            ("USART4_TX", "U4_RX", daughter_signals, ""),
+        ])
+    if "UART5" in peripheral_set:
+        pin_binds.extend([
+            ("UART5_RX", "U5_TX", daughter_signals, ""),
+            ("UART5_TX", "U5_RX", daughter_signals, ""),
+        ])
+    if "UART6" in peripheral_set:  # UART6 already been bound with the arduino pins.
+        assert False, "UART6 is already connected to Arduino pins already"
+        pin_binds.extend([
+            ("UART6_RX", "D0_TX", arduino_signals, "PG9"),
+            ("UART6_TX", "D1_RX", arduino_signals, "PG14"),
+        ])
+    if "UART7" in peripheral_set:
+        pin_binds.extend([
+            ("UART7_RX", "U7_TX", daughter_signals, ""),
+            ("UART7_TX", "U7_RX", daughter_signals, ""),
+        ])
+
+    if "UART8" in peripheral_set:
+        # UART8 is not avaiable.
+        assert False, "UART8 Conflicts with LPTIM_IN1 on PE1 and there is no work around."
+        pin_binds.extend([
+            ("UART8_RX", "U8_RT", morpho_signals, ""),
+            ("UART8_TX", "U8_RX", morpho_signals, ""),
+        ])
     return pin_binds
 
 
 def pins_bind(pin_binds: List[PinBind]) -> Tuple[
-        Dict[Text, Tuple[Binding, ...]], Dict[Text, Binding], List[Text]]:
+        Dict[Text, Tuple[Binding, ...]], Dict[Text, Binding], TextTuple]:
     """Bind needed signals to specific pins.
 
     Args:
@@ -574,13 +651,13 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
     pin_bindings_table: Dict[Text, Binding] = {}
     signal_bindings_table: Dict[Text, Tuple[Binding, ...]] = {}
 
-    # This step is pretty obscure.  We need to partion the *pin_binds* by it *signal*
+    # This step is pretty obscure.  We need to partition the *pin_binds* by it *signal*
     # (type *Signals*) component, which is one of *arduino_signals*, *daughter_signals*,
     # or *morpho_signals*.  These three values are large but immutable structures,
     # so they can be used a dictionary key.  So, we can build *signals_table* which
     # is keyed by off of these three values to build lists of *PinBind*'s that are
     # isolated to a single *Signals* instance.  The *PinBind*'s order must be preserved,
-    # since the *Signal* with each *Signals* object are sort so that the shortest tuples
+    # since the *Signal* with each *Signals* object are sorted so that the shortest tuples
     # occur first.  This is encourage binding to pins that have the fewest options first.
     binding: Binding
     pin_bind: PinBind
@@ -599,6 +676,8 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
             #       f"force_pin_name={force_pin_name} binding={binding}")
             if force_pin_name not in pin_bindings_table:
                 pin_bindings_table[force_pin_name] = binding
+            else:
+                print("        !!!!!!!!!!!! Should not happen")
             if signal_name in signal_bindings_table:
                 # This is a shorted pin and it is treated specially:
                 previous_binding_tuple: Tuple[Binding, ...] = signal_bindings_table[signal_name]
@@ -653,14 +732,12 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
                                 match = True
                                 break
                         else:
-                            print(f"    {signal_name} wants to bind to {annotated_pin_names}")
                             for annotated_pin_name in annotated_pin_names:
                                 pin_name = pin_name_deannotate(annotated_pin_name)
                                 assert pin_name in pin_bindings_table, f"Pin {pin_name} not bound?"
-                                previous_binding: Binding = pin_bindings_table[pin_name]
-                                print(f"    {pin_name} is already bound to {previous_binding}")
+                                # previous_binding: Binding = pin_bindings_table[pin_name]
                                 # signals_print(signals, "Bind: All Pins Previously Bound")
-                            assert False, f"Unable to bind {signal_name} to {signal}"
+                            # assert False, f"Unable to bind {signal_name} to {signal}"
                         if match:
                             break
             else:
@@ -673,9 +750,6 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
         signal_name, schematic_name, signals, force_pin_name = pin_bind
         if signal_name not in signal_bindings_table:
             unbound_names.append(signal_name)
-    if len(unbound_names) > 0:
-        signal_names = sorted(unbound_names)
-        raise RuntimeError(f"Unbound pins: {signal_names}")
 
     # Sweep through pin and signal bindings table looking for any last issues:
     bindings: Tuple[Binding, ...]
@@ -693,7 +767,7 @@ def pins_bind(pin_binds: List[PinBind]) -> Tuple[
         print(f"pinsbind: signal_bindings_size={signal_bindings_size}")
         print(f"pinsbind: shorts_count={shorts_count}")
         assert False, "Inconsistency between pins and signal bindings table"
-    return signal_bindings_table, pin_bindings_table, unbound_names
+    return signal_bindings_table, pin_bindings_table, tuple(unbound_names)
 
 
 def pin_name_deannotate(annotated_pin_name: Text) -> Text:
@@ -810,11 +884,11 @@ def summary_show(peripheral_permutation: TextTuple,
         return (port_name, pin_number, signal_name, schematic_name)
 
     # Recompute the various tables from *peripheral_permuation*:
-    pin_binds: List[PinBind] = pin_binds_get((peripheral_permutation,),
+    pin_binds: List[PinBind] = pin_binds_get(peripheral_permutation,
                                              arduino_signals, daughter_signals, morpho_signals)
     signal_bindings_table: Dict[Text, Tuple[Binding, ...]]
     pin_bindings_table: Dict[Text, Binding]
-    unbound_signals: List[Text]
+    unbound_signals: TextTuple
     signal_bindings_table, pin_bindings_table, unbound_signals = pins_bind(pin_binds)
 
     print("Pin Bindings:")
@@ -871,6 +945,7 @@ def summary_show(peripheral_permutation: TextTuple,
     print(f"unused_arduino_set= {len(unused_arduino_set)}: {sorted(list(unused_arduino_set))}")
     print(f"unused_morpho_set: {len(unused_morpho_set)}: {sorted(list(unused_morpho_set))}")
     print(f"unused_daughter_set: {len(unused_daughter_set)}: {sorted(list(unused_daughter_set))}")
+    print(f"Peripherals: {peripheral_permutation}")
     print("")
 
     # signals_print(daughter_signals, "Zio")

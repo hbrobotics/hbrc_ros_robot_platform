@@ -448,6 +448,9 @@ They are named SPI1 through SPI6.
 SPI1 through SPI3 support the I2S serial sound mode and SPI4 through SPI6 do not.
 
 The HR2 SPI requirements are currently that one SPI is needed to drive the LED shift register.
+One of the SPI's (either SPI1 or SP6) is bound to the arduino pins.
+It is desirable to have one that can communicate with the Mikrobus connectors.
+Thus a total of 3 SPI peripherals are needed.
 
 ### USART's
 
@@ -468,12 +471,12 @@ The USART requirements are:
   Many Arduino shields need a dedicated serial connection.
   For the Nucleo, UART6 is connected to these pins.
 
+* SBC (Single Board Computer):
+  The single board computer (e.g. Raspberry Pi) needs to be able to talk to the microcontroller.
+
 * ST-Link debug USART:
   The ST-Link supports a serial port over USB.
   This is traditionally USART3.
-
-* SBC (Single Board Computer):
-  The single board computer (e.g. Raspberry Pi) needs to be able to talk to the microcontroller.
 
 * Lidar:
   Many LIDAR's generate a pretty high stream of data over a serial link for their point cloud.
@@ -483,11 +486,11 @@ The USART requirements are:
   this a multi-drop serial bus that uses CAN bus transceivers to send serial data between modules.
   In addition, there is an emergency stop bus for signaling an emergency stop condition.
 
-* FTDI Debug USART (Morpho Only):
-  This yet another USART that can be used for debugging.
-
 * FPGA USART (Zio Only):
   This is a dedicated USART for talking to the FPGA.
+
+* FTDI Debug USART (Optional, it can be hooked into USART3 as well.):
+  This yet another USART that can be used for debugging.
 
 ## ZIO Connectors Mapping Table Grove boards
 
