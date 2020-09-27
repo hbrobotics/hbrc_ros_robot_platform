@@ -449,8 +449,9 @@ SPI1 through SPI3 support the I2S serial sound mode and SPI4 through SPI6 do not
 
 The HR2 SPI requirements are currently that one SPI is needed to drive the LED shift register.
 One of the SPI's (either SPI1 or SP6) is bound to the arduino pins.
-It is desirable to have one that can communicate with the Mikrobus connectors.
-Thus a total of 3 SPI peripherals are needed.
+It is desirable to have one that can communicate with the Mikrobus connectors
+and any other SPI devices (like additional digital shift registers.)
+Thus, a total of 3 SPI peripherals are needed.
 
 ### USART's
 
