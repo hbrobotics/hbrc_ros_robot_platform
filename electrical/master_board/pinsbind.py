@@ -117,7 +117,7 @@ def main() -> None:
     # Create *periperal_permutations* list that lists all the possible permutations of
     # each peripheral class:
     i2cs_want: int = 2  # One bound to Arduino and one for everything else.
-    spis_want: int = 2  # + SPI1 is already  bound to Arduino
+    spis_want: int = 3  # + SPI1 is already  bound to Arduino
     uarts_want: int = 5  # + UART6 is already bound to Arduino
     peripheral_permutations: Tuple[TextTuple, ...] = peripheral_permutations_get(
         i2cs_want, spis_want, uarts_want)

@@ -642,26 +642,32 @@ The following order is used:
   Timers are a nightmare that are discussed below.
   Frankly, everything was eventually figured out.
 
-* I2C:
+* I2C's:
   There are 4 I2C's (I2C1/2/3/4.)
   The minimum requirements are for 2 I2C's --
   One for the Arduino A4/A5 pins and one for other Grove and Mikrobus purposes.
   A third I2C would be nice to provide an alternative I2C bus in case there is a conflict
   from either the Grove ando Mikrobus modules.
+  The third I2C is probably a fantasy thought.
 
-* SPI:
-  There are 6 SPI'2 (SPI1/2/3/45/6.)
+* SPI's:
+  There are 6 SPI's (SPI1/2/3/45/6.)
   The minimum  requirements are for 3 SPI'2 --
   One for the Arduino pins (must be SPI1 or SPI6), another for the LED's, and third
-  one for the MicroBus connectors.
-  Having a forth SPI, would so the each Mikrobus connector could have its own.
+  one for the MicroBus connectors and any other SPI based digital I/O.
+  Having a forth SPI, would be so the each Mikrobus connector could have its own.
+  (A 4th SPI is probably a total fantasy.)
   
-* UARTS
+* UART's:
+  There are 8 UARTS's available.
+  They are very useful.
 
 * SONARS:
   There are 7 sonars.
-  They need a total of 14 I/O pins -- 7 trigger pins and 7 input pins.
-
+  They need a total of 14 I/O pins -- 7 trigger pins and 7 echo pins.
+  The echo pins must go to the microcontroller.
+  The trigger pins could be done by a SPI base shift register.
+  This seems like it is very probable.
 
 * Miscellaneous Pins:
   There are modest number of pins required for:
@@ -684,14 +690,14 @@ The following order is used:
     It would be nice to have 2 general purpose buttons.
 
   * LED's (2):
-    It woulb be nice two have to LED's for blinky purposes.
+    It would be nice two have to LED's for blinky purposes.
 
   * LCD Display (1):
     IT would be nice to have a FET that can turn off the LCD display.
 
 This adds up to 13 pins.
-We are going to run out of pins, so trade-offs need to be made.
-
+There are not enough pins,
+so some sort of shift register is needed to increase the number digital outputs.
 
 The trick to using the program is to specify the order in which to bind the pins.
 The tricky thing to figure out was the timer bindings.
@@ -798,40 +804,6 @@ There are some timers left over, but not many -- TIM9/10/11/12/13/14.
 That is it.
 In general, Timer pin binding was every bit of a nightmare as expected.
 
-## SPI Peripherals
+# Other bindings:
 
-
-
-<!--
-
-UART's:
-
-UART4
-
-USART1:
-    USART1_RX: ('+PB15:AF4', '-PA10:AF7', '-PB7:AF7')                PB15
-    USART1_TX: ('-PB14:AF4', '-PA9:AF7', '+PB6:AF7')                 PB6
-USART2:
-    USART2_RX: ('+PD6:AF7',)                                         PD6
-    USART2_TX: ('-PA2:AF7', '+PD5:AF7')                              PD5
-USART3:
-    USART3_RX: ('+PB11:AF7', '-PD9:AF7', '+PC11:AF7')                PB11 or PC11
-    USART3_TX: ('+PB10:AF7', '-PD8:AF7', '+PC10:AF7')                PB12 or PC10
-UART4:
-    UART4_RX: ('-PA1:AF8', '-PA11:AF6', '+PC11:AF8', '+PD0:AF8')     PC11 or PD0
-    UART4_TX: ('+PA0:AF8', '-PA12:AF6', '+PC10:AF8', '+PD1:AF8')     PC10 or PD1
-UART5:
-    UART5_RX: ('+PB12:AF8', '+PD2:AF8')                              PB12 or PD2
-    UART5_TX: ('+PC12:AF8', '+PB6:AF1')                              PC12 or PB6
-UART6
-    USART6_RX: ('+PC7:AF8',)                                         PC6 or PF8
-    USART6_TX: ('+PC6:AF8',)
-UART7:
-    UART7_RX: ('-PF6:AF8', '+PE7:AF8', '-PA8:AF12', '+PB3:AF12')     PE7 or PB3
-    UART7_TX: ('+PF7:AF8', '+PE8:AF8', '+PA15:AF12', '+PB4:AF12')    PF7 or PE8 or PA15 or PB12
-UART8:
-    UART8_RX: ('+PE0:AF8',)
-    UART8_TX: ('-PE1:AF8',)
-
--->
-
+{more here}
