@@ -65,7 +65,7 @@ Signals = Tuple[TextTuple, ...]  # Signal lists are organized a tuple of text tu
 # where,
 #    "SIGNAL_NAME" is the internal signal name.
 #    "SCHEMATIC_NAME" is the schemtatic name.
-#    "SIGNALS" is one of the signals subset (e.g. Arduino, Zio, or Morpho)
+#    "SIGNALS" is one of the signals subset (e.g. Arduino, Daughter, or Morpho)
 #    "FORCE_PIN_NAME" When non-empty, force a signal binding to a specific pin.
 #                     The same signal can be bound to more that one pin using this feature.
 PinBind = Tuple[Text, Text, Signals, Text]
@@ -474,7 +474,7 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
     # Do the timers:
     pin_binds.extend([
         # The servos work best with 32-bit counters (i.e. TIM2/5).  It turns out that
-        # there are exactly 4 Zio availble pins to TIM2/5, so that are used for the servos.
+        # there are exactly 4 Daughter availble pins to TIM2/5, so that are used for the servos.
         ("TIM5_CH1", "SERVO1", daughter_signals, ""),
         ("TIM2_CH2", "SERVO2", daughter_signals, ""),
         ("TIM2_CH3", "SERVO3", daughter_signals, ""),
@@ -668,10 +668,10 @@ def pin_signals_sets_get() -> Tuple[Signals, Signals, Signals,
     # Extract *daughter_set* and *daughter_signals* from *all_signals*:
     daughter_set: Set[Text]
     daugther_signals: Signals
-    daughter_signals, daughter_set = signals_subset(all_signals, '+', "Zio")
+    daughter_signals, daughter_set = signals_subset(all_signals, '+', "Daughter")
     print(f"daughter_set={len(daughter_set)}:{sorted(list(daughter_set))}")
 
-    # The morpho pins are the morpho connector signal pins that do not map to any of the zioc
+    # The morpho pins are the morpho connector signal pins that do not map to any of the Zio
     # connector pins.
     # Extract the *morpho_set* and the *morpho_signals* from *all_signals*:
     morpho_set: Set[Text]
@@ -1031,7 +1031,7 @@ def summary_show(peripheral_permutation: TextTuple,
     print(f"Peripherals: {peripheral_permutation}")
     print("")
 
-    # signals_print(daughter_signals, "Zio")
+    # signals_print(daughter_signals, "Daughter")
     # signals_print(morpho_signals, "Morpho")
 
 
