@@ -1,36 +1,25 @@
 .PHONY: all clean everything
 
 KICUBE32 := kicube32
+MASTER_DIRECTORY := ..
+ELECTRICAL_DIRECTORY := $(MASTER_DIRECTORY)/..
+ORDERS_DIRECTORY := $(ELECTRICAL_DIRECTORY)/orders
+ORDER1_DIRECTORY := $(ORDERS_DIRECTORY)/order1
+KIPARTS_DIRECTORY := $(ORDER1_DIRECTORY)/kiparts
+MASTER_IOC := hr2/hr2.ioc
+MASTER_CSV := maste.csv
+NUCLEO_F767ZI_KIPART_CSV := $(KIPARTS_DIRECTORY)/NUCLEO_F767ZI_2xF2x35.kipart.csv
+MASTER_CSV := master.csv
+HR2_DIRECTORY := hr2
+HR2_IOC = $(HR2_DIRECTORY)/hr2.ioc
 
-KIPARTS_DIRECTORY := kiparts
+all: $(NUCLEO_F767ZI_KIPART_CSV)
 
-F767ZI_IOC_CSV := f767zi.ioc f767zi.csv
-F767ZI_CSV := $(KIPARTS_DIRECTORY)/f767zi.kipart.csv
-MASTER_CSV := $(KIPARTS_DIRECTORY)/master_board.csv
-MASTER_LIB := master_board.lib
-MASTER_DCM := master_board.dcm
-
-KIPART_BASES := \
-    hcsr04	\
-    f767zi	\
-    st_link_cn2	\
-    st_link_cn3
-KIPART_CSVS := ${KIPART_BASES:%=$(KIPARTS_DIRECTORY)/%.kipart.csv}
-
-all: $(MASTER_LIB)
-
-$(F767ZI_CSV): ${KIPART_IOC_CSV}
-	echo PWD=`pwd`
-	$(KICUBE32) ${F767ZI_IOC_CSV} $(F767ZI_CSV)
-
-$(MASTER_LIB): ${KIPART_CSVS}
-	cat ${KIPART_CSVS} > $(MASTER_CSV)
-	kipart --fill bg_fill --overwrite -o $(MASTER_LIB) $(MASTER_CSV)
-	kidocgen $(KIPARTS_DIRECTORY) $(MASTER_DCM)
+# The sed in the target below is a total kludge!
+$(NUCLEO_F767ZI_KIPART_CSV): $(HR2_IOC) $(MASTER_CSV)
+	$(KICUBE) $(HR2_IOC) $(MASTER_CSV) $(NUCLEO_F767ZI_KIPART_CSV)
+	sed "s,HR2/HR2,F767ZI,g" -i $(NUCLEO_F767ZI_KIPART_CSV)
 
 clean:
-	rm -f $(F767ZI_CSV)
-	rm -f $(MASTER_CSV)
-	rm -f $(MASTER_LIB)
-	rm -f $(MASTER_DCM)
+	rm -f $(NUCLEO_F767ZI_KIPART_CSV)
 

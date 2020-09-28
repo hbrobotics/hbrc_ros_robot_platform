@@ -114,6 +114,12 @@ K ~
 F M2.5 Mounting Hole
 $ENDCMP
 #
+$CMP NUCLEO-F767ZI;2xF2x35
+D NUCLEO144-HR2/HR2
+K Nucleo144 STM32HR2/HR2
+F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
+$ENDCMP
+#
 $CMP BRIDGE_NE_OUTER;3xM1x1+M1x5
 D NE Outer Bridge Connectors
 K ~

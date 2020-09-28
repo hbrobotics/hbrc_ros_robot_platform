@@ -1587,3 +1587,1402 @@
 2020-09-20 11:34:32,387 [INFO] IPUIPlugin:65 - create IPUIPlugin
 2020-09-20 11:34:32,429 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] toolchainItems.length=====1
 2020-09-20 11:34:32,550 [INFO] OpenFileManager:294 - Restore cursor
+2020-09-27 13:38:04,111 [INFO] Activator:176 - 
+
+
+2020-09-27 13:38:04,113 [INFO] Activator:177 - !SESSION log4j initialized
+2020-09-27 13:38:27,538 [INFO] ApplicationProperties:181 - Using Application install path: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639
+2020-09-27 13:38:27,551 [INFO] DbMcusXml:72 - Set database path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//mcu/
+2020-09-27 13:38:27,555 [INFO] DbBoardsPdsc:54 - Set plugin database path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/boardmanager/
+2020-09-27 13:38:27,556 [INFO] DbMcus:235 - Set plugin images path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/mcufinder/images/
+2020-09-27 13:38:27,556 [INFO] DbBoards:232 - Set plugin images path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/mcufinder/images/
+2020-09-27 13:38:27,561 [INFO] DbMcusAds:85 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,562 [INFO] DbMcusDocs:108 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,564 [INFO] DbMcusJson:61 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,564 [INFO] DbBoardsDocs:97 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,566 [INFO] DbBoardsJson:51 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,704 [INFO] CrossReferenceDbSqlite:197 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/cs/
+2020-09-27 13:38:27,826 [INFO] RulesReader:52 - Compatibility file has been processed (208 Rules)
+2020-09-27 13:38:27,878 [INFO] MicroXplorer:570 - Detected Java Version = 1.8.0_242
+2020-09-27 13:38:27,878 [INFO] DbMcusXml:72 - Set database path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//mcu/
+2020-09-27 13:38:27,879 [INFO] DbBoardsPdsc:54 - Set plugin database path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/boardmanager/
+2020-09-27 13:38:27,879 [INFO] DbMcus:235 - Set plugin images path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/mcufinder/images/
+2020-09-27 13:38:27,880 [INFO] DbBoards:232 - Set plugin images path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/mcufinder/images/
+2020-09-27 13:38:27,880 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,880 [INFO] DbMcusAds:85 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,881 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,881 [INFO] DbMcusDocs:108 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,881 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,881 [INFO] DbMcusJson:61 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,881 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,882 [INFO] DbBoardsDocs:97 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,882 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,882 [INFO] DbBoardsJson:51 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,882 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,882 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,883 [INFO] CrossReferenceDbSqlite:197 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/cs/
+2020-09-27 13:38:27,935 [INFO] MainPanel:181 - HeapMemory: 328204288
+2020-09-27 13:38:27,997 [INFO] DbMcusXml:72 - Set database path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//mcu/
+2020-09-27 13:38:27,998 [INFO] DbBoardsPdsc:54 - Set plugin database path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/boardmanager/
+2020-09-27 13:38:27,998 [INFO] DbMcus:235 - Set plugin images path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/mcufinder/images/
+2020-09-27 13:38:27,998 [INFO] DbBoards:232 - Set plugin images path to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//plugins/mcufinder/images/
+2020-09-27 13:38:27,999 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,999 [INFO] DbMcusAds:85 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:27,999 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:27,999 [INFO] DbMcusDocs:108 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:28,000 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:28,000 [INFO] DbMcusJson:61 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:28,000 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:28,000 [INFO] DbBoardsDocs:97 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:28,000 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:28,001 [INFO] DbBoardsJson:51 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/
+2020-09-27 13:38:28,001 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:28,001 [WARN] DbFile:36 - Overriding database path with different value: /home/wayne/.stmcufinder/plugins/mcufinder/ => /home/wayne/.stmcufinder/plugins/mcufinder
+2020-09-27 13:38:28,001 [INFO] CrossReferenceDbSqlite:197 - Set database path to: /home/wayne/.stmcufinder/plugins/mcufinder//mcu/cs/
+2020-09-27 13:38:28,014 [INFO] ApplicationProperties:181 - Using Application install path: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639
+2020-09-27 13:38:28,016 [INFO] PluginManage:178 - Search for loadable plugins [exclusion list=, tutovideos]
+2020-09-27 13:38:28,017 [INFO] PluginManage:292 - Check plugin analytics
+2020-09-27 13:38:28,022 [INFO] PluginManage:342 - Loaded plugin analytics (category:tool,tabindex:-1)
+2020-09-27 13:38:28,022 [INFO] PluginManage:292 - Check plugin clock
+2020-09-27 13:38:28,032 [INFO] PluginManage:342 - Loaded plugin clock (category:base,tabindex:2)
+2020-09-27 13:38:28,032 [INFO] PluginManage:292 - Check plugin ddr
+2020-09-27 13:38:28,035 [INFO] PluginManage:342 - Loaded plugin ddr (category:tool,tabindex:6)
+2020-09-27 13:38:28,035 [INFO] PluginManage:292 - Check plugin filemanager
+2020-09-27 13:38:28,149 [INFO] PluginManage:342 - Loaded plugin filemanager (category:base,tabindex:10)
+2020-09-27 13:38:28,149 [INFO] PluginManage:292 - Check plugin ipmanager
+2020-09-27 13:38:28,156 [INFO] PluginManage:342 - Loaded plugin ipmanager (category:base,tabindex:5)
+2020-09-27 13:38:28,157 [INFO] PluginManage:292 - Check plugin pinoutandconfiguration
+2020-09-27 13:38:28,166 [INFO] PluginManage:342 - Loaded plugin pinoutandconfiguration (category:base,tabindex:1)
+2020-09-27 13:38:28,166 [INFO] PluginManage:292 - Check plugin pinoutconfig
+2020-09-27 13:38:28,190 [INFO] PluginManage:342 - Loaded plugin pinoutconfig (category:base,tabindex:0)
+2020-09-27 13:38:28,191 [INFO] PluginManage:292 - Check plugin power
+2020-09-27 13:38:28,199 [INFO] PluginManage:342 - Loaded plugin power (category:power,tabindex:4)
+2020-09-27 13:38:28,200 [INFO] PluginManage:292 - Check plugin projectmanager
+2020-09-27 13:38:28,214 [INFO] PluginManage:342 - Loaded plugin projectmanager (category:projectmanager,tabindex:3)
+2020-09-27 13:38:28,215 [INFO] PluginManage:292 - Check plugin thirdparty
+2020-09-27 13:38:28,274 [INFO] ThirdPartyDb:295 - Open Third Party DataBase File (/home/wayne/.stm32cubemx/plugins/thirdparty/db/thirdparties_db.xml) : 31 ms. number of Sw pack : 23
+2020-09-27 13:38:28,289 [ERROR] BinarySerializedPackPreferences:182 - ClassNotFoundException [Ljava.lang.StackTraceElement;@31b7112d
+2020-09-27 13:38:28,290 [INFO] PluginManage:342 - Loaded plugin thirdparty (category:base,tabindex:-1)
+2020-09-27 13:38:28,290 [INFO] PluginManage:292 - Check plugin tools
+2020-09-27 13:38:28,292 [INFO] PluginManage:342 - Loaded plugin tools (category:base,tabindex:7)
+2020-09-27 13:38:28,292 [INFO] PluginManage:292 - Check plugin tutovideos
+2020-09-27 13:38:28,293 [INFO] PluginManage:347 - Ignore plugin tutovideos (category:base)
+2020-09-27 13:38:28,293 [INFO] PluginManage:292 - Check plugin updater
+2020-09-27 13:38:28,305 [INFO] PluginManage:342 - Loaded plugin updater (category:base,tabindex:12)
+2020-09-27 13:38:28,306 [INFO] PluginManage:265 - PluginManage : Loaded plugins [12]
+2020-09-27 13:38:28,506 [INFO] PinOutPanel:1420 - setPackage(No Configuration,No Configuration)
+2020-09-27 13:38:28,562 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,562 [INFO] PluginManager:200 - loadIPPluginJar : add gic
+2020-09-27 13:38:28,567 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,568 [INFO] PluginManager:200 - loadIPPluginJar : add resmgrutility
+2020-09-27 13:38:28,572 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,572 [INFO] PluginManager:200 - loadIPPluginJar : add cryp
+2020-09-27 13:38:28,575 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,575 [INFO] PluginManager:200 - loadIPPluginJar : add stm32_wpan
+2020-09-27 13:38:28,577 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,577 [INFO] PluginManager:200 - loadIPPluginJar : add spi
+2020-09-27 13:38:28,579 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,579 [INFO] PluginManager:200 - loadIPPluginJar : add comp
+2020-09-27 13:38:28,582 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,582 [INFO] PluginManager:200 - loadIPPluginJar : add mdma
+2020-09-27 13:38:28,584 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,584 [INFO] PluginManager:200 - loadIPPluginJar : add dfsdm
+2020-09-27 13:38:28,586 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,586 [INFO] PluginManager:200 - loadIPPluginJar : add gfxmmu
+2020-09-27 13:38:28,588 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,589 [INFO] PluginManager:200 - loadIPPluginJar : add i2s
+2020-09-27 13:38:28,590 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,590 [INFO] PluginManager:200 - loadIPPluginJar : add quadspi
+2020-09-27 13:38:28,592 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,592 [INFO] PluginManager:200 - loadIPPluginJar : add ts
+2020-09-27 13:38:28,594 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,594 [INFO] PluginManager:200 - loadIPPluginJar : add tracer_emb
+2020-09-27 13:38:28,597 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,598 [INFO] PluginManager:200 - loadIPPluginJar : add ipddr
+2020-09-27 13:38:28,600 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,600 [INFO] PluginManager:200 - loadIPPluginJar : add i2c
+2020-09-27 13:38:28,602 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,602 [INFO] PluginManager:200 - loadIPPluginJar : add pdm2pcm
+2020-09-27 13:38:28,607 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,608 [INFO] PluginManager:200 - loadIPPluginJar : add freertos
+2020-09-27 13:38:28,610 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,610 [INFO] PluginManager:200 - loadIPPluginJar : add opamp
+2020-09-27 13:38:28,613 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,613 [INFO] PluginManager:200 - loadIPPluginJar : add touchsensing
+2020-09-27 13:38:28,615 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,615 [INFO] PluginManager:200 - loadIPPluginJar : add ucpd
+2020-09-27 13:38:28,618 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,618 [INFO] PluginManager:200 - loadIPPluginJar : add nvic
+2020-09-27 13:38:28,620 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,620 [INFO] PluginManager:200 - loadIPPluginJar : add hash
+2020-09-27 13:38:28,624 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,624 [INFO] PluginManager:200 - loadIPPluginJar : add fmc
+2020-09-27 13:38:28,626 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,627 [INFO] PluginManager:200 - loadIPPluginJar : add sai
+2020-09-27 13:38:28,629 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,629 [INFO] PluginManager:200 - loadIPPluginJar : add usart
+2020-09-27 13:38:28,630 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,631 [INFO] PluginManager:200 - loadIPPluginJar : add tim
+2020-09-27 13:38:28,632 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,633 [INFO] PluginManager:200 - loadIPPluginJar : add aes
+2020-09-27 13:38:28,636 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,636 [INFO] PluginManager:200 - loadIPPluginJar : add gpio
+2020-09-27 13:38:28,637 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,638 [INFO] PluginManager:200 - loadIPPluginJar : add genericplugin
+2020-09-27 13:38:28,639 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,639 [INFO] PluginManager:200 - loadIPPluginJar : add fatfs
+2020-09-27 13:38:28,641 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,641 [INFO] PluginManager:200 - loadIPPluginJar : add can
+2020-09-27 13:38:28,643 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,643 [INFO] PluginManager:200 - loadIPPluginJar : add gtzc
+2020-09-27 13:38:28,648 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,649 [INFO] PluginManager:200 - loadIPPluginJar : add dma
+2020-09-27 13:38:28,650 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,651 [INFO] PluginManager:200 - loadIPPluginJar : add tsc
+2020-09-27 13:38:28,656 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,659 [INFO] PluginManager:200 - loadIPPluginJar : add plateformsettings
+2020-09-27 13:38:28,660 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,661 [INFO] PluginManager:200 - loadIPPluginJar : add ltdc
+2020-09-27 13:38:28,666 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:28,666 [INFO] PluginManager:200 - loadIPPluginJar : add adc
+2020-09-27 13:38:28,834 [INFO] BoardConnectionPanel:3472 - [DDR PANEL] STM32CubeIDE environment
+2020-09-27 13:38:28,834 [INFO] MainDdrPanel:103 - [DDR PANEL] GETTER - cubeProgrammerPath is: null
+2020-09-27 13:38:29,029 [FATAL] Updater:277 - Updater called before beeing initialized
+2020-09-27 13:38:29,153 [FATAL] Updater:277 - Updater called before beeing initialized
+2020-09-27 13:38:29,157 [INFO] PinOutPanel:1420 - setPackage(No Configuration,No Configuration)
+2020-09-27 13:38:29,158 [FATAL] Updater:277 - Updater called before beeing initialized
+2020-09-27 13:38:29,161 [INFO] BoardConnectionPanel:3472 - [DDR PANEL] STM32CubeIDE environment
+2020-09-27 13:38:29,161 [INFO] MainDdrPanel:103 - [DDR PANEL] GETTER - cubeProgrammerPath is: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.ide.mcu.externaltools.cubeprogrammer.linux64_1.3.0.202002181050/tools/bin
+2020-09-27 13:38:29,164 [INFO] ProgrammerExecThread:148 - [ProgrammerAPI] CubeProgrammer command construction: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.ide.mcu.externaltools.cubeprogrammer.linux64_1.3.0.202002181050/tools/bin/STM32_Programmer_CLI -l
+2020-09-27 13:38:29,265 [INFO] MainDdrPanel:93 - [DDR PANEL] SETTER - Set cubeProgrammerPath to: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.ide.mcu.externaltools.cubeprogrammer.linux64_1.3.0.202002181050/tools/bin
+2020-09-27 13:38:29,271 [INFO] Updater:886 - Updater Version found : 5.6.0
+2020-09-27 13:38:29,295 [INFO] ApplicationProperties:181 - Using Application install path: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639
+2020-09-27 13:38:29,552 [INFO] MainUpdater:2230 - connection check result : 10
+2020-09-27 13:38:29,553 [INFO] MainUpdater:2874 - Updater definition file requires update
+2020-09-27 13:38:29,555 [INFO] MainUpdater:236 - Updater Check For Update Now.
+2020-09-27 13:38:29,556 [INFO] MicroXplorer:420 - Change Database Version : DB.5.0.60
+2020-09-27 13:38:29,659 [INFO] ServerAccessManage:348 - Download File updaters.zip
+2020-09-27 13:38:29,856 [INFO] FileExtend:225 - Unzip File : updaters.zip
+2020-09-27 13:38:29,857 [INFO] FileExtend:240 - Standard Zip Deflate
+2020-09-27 13:38:30,096 [INFO] ServerAccessManage:348 - Download File PacksControlFlags.xml
+2020-09-27 13:38:30,207 [INFO] ServerAccessManage:348 - Download File cubemx.pidx
+2020-09-27 13:38:30,306 [INFO] LoadServerUpdatesThread:301 - End of LoadServerUpdate Thread
+2020-09-27 13:38:30,344 [INFO] CheckServerUpdateThread:92 - End of CheckServer Thread
+2020-09-27 13:38:30,379 [INFO] MainUpdater:2230 - connection check result : 10
+2020-09-27 13:38:30,453 [INFO] MicroXplorer:390 - Change Database Path : 
+2020-09-27 13:38:30,454 [INFO] MicroXplorer:420 - Change Database Version : DB.5.0.60
+2020-09-27 13:38:30,457 [INFO] PinOutPanel:1420 - setPackage(No Configuration,No Configuration)
+2020-09-27 13:38:30,457 [INFO] UtilMem:74 - Begin LoadConfig() Used Memory: 219941248 Bytes (849346560)
+2020-09-27 13:38:30,458 [INFO] MicroXplorer:390 - Change Database Path : 
+2020-09-27 13:38:30,458 [INFO] MicroXplorer:420 - Change Database Version : DB.5.0.60
+2020-09-27 13:38:30,458 [INFO] OpenFileManager:274 - Change cursor
+2020-09-27 13:38:31,620 [INFO] ThirdPartyDb:261 - Close Third Party DataBase File (/home/wayne/.stm32cubemx/plugins/thirdparty/db/thirdparties_db.xml)
+2020-09-27 13:38:31,729 [INFO] IntegrityCheckThread:98 - End integrity checks thread
+2020-09-27 13:38:33,282 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (48MHZClocksFreq_Value)
+2020-09-27 13:38:33,282 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (ADC12outputFreq_Value)
+2020-09-27 13:38:33,282 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (ADC34outputFreq_Value)
+2020-09-27 13:38:33,283 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (FamilyName)
+2020-09-27 13:38:33,283 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (I2SClocksFreq_Value)
+2020-09-27 13:38:33,283 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (LCDTFToutputFreq_Value)
+2020-09-27 13:38:33,283 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (MCOFreq_Value)
+2020-09-27 13:38:33,284 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (PLLMCOFreq_Value)
+2020-09-27 13:38:33,285 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (PLLMUL)
+2020-09-27 13:38:33,285 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (PRESCALERUSB)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (RTCHSEDivFreq_Value)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Parameter (SDMMC2Freq_Value) has invalid value (96000000)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Parameter (SDMMCFreq_Value) has invalid value (96000000)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (SYSCLKSourceVirtual)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (TIM15Freq_Value)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (TIM16Freq_Value)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (TIM17Freq_Value)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (TIM1Freq_Value)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (TIM20Freq_Value)
+2020-09-27 13:38:33,286 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (TIM2Freq_Value)
+2020-09-27 13:38:33,287 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (TIM3Freq_Value)
+2020-09-27 13:38:33,287 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (TIM8Freq_Value)
+2020-09-27 13:38:33,288 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (VCOOutput2Freq_Value)
+2020-09-27 13:38:33,288 [INFO] ImportTextPane:162 - (OptionalMessage_ERROR) IP (RCC) : Invalid parameter (VcooutputI2S)
+2020-09-27 13:38:33,526 [INFO] UtilMem:74 - End LoadConfig() Used Memory: 557463392 Bytes (849346560)
+2020-09-27 13:38:33,527 [INFO] DbMcusXml:110 - Load MCU database from /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db//mcu/families.xml
+2020-09-27 13:38:34,058 [INFO] DbMcusJson:90 - JSON generation date=Mon Jul 27 05:58:30 PDT 2020 (1595854710)
+2020-09-27 13:38:34,563 [INFO] DbMcus:171 - Found 1670 MCUs (1625 are supported by CubeMX, 1625 are visible in CubeMX)
+2020-09-27 13:38:34,563 [INFO] ApiDb:158 - Load user favorites file /home/wayne/.stm32cubemx/favorites.mcus.txt: 0 item(s)
+2020-09-27 13:38:34,563 [INFO] ApiDb:163 - User favorites MCUs=[]
+2020-09-27 13:38:34,563 [INFO] DbMcus:183 - Set 0 / 0 favorites MCUs
+2020-09-27 13:38:34,582 [INFO] ThirdPartyDb:295 - Open Third Party DataBase File (/home/wayne/.stm32cubemx/plugins/thirdparty/db/thirdparties_db.xml) : 7 ms. number of Sw pack : 23
+2020-09-27 13:38:34,596 [INFO] DependencyParser:785 - This component is not compatible with the current MCU : [1584502089011]
+2020-09-27 13:38:34,596 [INFO] ThirdPartyModel:521 - Component with status : MCU_INCOMPATIBLE for condition : OS Tick GTIM id : 1584502088338
+2020-09-27 13:38:34,597 [INFO] DependencyParser:785 - This component is not compatible with the current MCU : [1584502091587, 1584502089094]
+2020-09-27 13:38:34,865 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-BLE1 5.0.0
+2020-09-27 13:38:34,865 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-SUBG2 1.1.0
+2020-09-27 13:38:34,865 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-GNSS1 4.1.0
+2020-09-27 13:38:34,865 [INFO] ThirdParty:899 - CMSIS Pack Vendor :ARM CMSIS 5.6.0
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-MEMS1 8.1.1
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics BlueNRG-MS 1.0.0
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-MEMS1 8.0.0
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-MEMS1 8.1.0
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics FreeRTOS 0.0.1
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-MEMS1 5.2.1
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-SUBG2 2.0.0
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-BLE1 4.2.0
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-TOUCHGFX 4.13.0
+2020-09-27 13:38:34,866 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-NFC4 1.5.2
+2020-09-27 13:38:34,867 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-AI 3.3.0
+2020-09-27 13:38:34,867 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-TOUCHGFX 4.14.0
+2020-09-27 13:38:34,867 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-MEMS1 7.1.0
+2020-09-27 13:38:34,867 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-AI 5.1.2
+2020-09-27 13:38:34,867 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-NFC4 2.0.0
+2020-09-27 13:38:34,867 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-AI 5.0.0
+2020-09-27 13:38:34,867 [INFO] ThirdParty:899 - CMSIS Pack Vendor :STMicroelectronics X-CUBE-BLE2 1.0.0
+2020-09-27 13:38:35,280 [INFO] PinOutPanel:1420 - setPackage(No Configuration,No Configuration)
+2020-09-27 13:38:35,282 [INFO] PinOutPanel:1420 - setPackage(STM32F767ZITx,LQFP144)
+2020-09-27 13:38:35,790 [INFO] UtilMem:74 - Before build in PCC Used Memory: 510488944 Bytes (926941184)
+2020-09-27 13:38:36,147 [INFO] SharedServices:71 - Folder for power plug-in: /home/wayne/.stm32cubemx/plugins/power
+2020-09-27 13:38:36,208 [INFO] SharedServices:71 - Folder for power plug-in: /home/wayne/.stm32cubemx/plugins/power
+2020-09-27 13:38:36,272 [INFO] SharedServices:71 - Folder for power plug-in: /home/wayne/.stm32cubemx/plugins/power
+2020-09-27 13:38:36,283 [INFO] SharedServices:71 - Folder for power plug-in: /home/wayne/.stm32cubemx/plugins/power
+2020-09-27 13:38:36,454 [INFO] UtilMem:74 - After build in PCC Used Memory: 574976376 Bytes (926941184)
+2020-09-27 13:38:36,482 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,483 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,483 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,483 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,484 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,484 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,484 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,484 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,485 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,485 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,485 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,485 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,486 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,486 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,486 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,486 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,486 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,487 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,487 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,487 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,487 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,487 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,488 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,488 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,488 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,488 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,488 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,489 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,489 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,489 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,489 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,489 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,490 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,490 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,490 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,490 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,490 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,491 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,491 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,491 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,491 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,491 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,492 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,493 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,493 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,493 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,493 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,493 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,493 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,493 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,493 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,494 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,494 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,494 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,494 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,495 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,495 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,495 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,496 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,496 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,496 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,496 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,496 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,496 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,497 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,497 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,497 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,497 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,497 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,498 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,498 [INFO] IPUIPlugin:65 - create IPUIPlugin
+2020-09-27 13:38:36,529 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] toolchainItems.length=====1
+2020-09-27 13:38:36,602 [INFO] OpenFileManager:294 - Restore cursor
+2020-09-27 14:30:47,110 [INFO] UtilMem:74 - End SaveConfig() Used Memory: 724946376 Bytes (926941184)
+2020-09-27 14:59:54,300 [INFO] UtilMem:74 - End SaveConfig() Used Memory: 570015272 Bytes (926941184)
+2020-09-27 14:59:56,148 [INFO] UtilMem:74 - End SaveConfig() Used Memory: 609334640 Bytes (926941184)
+2020-09-27 14:59:56,461 [INFO] UtilMem:74 - End SaveConfig() Used Memory: 700141040 Bytes (926941184)
+2020-09-27 14:59:56,942 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: LPTIM
+2020-09-27 14:59:56,942 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: ADC
+2020-09-27 14:59:56,942 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: SYS
+2020-09-27 14:59:56,942 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: ADC
+2020-09-27 14:59:56,942 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: RCC
+2020-09-27 14:59:56,942 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: USB_OTG_FS
+2020-09-27 14:59:56,942 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: NVIC
+2020-09-27 14:59:56,942 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: USART
+2020-09-27 14:59:56,943 [INFO] BlockDiagram:2671 - set Specific Code input for plugin: GPIO
+2020-09-27 14:59:56,943 [INFO] CodeGenerator:603 - code generatio: config db path: /opt/st/stm32cubeide_1.3.0/plugins/com.st.stm32cube.common.mx_5.6.0.202002181639//db/
+2020-09-27 14:59:57,705 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/MXTmpFiles/license.tmp_save
+2020-09-27 14:59:57,959 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/MXTmpFiles/license.tmp
+2020-09-27 14:59:58,185 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/gpio.c_save
+2020-09-27 14:59:58,288 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/gpio.c
+2020-09-27 14:59:58,290 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/gpio.h_save
+2020-09-27 14:59:58,352 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/gpio.h
+2020-09-27 14:59:59,586 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line
+2020-09-27 14:59:59,587 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Debug : prepare data for ADC
+2020-09-27 14:59:59,587 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line test
+2020-09-27 14:59:59,590 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/adc.c_save
+2020-09-27 14:59:59,711 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/adc.c
+2020-09-27 14:59:59,713 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/adc.h_save
+2020-09-27 14:59:59,771 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/adc.h
+2020-09-27 14:59:59,771 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line
+2020-09-27 14:59:59,772 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Debug : prepare data for CORTEX_M7
+2020-09-27 14:59:59,772 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line test
+2020-09-27 14:59:59,774 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/MXTmpFiles/cortex.tmp_save
+2020-09-27 14:59:59,830 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/MXTmpFiles/cortex.tmp
+2020-09-27 14:59:59,830 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line
+2020-09-27 14:59:59,830 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Debug : prepare data for LPTIM
+2020-09-27 14:59:59,831 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line test
+2020-09-27 14:59:59,833 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/lptim.c_save
+2020-09-27 14:59:59,919 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/lptim.c
+2020-09-27 14:59:59,921 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/lptim.h_save
+2020-09-27 14:59:59,973 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/lptim.h
+2020-09-27 14:59:59,973 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line
+2020-09-27 14:59:59,974 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Debug : prepare data for USART
+2020-09-27 14:59:59,974 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line test
+2020-09-27 14:59:59,977 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/usart.c_save
+2020-09-27 15:00:00,055 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/usart.c
+2020-09-27 15:00:00,056 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/usart.h_save
+2020-09-27 15:00:00,110 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/usart.h
+2020-09-27 15:00:00,111 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line
+2020-09-27 15:00:00,111 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Debug : prepare data for USB_OTG
+2020-09-27 15:00:00,112 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line test
+2020-09-27 15:00:00,115 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/usb_otg.c_save
+2020-09-27 15:00:00,199 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/usb_otg.c
+2020-09-27 15:00:00,200 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/usb_otg.h_save
+2020-09-27 15:00:00,252 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/usb_otg.h
+2020-09-27 15:00:00,252 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Debug : prepare data for NVIC
+2020-09-27 15:00:00,253 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Command line test
+2020-09-27 15:00:00,256 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/stm32f7xx_it.c_save
+2020-09-27 15:00:00,390 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/stm32f7xx_it.c
+2020-09-27 15:00:00,393 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/stm32f7xx_it.h_save
+2020-09-27 15:00:00,488 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/stm32f7xx_it.h
+2020-09-27 15:00:00,495 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/stm32f7xx_hal_msp.c_save
+2020-09-27 15:00:00,669 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/stm32f7xx_hal_msp.c
+2020-09-27 15:00:00,672 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/MXTmpFiles/system.tmp_save
+2020-09-27 15:00:00,726 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/MXTmpFiles/system.tmp
+2020-09-27 15:00:00,729 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/stm32f7xx_hal_conf.h_save
+2020-09-27 15:00:00,790 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/stm32f7xx_hal_conf.h
+2020-09-27 15:00:00,812 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/main.h_save
+2020-09-27 15:00:00,877 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Inc/main.h
+2020-09-27 15:00:00,880 [INFO] CodeEngine:188 - oldGeneratedFile, /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/main.c_save
+2020-09-27 15:00:00,957 [INFO] CodeEngine:206 - Generated code: /home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/hr2/Core/Src/main.c
+2020-09-27 15:00:01,370 [INFO] ProjectBuilder:2002 - Time for Copy HAL[1] : 30mS.
+2020-09-27 15:00:01,373 [INFO] ProjectBuilder:2727 - Project Generator version: 3.7.1
+2020-09-27 15:00:01,587 [INFO] ConfigFileManager:1066 - The Die is : DIE451
+2020-09-27 15:00:03,182 [INFO] ProjectBuilder:2894 - Time for Generating toolchain IDE Files: 1809mS.
+2020-09-27 15:00:03,182 [INFO] ProjectBuilder:1878 - Time for Copy CMSIS : 0mS.
+2020-09-27 15:00:03,183 [INFO] ProjectBuilder:1878 - Time for Copy CMSIS : 0mS.
+2020-09-27 15:01:55,982 [INFO] PinoutConfigView:851 - CSV file before='master.csv'
+2020-09-27 15:01:55,982 [INFO] PinoutConfigView:863 - CSV file after='/home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/master.csv'
+2020-09-27 15:01:55,983 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 1 - PE2
+2020-09-27 15:01:55,984 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TXD3
+2020-09-27 15:01:55,984 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A23
+2020-09-27 15:01:55,985 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO2
+2020-09-27 15:01:55,985 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_MCLK_A
+2020-09-27 15:01:55,985 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI4_SCK
+2020-09-27 15:01:55,986 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACECLK
+2020-09-27 15:01:55,986 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,986 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 2 - PE3
+2020-09-27 15:01:55,987 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A19
+2020-09-27 15:01:55,987 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_SD_B
+2020-09-27 15:01:55,987 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED0
+2020-09-27 15:01:55,987 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,988 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 3 - PE4
+2020-09-27 15:01:55,988 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D4
+2020-09-27 15:01:55,988 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = DFSDM1_DATIN3
+2020-09-27 15:01:55,988 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A20
+2020-09-27 15:01:55,989 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B0
+2020-09-27 15:01:55,989 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_FS_A
+2020-09-27 15:01:55,989 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI4_NSS
+2020-09-27 15:01:55,989 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED1
+2020-09-27 15:01:55,990 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,990 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 4 - PE5
+2020-09-27 15:01:55,990 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D6
+2020-09-27 15:01:55,991 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = DFSDM1_CKIN3
+2020-09-27 15:01:55,991 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A21
+2020-09-27 15:01:55,991 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G0
+2020-09-27 15:01:55,991 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_SCK_A
+2020-09-27 15:01:55,992 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI4_MISO
+2020-09-27 15:01:55,992 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED2
+2020-09-27 15:01:55,992 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM9_CH1
+2020-09-27 15:01:55,992 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,993 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 5 - PE6
+2020-09-27 15:01:55,993 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D7
+2020-09-27 15:01:55,993 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A22
+2020-09-27 15:01:55,993 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G1
+2020-09-27 15:01:55,993 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_SD_A
+2020-09-27 15:01:55,994 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_MCLK_B
+2020-09-27 15:01:55,994 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI4_MOSI
+2020-09-27 15:01:55,994 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED3
+2020-09-27 15:01:55,994 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_BKIN2
+2020-09-27 15:01:55,995 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM9_CH2
+2020-09-27 15:01:55,995 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,995 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 6 - VBAT
+2020-09-27 15:01:55,995 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,996 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 7 - PC13
+2020-09-27 15:01:55,996 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,996 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 8 - PC14/OSC32_IN
+2020-09-27 15:01:55,996 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,997 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 9 - PC15/OSC32_OUT
+2020-09-27 15:01:55,997 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,997 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 10 - PF0
+2020-09-27 15:01:55,997 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A0
+2020-09-27 15:01:55,998 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C2_SDA
+2020-09-27 15:01:55,998 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,998 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 11 - PF1
+2020-09-27 15:01:55,998 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A1
+2020-09-27 15:01:55,998 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C2_SCL
+2020-09-27 15:01:55,999 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:55,999 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 12 - PF2
+2020-09-27 15:01:55,999 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A2
+2020-09-27 15:01:55,999 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C2_SMBA
+2020-09-27 15:01:56,000 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,000 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 13 - PF3
+2020-09-27 15:01:56,000 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A3
+2020-09-27 15:01:56,000 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,001 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 14 - PF4
+2020-09-27 15:01:56,001 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A4
+2020-09-27 15:01:56,001 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,002 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 15 - PF5
+2020-09-27 15:01:56,002 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A5
+2020-09-27 15:01:56,002 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,003 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 16 - VSS
+2020-09-27 15:01:56,003 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,004 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 17 - VDD
+2020-09-27 15:01:56,004 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,005 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 18 - PF6
+2020-09-27 15:01:56,005 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO3
+2020-09-27 15:01:56,005 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_SD_B
+2020-09-27 15:01:56,006 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI5_NSS
+2020-09-27 15:01:56,006 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM10_CH1
+2020-09-27 15:01:56,007 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_RX
+2020-09-27 15:01:56,007 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,007 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 19 - PF7
+2020-09-27 15:01:56,008 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO2
+2020-09-27 15:01:56,008 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_MCLK_B
+2020-09-27 15:01:56,009 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI5_SCK
+2020-09-27 15:01:56,009 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM11_CH1
+2020-09-27 15:01:56,009 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_TX
+2020-09-27 15:01:56,010 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,010 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 20 - PF8
+2020-09-27 15:01:56,011 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = QUADSPI_BK1_IO0
+2020-09-27 15:01:56,011 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_SCK_B
+2020-09-27 15:01:56,011 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI5_MISO
+2020-09-27 15:01:56,012 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = TIM13_CH1
+2020-09-27 15:01:56,012 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_DE
+2020-09-27 15:01:56,013 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_DE/UART7_RTS
+2020-09-27 15:01:56,013 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,013 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 21 - PF9
+2020-09-27 15:01:56,014 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = QUADSPI_BK1_IO1
+2020-09-27 15:01:56,014 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_FS_B
+2020-09-27 15:01:56,014 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI5_MOSI
+2020-09-27 15:01:56,015 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = TIM14_CH1
+2020-09-27 15:01:56,015 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_CTS
+2020-09-27 15:01:56,016 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,016 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 22 - PF10
+2020-09-27 15:01:56,016 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D11
+2020-09-27 15:01:56,017 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_DE
+2020-09-27 15:01:56,017 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_CLK
+2020-09-27 15:01:56,018 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,018 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 23 - PH0/OSC_IN
+2020-09-27 15:01:56,018 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,019 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 24 - PH1/OSC_OUT
+2020-09-27 15:01:56,019 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,019 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 25 - NRST
+2020-09-27 15:01:56,020 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,020 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 26 - PC0
+2020-09-27 15:01:56,020 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKIN0
+2020-09-27 15:01:56,021 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN4
+2020-09-27 15:01:56,021 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDNWE
+2020-09-27 15:01:56,022 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R5
+2020-09-27 15:01:56,022 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SAI2_FS_B
+2020-09-27 15:01:56,022 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_STP
+2020-09-27 15:01:56,023 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,023 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 27 - PC1
+2020-09-27 15:01:56,023 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = DFSDM1_CKIN4
+2020-09-27 15:01:56,024 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_DATIN0
+2020-09-27 15:01:56,024 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_MDC
+2020-09-27 15:01:56,025 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_SD
+2020-09-27 15:01:56,025 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = MDIOS_MDC
+2020-09-27 15:01:56,025 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_SD_A
+2020-09-27 15:01:56,026 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_SD/SPI2_MOSI
+2020-09-27 15:01:56,026 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED0
+2020-09-27 15:01:56,026 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,027 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 28 - PC2
+2020-09-27 15:01:56,027 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKIN1
+2020-09-27 15:01:56,027 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKOUT
+2020-09-27 15:01:56,028 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TXD2
+2020-09-27 15:01:56,028 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDNE0
+2020-09-27 15:01:56,029 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI2_MISO
+2020-09-27 15:01:56,029 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_DIR
+2020-09-27 15:01:56,029 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,030 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 29 - PC3
+2020-09-27 15:01:56,030 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_DATIN1
+2020-09-27 15:01:56,030 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TX_CLK
+2020-09-27 15:01:56,031 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDCKE0
+2020-09-27 15:01:56,031 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_SD
+2020-09-27 15:01:56,031 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_SD/SPI2_MOSI
+2020-09-27 15:01:56,032 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_NXT
+2020-09-27 15:01:56,032 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,032 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 30 - VDD
+2020-09-27 15:01:56,033 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,033 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 31 - VSSA
+2020-09-27 15:01:56,034 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,034 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 32 - VREF+
+2020-09-27 15:01:56,034 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,035 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 33 - VDDA
+2020-09-27 15:01:56,035 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,035 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 34 - PA0/WKUP
+2020-09-27 15:01:56,036 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_CRS
+2020-09-27 15:01:56,036 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_SD_B
+2020-09-27 15:01:56,037 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH1
+2020-09-27 15:01:56,037 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH1/TIM2_ETR
+2020-09-27 15:01:56,037 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM5_CH1
+2020-09-27 15:01:56,038 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_ETR
+2020-09-27 15:01:56,038 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_TX
+2020-09-27 15:01:56,038 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_CTS
+2020-09-27 15:01:56,038 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,039 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 35 - PA1
+2020-09-27 15:01:56,039 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_REF_CLK
+2020-09-27 15:01:56,039 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_REF_CLK/ETH_RX_CLK
+2020-09-27 15:01:56,039 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R2
+2020-09-27 15:01:56,039 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO3
+2020-09-27 15:01:56,040 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_MCLK_B
+2020-09-27 15:01:56,040 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH2
+2020-09-27 15:01:56,040 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM5_CH2
+2020-09-27 15:01:56,040 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_RX
+2020-09-27 15:01:56,041 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_DE
+2020-09-27 15:01:56,041 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_DE/USART2_RTS
+2020-09-27 15:01:56,041 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,041 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 36 - PA2
+2020-09-27 15:01:56,041 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_MDIO
+2020-09-27 15:01:56,042 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R1
+2020-09-27 15:01:56,042 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = MDIOS_MDIO
+2020-09-27 15:01:56,042 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SAI2_SCK_B
+2020-09-27 15:01:56,043 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH3
+2020-09-27 15:01:56,043 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM5_CH3
+2020-09-27 15:01:56,044 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM9_CH1
+2020-09-27 15:01:56,044 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_TX
+2020-09-27 15:01:56,044 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,045 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 37 - PA3
+2020-09-27 15:01:56,045 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_COL
+2020-09-27 15:01:56,045 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = LTDC_B2
+2020-09-27 15:01:56,046 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B5
+2020-09-27 15:01:56,046 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH4
+2020-09-27 15:01:56,046 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM5_CH4
+2020-09-27 15:01:56,046 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM9_CH2
+2020-09-27 15:01:56,046 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_RX
+2020-09-27 15:01:56,047 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_D0
+2020-09-27 15:01:56,047 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,047 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 38 - VSS
+2020-09-27 15:01:56,047 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,047 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 39 - VDD
+2020-09-27 15:01:56,048 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,048 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 40 - PA4
+2020-09-27 15:01:56,048 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_HSYNC
+2020-09-27 15:01:56,048 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_WS
+2020-09-27 15:01:56,049 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_WS
+2020-09-27 15:01:56,049 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_VSYNC
+2020-09-27 15:01:56,049 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_WS/SPI1_NSS
+2020-09-27 15:01:56,050 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_WS/SPI3_NSS
+2020-09-27 15:01:56,050 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPI6_NSS
+2020-09-27 15:01:56,050 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_CK
+2020-09-27 15:01:56,050 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = USB_OTG_HS_SOF
+2020-09-27 15:01:56,051 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,051 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 41 - PA5
+2020-09-27 15:01:56,051 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_CK
+2020-09-27 15:01:56,051 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R4
+2020-09-27 15:01:56,051 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_CK/SPI1_SCK
+2020-09-27 15:01:56,052 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPI6_SCK
+2020-09-27 15:01:56,052 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH1
+2020-09-27 15:01:56,052 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH1/TIM2_ETR
+2020-09-27 15:01:56,052 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH1N
+2020-09-27 15:01:56,053 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_CK
+2020-09-27 15:01:56,053 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,053 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 42 - PA6
+2020-09-27 15:01:56,054 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_PIXCLK
+2020-09-27 15:01:56,054 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G2
+2020-09-27 15:01:56,054 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = MDIOS_MDC
+2020-09-27 15:01:56,055 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI1_MISO
+2020-09-27 15:01:56,055 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPI6_MISO
+2020-09-27 15:01:56,055 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = TIM13_CH1
+2020-09-27 15:01:56,056 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_BKIN
+2020-09-27 15:01:56,056 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH1
+2020-09-27 15:01:56,056 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_BKIN
+2020-09-27 15:01:56,056 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,057 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 43 - PA7
+2020-09-27 15:01:56,057 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_CRS_DV
+2020-09-27 15:01:56,057 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_CRS_DV/ETH_RX_DV
+2020-09-27 15:01:56,058 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDNWE
+2020-09-27 15:01:56,058 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_SD
+2020-09-27 15:01:56,058 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_SD/SPI1_MOSI
+2020-09-27 15:01:56,059 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPI6_MOSI
+2020-09-27 15:01:56,059 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = TIM14_CH1
+2020-09-27 15:01:56,060 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH1N
+2020-09-27 15:01:56,060 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH2
+2020-09-27 15:01:56,060 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH1N
+2020-09-27 15:01:56,060 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,060 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 44 - PC4
+2020-09-27 15:01:56,061 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKIN2
+2020-09-27 15:01:56,061 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_RXD0
+2020-09-27 15:01:56,061 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDNE0
+2020-09-27 15:01:56,061 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_MCK
+2020-09-27 15:01:56,061 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPDIFRX_IN2
+2020-09-27 15:01:56,062 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,062 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 45 - PC5
+2020-09-27 15:01:56,062 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_DATIN2
+2020-09-27 15:01:56,062 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_RXD1
+2020-09-27 15:01:56,062 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDCKE0
+2020-09-27 15:01:56,062 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPDIFRX_IN3
+2020-09-27 15:01:56,063 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,063 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 46 - PB0
+2020-09-27 15:01:56,063 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKOUT
+2020-09-27 15:01:56,063 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_RXD2
+2020-09-27 15:01:56,064 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G1
+2020-09-27 15:01:56,064 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = LTDC_R3
+2020-09-27 15:01:56,064 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH2N
+2020-09-27 15:01:56,064 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH3
+2020-09-27 15:01:56,065 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH2N
+2020-09-27 15:01:56,065 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_CTS
+2020-09-27 15:01:56,065 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_D1
+2020-09-27 15:01:56,065 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,065 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 47 - PB1
+2020-09-27 15:01:56,066 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN1
+2020-09-27 15:01:56,066 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_RXD3
+2020-09-27 15:01:56,066 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G0
+2020-09-27 15:01:56,066 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = LTDC_R6
+2020-09-27 15:01:56,066 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH3N
+2020-09-27 15:01:56,067 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH4
+2020-09-27 15:01:56,067 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH3N
+2020-09-27 15:01:56,067 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_D2
+2020-09-27 15:01:56,068 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,068 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 48 - PB2
+2020-09-27 15:01:56,068 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = DFSDM1_CKIN1
+2020-09-27 15:01:56,068 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = I2S3_SD
+2020-09-27 15:01:56,069 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_CLK
+2020-09-27 15:01:56,069 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_SD_A
+2020-09-27 15:01:56,069 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = I2S3_SD/SPI3_MOSI
+2020-09-27 15:01:56,070 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,070 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 49 - PF11
+2020-09-27 15:01:56,070 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D12
+2020-09-27 15:01:56,071 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDNRAS
+2020-09-27 15:01:56,071 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_SD_B
+2020-09-27 15:01:56,071 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI5_MOSI
+2020-09-27 15:01:56,071 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,071 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 50 - PF12
+2020-09-27 15:01:56,072 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A6
+2020-09-27 15:01:56,072 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,072 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 51 - VSS
+2020-09-27 15:01:56,072 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,072 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 52 - VDD
+2020-09-27 15:01:56,073 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,073 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 53 - PF13
+2020-09-27 15:01:56,073 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN6
+2020-09-27 15:01:56,074 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A7
+2020-09-27 15:01:56,074 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C4_SMBA
+2020-09-27 15:01:56,074 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,074 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 54 - PF14
+2020-09-27 15:01:56,074 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN6
+2020-09-27 15:01:56,075 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A8
+2020-09-27 15:01:56,075 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C4_SCL
+2020-09-27 15:01:56,075 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,075 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 55 - PF15
+2020-09-27 15:01:56,075 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A9
+2020-09-27 15:01:56,075 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C4_SDA
+2020-09-27 15:01:56,076 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,076 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 56 - PG0
+2020-09-27 15:01:56,076 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A10
+2020-09-27 15:01:56,076 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,076 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 57 - PG1
+2020-09-27 15:01:56,076 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A11
+2020-09-27 15:01:56,077 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,077 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 58 - PE7
+2020-09-27 15:01:56,077 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN2
+2020-09-27 15:01:56,077 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D4
+2020-09-27 15:01:56,078 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D4/FMC_DA4
+2020-09-27 15:01:56,078 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = QUADSPI_BK2_IO0
+2020-09-27 15:01:56,078 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_ETR
+2020-09-27 15:01:56,078 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_RX
+2020-09-27 15:01:56,078 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,078 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 59 - PE8
+2020-09-27 15:01:56,079 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN2
+2020-09-27 15:01:56,079 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D5
+2020-09-27 15:01:56,079 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D5/FMC_DA5
+2020-09-27 15:01:56,079 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = QUADSPI_BK2_IO1
+2020-09-27 15:01:56,079 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH1N
+2020-09-27 15:01:56,079 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_TX
+2020-09-27 15:01:56,080 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,080 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 60 - PE9
+2020-09-27 15:01:56,080 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKOUT
+2020-09-27 15:01:56,080 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D6
+2020-09-27 15:01:56,080 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D6/FMC_DA6
+2020-09-27 15:01:56,081 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = QUADSPI_BK2_IO2
+2020-09-27 15:01:56,081 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH1
+2020-09-27 15:01:56,081 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_DE
+2020-09-27 15:01:56,081 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_DE/UART7_RTS
+2020-09-27 15:01:56,081 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,081 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 61 - VSS
+2020-09-27 15:01:56,082 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,082 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 62 - VDD
+2020-09-27 15:01:56,082 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,082 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 63 - PE10
+2020-09-27 15:01:56,082 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN4
+2020-09-27 15:01:56,083 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D7
+2020-09-27 15:01:56,083 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D7/FMC_DA7
+2020-09-27 15:01:56,083 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = QUADSPI_BK2_IO3
+2020-09-27 15:01:56,083 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH2N
+2020-09-27 15:01:56,083 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART7_CTS
+2020-09-27 15:01:56,084 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,084 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 64 - PE11
+2020-09-27 15:01:56,084 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN4
+2020-09-27 15:01:56,084 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D8
+2020-09-27 15:01:56,084 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D8/FMC_DA8
+2020-09-27 15:01:56,084 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G3
+2020-09-27 15:01:56,085 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_SD_B
+2020-09-27 15:01:56,085 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI4_NSS
+2020-09-27 15:01:56,085 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH2
+2020-09-27 15:01:56,086 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,086 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 65 - PE12
+2020-09-27 15:01:56,086 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN5
+2020-09-27 15:01:56,087 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D9
+2020-09-27 15:01:56,087 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D9/FMC_DA9
+2020-09-27 15:01:56,087 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B4
+2020-09-27 15:01:56,088 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_SCK_B
+2020-09-27 15:01:56,088 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI4_SCK
+2020-09-27 15:01:56,088 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH3N
+2020-09-27 15:01:56,088 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,088 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 66 - PE13
+2020-09-27 15:01:56,089 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN5
+2020-09-27 15:01:56,089 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D10
+2020-09-27 15:01:56,089 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D10/FMC_DA10
+2020-09-27 15:01:56,089 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_DE
+2020-09-27 15:01:56,089 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_FS_B
+2020-09-27 15:01:56,090 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI4_MISO
+2020-09-27 15:01:56,090 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH3
+2020-09-27 15:01:56,090 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,090 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 67 - PE14
+2020-09-27 15:01:56,090 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D11
+2020-09-27 15:01:56,090 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D11/FMC_DA11
+2020-09-27 15:01:56,091 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_CLK
+2020-09-27 15:01:56,091 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_MCLK_B
+2020-09-27 15:01:56,091 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI4_MOSI
+2020-09-27 15:01:56,091 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH4
+2020-09-27 15:01:56,091 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,091 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 68 - PE15
+2020-09-27 15:01:56,092 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D12
+2020-09-27 15:01:56,092 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D12/FMC_DA12
+2020-09-27 15:01:56,092 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R7
+2020-09-27 15:01:56,092 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_BKIN
+2020-09-27 15:01:56,092 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,092 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 69 - PB10
+2020-09-27 15:01:56,093 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN7
+2020-09-27 15:01:56,093 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_RX_ER
+2020-09-27 15:01:56,093 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C2_SCL
+2020-09-27 15:01:56,093 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK
+2020-09-27 15:01:56,093 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G4
+2020-09-27 15:01:56,093 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_NCS
+2020-09-27 15:01:56,094 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK/SPI2_SCK
+2020-09-27 15:01:56,094 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH3
+2020-09-27 15:01:56,094 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_TX
+2020-09-27 15:01:56,094 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_D3
+2020-09-27 15:01:56,094 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,094 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 70 - PB11
+2020-09-27 15:01:56,095 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN7
+2020-09-27 15:01:56,095 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TX_EN
+2020-09-27 15:01:56,095 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C2_SDA
+2020-09-27 15:01:56,095 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G5
+2020-09-27 15:01:56,095 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH4
+2020-09-27 15:01:56,095 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_RX
+2020-09-27 15:01:56,095 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_D4
+2020-09-27 15:01:56,096 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,096 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 71 - VCAP_1
+2020-09-27 15:01:56,096 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,096 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 72 - VDD
+2020-09-27 15:01:56,096 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,096 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 73 - PB12
+2020-09-27 15:01:56,097 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN2_RX
+2020-09-27 15:01:56,097 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN1
+2020-09-27 15:01:56,097 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TXD0
+2020-09-27 15:01:56,097 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C2_SMBA
+2020-09-27 15:01:56,097 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_WS
+2020-09-27 15:01:56,097 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_WS/SPI2_NSS
+2020-09-27 15:01:56,097 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_BKIN
+2020-09-27 15:01:56,098 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART5_RX
+2020-09-27 15:01:56,098 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_CK
+2020-09-27 15:01:56,098 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = USB_OTG_HS_ID
+2020-09-27 15:01:56,098 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_D5
+2020-09-27 15:01:56,099 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,099 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 74 - PB13
+2020-09-27 15:01:56,099 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN2_TX
+2020-09-27 15:01:56,099 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN1
+2020-09-27 15:01:56,100 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TXD1
+2020-09-27 15:01:56,100 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK
+2020-09-27 15:01:56,100 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK/SPI2_SCK
+2020-09-27 15:01:56,100 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH1N
+2020-09-27 15:01:56,100 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART5_TX
+2020-09-27 15:01:56,100 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_CTS
+2020-09-27 15:01:56,101 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_D6
+2020-09-27 15:01:56,101 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,101 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 75 - PB14
+2020-09-27 15:01:56,101 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN2
+2020-09-27 15:01:56,101 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D0
+2020-09-27 15:01:56,101 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI2_MISO
+2020-09-27 15:01:56,102 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = TIM12_CH1
+2020-09-27 15:01:56,102 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH2N
+2020-09-27 15:01:56,102 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH2N
+2020-09-27 15:01:56,102 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_DE
+2020-09-27 15:01:56,102 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_DE/UART4_RTS
+2020-09-27 15:01:56,102 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = USART1_TX
+2020-09-27 15:01:56,103 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_DE
+2020-09-27 15:01:56,103 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_DE/USART3_RTS
+2020-09-27 15:01:56,103 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = USB_OTG_HS_DM
+2020-09-27 15:01:56,103 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,103 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 76 - PB15
+2020-09-27 15:01:56,103 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN2
+2020-09-27 15:01:56,103 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_SD
+2020-09-27 15:01:56,104 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = RTC_REFIN
+2020-09-27 15:01:56,104 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D1
+2020-09-27 15:01:56,104 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_SD/SPI2_MOSI
+2020-09-27 15:01:56,104 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = TIM12_CH2
+2020-09-27 15:01:56,104 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH3N
+2020-09-27 15:01:56,104 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH3N
+2020-09-27 15:01:56,105 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_CTS
+2020-09-27 15:01:56,105 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = USART1_RX
+2020-09-27 15:01:56,105 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = USB_OTG_HS_DP
+2020-09-27 15:01:56,105 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,105 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 77 - PD8
+2020-09-27 15:01:56,105 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKIN3
+2020-09-27 15:01:56,105 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D13
+2020-09-27 15:01:56,106 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D13/FMC_DA13
+2020-09-27 15:01:56,106 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPDIFRX_IN1
+2020-09-27 15:01:56,106 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_TX
+2020-09-27 15:01:56,106 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,106 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 78 - PD9
+2020-09-27 15:01:56,106 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_DATIN3
+2020-09-27 15:01:56,106 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D14
+2020-09-27 15:01:56,107 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D14/FMC_DA14
+2020-09-27 15:01:56,107 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_RX
+2020-09-27 15:01:56,107 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,107 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 79 - PD10
+2020-09-27 15:01:56,107 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKOUT
+2020-09-27 15:01:56,107 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D15
+2020-09-27 15:01:56,108 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D15/FMC_DA15
+2020-09-27 15:01:56,108 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B3
+2020-09-27 15:01:56,108 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_CK
+2020-09-27 15:01:56,108 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,109 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 80 - PD11
+2020-09-27 15:01:56,109 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A16
+2020-09-27 15:01:56,109 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A16/FMC_CLE
+2020-09-27 15:01:56,110 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C4_SMBA
+2020-09-27 15:01:56,110 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO0
+2020-09-27 15:01:56,110 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_SD_A
+2020-09-27 15:01:56,110 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_CTS
+2020-09-27 15:01:56,111 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,111 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 81 - PD12
+2020-09-27 15:01:56,111 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A17
+2020-09-27 15:01:56,111 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A17/FMC_ALE
+2020-09-27 15:01:56,112 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C4_SCL
+2020-09-27 15:01:56,112 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = LPTIM1_IN1
+2020-09-27 15:01:56,112 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO1
+2020-09-27 15:01:56,113 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_FS_A
+2020-09-27 15:01:56,113 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_CH1
+2020-09-27 15:01:56,113 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_DE
+2020-09-27 15:01:56,113 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_DE/USART3_RTS
+2020-09-27 15:01:56,113 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,113 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 82 - PD13
+2020-09-27 15:01:56,114 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A18
+2020-09-27 15:01:56,114 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C4_SDA
+2020-09-27 15:01:56,114 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = LPTIM1_OUT
+2020-09-27 15:01:56,114 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO3
+2020-09-27 15:01:56,114 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_SCK_A
+2020-09-27 15:01:56,114 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_CH2
+2020-09-27 15:01:56,115 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,115 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 83 - VSS
+2020-09-27 15:01:56,115 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,115 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 84 - VDD
+2020-09-27 15:01:56,115 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,115 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 85 - PD14
+2020-09-27 15:01:56,116 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D0
+2020-09-27 15:01:56,116 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D0/FMC_DA0
+2020-09-27 15:01:56,116 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_CH3
+2020-09-27 15:01:56,116 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART8_CTS
+2020-09-27 15:01:56,116 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,116 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 86 - PD15
+2020-09-27 15:01:56,117 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D1
+2020-09-27 15:01:56,117 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D1/FMC_DA1
+2020-09-27 15:01:56,117 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_CH4
+2020-09-27 15:01:56,117 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART8_DE
+2020-09-27 15:01:56,117 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART8_DE/UART8_RTS
+2020-09-27 15:01:56,117 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,118 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 87 - PG2
+2020-09-27 15:01:56,118 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A12
+2020-09-27 15:01:56,118 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,118 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 88 - PG3
+2020-09-27 15:01:56,118 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A13
+2020-09-27 15:01:56,118 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,119 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 89 - PG4
+2020-09-27 15:01:56,119 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A14
+2020-09-27 15:01:56,119 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A14/FMC_BA0
+2020-09-27 15:01:56,119 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,119 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 90 - PG5
+2020-09-27 15:01:56,119 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A15
+2020-09-27 15:01:56,120 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A15/FMC_BA1
+2020-09-27 15:01:56,120 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,120 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 91 - PG6
+2020-09-27 15:01:56,120 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D12
+2020-09-27 15:01:56,120 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NE3
+2020-09-27 15:01:56,120 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R7
+2020-09-27 15:01:56,121 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,121 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 92 - PG7
+2020-09-27 15:01:56,121 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D13
+2020-09-27 15:01:56,121 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_INT
+2020-09-27 15:01:56,121 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_CLK
+2020-09-27 15:01:56,121 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_MCLK_A
+2020-09-27 15:01:56,122 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_CK
+2020-09-27 15:01:56,122 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,122 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 93 - PG8
+2020-09-27 15:01:56,122 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_PPS_OUT
+2020-09-27 15:01:56,122 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDCLK
+2020-09-27 15:01:56,122 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G7
+2020-09-27 15:01:56,123 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = SPDIFRX_IN2
+2020-09-27 15:01:56,123 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI6_NSS
+2020-09-27 15:01:56,123 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_DE
+2020-09-27 15:01:56,123 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_DE/USART6_RTS
+2020-09-27 15:01:56,123 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,123 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 94 - VSS
+2020-09-27 15:01:56,123 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,124 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 95 - VDDUSB
+2020-09-27 15:01:56,124 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,124 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 96 - PC6
+2020-09-27 15:01:56,124 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D0
+2020-09-27 15:01:56,124 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = DFSDM1_CKIN3
+2020-09-27 15:01:56,124 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = FMC_NWAIT
+2020-09-27 15:01:56,124 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_MCK
+2020-09-27 15:01:56,124 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_HSYNC
+2020-09-27 15:01:56,125 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_D6
+2020-09-27 15:01:56,125 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D6
+2020-09-27 15:01:56,125 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH1
+2020-09-27 15:01:56,125 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH1
+2020-09-27 15:01:56,125 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_TX
+2020-09-27 15:01:56,125 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,125 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 97 - PC7
+2020-09-27 15:01:56,126 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D1
+2020-09-27 15:01:56,126 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = DFSDM1_DATIN3
+2020-09-27 15:01:56,126 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = FMC_NE1
+2020-09-27 15:01:56,126 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_MCK
+2020-09-27 15:01:56,126 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G6
+2020-09-27 15:01:56,127 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_D7
+2020-09-27 15:01:56,127 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D7
+2020-09-27 15:01:56,127 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH2
+2020-09-27 15:01:56,127 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH2
+2020-09-27 15:01:56,127 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_RX
+2020-09-27 15:01:56,127 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,127 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 98 - PC8
+2020-09-27 15:01:56,127 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D2
+2020-09-27 15:01:56,128 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = FMC_NCE
+2020-09-27 15:01:56,128 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = FMC_NCE/FMC_NE2
+2020-09-27 15:01:56,128 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_D0
+2020-09-27 15:01:56,128 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED1
+2020-09-27 15:01:56,128 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH3
+2020-09-27 15:01:56,128 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH3
+2020-09-27 15:01:56,128 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = UART5_DE
+2020-09-27 15:01:56,129 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = UART5_DE/UART5_RTS
+2020-09-27 15:01:56,129 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_CK
+2020-09-27 15:01:56,129 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,129 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 99 - PC9
+2020-09-27 15:01:56,129 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D3
+2020-09-27 15:01:56,129 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C3_SDA
+2020-09-27 15:01:56,129 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S_CKIN
+2020-09-27 15:01:56,130 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B2
+2020-09-27 15:01:56,130 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = LTDC_G3
+2020-09-27 15:01:56,130 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO0
+2020-09-27 15:01:56,130 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = RCC_MCO_2
+2020-09-27 15:01:56,130 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_D1
+2020-09-27 15:01:56,130 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH4
+2020-09-27 15:01:56,130 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_CH4
+2020-09-27 15:01:56,131 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = UART5_CTS
+2020-09-27 15:01:56,131 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,131 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 100 - PA8
+2020-09-27 15:01:56,131 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = CAN3_RX
+2020-09-27 15:01:56,131 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C3_SCL
+2020-09-27 15:01:56,131 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = LTDC_B3
+2020-09-27 15:01:56,131 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R6
+2020-09-27 15:01:56,131 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = RCC_MCO_1
+2020-09-27 15:01:56,132 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH1
+2020-09-27 15:01:56,132 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM8_BKIN2
+2020-09-27 15:01:56,132 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = UART7_RX
+2020-09-27 15:01:56,132 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART1_CK
+2020-09-27 15:01:56,132 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_FS_SOF
+2020-09-27 15:01:56,132 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,133 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 101 - PA9
+2020-09-27 15:01:56,133 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D0
+2020-09-27 15:01:56,133 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C3_SMBA
+2020-09-27 15:01:56,133 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK
+2020-09-27 15:01:56,133 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R5
+2020-09-27 15:01:56,134 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK/SPI2_SCK
+2020-09-27 15:01:56,134 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH2
+2020-09-27 15:01:56,134 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART1_TX
+2020-09-27 15:01:56,134 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,134 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 102 - PA10
+2020-09-27 15:01:56,134 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D1
+2020-09-27 15:01:56,134 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B1
+2020-09-27 15:01:56,135 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = LTDC_B4
+2020-09-27 15:01:56,135 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = MDIOS_MDIO
+2020-09-27 15:01:56,135 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH3
+2020-09-27 15:01:56,135 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART1_RX
+2020-09-27 15:01:56,135 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_FS_ID
+2020-09-27 15:01:56,135 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,136 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 103 - PA11
+2020-09-27 15:01:56,136 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN1_RX
+2020-09-27 15:01:56,136 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_WS
+2020-09-27 15:01:56,136 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R4
+2020-09-27 15:01:56,136 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_WS/SPI2_NSS
+2020-09-27 15:01:56,136 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_CH4
+2020-09-27 15:01:56,137 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = UART4_RX
+2020-09-27 15:01:56,137 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART1_CTS
+2020-09-27 15:01:56,137 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_FS_DM
+2020-09-27 15:01:56,137 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,137 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 104 - PA12
+2020-09-27 15:01:56,138 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN1_TX
+2020-09-27 15:01:56,138 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK
+2020-09-27 15:01:56,138 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R5
+2020-09-27 15:01:56,138 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SAI2_FS_B
+2020-09-27 15:01:56,138 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK/SPI2_SCK
+2020-09-27 15:01:56,139 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM1_ETR
+2020-09-27 15:01:56,139 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = UART4_TX
+2020-09-27 15:01:56,139 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART1_DE
+2020-09-27 15:01:56,139 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART1_DE/USART1_RTS
+2020-09-27 15:01:56,139 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_FS_DP
+2020-09-27 15:01:56,139 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,140 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 105 - PA13
+2020-09-27 15:01:56,140 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_JTMS-SWDIO
+2020-09-27 15:01:56,140 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,140 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 106 - VCAP_2
+2020-09-27 15:01:56,140 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,141 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 107 - VSS
+2020-09-27 15:01:56,141 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,141 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 108 - VDD
+2020-09-27 15:01:56,141 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,141 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 109 - PA14
+2020-09-27 15:01:56,141 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_JTCK-SWCLK
+2020-09-27 15:01:56,142 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,142 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 110 - PA15
+2020-09-27 15:01:56,142 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = CAN3_TX
+2020-09-27 15:01:56,142 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = CEC
+2020-09-27 15:01:56,142 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_WS
+2020-09-27 15:01:56,142 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_WS
+2020-09-27 15:01:56,143 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_WS/SPI1_NSS
+2020-09-27 15:01:56,143 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_WS/SPI3_NSS
+2020-09-27 15:01:56,143 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = SPI6_NSS
+2020-09-27 15:01:56,143 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_JTDI
+2020-09-27 15:01:56,143 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH1
+2020-09-27 15:01:56,144 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH1/TIM2_ETR
+2020-09-27 15:01:56,144 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_DE
+2020-09-27 15:01:56,144 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_DE/UART4_RTS
+2020-09-27 15:01:56,144 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = UART7_TX
+2020-09-27 15:01:56,144 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,145 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 111 - PC10
+2020-09-27 15:01:56,145 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D8
+2020-09-27 15:01:56,145 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKIN5
+2020-09-27 15:01:56,145 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_CK
+2020-09-27 15:01:56,145 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R2
+2020-09-27 15:01:56,145 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK1_IO1
+2020-09-27 15:01:56,145 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_D2
+2020-09-27 15:01:56,146 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_CK/SPI3_SCK
+2020-09-27 15:01:56,146 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_TX
+2020-09-27 15:01:56,146 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_TX
+2020-09-27 15:01:56,146 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,146 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 112 - PC11
+2020-09-27 15:01:56,146 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D4
+2020-09-27 15:01:56,147 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_DATIN5
+2020-09-27 15:01:56,147 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK2_NCS
+2020-09-27 15:01:56,147 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_D3
+2020-09-27 15:01:56,147 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SPI3_MISO
+2020-09-27 15:01:56,147 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_RX
+2020-09-27 15:01:56,147 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_RX
+2020-09-27 15:01:56,147 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,148 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 113 - PC12
+2020-09-27 15:01:56,148 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D9
+2020-09-27 15:01:56,148 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_SD
+2020-09-27 15:01:56,148 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_CK
+2020-09-27 15:01:56,148 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_SD/SPI3_MOSI
+2020-09-27 15:01:56,148 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED3
+2020-09-27 15:01:56,148 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART5_TX
+2020-09-27 15:01:56,149 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART3_CK
+2020-09-27 15:01:56,149 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,149 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 114 - PD0
+2020-09-27 15:01:56,149 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN1_RX
+2020-09-27 15:01:56,149 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKIN6
+2020-09-27 15:01:56,149 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN7
+2020-09-27 15:01:56,149 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D2
+2020-09-27 15:01:56,150 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D2/FMC_DA2
+2020-09-27 15:01:56,150 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_RX
+2020-09-27 15:01:56,150 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,150 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 115 - PD1
+2020-09-27 15:01:56,150 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN1_TX
+2020-09-27 15:01:56,150 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN7
+2020-09-27 15:01:56,150 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_DATIN6
+2020-09-27 15:01:56,150 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D3
+2020-09-27 15:01:56,151 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_D3/FMC_DA3
+2020-09-27 15:01:56,151 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART4_TX
+2020-09-27 15:01:56,151 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,151 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 116 - PD2
+2020-09-27 15:01:56,151 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D11
+2020-09-27 15:01:56,151 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_CMD
+2020-09-27 15:01:56,151 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED2
+2020-09-27 15:01:56,152 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_ETR
+2020-09-27 15:01:56,152 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART5_RX
+2020-09-27 15:01:56,152 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,152 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 117 - PD3
+2020-09-27 15:01:56,152 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D5
+2020-09-27 15:01:56,152 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKOUT
+2020-09-27 15:01:56,152 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN0
+2020-09-27 15:01:56,153 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_CLK
+2020-09-27 15:01:56,153 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK
+2020-09-27 15:01:56,153 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G7
+2020-09-27 15:01:56,153 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_CK/SPI2_SCK
+2020-09-27 15:01:56,153 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_CTS
+2020-09-27 15:01:56,153 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,153 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 118 - PD4
+2020-09-27 15:01:56,154 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN0
+2020-09-27 15:01:56,154 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NOE
+2020-09-27 15:01:56,154 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_DE
+2020-09-27 15:01:56,154 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_DE/USART2_RTS
+2020-09-27 15:01:56,154 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,154 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 119 - PD5
+2020-09-27 15:01:56,154 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NWE
+2020-09-27 15:01:56,155 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_TX
+2020-09-27 15:01:56,155 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,155 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 120 - VSS
+2020-09-27 15:01:56,155 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,155 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 121 - VDDSDMMC
+2020-09-27 15:01:56,155 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,155 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 122 - PD6
+2020-09-27 15:01:56,156 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D10
+2020-09-27 15:01:56,156 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_CKIN4
+2020-09-27 15:01:56,156 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = DFSDM1_DATIN1
+2020-09-27 15:01:56,156 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NWAIT
+2020-09-27 15:01:56,156 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S3_SD
+2020-09-27 15:01:56,156 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B2
+2020-09-27 15:01:56,157 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SAI1_SD_A
+2020-09-27 15:01:56,157 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = SDMMC2_CK
+2020-09-27 15:01:56,157 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S3_SD/SPI3_MOSI
+2020-09-27 15:01:56,157 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_RX
+2020-09-27 15:01:56,157 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,157 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 123 - PD7
+2020-09-27 15:01:56,157 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN1
+2020-09-27 15:01:56,158 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = DFSDM1_DATIN4
+2020-09-27 15:01:56,158 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NE1
+2020-09-27 15:01:56,158 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_SD
+2020-09-27 15:01:56,158 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = SDMMC2_CMD
+2020-09-27 15:01:56,158 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPDIFRX_IN0
+2020-09-27 15:01:56,158 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_SD/SPI1_MOSI
+2020-09-27 15:01:56,159 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART2_CK
+2020-09-27 15:01:56,159 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,159 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 124 - PG9
+2020-09-27 15:01:56,159 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_VSYNC
+2020-09-27 15:01:56,159 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NCE
+2020-09-27 15:01:56,159 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NCE/FMC_NE2
+2020-09-27 15:01:56,160 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK2_IO2
+2020-09-27 15:01:56,160 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_FS_B
+2020-09-27 15:01:56,160 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = SDMMC2_D0
+2020-09-27 15:01:56,160 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = SPDIFRX_IN3
+2020-09-27 15:01:56,160 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI1_MISO
+2020-09-27 15:01:56,160 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_RX
+2020-09-27 15:01:56,161 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,161 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 125 - PG10
+2020-09-27 15:01:56,161 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D2
+2020-09-27 15:01:56,161 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NE3
+2020-09-27 15:01:56,161 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_WS
+2020-09-27 15:01:56,161 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B2
+2020-09-27 15:01:56,162 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = LTDC_G3
+2020-09-27 15:01:56,162 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_SD_B
+2020-09-27 15:01:56,162 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = SDMMC2_D1
+2020-09-27 15:01:56,162 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_WS/SPI1_NSS
+2020-09-27 15:01:56,162 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,162 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 126 - PG11
+2020-09-27 15:01:56,162 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D3
+2020-09-27 15:01:56,163 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TX_EN
+2020-09-27 15:01:56,163 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_CK
+2020-09-27 15:01:56,163 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B3
+2020-09-27 15:01:56,163 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D2
+2020-09-27 15:01:56,163 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = SPDIFRX_IN0
+2020-09-27 15:01:56,163 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_CK/SPI1_SCK
+2020-09-27 15:01:56,164 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,164 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 127 - PG12
+2020-09-27 15:01:56,164 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NE4
+2020-09-27 15:01:56,164 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = LPTIM1_IN1
+2020-09-27 15:01:56,164 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B1
+2020-09-27 15:01:56,164 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = LTDC_B4
+2020-09-27 15:01:56,165 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = SDMMC2_D3
+2020-09-27 15:01:56,165 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = SPDIFRX_IN1
+2020-09-27 15:01:56,165 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI6_MISO
+2020-09-27 15:01:56,165 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_DE
+2020-09-27 15:01:56,165 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_DE/USART6_RTS
+2020-09-27 15:01:56,165 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,166 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 128 - PG13
+2020-09-27 15:01:56,166 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TXD0
+2020-09-27 15:01:56,166 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A24
+2020-09-27 15:01:56,166 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = LPTIM1_OUT
+2020-09-27 15:01:56,166 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_R0
+2020-09-27 15:01:56,166 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI6_SCK
+2020-09-27 15:01:56,166 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED0
+2020-09-27 15:01:56,167 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_CTS
+2020-09-27 15:01:56,167 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,167 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 129 - PG14
+2020-09-27 15:01:56,167 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TXD1
+2020-09-27 15:01:56,167 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_A25
+2020-09-27 15:01:56,167 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = LPTIM1_ETR
+2020-09-27 15:01:56,168 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B0
+2020-09-27 15:01:56,168 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = QUADSPI_BK2_IO3
+2020-09-27 15:01:56,168 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI6_MOSI
+2020-09-27 15:01:56,168 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_TRACED1
+2020-09-27 15:01:56,168 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_TX
+2020-09-27 15:01:56,168 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,169 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 130 - VSS
+2020-09-27 15:01:56,169 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,169 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 131 - VDD
+2020-09-27 15:01:56,169 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,169 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 132 - PG15
+2020-09-27 15:01:56,169 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D13
+2020-09-27 15:01:56,170 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDNCAS
+2020-09-27 15:01:56,170 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = USART6_CTS
+2020-09-27 15:01:56,170 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,170 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 133 - PB3
+2020-09-27 15:01:56,170 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = CAN3_RX
+2020-09-27 15:01:56,170 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_CK
+2020-09-27 15:01:56,171 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_CK
+2020-09-27 15:01:56,171 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D2
+2020-09-27 15:01:56,171 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_CK/SPI1_SCK
+2020-09-27 15:01:56,171 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_CK/SPI3_SCK
+2020-09-27 15:01:56,171 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPI6_SCK
+2020-09-27 15:01:56,171 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_JTDO-SWO
+2020-09-27 15:01:56,171 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = TIM2_CH2
+2020-09-27 15:01:56,172 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = UART7_RX
+2020-09-27 15:01:56,172 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,172 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 134 - PB4
+2020-09-27 15:01:56,172 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = CAN3_TX
+2020-09-27 15:01:56,172 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = I2S2_WS
+2020-09-27 15:01:56,172 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D3
+2020-09-27 15:01:56,173 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = SPI1_MISO
+2020-09-27 15:01:56,173 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = I2S2_WS/SPI2_NSS
+2020-09-27 15:01:56,173 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = SPI3_MISO
+2020-09-27 15:01:56,173 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPI6_MISO
+2020-09-27 15:01:56,173 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF0 // Value = SYS_JTRST
+2020-09-27 15:01:56,173 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH1
+2020-09-27 15:01:56,173 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = UART7_TX
+2020-09-27 15:01:56,174 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,174 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 135 - PB5
+2020-09-27 15:01:56,174 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN2_RX
+2020-09-27 15:01:56,174 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D10
+2020-09-27 15:01:56,174 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_PPS_OUT
+2020-09-27 15:01:56,174 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDCKE1
+2020-09-27 15:01:56,175 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C1_SMBA
+2020-09-27 15:01:56,175 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_SD
+2020-09-27 15:01:56,175 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_SD
+2020-09-27 15:01:56,175 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_G7
+2020-09-27 15:01:56,175 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S1_SD/SPI1_MOSI
+2020-09-27 15:01:56,176 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = I2S3_SD/SPI3_MOSI
+2020-09-27 15:01:56,176 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = SPI6_MOSI
+2020-09-27 15:01:56,176 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM3_CH2
+2020-09-27 15:01:56,176 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = UART5_RX
+2020-09-27 15:01:56,176 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = USB_OTG_HS_ULPI_D7
+2020-09-27 15:01:56,176 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,176 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 136 - PB6
+2020-09-27 15:01:56,177 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN2_TX
+2020-09-27 15:01:56,177 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = CEC
+2020-09-27 15:01:56,177 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D5
+2020-09-27 15:01:56,177 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN5
+2020-09-27 15:01:56,177 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_SDNE1
+2020-09-27 15:01:56,177 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C1_SCL
+2020-09-27 15:01:56,177 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = I2C4_SCL
+2020-09-27 15:01:56,178 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = QUADSPI_BK1_NCS
+2020-09-27 15:01:56,178 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_CH1
+2020-09-27 15:01:56,178 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = UART5_TX
+2020-09-27 15:01:56,178 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART1_TX
+2020-09-27 15:01:56,178 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,178 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 137 - PB7
+2020-09-27 15:01:56,179 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_VSYNC
+2020-09-27 15:01:56,179 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN5
+2020-09-27 15:01:56,179 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NL
+2020-09-27 15:01:56,179 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C1_SDA
+2020-09-27 15:01:56,179 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = I2C4_SDA
+2020-09-27 15:01:56,179 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_CH2
+2020-09-27 15:01:56,180 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = USART1_RX
+2020-09-27 15:01:56,180 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,180 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 138 - BOOT0
+2020-09-27 15:01:56,180 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,180 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 139 - PB8
+2020-09-27 15:01:56,180 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN1_RX
+2020-09-27 15:01:56,180 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D6
+2020-09-27 15:01:56,181 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_CKIN7
+2020-09-27 15:01:56,181 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = ETH_TXD3
+2020-09-27 15:01:56,181 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C1_SCL
+2020-09-27 15:01:56,181 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = I2C4_SCL
+2020-09-27 15:01:56,181 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B6
+2020-09-27 15:01:56,181 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_D4
+2020-09-27 15:01:56,182 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D4
+2020-09-27 15:01:56,182 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM10_CH1
+2020-09-27 15:01:56,182 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_CH3
+2020-09-27 15:01:56,182 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = UART5_RX
+2020-09-27 15:01:56,182 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,182 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 140 - PB9
+2020-09-27 15:01:56,183 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF9 // Value = CAN1_TX
+2020-09-27 15:01:56,183 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D7
+2020-09-27 15:01:56,183 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF6 // Value = DFSDM1_DATIN7
+2020-09-27 15:01:56,183 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF4 // Value = I2C1_SDA
+2020-09-27 15:01:56,183 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF1 // Value = I2C4_SDA
+2020-09-27 15:01:56,183 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF11 // Value = I2C4_SMBA
+2020-09-27 15:01:56,183 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_WS
+2020-09-27 15:01:56,184 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF14 // Value = LTDC_B7
+2020-09-27 15:01:56,184 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = SDMMC1_D5
+2020-09-27 15:01:56,184 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SDMMC2_D5
+2020-09-27 15:01:56,184 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF5 // Value = I2S2_WS/SPI2_NSS
+2020-09-27 15:01:56,184 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = TIM11_CH1
+2020-09-27 15:01:56,184 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_CH4
+2020-09-27 15:01:56,185 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF7 // Value = UART5_TX
+2020-09-27 15:01:56,185 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,185 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 141 - PE0
+2020-09-27 15:01:56,185 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D2
+2020-09-27 15:01:56,185 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NBL0
+2020-09-27 15:01:56,185 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = LPTIM1_ETR
+2020-09-27 15:01:56,186 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF10 // Value = SAI2_MCLK_A
+2020-09-27 15:01:56,186 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF2 // Value = TIM4_ETR
+2020-09-27 15:01:56,186 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART8_RX
+2020-09-27 15:01:56,186 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,186 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 142 - PE1
+2020-09-27 15:01:56,186 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF13 // Value = DCMI_D3
+2020-09-27 15:01:56,187 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF12 // Value = FMC_NBL1
+2020-09-27 15:01:56,187 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF3 // Value = LPTIM1_IN2
+2020-09-27 15:01:56,187 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Key = AF8 // Value = UART8_TX
+2020-09-27 15:01:56,187 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,187 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 143 - PDR_ON
+2020-09-27 15:01:56,187 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
+2020-09-27 15:01:56,187 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] Traitement de la pin : 144 - VDD
+2020-09-27 15:01:56,188 [INFO] LogOutputStream:76 - [STDOUT_REDIRECT] -------------------------------------------
