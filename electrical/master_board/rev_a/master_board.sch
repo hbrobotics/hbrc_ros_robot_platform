@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 1 8
+Sheet 1 12
 Title "HR2 Master Board"
 Date "2020-10-03"
 Rev "A"
@@ -851,4 +851,28 @@ Wire Bus Line
 	7350 1100 7350 3000
 Wire Bus Line
 	5950 1100 5950 3000
+$Sheet
+S 9550 750  500  400 
+U 5F79BC00
+F0 "NE" 50
+F1 "ne.sch" 50
+$EndSheet
+$Sheet
+S 9600 6000 550  450 
+U 5F79E273
+F0 "SE" 50
+F1 "se.sch" 50
+$EndSheet
+$Sheet
+S 4350 7000 750  650 
+U 5F7A1C5E
+F0 "SW" 50
+F1 "sw.sch" 50
+$EndSheet
+$Sheet
+S 2350 750  700  350 
+U 5F7A5025
+F0 "NW" 50
+F1 "nw.sch" 50
+$EndSheet
 $EndSCHEMATC
