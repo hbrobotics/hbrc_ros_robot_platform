@@ -4,11 +4,11 @@ EELAYER END
 $Descr A 11000 8500
 encoding utf-8
 Sheet 7 8
-Title "HR2 Single Board Computer"
-Date "2020-08-27"
+Title "HR2 Master Board"
+Date "2020-10-03"
 Rev "A"
-Comp "Home Brew Robotics Club"
-Comment1 "Copyright (c) 2020 by Home Brew Robotics Club"
+Comp "HomeBrew Robotics Club"
+Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
 Comment2 "MIT License"
 Comment3 ""
 Comment4 ""

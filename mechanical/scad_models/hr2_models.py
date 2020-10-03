@@ -4377,10 +4377,10 @@ class MasterBoard:
             nucleo144_mate_references_pcb_chunk,
             u3v70x_9v_pcb_chunk,
         ])
-        center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
-        center_module_without_nucleo: Module3D = center_without_nucleo_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, pcb_dz,
-            center_exterior, "Tan", center_kicad_pcb_path, [])
+        # center_kicad_pcb_path: Path = master_board_directory / "center.kicad_pcb"
+        # center_module_without_nucleo: Module3D = center_without_nucleo_pcb_chunk.pcb_update(
+        #     scad_program, pcb_origin, pcb_dz,
+        #     center_exterior, "Tan", center_kicad_pcb_path, [])
 
         # Create *center_with_nucleo_pcb_chunk* that does contain the the Nucleo-14:
         center_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center With Nucleo", [
@@ -4391,8 +4391,8 @@ class MasterBoard:
             # lidar_adapter_mate_references_pcb_chunk,
             nucleo144_mate_with_nucleo_pcb_chunk,
         ])
-        center_module_with_nucleo: Module3D = center_with_nucleo_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, pcb_dz, center_exterior, "Tan", None, [])
+        # center_module_with_nucleo: Module3D = center_with_nucleo_pcb_chunk.pcb_update(
+        #     scad_program, pcb_origin, pcb_dz, center_exterior, "Tan", None, [])
 
         # Create *ne_pcb_chunk* and update its associated PCB:
         ne_pcb_chunk: PCBChunk = PCBChunk.join("Master NE", [
@@ -4403,9 +4403,9 @@ class MasterBoard:
             ne_spacer_pcb_chunk,
             ne_sonars_pcb_chunk,
         ])
-        ne_kicad_pcb_path: Path = master_board_directory / "ne.kicad_pcb"
-        ne_module: Module3D = ne_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, pcb_dz, ne_exterior, "YellowGreen", ne_kicad_pcb_path, [])
+        # ne_kicad_pcb_path: Path = master_board_directory / "ne.kicad_pcb"
+        # ne_module: Module3D = ne_pcb_chunk.pcb_update(
+        #     scad_program, pcb_origin, pcb_dz, ne_exterior, "YellowGreen", ne_kicad_pcb_path, [])
 
         nw_pcb_chunk: PCBChunk = PCBChunk.join("Master NW", [
             nw_bridges_pcb_chunk,
@@ -4415,9 +4415,9 @@ class MasterBoard:
             nw_spacer_pcb_chunk,
             nw_sonars_pcb_chunk,
         ])
-        nw_kicad_pcb_path: Path = master_board_directory / "nw.kicad_pcb"
-        nw_module: Module3D = nw_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, pcb_dz, nw_exterior, "Orange", nw_kicad_pcb_path, [])
+        # nw_kicad_pcb_path: Path = master_board_directory / "nw.kicad_pcb"
+        # nw_module: Module3D = nw_pcb_chunk.pcb_update(
+        #     scad_program, pcb_origin, pcb_dz, nw_exterior, "Orange", nw_kicad_pcb_path, [])
 
         se_pcb_chunk: PCBChunk = PCBChunk.join("Master SE", [
             se_bridges_pcb_chunk,
@@ -4425,9 +4425,9 @@ class MasterBoard:
             se_mikrobus_pcb_chunk,
             se_spacer_pcb_chunk,
         ])
-        se_kicad_pcb_path: Path = master_board_directory / "se.kicad_pcb"
-        se_module: Module3D = se_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, pcb_dz, se_exterior, "Purple", se_kicad_pcb_path, [])
+        # se_kicad_pcb_path: Path = master_board_directory / "se.kicad_pcb"
+        # se_module: Module3D = se_pcb_chunk.pcb_update(
+        #     scad_program, pcb_origin, pcb_dz, se_exterior, "Purple", se_kicad_pcb_path, [])
 
         sw_pcb_chunk: PCBChunk = PCBChunk.join("Master SW", [
             sw_bridges_pcb_chunk,
@@ -4435,9 +4435,9 @@ class MasterBoard:
             sw_mikrobus_pcb_chunk,
             sw_spacer_pcb_chunk,
         ])
-        sw_kicad_pcb_path: Path = master_board_directory / "sw.kicad_pcb"
-        sw_module: Module3D = sw_pcb_chunk.pcb_update(
-            scad_program, pcb_origin, pcb_dz, sw_exterior, "Red", sw_kicad_pcb_path, [])
+        # sw_kicad_pcb_path: Path = master_board_directory / "sw.kicad_pcb"
+        # sw_module: Module3D = sw_pcb_chunk.pcb_update(
+        #     scad_program, pcb_origin, pcb_dz, sw_exterior, "Red", sw_kicad_pcb_path, [])
 
         # Create *master_with_nucleo_pcb_chunk* and *master_module_with_nucleo*
         master_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Without Nucleo", [
@@ -4460,49 +4460,49 @@ class MasterBoard:
             scad_program, pcb_origin, pcb_dz, master_exterior, "Orange", None, [])
 
         # Create a union of the 5 sub-boards:
-        union_with_nucleo_module: Module3D = Module3D("Master With Nucleo Union", [
-            center_module_with_nucleo.use_module_get(),
-            ne_module.use_module_get(),
-            nw_module.use_module_get(),
-            se_module.use_module_get(),
-            sw_module.use_module_get(),
-        ])
-        union_without_nucleo_module: Module3D = Module3D("Master Without Nucleo Union", [
-            center_module_without_nucleo.use_module_get(),
-            ne_module.use_module_get(),
-            nw_module.use_module_get(),
-            se_module.use_module_get(),
-            sw_module.use_module_get(),
-        ])
+        # union_with_nucleo_module: Module3D = Module3D("Master With Nucleo Union", [
+        #     center_module_with_nucleo.use_module_get(),
+        #     ne_module.use_module_get(),
+        #     nw_module.use_module_get(),
+        #     se_module.use_module_get(),
+        #     sw_module.use_module_get(),
+        # ])
+        # union_without_nucleo_module: Module3D = Module3D("Master Without Nucleo Union", [
+        #     center_module_without_nucleo.use_module_get(),
+        #     ne_module.use_module_get(),
+        #     nw_module.use_module_get(),
+        #     se_module.use_module_get(),
+        #     sw_module.use_module_get(),
+        # ])
 
         # Create an entry for the `scad_show` program:
-        scad_program.append(union_with_nucleo_module)
-        scad_program.if3d.name_match_append(
-            "master_union_board", union_with_nucleo_module, ["Master Union"])
+        # scad_program.append(union_with_nucleo_module)
+        # scad_program.if3d.name_match_append(
+        #     "master_union_board", union_with_nucleo_module, ["Master Union"])
 
         # Stuff some values into *master_board* (i.e. *self*):
         # master_board: MasterBoard = self
         self.master_module_with_nucleo: Module3D = master_module_with_nucleo
         self.master_module_without_nucleo: Module3D = master_module_without_nucleo
-        self.master_with_nucleo_pcb_chunk: PCBChunk = master_with_nucleo_pcb_chunk
-        self.master_without_nucleo_pcb_chunk: PCBChunk = master_without_nucleo_pcb_chunk
-        self.center_module_with_nucleo: Module3D = center_module_with_nucleo
-        self.center_module_without__nucleo: Module3D = center_module_without_nucleo
-        self.center_with_nucleo_pcb_chunk: PCBChunk = center_with_nucleo_pcb_chunk
-        self.center_without_nucleo_pcb_chunk: PCBChunk = center_without_nucleo_pcb_chunk
-        self.ne_module: Module3D = ne_module
-        self.ne_pcb_chunk: PCBChunk = ne_pcb_chunk
-        self.nw_module: Module3D = nw_module
-        self.nw_pcb_chunk: PCBChunk = nw_pcb_chunk
-        self.pcb_dz: float = pcb_dz
-        self.se_module: Module3D = se_module
-        self.se_pcb_chunk: PCBChunk = se_pcb_chunk
-        self.sw_module: Module3D = sw_module
-        self.sw_pcb_chunk: PCBChunk = sw_pcb_chunk
-        self.center_pcb_north: float  # Filled in by MasterBoard.bridges_install()
-        self.center_pcb_south: float  # Filled in by MasterBoard.bridges_install()
-        self.union_with_nucleo_module: Module3D = union_with_nucleo_module
-        self.union_without_nucleo_module: Module3D = union_without_nucleo_module
+        # self.master_with_nucleo_pcb_chunk: PCBChunk = master_with_nucleo_pcb_chunk
+        # self.master_without_nucleo_pcb_chunk: PCBChunk = master_without_nucleo_pcb_chunk
+        # self.center_module_with_nucleo: Module3D = center_module_with_nucleo
+        # self.center_module_without__nucleo: Module3D = center_module_without_nucleo
+        # self.center_with_nucleo_pcb_chunk: PCBChunk = center_with_nucleo_pcb_chunk
+        # self.center_without_nucleo_pcb_chunk: PCBChunk = center_without_nucleo_pcb_chunk
+        # self.ne_module: Module3D = ne_module
+        # self.ne_pcb_chunk: PCBChunk = ne_pcb_chunk
+        # self.nw_module: Module3D = nw_module
+        # self.nw_pcb_chunk: PCBChunk = nw_pcb_chunk
+        # self.pcb_dz: float = pcb_dz
+        # self.se_module: Module3D = se_module
+        # self.se_pcb_chunk: PCBChunk = se_pcb_chunk
+        # self.sw_module: Module3D = sw_module
+        # self.sw_pcb_chunk: PCBChunk = sw_pcb_chunk
+        # self.center_pcb_north: float  # Filled in by MasterBoard.bridges_install()
+        # self.center_pcb_south: float  # Filled in by MasterBoard.bridges_install()
+        # self.union_with_nucleo_module: Module3D = union_with_nucleo_module
+        # self.union_without_nucleo_module: Module3D = union_without_nucleo_module
 
         # Wrap up any requested *tracing*:
         if tracing:

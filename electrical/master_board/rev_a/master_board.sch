@@ -4,12 +4,12 @@ EELAYER END
 $Descr A 11000 8500
 encoding utf-8
 Sheet 1 8
-Title "HR2 Center PCB"
-Date "2020-06-13"
+Title "HR2 Master Board"
+Date "2020-10-03"
 Rev "A"
-Comp ""
-Comment1 ""
-Comment2 ""
+Comp "HomeBrew Robotics Club"
+Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
+Comment2 "MIT License"
 Comment3 ""
 Comment4 ""
 $EndDescr
@@ -829,6 +829,10 @@ Wire Wire Line
 	7800 3300 7800 3400
 Wire Wire Line
 	7800 3000 7800 3200
+Connection ~ 7800 3000
+Wire Wire Line
+	7800 3000 7900 3000
+Connection ~ 7800 3200
 Wire Bus Line
 	3200 5800 3200 6500
 Wire Bus Line
@@ -847,8 +851,4 @@ Wire Bus Line
 	7350 1100 7350 3000
 Wire Bus Line
 	5950 1100 5950 3000
-Connection ~ 7800 3000
-Wire Wire Line
-	7800 3000 7900 3000
-Connection ~ 7800 3200
 $EndSCHEMATC

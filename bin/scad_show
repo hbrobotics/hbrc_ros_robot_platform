@@ -90,45 +90,6 @@ case "$1" in
     "master_board")
 	scad "master_board"
 	;;
-    "master_center_with_nucleo_bare")
-	scad "master_center_with_nucleo_bare"
-	;;
-    "master_center_with_nucleo_board")
-	scad "master_center_with_nucleo_board"
-	;;
-    "master_center_without_nucleo_bare")
-	scad "master_center_without_nucleo_bare"
-	;;
-    "master_center_without_nucleo_board")
-	scad "master_center_without_nucleo_board"
-	;;
-    "master_ne_bare")
-	scad "master_ne_bare"
-	;;
-    "master_ne_board")
-	scad "master_ne_board"
-	;;
-    "master_nw_bare")
-	scad "master_nw_bare"
-	;;
-    "master_nw_board")
-	scad "master_nw_board"
-	;;
-    "master_se_bare")
-	scad "master_se_bare"
-	;;
-    "master_se_board")
-	scad "master_se_board"
-	;;
-    "master_sw_bare")
-	scad "master_sw_bare"
-	;;
-    "master_sw_board")
-	scad "master_sw_board"
-	;;
-    "master_union_board")
-	scad "master_union_board"
-	;;
     "master_without_nucleo_bare")
 	scad "master_without_nucleo_bare"
 	;;
@@ -275,19 +236,6 @@ case "$1" in
 	echo "lidar_adapter_board"
 	echo "master_bare"
 	echo "master_board"
-	echo "master_center_with_nucleo_bare"
-	echo "master_center_with_nucleo_board"
-	echo "master_center_without_nucleo_bare"
-	echo "master_center_without_nucleo_board"
-	echo "master_ne_bare"
-	echo "master_ne_board"
-	echo "master_nw_bare"
-	echo "master_nw_board"
-	echo "master_se_bare"
-	echo "master_se_board"
-	echo "master_sw_bare"
-	echo "master_sw_board"
-	echo "master_union_board"
 	echo "master_without_nucleo_bare"
 	echo "master_without_nucleo_board"
 	echo "mikrobus_l_bare"
