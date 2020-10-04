@@ -761,7 +761,7 @@ $Sheet
 S 7850 1200 750  1850
 U 5F48CAAD
 F0 "Sonars and Servos" 50
-F1 "sonars_leds.sch" 50
+F1 "sonars_servos.sch" 50
 F2 "ECHO2" O L 7850 1900 50 
 F3 "ECHO3" O L 7850 2000 50 
 F4 "ECHO4" O L 7850 2100 50 
