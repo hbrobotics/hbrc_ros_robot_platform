@@ -4,7 +4,7 @@ EELAYER END
 $Descr A 11000 8500
 encoding utf-8
 Sheet 2 9
-Title "HR2 Master Board"
+Title "HR2 Power"
 Date "2020-10-03"
 Rev "A"
 Comp "HomeBrew Robotics Club"

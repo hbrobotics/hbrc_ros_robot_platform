@@ -4,7 +4,7 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 4 9
-Title "HR2 Master Board"
+Title "HR2 Motors and Encoders"
 Date "2020-10-03"
 Rev "A"
 Comp "HomeBrew Robotics Club"

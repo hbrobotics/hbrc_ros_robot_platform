@@ -1134,6 +1134,8 @@ Wire Wire Line
 Text Label 1900 3700 0    50   ~ 0
 GND
 NoConn ~ 1200 2900
+Text Notes 500  3900 0    50   ~ 0
+Note:\nQH is temp. No Connect.
 Wire Bus Line
 	5000 2000 5000 2350
 Wire Bus Line
@@ -1158,6 +1160,4 @@ Wire Bus Line
 	1800 650  1800 1600
 Wire Bus Line
 	1800 1600 1800 7200
-Text Notes 500  3900 0    50   ~ 0
-Note:\nQH is temp. No Connect.
 $EndSCHEMATC

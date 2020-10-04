@@ -4,7 +4,7 @@ EELAYER END
 $Descr A 11000 8500
 encoding utf-8
 Sheet 1 9
-Title "HR2 Master Board"
+Title "HR2 Sonars and Servos"
 Date "2020-10-03"
 Rev "A"
 Comp "HomeBrew Robotics Club"
@@ -760,7 +760,7 @@ P5V
 $Sheet
 S 7850 1200 750  1850
 U 5F48CAAD
-F0 "Sonars_LEDs" 50
+F0 "Sonars and Servos" 50
 F1 "sonars_leds.sch" 50
 F2 "ECHO2" O L 7850 1900 50 
 F3 "ECHO3" O L 7850 2000 50 
@@ -902,6 +902,8 @@ Entry Wire Line
 	5900 4000 6000 3900
 Wire Wire Line
 	5400 4000 5900 4000
+Text Label 5900 4000 2    50   ~ 0
+DIO_NSS
 Wire Bus Line
 	3200 5800 3200 6500
 Wire Bus Line
@@ -920,6 +922,4 @@ Wire Bus Line
 	6000 1000 6000 4000
 Wire Bus Line
 	7300 1000 7300 3600
-Text Label 5900 4000 2    50   ~ 0
-DIO_NSS
 $EndSCHEMATC

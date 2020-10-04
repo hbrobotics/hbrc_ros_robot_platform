@@ -3,8 +3,8 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 8 9
-Title "HR2 Master Board"
+Sheet 6 9
+Title "HR2 ST-Link"
 Date "2020-10-03"
 Rev "A"
 Comp "HomeBrew Robotics Club"
