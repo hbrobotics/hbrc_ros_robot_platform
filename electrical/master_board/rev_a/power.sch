@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 3 12
+Sheet 2 9
 Title "HR2 Master Board"
 Date "2020-10-03"
 Rev "A"
@@ -316,18 +316,18 @@ Connection ~ 7800 6000
 Connection ~ 6150 6000
 Wire Wire Line
 	6150 6000 5300 6000
-Text Label 8600 3200 0    50   ~ 0
+Text Label 8750 3200 2    50   ~ 0
 9V
-Text Label 8600 4300 0    50   ~ 0
+Text Label 8750 4300 2    50   ~ 0
 5V
-Text Label 8550 6000 0    50   ~ 0
+Text Label 8750 6000 2    50   ~ 0
 GND
 Text HLabel 8750 4750 2    50   Output ~ 0
 3.3V
 Wire Wire Line
 	7800 4750 8300 4750
 Connection ~ 7800 4750
-Text Label 8550 4750 0    50   ~ 0
+Text Label 8750 4750 2    50   ~ 0
 3.3V
 Text Label 2600 4300 0    50   ~ 0
 USB5V
@@ -460,4 +460,73 @@ Wire Wire Line
 Connection ~ 2950 3300
 Text Notes 950  3000 0    50   ~ 0
 Note: When the motors are running full bore\n  up a hill, the current drain becomes significant.\n  Use to two USB connectors to maximize current\n  from the USB battery pack.
+Text Notes 3250 1850 0    50   ~ 0
+Note:\n1. The LED's are controlled by a 16-bit shift regester that is\n   filled using an SPI controller.  The 3.3V outputs are fed into\n   FET's that drive the LED's.\n
+$Comp
+L Device:CP1 C?
+U 1 1 5F7AF36B
+P 8200 2700
+AR Path="/5FA4A874/5F7AF36B" Ref="C?"  Part="1" 
+AR Path="/5F52F39E/5F7AF36B" Ref="C13"  Part="1" 
+F 0 "C13" H 8300 2800 50  0000 L CNN
+F 1 "1000µF@16V;D10P5" H 8250 2600 50  0000 L CNN
+F 2 "" H 8200 2700 50  0001 C CNN
+F 3 "~" H 8200 2700 50  0001 C CNN
+	1    8200 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:LM66100;SOT363 U4
+U 1 1 5F7B1947
+P 6800 1900
+F 0 "U4" H 7050 2050 60  0000 C CNN
+F 1 "LM66100;SOT363" H 7150 1250 60  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT363_SC-70-6" H 7000 1950 60  0001 L CNN
+F 3 "1.5A Ideal Diode" H 7000 1750 60  0001 L CNN
+F 4 "1.5A Ideal Diod" H 7000 1650 60  0001 L CNN "Field5"
+	1    6800 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7500 2000 8000 2000
+Wire Wire Line
+	8000 2000 8000 2950
+Connection ~ 8000 3300
+Wire Wire Line
+	7800 3500 7800 2300
+Wire Wire Line
+	7800 1900 7500 1900
+Connection ~ 7800 3500
+Wire Wire Line
+	7500 2400 7600 2400
+Wire Wire Line
+	8200 2400 8200 2550
+Wire Wire Line
+	8200 2850 8200 2950
+Wire Wire Line
+	8200 2950 8000 2950
+Connection ~ 8000 2950
+Wire Wire Line
+	8000 2950 8000 3300
+Text HLabel 8750 2400 2    50   Output ~ 0
+P5V
+Wire Wire Line
+	8200 2400 8750 2400
+Connection ~ 8200 2400
+Wire Wire Line
+	7500 2100 7600 2100
+Wire Wire Line
+	7600 2100 7600 2400
+Connection ~ 7600 2400
+Wire Wire Line
+	7600 2400 8200 2400
+Wire Wire Line
+	7500 2300 7800 2300
+Connection ~ 7800 2300
+Wire Wire Line
+	7800 2300 7800 1900
+Text Notes 5900 1650 0    50   ~ 0
+Note:\n1. The capacitor is a radial through hole electrolytic with a diameter\n    of 10mm and lead pitch of 5mm.  The capacitance is 1000µF at 16V.\n2. The ideal diode should prevent accidental change...\n
+Text Label 8750 2400 2    50   ~ 0
+P5V
 $EndSCHEMATC

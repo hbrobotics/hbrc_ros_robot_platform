@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 7 12
+Sheet 7 9
 Title "HR2 Master Board"
 Date "2020-10-03"
 Rev "A"
@@ -162,7 +162,6 @@ NoConn ~ 2450 5950
 NoConn ~ 2450 6050
 NoConn ~ 2450 6150
 NoConn ~ 2450 6250
-NoConn ~ 4900 1550
 NoConn ~ 5000 4800
 NoConn ~ 5000 4900
 NoConn ~ 5000 5600
@@ -189,10 +188,6 @@ NoConn ~ 2200 3000
 NoConn ~ 2000 850 
 NoConn ~ 2000 950 
 NoConn ~ 2000 1050
-NoConn ~ 4900 2750
-NoConn ~ 4900 2850
-NoConn ~ 4900 4050
-NoConn ~ 4900 4150
 NoConn ~ 7100 4550
 $Comp
 L HR2:NUCLEO-F767ZI;2xF2x35 CN43
@@ -428,21 +423,21 @@ Wire Wire Line
 Connection ~ 9750 3500
 Wire Wire Line
 	9750 3500 9750 3700
-Text HLabel 9950 2500 0    50   Input ~ 0
+Text HLabel 9850 2500 2    50   Input ~ 0
 LDR_TX
-Text HLabel 9950 2700 2    50   Output ~ 0
+Text HLabel 9850 2700 2    50   Output ~ 0
 LDR_SPIN
-Text HLabel 9950 2800 2    50   Output ~ 0
+Text HLabel 9850 2800 2    50   Output ~ 0
 LDR_EN
-Text HLabel 9950 2900 2    50   Output ~ 0
+Text HLabel 9850 2900 2    50   Output ~ 0
 LDR_PWM
-Text HLabel 9950 2600 2    50   Output ~ 0
+Text HLabel 9850 2600 2    50   Output ~ 0
 LDR_RX
-NoConn ~ 9950 2500
-NoConn ~ 9950 2600
-NoConn ~ 9950 2700
-NoConn ~ 9950 2800
-NoConn ~ 9950 2900
+NoConn ~ 9850 2500
+NoConn ~ 9850 2600
+NoConn ~ 9850 2700
+NoConn ~ 9850 2800
+NoConn ~ 9850 2900
 Text HLabel 8500 4800 2    50   Output ~ 0
 SERVO2
 Text HLabel 8500 4700 2    50   Output ~ 0
@@ -472,4 +467,76 @@ Wire Wire Line
 Wire Wire Line
 	8250 5000 8250 5800
 Connection ~ 8400 5000
+NoConn ~ 2200 2900
+NoConn ~ 2200 2800
+NoConn ~ 2450 4750
+NoConn ~ 5100 2950
+NoConn ~ 5100 3050
+NoConn ~ 5100 3150
+NoConn ~ 5100 3250
+NoConn ~ 5100 3350
+NoConn ~ 5100 3450
+NoConn ~ 5100 3550
+NoConn ~ 5100 3750
+NoConn ~ 5100 3850
+NoConn ~ 5100 3950
+NoConn ~ 5100 2750
+NoConn ~ 5100 2850
+NoConn ~ 5100 4050
+NoConn ~ 5100 4150
+NoConn ~ 5100 4250
+NoConn ~ 2450 5650
+NoConn ~ 5000 6100
+NoConn ~ 5000 6300
+NoConn ~ 2200 3800
+NoConn ~ 2200 3900
+NoConn ~ 2200 4000
+NoConn ~ 2200 4200
+NoConn ~ 2200 4300
+NoConn ~ 2200 3500
+NoConn ~ 2200 3600
+NoConn ~ 5000 5900
+NoConn ~ 5000 1250
+NoConn ~ 5000 1350
+NoConn ~ 5000 1550
+NoConn ~ 5000 1650
+NoConn ~ 5000 1950
+NoConn ~ 5000 2050
+NoConn ~ 5000 2150
+NoConn ~ 5000 2250
+NoConn ~ 5100 3650
+NoConn ~ 7900 2200
+NoConn ~ 7900 2500
+NoConn ~ 2450 5550
+NoConn ~ 5000 5300
+NoConn ~ 5000 5500
+NoConn ~ 5000 5800
+Text HLabel 9850 2050 2    50   Output ~ 0
+MISC_MOSI
+Text HLabel 9850 2150 2    50   Output ~ 0
+MISC_SCLK
+Text HLabel 9850 2250 2    50   Output ~ 0
+MISC_NSS
+Wire Wire Line
+	9750 2050 9850 2050
+Wire Wire Line
+	9850 2150 9750 2150
+Wire Wire Line
+	9850 2250 9750 2250
+Wire Wire Line
+	9750 2250 9750 2150
+Connection ~ 9750 2150
+Wire Wire Line
+	9750 2150 9750 2050
+Wire Wire Line
+	9750 2250 9750 3300
+Connection ~ 9750 2250
+Connection ~ 9750 3300
+Text HLabel 9850 1950 2    50   Output ~ 0
+DIO_NSS
+Wire Wire Line
+	9850 1950 9750 1950
+Wire Wire Line
+	9750 1950 9750 2050
+Connection ~ 9750 2050
 $EndSCHEMATC

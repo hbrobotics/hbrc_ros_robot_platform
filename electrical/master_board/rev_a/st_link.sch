@@ -3,10 +3,10 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 8 12
+Sheet 8 9
 Title "HR2 Master Board"
 Date "2020-10-03"
-Rev ""
+Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
 Comment2 "MIT License"
