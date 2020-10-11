@@ -180,6 +180,12 @@ K ~
 F M2 Mounting Hole
 $ENDCMP
 #
+$CMP SN74HCS166;TTSOP16
+D 8-Bit Parallel In Serial Out Shift Register
+K ~
+F 
+$ENDCMP
+#
 $CMP ENCODER;2xM1x3RA
 D HR2 Encoder Connectors
 K ~

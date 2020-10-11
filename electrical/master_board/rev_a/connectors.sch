@@ -414,7 +414,6 @@ Text HLabel 2000 2300 0    50   Output ~ 0
 INT0
 NoConn ~ 4500 4000
 NoConn ~ 3900 6700
-NoConn ~ 3900 6600
 NoConn ~ 3900 6500
 NoConn ~ 3900 6400
 NoConn ~ 3900 6300
@@ -459,12 +458,273 @@ Wire Wire Line
 	4400 4900 5900 4900
 Entry Wire Line
 	5900 4900 6000 5000
+$Comp
+L HR2:SN74HCS166;TTSOP16 U11
+U 1 1 5F845F8F
+P 8300 1900
+F 0 "U11" H 8550 2050 60  0000 C CNN
+F 1 "SN74HCS166;TTSOP16" H 8900 550 60  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 8500 1950 60  0001 L CNN
+F 3 "8-Bit Parallel In Serial Out Shift Register" H 8500 1750 60  0001 L CNN
+F 4 "8-Bit Parallel In Serial Out Shift Register" H 8500 1650 60  0001 L CNN "Field5"
+	1    8300 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:SN74HCS166;TTSOP16 U12
+U 1 1 5F849624
+P 8300 4100
+F 0 "U12" H 8550 4250 60  0000 C CNN
+F 1 "SN74HCS166;TTSOP16" H 8900 2750 60  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 8500 4150 60  0001 L CNN
+F 3 "8-Bit Parallel In Serial Out Shift Register" H 8500 3950 60  0001 L CNN
+F 4 "8-Bit Parallel In Serial Out Shift Register" H 8500 3850 60  0001 L CNN "Field5"
+	1    8300 4100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8100 6600 8100 4900
+Wire Wire Line
+	8100 4900 8300 4900
+Wire Wire Line
+	9500 4700 9700 4700
+Wire Wire Line
+	9700 4700 9700 3450
+Wire Wire Line
+	9700 3450 8100 3450
+Wire Wire Line
+	8100 3450 8100 2700
+Wire Wire Line
+	8100 2700 8300 2700
+Wire Wire Line
+	9500 2500 9700 2500
+Wire Wire Line
+	9700 2500 9700 1100
+Wire Wire Line
+	9700 1100 3800 1100
+Text Label 3800 1100 0    50   ~ 0
+D12_MISO
+Entry Wire Line
+	3800 1100 3700 1200
+Wire Wire Line
+	8300 1900 8000 1900
+Wire Wire Line
+	8000 1900 8000 2000
+Wire Wire Line
+	8000 2600 8300 2600
+Wire Wire Line
+	8300 2500 8000 2500
+Connection ~ 8000 2500
+Wire Wire Line
+	8000 2500 8000 2600
+Wire Wire Line
+	8300 2400 8000 2400
+Connection ~ 8000 2400
+Wire Wire Line
+	8000 2400 8000 2500
+Wire Wire Line
+	8300 2300 8000 2300
+Connection ~ 8000 2300
+Wire Wire Line
+	8000 2300 8000 2400
+Wire Wire Line
+	8300 2200 8000 2200
+Connection ~ 8000 2200
+Wire Wire Line
+	8000 2200 8000 2300
+Wire Wire Line
+	8300 2100 8000 2100
+Connection ~ 8000 2100
+Wire Wire Line
+	8000 2100 8000 2200
+Wire Wire Line
+	8300 2000 8000 2000
+Connection ~ 8000 2000
+Wire Wire Line
+	8000 2000 8000 2100
+Wire Wire Line
+	8300 4100 8000 4100
+Wire Wire Line
+	8000 4100 8000 4200
+Wire Wire Line
+	8000 4800 8300 4800
+Wire Wire Line
+	8300 4700 8000 4700
+Connection ~ 8000 4700
+Wire Wire Line
+	8000 4700 8000 4800
+Wire Wire Line
+	8300 4600 8000 4600
+Connection ~ 8000 4600
+Wire Wire Line
+	8000 4600 8000 4700
+Wire Wire Line
+	8300 4500 8000 4500
+Connection ~ 8000 4500
+Wire Wire Line
+	8000 4500 8000 4600
+Wire Wire Line
+	8300 4400 8000 4400
+Connection ~ 8000 4400
+Wire Wire Line
+	8000 4400 8000 4500
+Wire Wire Line
+	8300 4300 8000 4300
+Connection ~ 8000 4300
+Wire Wire Line
+	8000 4300 8000 4400
+Wire Wire Line
+	8300 4200 8000 4200
+Connection ~ 8000 4200
+Wire Wire Line
+	8000 4200 8000 4300
+Text Label 7500 5500 0    50   ~ 0
+~NRST
+Entry Wire Line
+	7500 5500 7400 5600
+Wire Wire Line
+	7500 5500 7900 5500
+Connection ~ 6000 5800
+Entry Wire Line
+	10200 2400 10300 2500
+Entry Wire Line
+	10200 2600 10300 2700
+Entry Wire Line
+	10200 4600 10300 4700
+Entry Wire Line
+	10200 4800 10300 4900
+Wire Wire Line
+	9500 4600 10200 4600
+Wire Wire Line
+	9500 4800 9700 4800
+Wire Wire Line
+	9500 2600 9700 2600
+Wire Wire Line
+	9500 2400 10200 2400
+Text Label 10200 2600 2    50   ~ 0
+GND
+Text Label 10200 2400 2    50   ~ 0
+3.3V
+Text Label 10200 4800 2    50   ~ 0
+GND
+Text Label 10200 4600 2    50   ~ 0
+3.3V
+Wire Bus Line
+	3700 1650 7400 1650
+Connection ~ 3700 1650
+Wire Wire Line
+	7900 3100 8300 3100
+Wire Bus Line
+	6000 5800 7400 5800
+Connection ~ 7400 5800
+Wire Bus Line
+	7400 5800 10300 5800
+Wire Wire Line
+	7900 3100 7900 5300
+Wire Wire Line
+	8300 5300 7900 5300
+Connection ~ 7900 5300
+Wire Wire Line
+	7900 5300 7900 5500
+Wire Wire Line
+	8000 2600 8000 3650
+Connection ~ 8000 2600
+Connection ~ 8000 4100
+Entry Wire Line
+	7500 5200 7400 5100
+Entry Wire Line
+	7500 5100 7400 5000
+Wire Wire Line
+	8200 5600 9700 5600
+Wire Wire Line
+	9700 5600 9700 4800
+Connection ~ 9700 4800
+Wire Wire Line
+	9700 4800 10200 4800
+Wire Wire Line
+	7500 5200 8300 5200
+Wire Wire Line
+	7500 5100 8300 5100
+Wire Wire Line
+	8300 5000 8200 5000
+Wire Wire Line
+	8200 5000 8200 5600
+Wire Wire Line
+	8300 2800 8200 2800
+Wire Wire Line
+	8200 2800 8200 3350
+Wire Wire Line
+	8200 3350 9700 3350
+Wire Wire Line
+	9700 3350 9700 2600
+Connection ~ 9700 2600
+Wire Wire Line
+	9700 2600 10200 2600
+Wire Wire Line
+	3900 6600 8100 6600
+Wire Wire Line
+	8300 3000 7500 3000
+Wire Wire Line
+	7500 2900 8300 2900
+Entry Wire Line
+	7400 2800 7500 2900
+Entry Wire Line
+	7400 2900 7500 3000
+Text Label 7500 2900 0    50   ~ 0
+D13_SCK
+Text Label 7500 5100 0    50   ~ 0
+D13_SCK
+Text Label 7500 3000 0    50   ~ 0
+D10_NSS
+Text Label 7500 5200 0    50   ~ 0
+D10_NSS
+Text Label 5500 6600 0    50   ~ 0
+SER_OUT_TO_IN1
+Text Label 8550 3450 0    50   ~ 0
+SER_IN1_TO_IN2
+Wire Wire Line
+	8000 3650 10200 3650
+Entry Wire Line
+	10200 3650 10300 3750
+Text Label 10200 3650 2    50   ~ 0
+GND
+Text Notes 8050 3600 0    50   ~ 0
+Temporarily\nGround Inputs
+Text Notes 8500 1650 0    50   ~ 0
+8-Bit Parallel to\nSerial Shift Register
+Text Notes 8550 3850 0    50   ~ 0
+8-Bit Parallel to\nSerial Shift Register
+Connection ~ 8000 3650
+Wire Wire Line
+	8000 3650 8000 4100
+Wire Bus Line
+	7400 5500 7400 5800
 Wire Bus Line
 	4600 5800 4600 7300
 Wire Bus Line
 	2400 7300 2400 7800
 Wire Bus Line
+	10300 2400 10300 5800
+Wire Bus Line
+	7400 1650 7400 5200
+Wire Bus Line
+	3700 700  3700 1650
+Wire Bus Line
 	6000 2300 6000 5800
 Wire Bus Line
-	3700 700  3700 4400
+	3700 1650 3700 4400
+Text Notes 5450 3700 0    50   ~ 0
+MikroBus\nClick\nConnector
+Text Notes 5450 2100 0    50   ~ 0
+MikroBus\nClick\nConnector
+Text Notes 5450 5100 0    50   ~ 0
+Lidar\nConnector
+Text Notes 2400 5950 0    50   ~ 0
+8-Bit Parallel\nto Serial\nShift Register
+Text Notes 2900 7250 0    50   ~ 0
+Power and Reset Bus
+Text Notes 6350 5750 0    50   ~ 0
+Power and Reset Bus
+Text Notes 5200 1600 0    50   ~ 0
+Arduino Connector Pins Bus
 $EndSCHEMATC

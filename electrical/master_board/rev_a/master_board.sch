@@ -1032,6 +1032,10 @@ F51 "LED_NSS" O R 5400 1200 50
 $EndSheet
 Wire Wire Line
 	8900 3300 8600 3300
+Entry Wire Line
+	8900 3300 9000 3400
+Text Label 8900 3300 2    50   ~ 0
+~NRST
 Wire Bus Line
 	7100 3700 7100 4100
 Wire Bus Line
@@ -1072,8 +1076,4 @@ Wire Bus Line
 	7100 4700 7100 6000
 Wire Bus Line
 	6100 4700 6100 6000
-Entry Wire Line
-	8900 3300 9000 3400
-Text Label 8900 3300 2    50   ~ 0
-~NRST
 $EndSCHEMATC
