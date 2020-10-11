@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 7 9
+Sheet 8 9
 Title "HR2 Master Board"
 Date "2020-10-03"
 Rev "A"
@@ -364,80 +364,42 @@ Text HLabel 9850 3400 2    50   Output ~ 0
 LED_SCLK
 Text HLabel 9850 3500 2    50   Output ~ 0
 LED_NSS
-Text HLabel 9850 3700 2    50   Output ~ 0
-TRIG1
-Text HLabel 9650 3700 0    50   Input ~ 0
+Text HLabel 9850 3700 2    50   Input ~ 0
 ECHO1
-Text HLabel 9850 3900 2    50   Output ~ 0
-TRIG2
-Text HLabel 9650 3900 0    50   Input ~ 0
+Text HLabel 9850 3800 2    50   Input ~ 0
 ECHO2
-Text HLabel 9850 4100 2    50   Output ~ 0
-TRIG3
-Text HLabel 9650 4100 0    50   Input ~ 0
+Text HLabel 9850 3900 2    50   Input ~ 0
 ECHO3
-Text HLabel 9850 4300 2    50   Output ~ 0
-TRIG4
-Text HLabel 9650 4300 0    50   Input ~ 0
+Text HLabel 9850 4000 2    50   Input ~ 0
 ECHO4
-Text HLabel 9850 4500 2    50   Output ~ 0
-TRIG5
-Text HLabel 9650 4500 0    50   Input ~ 0
+Text HLabel 9850 4100 2    50   Input ~ 0
 ECHO5
-Text HLabel 9850 4700 2    50   Output ~ 0
-TRIG6
-Text HLabel 9650 4700 0    50   Input ~ 0
+Text HLabel 9850 4200 2    50   Input ~ 0
 ECHO6
-Text HLabel 9850 4900 2    50   Output ~ 0
-TRIG7
-Text HLabel 9650 4900 0    50   Input ~ 0
+Text HLabel 9850 4300 2    50   Input ~ 0
 ECHO7
 Wire Wire Line
-	9650 3700 9750 3700
+	9850 3700 9650 3700
 Wire Wire Line
-	9850 3900 9650 3900
+	9650 3300 9850 3300
 Wire Wire Line
-	9650 4100 9850 4100
+	9850 3400 9650 3400
 Wire Wire Line
-	9650 4300 9850 4300
+	9650 3300 9650 3400
+Connection ~ 9650 3400
 Wire Wire Line
-	9650 4500 9850 4500
+	9650 3400 9650 3500
 Wire Wire Line
-	9650 4700 9850 4700
+	9850 3500 9650 3500
+Connection ~ 9650 3500
 Wire Wire Line
-	9650 4900 9850 4900
-Wire Wire Line
-	9750 3300 9850 3300
-Connection ~ 9750 3700
-Wire Wire Line
-	9750 3700 9850 3700
-Wire Wire Line
-	9850 3400 9750 3400
-Wire Wire Line
-	9750 3300 9750 3400
-Connection ~ 9750 3400
-Wire Wire Line
-	9750 3400 9750 3500
-Wire Wire Line
-	9850 3500 9750 3500
-Connection ~ 9750 3500
-Wire Wire Line
-	9750 3500 9750 3700
-Text HLabel 9850 2500 2    50   Input ~ 0
+	9650 3500 9650 3700
+Text HLabel 9850 2900 2    50   Input ~ 0
 LDR_TX
-Text HLabel 9850 2700 2    50   Output ~ 0
-LDR_SPIN
-Text HLabel 9850 2800 2    50   Output ~ 0
-LDR_EN
-Text HLabel 9850 2900 2    50   Output ~ 0
+Text HLabel 9850 3100 2    50   Output ~ 0
 LDR_PWM
-Text HLabel 9850 2600 2    50   Output ~ 0
+Text HLabel 9850 3000 2    50   Output ~ 0
 LDR_RX
-NoConn ~ 9850 2500
-NoConn ~ 9850 2600
-NoConn ~ 9850 2700
-NoConn ~ 9850 2800
-NoConn ~ 9850 2900
 Text HLabel 8500 4800 2    50   Output ~ 0
 SERVO2
 Text HLabel 8500 4700 2    50   Output ~ 0
@@ -496,14 +458,14 @@ NoConn ~ 2200 4300
 NoConn ~ 2200 3500
 NoConn ~ 2200 3600
 NoConn ~ 5000 5900
-NoConn ~ 5000 1250
-NoConn ~ 5000 1350
-NoConn ~ 5000 1550
-NoConn ~ 5000 1650
-NoConn ~ 5000 1950
-NoConn ~ 5000 2050
-NoConn ~ 5000 2150
-NoConn ~ 5000 2250
+NoConn ~ 5100 1250
+NoConn ~ 5100 1350
+NoConn ~ 5100 1550
+NoConn ~ 5100 1650
+NoConn ~ 5100 1950
+NoConn ~ 5100 2050
+NoConn ~ 5100 2150
+NoConn ~ 5100 2250
 NoConn ~ 5100 3650
 NoConn ~ 7900 2200
 NoConn ~ 7900 2500
@@ -511,32 +473,110 @@ NoConn ~ 2450 5550
 NoConn ~ 5000 5300
 NoConn ~ 5000 5500
 NoConn ~ 5000 5800
-Text HLabel 9850 2050 2    50   Output ~ 0
+Text HLabel 9850 2500 2    50   Output ~ 0
 MISC_MOSI
-Text HLabel 9850 2150 2    50   Output ~ 0
-MISC_SCLK
-Text HLabel 9850 2250 2    50   Output ~ 0
+Text HLabel 9850 2600 2    50   Output ~ 0
+MISC_SCK
+Text HLabel 9850 2700 2    50   Output ~ 0
 MISC_NSS
 Wire Wire Line
-	9750 2050 9850 2050
+	9650 2500 9850 2500
 Wire Wire Line
-	9850 2150 9750 2150
+	9850 2600 9650 2600
 Wire Wire Line
-	9850 2250 9750 2250
+	9850 2700 9650 2700
 Wire Wire Line
-	9750 2250 9750 2150
-Connection ~ 9750 2150
+	9650 2700 9650 2600
+Connection ~ 9650 2600
 Wire Wire Line
-	9750 2150 9750 2050
+	9650 2600 9650 2500
 Wire Wire Line
-	9750 2250 9750 3300
-Connection ~ 9750 2250
-Connection ~ 9750 3300
-Text HLabel 9850 1950 2    50   Output ~ 0
+	9650 2700 9650 3000
+Connection ~ 9650 2700
+Connection ~ 9650 3300
+Text HLabel 9850 2400 2    50   Output ~ 0
 DIO_NSS
 Wire Wire Line
-	9850 1950 9750 1950
+	9850 2400 9650 2400
 Wire Wire Line
-	9750 1950 9750 2050
-Connection ~ 9750 2050
+	9650 2400 9650 2500
+Connection ~ 9650 2500
+Wire Wire Line
+	9650 3100 9850 3100
+Wire Wire Line
+	9850 3000 9650 3000
+Wire Wire Line
+	9650 3000 9650 3100
+NoConn ~ 9850 2900
+Connection ~ 9650 3000
+Connection ~ 9650 3100
+Wire Wire Line
+	9650 3100 9650 3300
+Text HLabel 9850 900  2    50   Input ~ 0
+A0
+Text HLabel 9850 1000 2    50   Input ~ 0
+A1
+Text HLabel 9850 1100 2    50   BiDi ~ 0
+A4_SDA
+Text HLabel 9850 1200 2    50   BiDi ~ 0
+A5_SCL
+Text HLabel 9850 1300 2    50   Output ~ 0
+D0_RX
+Text HLabel 9850 1400 2    50   Input ~ 0
+D1_TX
+Text HLabel 9850 1500 2    50   Output ~ 0
+D10_NSS
+Text HLabel 9850 1600 2    50   Output ~ 0
+D11_PWM_MOSI
+Text HLabel 9850 1700 2    50   Input ~ 0
+D12_MISO
+Text HLabel 9850 1800 2    50   Output ~ 0
+D13_SCK
+Text HLabel 9850 1900 2    50   Output ~ 0
+NRST
+Text HLabel 9850 2000 2    50   Input ~ 0
+INT0
+Text HLabel 9850 2100 2    50   Input ~ 0
+INT1
+NoConn ~ 9850 2100
+NoConn ~ 9850 900 
+NoConn ~ 9850 1000
+Wire Wire Line
+	9650 1300 9850 1300
+Connection ~ 9650 2400
+Wire Wire Line
+	9850 1600 9650 1600
+Connection ~ 9650 1600
+Wire Wire Line
+	9650 1600 9650 1500
+Wire Wire Line
+	9850 1500 9650 1500
+Connection ~ 9650 1500
+Wire Wire Line
+	9650 1500 9650 1300
+Wire Wire Line
+	9850 1800 9650 1800
+Connection ~ 9650 1800
+Wire Wire Line
+	9650 1800 9650 1600
+Wire Wire Line
+	9850 1100 9750 1100
+Wire Wire Line
+	9750 1100 9750 1200
+Wire Wire Line
+	9750 1200 9850 1200
+Wire Wire Line
+	9650 1800 9650 2400
+Wire Wire Line
+	9850 2000 9750 2000
+Wire Wire Line
+	9750 2000 9750 1900
+Wire Wire Line
+	9750 1900 9850 1900
+Wire Wire Line
+	9850 1700 9750 1700
+Wire Wire Line
+	9750 1700 9750 1400
+Wire Wire Line
+	9750 1400 9850 1400
 $EndSCHEMATC

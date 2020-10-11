@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 9 9
+Sheet 6 9
 Title "HR2 Servos and Sonars"
 Date "2020-10-03"
 Rev "A"
@@ -998,7 +998,7 @@ GND
 Text HLabel 1000 1400 0    50   Input ~ 0
 MISC_MOSI
 Text HLabel 1000 4000 0    50   Output ~ 0
-SONAR_SER
+SER_OUT
 Text HLabel 1000 1200 0    50   Input ~ 0
 MISC_SCK
 Text Label 1700 2800 2    50   ~ 0
@@ -1011,7 +1011,6 @@ Wire Wire Line
 	1600 2900 1600 4000
 Wire Wire Line
 	1600 4000 1000 4000
-NoConn ~ 1200 2700
 Text Label 1700 2600 2    50   ~ 0
 3.3V
 Wire Wire Line
@@ -1033,7 +1032,7 @@ Wire Wire Line
 Wire Wire Line
 	1200 2800 1700 2800
 Text HLabel 1000 1300 0    50   Input ~ 0
-DIO_NSS
+MISC_NSS
 Wire Wire Line
 	1200 2400 1400 2400
 Wire Wire Line
@@ -1133,9 +1132,9 @@ Wire Wire Line
 	1900 3700 2600 3700
 Text Label 1900 3700 0    50   ~ 0
 GND
-NoConn ~ 1200 2900
 Text Notes 500  3900 0    50   ~ 0
 Note:\nQH is temp. No Connect.
+NoConn ~ 1200 2700
 Wire Bus Line
 	5000 2000 5000 2350
 Wire Bus Line
