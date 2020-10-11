@@ -41,36 +41,36 @@ F 4 "MikroBus Mate Medium" H 4700 1650 60  0001 L CNN "Field5"
 	1    4500 1900
 	1    0    0    -1  
 $EndComp
-Text HLabel 5600 700  0    50   Input ~ 0
+Text HLabel 2000 7500 0    50   Input ~ 0
 5V
-Text HLabel 5600 800  0    50   Input ~ 0
+Text HLabel 2000 7600 0    50   Input ~ 0
 3.3V
-Text HLabel 5600 900  0    50   Input ~ 0
+Text HLabel 2000 7700 0    50   Input ~ 0
 GND
-Text Label 5900 700  2    50   ~ 0
+Text Label 2300 7500 2    50   ~ 0
 5V
-Text Label 5900 800  2    50   ~ 0
+Text Label 2300 7600 2    50   ~ 0
 3.3V
-Text Label 5900 900  2    50   ~ 0
+Text Label 2300 7700 2    50   ~ 0
 GND
 Wire Wire Line
-	5900 700  5600 700 
+	2300 7500 2000 7500
 Wire Wire Line
-	5900 800  5600 800 
+	2300 7600 2000 7600
 Wire Wire Line
-	5900 900  5600 900 
+	2300 7700 2000 7700
 Entry Wire Line
-	5900 900  6000 1000
+	2300 7700 2400 7600
 Entry Wire Line
-	5900 800  6000 900 
+	2300 7600 2400 7500
 Entry Wire Line
-	5900 700  6000 800 
+	2300 7500 2400 7400
 Text Label 5900 3900 2    50   ~ 0
 5V
 Text Label 5900 4200 2    50   ~ 0
 GND
 Entry Wire Line
-	5900 4200 6000 4100
+	6000 4300 5900 4200
 Wire Wire Line
 	5900 3900 5600 3900
 Wire Wire Line
@@ -80,99 +80,74 @@ Text Label 5900 2300 2    50   ~ 0
 Text Label 5900 4100 2    50   ~ 0
 GND
 Entry Wire Line
-	5900 4100 6000 4000
+	6000 4200 5900 4100
 Entry Wire Line
-	5900 2300 6000 2200
+	5900 2300 6000 2400
 Wire Wire Line
 	5900 4100 5600 4100
 Wire Wire Line
 	5900 2300 5600 2300
-Text HLabel 2900 5500 0    50   Input ~ 0
+Text HLabel 2000 5500 0    50   Input ~ 0
 LDR_PWM
-Text HLabel 2900 7600 0    50   Input ~ 0
+Text HLabel 2000 6100 0    50   Input ~ 0
 SER_IN
-Text HLabel 2900 7800 0    50   Input ~ 0
+Text HLabel 2000 6200 0    50   Input ~ 0
 MISC_SCK
-Text HLabel 2900 7700 0    50   Input ~ 0
+Text HLabel 2000 6300 0    50   Input ~ 0
 MISC_NSS
 $Comp
 L HR2:SN74HCS595;TTSOP16 U10
 U 1 1 5FD710B8
-P 3200 5800
-F 0 "U10" H 3450 5950 50  0000 C CNN
-F 1 "SN74HCS595;TTSOP16" H 3550 4150 50  0000 C CNN
-F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 3400 5850 60  0001 L CNN
-F 3 "Tri-state 8-Bit Shift Register" H 3400 5650 60  0001 L CNN
-F 4 "Tri-State 8-Bit Shift Register" H 3400 5550 60  0001 L CNN "Field5"
-	1    3200 5800
+P 2800 5800
+F 0 "U10" H 3050 5950 50  0000 C CNN
+F 1 "SN74HCS595;TTSOP16" H 3300 4650 50  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 3000 5850 60  0001 L CNN
+F 3 "Tri-state 8-Bit Shift Register" H 3000 5650 60  0001 L CNN
+F 4 "Tri-State 8-Bit Shift Register" H 3000 5550 60  0001 L CNN "Field5"
+	1    2800 5800
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2900 7600 4100 7600
-Wire Wire Line
-	4100 7600 4100 7100
-Wire Wire Line
-	4100 7100 4000 7100
+	2000 6100 2800 6100
 Entry Wire Line
-	4700 7300 4800 7200
+	4600 5900 4500 5800
 Entry Wire Line
-	4700 6500 4800 6400
-Entry Wire Line
-	4700 7000 4800 6900
-Entry Wire Line
-	4700 6700 4800 6600
-NoConn ~ 4000 6000
-NoConn ~ 4000 6100
-NoConn ~ 4000 6400
-NoConn ~ 4000 6600
-NoConn ~ 4000 7200
-Text Label 4700 7300 2    50   ~ 0
+	4600 6900 4500 6800
+Text Label 4500 5800 2    50   ~ 0
 3.3V
-Text Label 4700 6700 2    50   ~ 0
-3.3V
-Text Label 4700 6500 2    50   ~ 0
-GND
-Text Label 4700 7000 2    50   ~ 0
+Text Label 4500 6800 2    50   ~ 0
 GND
 Wire Wire Line
-	4000 6800 4300 6800
+	2800 6200 2000 6200
 Wire Wire Line
-	4300 6800 4300 7800
+	2000 6300 2800 6300
 Wire Wire Line
-	4300 7800 2900 7800
-Wire Wire Line
-	2900 7700 4200 7700
-Wire Wire Line
-	4200 7700 4200 6900
-Wire Wire Line
-	4200 6900 4000 6900
-Wire Wire Line
-	2900 5500 4600 5500
+	2000 5500 4600 5500
 Text Label 5900 5300 2    50   ~ 0
 GND
 Entry Wire Line
-	6000 5200 5900 5300
+	5900 5300 6000 5400
 Entry Wire Line
-	6000 5300 5900 5400
+	5900 5400 6000 5500
 Wire Wire Line
-	2900 5200 4600 5200
+	2000 5200 4600 5200
 Wire Wire Line
-	4600 5100 2900 5100
-Text Label 3200 5500 0    50   ~ 0
+	4600 5100 2000 5100
+Text Label 2000 5500 0    50   ~ 0
 LDR_PWM
 Text Label 4200 5400 0    50   ~ 0
 LDR_EN
 Text Label 4200 5300 0    50   ~ 0
 LDR_SPIN
-Text Label 3200 5200 0    50   ~ 0
+Text Label 2000 5200 0    50   ~ 0
 LDR_RX
-Text Label 3200 5100 0    50   ~ 0
+Text Label 2000 5100 0    50   ~ 0
 LDR_TX
 Text Label 5900 5400 2    50   ~ 0
 5V
-Text HLabel 2900 5200 0    50   Input ~ 0
+Text HLabel 2000 5200 0    50   Input ~ 0
 LDR_RX
-Text HLabel 2900 5100 0    50   Output ~ 0
+Text HLabel 2000 5100 0    50   Output ~ 0
 LDR_TX
 $Comp
 L HR2:LIDAR_ADAPTER;2xF1x2 CN?
@@ -191,41 +166,41 @@ $EndComp
 Text Label 5900 5200 2    50   ~ 0
 3.3V
 Entry Wire Line
-	5900 5200 6000 5100
+	6000 5300 5900 5200
 Wire Wire Line
 	5600 5200 5900 5200
 Wire Wire Line
 	5600 5300 5900 5300
 Wire Wire Line
 	5600 5400 5900 5400
-Text Label 2900 7600 0    50   ~ 0
+Text Label 2000 6100 0    50   ~ 0
 SER_IN
-Text Label 2900 7700 0    50   ~ 0
+Text Label 2000 6300 0    50   ~ 0
 MISC_NSS
-Text Label 2900 7800 0    50   ~ 0
+Text Label 2000 6200 0    50   ~ 0
 MISC_SCK
 Wire Wire Line
-	4000 5800 4100 5800
+	3900 5900 4100 5900
 Wire Wire Line
-	4100 5800 4100 5300
+	4100 5900 4100 5300
 Wire Wire Line
 	4100 5300 4600 5300
 Wire Wire Line
-	4000 5900 4200 5900
+	3900 6000 4200 6000
 Wire Wire Line
-	4200 5900 4200 5400
+	4200 6000 4200 5400
 Wire Wire Line
 	4200 5400 4600 5400
 Wire Wire Line
 	5600 2500 5900 2500
 Entry Wire Line
-	5900 2500 6000 2400
+	5900 2500 6000 2600
 Text Label 5900 2500 2    50   ~ 0
 GND
 Wire Wire Line
 	5600 2600 5900 2600
 Entry Wire Line
-	5900 2600 6000 2500
+	5900 2600 6000 2700
 Text Label 5900 2600 2    50   ~ 0
 GND
 Wire Wire Line
@@ -233,46 +208,42 @@ Wire Wire Line
 Text Label 5900 4000 2    50   ~ 0
 3.3V
 Entry Wire Line
-	6000 3800 5900 3900
+	5900 3900 6000 4000
 Entry Wire Line
-	5900 4000 6000 3900
+	6000 4100 5900 4000
 Text Label 5900 2400 2    50   ~ 0
 3.3V
 Entry Wire Line
-	5900 2400 6000 2300
+	5900 2400 6000 2500
 Wire Wire Line
 	5600 2400 5900 2400
 Wire Bus Line
-	4800 6000 6000 6000
+	4600 5800 6000 5800
 Wire Wire Line
-	4000 6500 4700 6500
+	3900 6800 4000 6800
 Wire Wire Line
-	4000 6700 4700 6700
-Wire Wire Line
-	4000 7000 4700 7000
-Wire Wire Line
-	4000 7300 4700 7300
-Text HLabel 2900 3000 0    50   UnSpc ~ 0
+	3900 5800 4500 5800
+Text HLabel 2000 3000 0    50   UnSpc ~ 0
 A0
-Text HLabel 2900 4600 0    50   UnSpc ~ 0
+Text HLabel 2000 4600 0    50   UnSpc ~ 0
 A1
-Text HLabel 2900 1500 0    50   Input ~ 0
-NRST
-Text HLabel 2900 1400 0    50   BiDi ~ 0
+Text HLabel 2000 7800 0    50   Input ~ 0
+~NRST
+Text HLabel 2000 1400 0    50   BiDi ~ 0
 A5_SCL
-Text HLabel 2900 1300 0    50   BiDi ~ 0
+Text HLabel 2000 1300 0    50   BiDi ~ 0
 A4_SDA
-Text HLabel 2900 1200 0    50   Input ~ 0
+Text HLabel 2000 1200 0    50   Input ~ 0
 D13_SCK
-Text HLabel 2900 1100 0    50   BiDi ~ 0
+Text HLabel 2000 1100 0    50   BiDi ~ 0
 D12_MISO
-Text HLabel 2900 1000 0    50   Input ~ 0
+Text HLabel 2000 1000 0    50   Input ~ 0
 D11_PWM_MOSI
-Text HLabel 2900 900  0    50   Input ~ 0
+Text HLabel 2000 900  0    50   Input ~ 0
 D10_NSS
-Text HLabel 2900 800  0    50   BiDi ~ 0
+Text HLabel 2000 800  0    50   BiDi ~ 0
 D1_TX
-Text HLabel 2900 700  0    50   Input ~ 0
+Text HLabel 2000 700  0    50   Input ~ 0
 D0_RX
 Text Label 3600 1000 2    50   ~ 0
 D11_PWM_MOSI
@@ -285,8 +256,6 @@ Entry Wire Line
 	3700 2600 3800 2700
 Entry Wire Line
 	3700 2700 3800 2800
-Entry Wire Line
-	3700 2800 3800 2900
 Entry Wire Line
 	3700 1800 3800 1900
 Entry Wire Line
@@ -302,7 +271,7 @@ Entry Wire Line
 Entry Wire Line
 	3600 1400 3700 1500
 Entry Wire Line
-	3600 1500 3700 1600
+	2300 7800 2400 7700
 Entry Wire Line
 	3600 700  3700 800 
 Entry Wire Line
@@ -327,8 +296,8 @@ Text Label 3600 1300 2    50   ~ 0
 A4_SDA
 Text Label 3600 1400 2    50   ~ 0
 A5_SCL
-Text Label 3600 1500 2    50   ~ 0
-NRST
+Text Label 2300 7800 2    50   ~ 0
+~NRST
 Text Label 3800 2500 0    50   ~ 0
 D11_PWM_MOSI
 Text Label 3800 2800 0    50   ~ 0
@@ -345,26 +314,24 @@ Text Label 3800 1900 0    50   ~ 0
 A4_SDA
 Text Label 3800 2000 0    50   ~ 0
 A5_SCL
-Text Label 3800 2900 0    50   ~ 0
-NRST
 Wire Wire Line
-	2900 700  3600 700 
+	2000 700  3600 700 
 Wire Wire Line
-	3600 800  2900 800 
+	3600 800  2000 800 
 Wire Wire Line
-	2900 900  3600 900 
+	2000 900  3600 900 
 Wire Wire Line
-	3600 1000 2900 1000
+	3600 1000 2000 1000
 Wire Wire Line
-	2900 1100 3600 1100
+	2000 1100 3600 1100
 Wire Wire Line
-	3600 1200 2900 1200
+	3600 1200 2000 1200
 Wire Wire Line
-	2900 1300 3600 1300
+	2000 1300 3600 1300
 Wire Wire Line
-	3600 1400 2900 1400
+	3600 1400 2000 1400
 Wire Wire Line
-	2900 1500 3600 1500
+	2000 7800 2300 7800
 Wire Wire Line
 	4500 1900 3800 1900
 Wire Wire Line
@@ -382,9 +349,9 @@ Wire Wire Line
 Wire Wire Line
 	3800 2800 4500 2800
 Wire Wire Line
-	4500 2900 3800 2900
+	4500 2900 4400 2900
 Wire Wire Line
-	4500 2300 2900 2300
+	4500 2300 2000 2300
 Entry Wire Line
 	3700 4000 3800 4100
 Entry Wire Line
@@ -393,8 +360,6 @@ Entry Wire Line
 	3700 4200 3800 4300
 Entry Wire Line
 	3700 4300 3800 4400
-Entry Wire Line
-	3700 4400 3800 4500
 Entry Wire Line
 	3700 3400 3800 3500
 Entry Wire Line
@@ -419,8 +384,8 @@ Text Label 3800 3500 0    50   ~ 0
 A4_SDA
 Text Label 3800 3600 0    50   ~ 0
 A5_SCL
-Text Label 3800 4500 0    50   ~ 0
-NRST
+Text Label 5900 4900 2    50   ~ 0
+~NRST
 Wire Wire Line
 	4500 3500 3800 3500
 Wire Wire Line
@@ -438,24 +403,68 @@ Wire Wire Line
 Wire Wire Line
 	3800 4400 4500 4400
 Wire Wire Line
-	4500 4500 3800 4500
+	4500 3900 2000 3900
 Wire Wire Line
-	4500 3900 2900 3900
+	2000 3000 4500 3000
 Wire Wire Line
-	2900 3000 4500 3000
-Wire Wire Line
-	2900 4600 4500 4600
-Text HLabel 2900 3900 0    50   Output ~ 0
+	2000 4600 4500 4600
+Text HLabel 2000 3900 0    50   Output ~ 0
 INT1
-Text HLabel 2900 2300 0    50   Output ~ 0
+Text HLabel 2000 2300 0    50   Output ~ 0
 INT0
 NoConn ~ 4500 4000
-NoConn ~ 4000 6200
-NoConn ~ 4000 6300
+NoConn ~ 3900 6700
+NoConn ~ 3900 6600
+NoConn ~ 3900 6500
+NoConn ~ 3900 6400
+NoConn ~ 3900 6300
+NoConn ~ 3900 6200
+NoConn ~ 3900 6100
+Wire Wire Line
+	2800 6500 2700 6500
+Wire Wire Line
+	2700 6500 2700 7000
+Wire Wire Line
+	2700 7000 4000 7000
+Wire Wire Line
+	4000 7000 4000 6800
+Connection ~ 4000 6800
+Wire Wire Line
+	4000 6800 4500 6800
+Entry Wire Line
+	4600 7200 4500 7100
+Wire Wire Line
+	2800 6400 2600 6400
+Wire Wire Line
+	2600 6400 2600 7100
+Wire Wire Line
+	2600 7100 4500 7100
+Text Label 4500 7100 2    50   ~ 0
+~NRST
 Wire Bus Line
-	4800 6000 4800 7300
+	2400 7300 4600 7300
+Wire Wire Line
+	4400 2900 4400 3300
+Wire Wire Line
+	4400 3300 5900 3300
+Entry Wire Line
+	5900 3300 6000 3400
+Text Label 5900 3300 2    50   ~ 0
+~NRST
+Wire Wire Line
+	4500 4500 4400 4500
+Wire Wire Line
+	4400 4500 4400 4900
+Wire Wire Line
+	4400 4900 5900 4900
+Entry Wire Line
+	5900 4900 6000 5000
 Wire Bus Line
-	6000 700  6000 6000
+	4600 5800 4600 7300
 Wire Bus Line
-	3700 700  3700 4500
+	2400 7300 2400 7800
+Wire Bus Line
+	6000 2300 6000 5800
+Wire Bus Line
+	3700 700  3700 4400
 $EndSCHEMATC

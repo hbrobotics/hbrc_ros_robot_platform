@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 8 9
+Sheet 5 9
 Title "HR2 LED's"
 Date "2020-10-03"
 Rev "A"
@@ -13,11 +13,11 @@ Comment2 "MIT License"
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Notes 650  1950 0    50   ~ 0
+Text Notes 1050 1950 0    50   ~ 0
 Note:\n1. The LED's are controlled by a 16-bit shift regester that is\n   filled using an SPI controller.  The 3.3V outputs are fed into\n   FET's that drive the LED's.\n
 Connection ~ 4500 6400
 Wire Wire Line
-	4500 6400 2800 6400
+	4500 6400 3100 6400
 Wire Wire Line
 	9300 4200 10100 4200
 Connection ~ 9300 4200
@@ -439,7 +439,7 @@ Wire Wire Line
 Wire Wire Line
 	4900 6100 4900 5800
 Wire Wire Line
-	2100 5700 5700 5700
+	3000 5700 5700 5700
 Wire Wire Line
 	5700 5700 5700 6100
 Wire Wire Line
@@ -449,9 +449,9 @@ Wire Wire Line
 Wire Wire Line
 	6500 6100 6500 5600
 Wire Wire Line
-	6500 5600 2100 5600
+	6500 5600 3000 5600
 Wire Wire Line
-	2100 5500 7300 5500
+	3000 5500 7300 5500
 Wire Wire Line
 	7300 5500 7300 6100
 Wire Wire Line
@@ -461,7 +461,7 @@ Wire Wire Line
 Wire Wire Line
 	8100 6100 8100 5400
 Wire Wire Line
-	8100 5400 2100 5400
+	8100 5400 3000 5400
 Wire Wire Line
 	8900 5300 8900 6100
 Wire Wire Line
@@ -913,131 +913,52 @@ Wire Wire Line
 	9800 3200 9700 3200
 Wire Wire Line
 	9700 3200 9700 2300
-$Comp
-L HR2:SN74HCS595;TTSOP16 U?
-U 1 1 5FB58AA4
-P 1300 2400
-AR Path="/5F48CAAD/5FB58AA4" Ref="U?"  Part="1" 
-AR Path="/5FA4A874/5FB58AA4" Ref="U5"  Part="1" 
-F 0 "U5" H 1550 2550 50  0000 C CNN
-F 1 "SN74HCS595;TTSOP16" H 1700 750 50  0000 C CNN
-F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 1500 2450 60  0001 L CNN
-F 3 "Tri-state 8-Bit Shift Register" H 1500 2250 60  0001 L CNN
-F 4 "Tri-State 8-Bit Shift Register" H 1500 2150 60  0001 L CNN "Field5"
-	1    1300 2400
-	1    0    0    -1  
-$EndComp
-NoConn ~ 2100 3200
-Text HLabel 1200 7100 0    50   Input ~ 0
+Text HLabel 1000 5400 0    50   Input ~ 0
 LED_MOSI
-Text HLabel 1200 7300 0    50   Input ~ 0
+Text HLabel 1000 5500 0    50   Input ~ 0
 LED_SCLK
-Text HLabel 1200 7200 0    50   Input ~ 0
-LED_NSS
 $Comp
 L HR2:SN74HCS595;TTSOP16 U?
 U 1 1 5FB58AAF
-P 1300 5300
+P 1900 5100
 AR Path="/5F48CAAD/5FB58AAF" Ref="U?"  Part="1" 
 AR Path="/5FA4A874/5FB58AAF" Ref="U8"  Part="1" 
-F 0 "U8" H 1550 5450 50  0000 C CNN
-F 1 "SN74HCS595;TTSOP16" H 1700 3650 50  0000 C CNN
-F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 1500 5350 60  0001 L CNN
-F 3 "Tri-state 8-Bit Shift Register" H 1500 5150 60  0001 L CNN
-F 4 "Tri-State 8-Bit Shift Register" H 1500 5050 60  0001 L CNN "Field5"
-	1    1300 5300
+F 0 "U8" H 2150 5250 50  0000 C CNN
+F 1 "SN74HCS595;TTSOP16" H 2300 3450 50  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2100 5150 60  0001 L CNN
+F 3 "Tri-state 8-Bit Shift Register" H 2100 4950 60  0001 L CNN
+F 4 "Tri-State 8-Bit Shift Register" H 2100 4850 60  0001 L CNN "Field5"
+	1    1900 5100
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	1200 7100 2200 7100
-Wire Wire Line
-	2200 7100 2200 6600
-Wire Wire Line
-	2200 6600 2100 6600
-Wire Wire Line
-	2200 3700 2100 3700
-NoConn ~ 2100 6100
-Wire Wire Line
-	2100 3500 2300 3500
-Wire Wire Line
-	2300 6400 2100 6400
-Wire Wire Line
-	2100 3400 2400 3400
-Wire Wire Line
-	2400 6300 2100 6300
-Wire Wire Line
-	2300 6400 2300 7200
-Wire Wire Line
-	2300 7200 1200 7200
-Wire Wire Line
-	1200 7300 2400 7300
-Wire Wire Line
-	2400 7300 2400 6300
-Text Label 3300 2500 2    50   ~ 0
-LED11
-Text Label 3300 2600 2    50   ~ 0
-LED12
-Text Label 3300 2300 2    50   ~ 0
-LED9
-Text Label 3300 5900 2    50   ~ 0
+Text Label 3400 5900 2    50   ~ 0
 LED8
-Text Label 3300 5800 2    50   ~ 0
+Text Label 3400 5800 2    50   ~ 0
 LED7
-Text Label 3300 5200 2    50   ~ 0
+Text Label 3400 5200 2    50   ~ 0
 LED1
-Text Label 3300 5300 2    50   ~ 0
+Text Label 3400 5300 2    50   ~ 0
 LED2
-Text Label 3300 5400 2    50   ~ 0
+Text Label 3400 5400 2    50   ~ 0
 LED3
-Text Label 3300 5500 2    50   ~ 0
+Text Label 3400 5500 2    50   ~ 0
 LED4
-Text Label 3300 5600 2    50   ~ 0
+Text Label 3400 5600 2    50   ~ 0
 LED5
-Text Label 3300 5700 2    50   ~ 0
+Text Label 3400 5700 2    50   ~ 0
 LED6
-Text Label 3300 2700 2    50   ~ 0
-LED13
-Text Label 3300 2800 2    50   ~ 0
-LED14
-Text Label 3300 3000 2    50   ~ 0
-LED16
-Wire Wire Line
-	2100 6500 2800 6500
-Wire Wire Line
-	2100 6200 2800 6200
-Wire Wire Line
-	2100 3600 2800 3600
-Wire Wire Line
-	2100 3300 2700 3300
-Wire Wire Line
-	2100 3900 2700 3900
-Text Notes 1400 2150 0    50   ~ 0
+Text Notes 2250 1500 0    50   ~ 0
 16-Bit SPI LED Shift Register
 Wire Wire Line
-	2100 6800 2700 6800
-Wire Wire Line
-	2100 3800 3000 3800
-Wire Wire Line
-	2100 6700 3000 6700
-Wire Wire Line
-	2100 5300 8900 5300
+	3000 5300 8900 5300
 Wire Wire Line
 	6500 2700 6500 3200
-Wire Wire Line
-	3000 6700 3000 5200
 Wire Wire Line
 	4200 6100 4100 6100
 Wire Wire Line
 	4100 6100 4100 5900
-Wire Wire Line
-	2400 3400 2400 6300
-Connection ~ 2400 6300
-Text HLabel 1200 7500 0    50   Input ~ 0
+Text HLabel 1000 4500 0    50   Input ~ 0
 GND
-Wire Wire Line
-	1200 7500 2800 7500
-Wire Wire Line
-	2800 7500 2800 6500
 Wire Wire Line
 	10100 6400 10900 6400
 Wire Wire Line
@@ -1047,92 +968,204 @@ Wire Wire Line
 Connection ~ 10100 6400
 Connection ~ 10100 3500
 Wire Wire Line
-	4500 4200 3400 4200
+	4500 4200 3700 4200
 Wire Wire Line
-	3400 4200 3400 1300
+	3700 4200 3700 1300
 Wire Wire Line
-	3400 1300 4500 1300
+	3700 1300 4500 1300
 Connection ~ 4500 4200
-Text HLabel 1150 1300 0    50   Input ~ 0
+Text HLabel 1000 1300 0    50   Input ~ 0
 P5V
-Text Notes 700  1100 0    50   ~ 0
+Text Notes 1200 1100 0    50   ~ 0
 Note:\n1. The P5V voltage rail is connected to 5V through an ideal diode and\n   with 1000µF surge capacitor on the output.  If all of the LED's turn\n   on at once, there may be a small drop in the P5V rail, but not for long.\n   The 5V rail should be pretty safe from voltage drops.\n
 Wire Wire Line
 	4200 3200 4100 3200
 Wire Wire Line
 	4100 3200 4100 3000
 Wire Wire Line
-	3000 2300 3000 3800
+	3000 5800 4900 5800
 Wire Wire Line
-	3000 5200 9700 5200
+	3000 2400 8900 2400
 Wire Wire Line
-	2100 5800 4900 5800
+	3000 2500 8100 2500
 Wire Wire Line
-	2100 5900 2200 5900
+	3000 2600 7300 2600
 Wire Wire Line
-	3000 2300 9700 2300
-Text Label 3300 2400 2    50   ~ 0
-LED10
+	3000 2800 5700 2800
 Wire Wire Line
-	2100 2400 8900 2400
+	3000 2900 4900 2900
 Wire Wire Line
-	2100 2500 8100 2500
-Wire Wire Line
-	2100 2600 7300 2600
-Wire Wire Line
-	2100 2700 6500 2700
-Text Label 3300 2900 2    50   ~ 0
-LED15
-Wire Wire Line
-	2100 2800 5700 2800
-Wire Wire Line
-	2100 2900 4900 2900
-Wire Wire Line
-	2100 3000 4100 3000
+	3000 3000 4100 3000
 Text Notes 5850 4150 0    50   ~ 0
 Notes:\n1. GRNRA = Green Right Angle Green\n2. Nominal Part:\n     Mfg Part #: TLPG5600\n     Digi-Key part #: TLPG5600-ND\n     Forward Voltage Drop: 2.4V\n     Absolute max. current: 200mA\n     Target maximum current: I=20mA
 Text Notes 7550 3850 0    50   ~ 0
 Notes (cont.):\n3. LED's are labeled from 1 to 16 in a counter-clockwise\n    direction starting in the NW quadrant nearest the X axis.
-Text HLabel 1200 4400 0    50   Input ~ 0
+Text HLabel 1000 4400 0    50   Input ~ 0
 3.3V
+Connection ~ 3700 1300
 Wire Wire Line
-	2700 6800 2700 4400
+	1000 1300 3700 1300
 Wire Wire Line
-	2700 4400 1200 4400
+	3000 5200 9700 5200
+$Comp
+L HR2:SN74HCS595;TTSOP16 U?
+U 1 1 5FB58AA4
+P 1900 2200
+AR Path="/5F48CAAD/5FB58AA4" Ref="U?"  Part="1" 
+AR Path="/5FA4A874/5FB58AA4" Ref="U5"  Part="1" 
+F 0 "U5" H 2150 2350 50  0000 C CNN
+F 1 "SN74HCS595;TTSOP16" H 2450 1050 50  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2100 2250 60  0001 L CNN
+F 3 "Tri-state 8-Bit Shift Register" H 2100 2050 60  0001 L CNN
+F 4 "Tri-State 8-Bit Shift Register" H 2100 1950 60  0001 L CNN "Field5"
+	1    1900 2200
+	1    0    0    -1  
+$EndComp
 Wire Wire Line
-	2700 3900 2700 4400
-Connection ~ 2700 4400
-Connection ~ 2800 6400
+	3000 5900 3100 5900
+Entry Wire Line
+	3400 2200 3500 2100
 Wire Wire Line
-	2700 3900 2700 3300
-Connection ~ 2700 3900
+	3400 2200 3000 2200
 Wire Wire Line
-	2100 3100 2800 3100
+	3000 3200 3100 3200
+Entry Wire Line
+	3400 3200 3500 3300
 Wire Wire Line
-	2800 3100 2800 3600
+	3100 3200 3100 3500
 Wire Wire Line
-	2800 3600 2800 6000
-Connection ~ 2800 3600
+	3100 3500 1800 3500
 Wire Wire Line
-	2800 6200 2800 6400
-Connection ~ 2800 6200
+	1800 3500 1800 2900
 Wire Wire Line
-	2800 6400 2800 6500
+	1800 2900 1900 2900
+Connection ~ 3100 3200
 Wire Wire Line
-	2100 6000 2800 6000
-Connection ~ 2800 6000
+	3100 3200 3400 3200
+Entry Wire Line
+	3400 5100 3500 5000
+Entry Wire Line
+	3400 6100 3500 6000
 Wire Wire Line
-	2800 6000 2800 6200
-Connection ~ 2800 6500
+	3000 5100 3400 5100
 Wire Wire Line
-	2200 3700 2200 5900
-Connection ~ 2200 5900
+	3400 6100 3100 6100
 Wire Wire Line
-	2200 5900 4100 5900
+	1900 5800 1800 5800
 Wire Wire Line
-	2300 6400 2300 3500
-Connection ~ 2300 6400
-Connection ~ 3400 1300
+	1800 5800 1800 6400
 Wire Wire Line
-	1150 1300 3400 1300
+	3100 6400 3100 6100
+Connection ~ 3100 6100
+Wire Wire Line
+	3100 6100 3000 6100
+Connection ~ 3100 6400
+Wire Wire Line
+	1800 6400 3100 6400
+Wire Wire Line
+	1000 4400 3400 4400
+Wire Wire Line
+	1000 4500 3400 4500
+Entry Wire Line
+	3400 4500 3500 4600
+Entry Wire Line
+	3400 4400 3500 4500
+Text Label 3400 4500 2    50   ~ 0
+GND
+Text Label 3400 4400 2    50   ~ 0
+3.3V
+Text HLabel 1000 4600 0    50   Input ~ 0
+~NRST
+Wire Wire Line
+	1000 4600 1700 4600
+Wire Wire Line
+	1700 4600 1700 5700
+Wire Wire Line
+	1700 5700 1900 5700
+Wire Wire Line
+	1700 4600 1700 2800
+Wire Wire Line
+	1700 2800 1900 2800
+Connection ~ 1700 4600
+Text Label 1000 1300 0    50   ~ 0
+P5V
+Text Label 1000 4500 0    50   ~ 0
+GND
+Text Label 1000 4400 0    50   ~ 0
+3.3V
+Text Label 1000 4600 0    50   ~ 0
+~NRST
+Wire Wire Line
+	1000 5500 1500 5500
+Wire Wire Line
+	1000 5400 1900 5400
+Wire Wire Line
+	1000 5600 1600 5600
+Wire Wire Line
+	1600 5600 1600 2700
+Wire Wire Line
+	1600 2700 1900 2700
+Connection ~ 1600 5600
+Wire Wire Line
+	1600 5600 1900 5600
+Wire Wire Line
+	1900 2600 1500 2600
+Wire Wire Line
+	1500 2600 1500 5500
+Connection ~ 1500 5500
+Wire Wire Line
+	1500 5500 1900 5500
+Text Label 3400 5100 2    50   ~ 0
+3.3V
+Text Label 3400 6100 2    50   ~ 0
+GND
+NoConn ~ 3000 6000
+Text Label 1000 5400 0    50   ~ 0
+LED_MOSI
+Text Label 1000 5500 0    50   ~ 0
+LED_SCK
+Text Label 1000 5600 0    50   ~ 0
+~LED_NSS
+NoConn ~ 3000 3100
+Wire Wire Line
+	3100 5900 3100 3700
+Wire Wire Line
+	3100 3700 1400 3700
+Wire Wire Line
+	1400 3700 1400 2500
+Wire Wire Line
+	1400 2500 1900 2500
+Connection ~ 3100 5900
+Wire Wire Line
+	3100 5900 4100 5900
+Text Label 2100 3700 0    50   ~ 0
+LED8_TO_LED9
+Text Label 3400 2500 2    50   ~ 0
+LED11
+Text Label 3400 2600 2    50   ~ 0
+LED12
+Text Label 3400 2300 2    50   ~ 0
+LED9
+Text Label 3400 2700 2    50   ~ 0
+LED13
+Text Label 3400 2800 2    50   ~ 0
+LED14
+Text Label 3400 3000 2    50   ~ 0
+LED16
+Text Label 3400 2400 2    50   ~ 0
+LED10
+Text Label 3400 2900 2    50   ~ 0
+LED15
+Text Label 3400 2200 2    50   ~ 0
+3.3V
+Text Label 3400 3200 2    50   ~ 0
+GND
+Wire Wire Line
+	3000 2300 9700 2300
+Wire Wire Line
+	3000 2700 6500 2700
+Wire Bus Line
+	3500 2000 3500 6100
+Text HLabel 1000 5600 0    50   Input ~ 0
+LED_NSS
 $EndSCHEMATC

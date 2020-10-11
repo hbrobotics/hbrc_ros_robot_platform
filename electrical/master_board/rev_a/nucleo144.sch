@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 8 9
+Sheet 9 9
 Title "HR2 Master Board"
 Date "2020-10-03"
 Rev "A"
@@ -362,8 +362,6 @@ Text HLabel 9850 3300 2    50   Output ~ 0
 LED_MOSI
 Text HLabel 9850 3400 2    50   Output ~ 0
 LED_SCLK
-Text HLabel 9850 3500 2    50   Output ~ 0
-LED_NSS
 Text HLabel 9850 3700 2    50   Input ~ 0
 ECHO1
 Text HLabel 9850 3800 2    50   Input ~ 0
@@ -396,8 +394,6 @@ Wire Wire Line
 	9650 3500 9650 3700
 Text HLabel 9850 2900 2    50   Input ~ 0
 LDR_TX
-Text HLabel 9850 3100 2    50   Output ~ 0
-LDR_PWM
 Text HLabel 9850 3000 2    50   Output ~ 0
 LDR_RX
 Text HLabel 8500 4800 2    50   Output ~ 0
@@ -494,12 +490,6 @@ Wire Wire Line
 	9650 2700 9650 3000
 Connection ~ 9650 2700
 Connection ~ 9650 3300
-Text HLabel 9850 2400 2    50   Output ~ 0
-DIO_NSS
-Wire Wire Line
-	9850 2400 9650 2400
-Wire Wire Line
-	9650 2400 9650 2500
 Connection ~ 9650 2500
 Wire Wire Line
 	9650 3100 9850 3100
@@ -533,7 +523,7 @@ D12_MISO
 Text HLabel 9850 1800 2    50   Output ~ 0
 D13_SCK
 Text HLabel 9850 1900 2    50   Output ~ 0
-NRST
+~NRST
 Text HLabel 9850 2000 2    50   Input ~ 0
 INT0
 Text HLabel 9850 2100 2    50   Input ~ 0
@@ -543,7 +533,6 @@ NoConn ~ 9850 900
 NoConn ~ 9850 1000
 Wire Wire Line
 	9650 1300 9850 1300
-Connection ~ 9650 2400
 Wire Wire Line
 	9850 1600 9650 1600
 Connection ~ 9650 1600
@@ -566,8 +555,6 @@ Wire Wire Line
 Wire Wire Line
 	9750 1200 9850 1200
 Wire Wire Line
-	9650 1800 9650 2400
-Wire Wire Line
 	9850 2000 9750 2000
 Wire Wire Line
 	9750 2000 9750 1900
@@ -579,4 +566,10 @@ Wire Wire Line
 	9750 1700 9750 1400
 Wire Wire Line
 	9750 1400 9850 1400
+Text HLabel 9850 3500 2    50   Output ~ 0
+LED_NSS
+Wire Wire Line
+	9650 1800 9650 2500
+Text HLabel 9850 3100 2    50   Output ~ 0
+LDR_PWM
 $EndSCHEMATC
