@@ -6,12 +6,6 @@ K ~
 F Power PFG (GSD pinout)
 $ENDCMP
 #
-$CMP NUCLEO-F767ZI;2xF2x35
-D NUCLEO144-F767ZI
-K Nucleo144 STM32F767ZI
-F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
-$ENDCMP
-#
 $CMP BRIDGE_NW_OUTER;M1x2+M2x5
 D NW Outer Bridge Connectors
 K ~
@@ -52,6 +46,12 @@ $CMP HCSR04H;F1X4
 D HC-SR04 Sonar (High Profile Receptacle)
 K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+$CMP SERVO;F1x3
+D 
+K ~
+F Servo F1X3
 $ENDCMP
 #
 $CMP GROVE;20x20
@@ -114,22 +114,10 @@ K ~
 F M2.5 Mounting Hole
 $ENDCMP
 #
-$CMP NUCLEO-F767ZI;2xF2x35
-D NUCLEO144-HR2/HR2
-K Nucleo144 STM32HR2/HR2
-F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
-$ENDCMP
-#
 $CMP BRIDGE_NE_OUTER;3xM1x1+M1x5
 D NE Outer Bridge Connectors
 K ~
 F 
-$ENDCMP
-#
-$CMP SERVO;M1x3
-D 
-K ~
-F Servo M1X3
 $ENDCMP
 #
 $CMP ENCODER;2xF1x3
@@ -163,8 +151,8 @@ F Grove 20x20 Module
 $ENDCMP
 #
 $CMP NUCLEO-F767ZI;2xF2x35
-D NUCLEO144-F767ZI
-K Nucleo144 STM32F767ZI
+D NUCLEO144-REV_A/HR2/HR2
+K Nucleo144 STM32REV_A/HR2/HR2
 F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
 $ENDCMP
 #

@@ -1,19 +1,19 @@
-MIKROBUS_MATE;SMALL,CN,HR2:MIKROBUS_SMALL_MATE,,MikroBus Small Mate,MikroBus Small Mate
-Pin,Name,Type,Side,Unit,Style,Hidden
-1,GND,passive,right,1,,
-2,+5V,pwr_in,right,1,,
-3,SDA,passive,right,1,,
-4,SCL,passive,right,1,,
-5,TX,in,right,1,,
-6,RX,out,right,1,,
-7,INT,in,right,1,,
-8,PWM,out,right,1,,
-9,GND,pwr_in,right,1,,
-10,+3.3V,pwr_in,right,1,,
-11,MOSI,out,right,1,,
-12,MISO,in,right,1,,
-13,SCK,out,right,1,,
-14,CS,out,right,1,,
-15,RST,in,right,1,,
-16,AN,passive,right,1,,
+"MIKROBUS_MATE;SMALL", "CN", "HR2:MIKROBUS_SMALL_MATE", "", "MikroBus Small Mate", "MikroBus Small Mate"
+"Pin", "Name",  "Type",          "Side",  "Unit", "Style", "Hidden"
+"2",   "+5V",   "power_in",      "right", "1",    "",      ""
+"10",  "+3.3V", "power_in",      "right", "1",    "",      ""
+"9",   "GND",   "power_in",      "right", "1",    "",      ""
+"1",   "GND",   "passive",       "right", "1",    "",      ""
+"3",   "SDA",   "passive",       "left",  "1",    "",      ""
+"4",   "SCL",   "passive",       "left",  "1",    "",      ""
+"5",   "TX",    "bidirectional", "left",  "1",    "",      ""
+"6",   "RX",    "input",         "left",  "1",    "",      ""
+"7",   "INT",   "bidirectional", "left",  "1",    "",      ""
+"8",   "PWM",   "output",        "left",  "1",    "",      ""
+"11",  "MOSI",  "input",         "left",  "1",    "",      ""
+"12",  "MISO",  "bidirectional", "left",  "1",    "",      ""
+"13",  "SCK",   "input",         "left",  "1",    "",      ""
+"14",  "CS",    "input",         "left",  "1",    "",      ""
+"15",  "RST",   "input",         "left",  "1",    "",      ""
+"16",  "AN",    "passive",       "left",  "1",    "",      ""
 ,,,,,,

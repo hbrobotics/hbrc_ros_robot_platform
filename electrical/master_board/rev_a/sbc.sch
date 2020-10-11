@@ -3,8 +3,8 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 7 12
-Title "HR2 Master Board"
+Sheet 5 9
+Title "HR2 Single Board Computer"
 Date "2020-10-03"
 Rev "A"
 Comp "HomeBrew Robotics Club"

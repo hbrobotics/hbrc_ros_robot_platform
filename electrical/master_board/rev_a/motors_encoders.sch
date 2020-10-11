@@ -3,10 +3,10 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 4 12
-Title "HR2 Master Board"
+Sheet 9 9
+Title "HR2 Motors and Encoders"
 Date "2020-10-03"
-Rev ""
+Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
 Comment2 "MIT License"
@@ -407,44 +407,4 @@ Text Label 4900 4100 0    50   ~ 0
 9V
 Text Label 8050 5000 0    50   ~ 0
 GND
-$Comp
-L HR2:LIDAR_ADAPTER;2xF1x2 CN3
-U 1 1 5F613DD3
-P 6300 5400
-F 0 "CN3" H 6550 5550 50  0000 C CNN
-F 1 "LIDAR_ADAPTER;2xF1x2" H 6800 4500 50  0000 C CNN
-F 2 "HR2:LIDAR_ADAPTER_2xF1x2" H 6500 5450 60  0001 L CNN
-F 3 "Lidar Adapter Connectors" H 6500 5250 60  0001 L CNN
-F 4 "Lidar Adapter Connectors" H 6500 5350 60  0001 L CNN "manf#"
-	1    6300 5400
-	1    0    0    -1  
-$EndComp
-Text HLabel 8500 5400 2    50   Input ~ 0
-5v
-Wire Wire Line
-	7300 5700 7600 5700
-Wire Wire Line
-	7600 5700 7600 5000
-Wire Wire Line
-	7300 5400 8500 5400
-Text HLabel 8500 5500 2    50   Output ~ 0
-LDR_TX
-Text HLabel 8500 5600 2    50   Input ~ 0
-LDR_RX
-Text HLabel 8500 5800 2    50   Input ~ 0
-LDR_SPIN
-Text HLabel 8500 5900 2    50   Input ~ 0
-LDR_EN
-Text HLabel 8500 6000 2    50   Input ~ 0
-LDR_PWM
-Wire Wire Line
-	7300 6000 8500 6000
-Wire Wire Line
-	7300 5900 8500 5900
-Wire Wire Line
-	7300 5800 8500 5800
-Wire Wire Line
-	7300 5600 8500 5600
-Wire Wire Line
-	7300 5500 8500 5500
 $EndSCHEMATC

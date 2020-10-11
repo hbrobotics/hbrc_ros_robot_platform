@@ -19,8 +19,17 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+IOC_DIR := rev_a/hr2
+IOC_CSV := $(IOC_DIR)/hr2.ioc
+F767ZI_DIR := rev_a
+F767ZI_CSV := $(F767ZI_DIR)/f767zi.csv
+KIPART_DIR := ../orders/order1/kiparts
+KIPART_CSV := $(KIPART_DIR)/NUCLEO_F767ZI_2xF2x35.kipart.csv
+
 all:
 	mypy pinsbind.py
 	flake8 --max-line-length=100 pinsbind.py
 	pydocstyle pinsbind.py
 	python pinsbind.py
+	kicube32 $(IOC_CSV) $(F767ZI_CSV) $(KIPART_CSV)
+
