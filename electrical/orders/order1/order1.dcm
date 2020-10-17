@@ -24,6 +24,12 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
+$CMP MCP2542;SOIC8
+D MCP2542
+K ~
+F 
+$ENDCMP
+#
 $CMP AP2114HA-3.3TRG1_1A;SOT223
 D 1A 3.3V LDO Voltage Linear Regulator
 K ~
@@ -138,6 +144,12 @@ K ~
 F ST Adapter Connector
 $ENDCMP
 #
+$CMP 74LVC1G74;TSSOP8
+D D-type flip-flop edge-trigger/set/reset
+K ~
+F 
+$ENDCMP
+#
 $CMP CD450B;TTSOP16
 D Hex Level Shifter
 K ~
@@ -178,6 +190,12 @@ $CMP HOLE;M2
 D 
 K ~
 F M2 Mounting Hole
+$ENDCMP
+#
+$CMP SN74HCS166;TTSOP16
+D 8-Bit Parallel In Serial Out Shift Register
+K ~
+F 
 $ENDCMP
 #
 $CMP ENCODER;2xM1x3RA

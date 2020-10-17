@@ -3,9 +3,9 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 9 9
+Sheet 9 10
 Title "HR2 Master Board"
-Date "2020-10-03"
+Date "2020-10-17"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
@@ -572,4 +572,33 @@ Wire Wire Line
 	9650 1800 9650 2500
 Text HLabel 9850 3100 2    50   Output ~ 0
 LDR_PWM
+Text HLabel 9000 3000 2    50   Input ~ 0
+WOW_TX
+Text HLabel 9000 3100 2    50   Output ~ 0
+WOW_RX
+Text HLabel 9000 3200 2    50   Input ~ 0
+WOW_EN
+Text HLabel 9000 3300 2    50   Input ~ 0
+ESTOP
+Text HLabel 9000 3400 2    50   Input ~ 0
+~ESTOP
+Text HLabel 9000 3500 2    50   Input ~ 0
+~ESTOP_CLR
+Wire Wire Line
+	9000 3000 8900 3000
+Wire Wire Line
+	8900 3000 8900 3100
+Wire Wire Line
+	8900 3200 9000 3200
+Wire Wire Line
+	9000 3100 8900 3100
+Connection ~ 8900 3100
+Wire Wire Line
+	8900 3100 8900 3200
+Wire Wire Line
+	9000 3300 8900 3300
+Wire Wire Line
+	8900 3300 8900 3500
+Wire Wire Line
+	8900 3500 9000 3500
 $EndSCHEMATC

@@ -3,9 +3,9 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 1 9
-Title "HR2 Sonars and Servos"
-Date "2020-10-03"
+Sheet 1 10
+Title "HR2 Overview"
+Date "2020-10-17"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
@@ -1029,9 +1029,140 @@ F48 "~NRST" O L 4100 5800 50
 F49 "INT0" I R 5400 5900 50 
 F50 "INT1" I R 5400 6000 50 
 F51 "LED_NSS" O R 5400 1200 50 
+F52 "WOW_TX" I L 4100 4600 50 
+F53 "WOW_RX" O L 4100 4700 50 
+F54 "WOW_EN" I L 4100 4800 50 
+F55 "ESTOP" I L 4100 4900 50 
+F56 "~ESTOP" I L 4100 5000 50 
+F57 "~ESTOP_CLR" I L 4100 5100 50 
 $EndSheet
 Wire Wire Line
 	8900 3300 8600 3300
+Entry Wire Line
+	8900 3300 9000 3400
+Text Label 8900 3300 2    50   ~ 0
+~NRST
+$Sheet
+S 1150 4500 900  700 
+U 5F8C2F57
+F0 "WOWBus" 50
+F1 "wowbus.sch" 50
+F2 "9V" I L 1150 4600 50 
+F3 "GND" I L 1150 4900 50 
+F4 "WOW_EN" I R 2050 4800 50 
+F5 "3.3V" I L 1150 4800 50 
+F6 "5V" I L 1150 4700 50 
+F7 "WOW_TX" I R 2050 4600 50 
+F8 "WOW_RX" O R 2050 4700 50 
+F9 "ESTOP" O R 2050 4900 50 
+F10 "~ESTOP" O R 2050 5000 50 
+F11 "~ESTOP_CLR" I R 2050 5100 50 
+F12 "~NRST" I L 1150 5100 50 
+$EndSheet
+Wire Wire Line
+	900  4600 1150 4600
+Wire Wire Line
+	900  4700 1150 4700
+Entry Wire Line
+	900  5100 800  5200
+Entry Wire Line
+	900  4900 800  5000
+Entry Wire Line
+	900  4800 800  4900
+Entry Wire Line
+	900  4700 800  4800
+Entry Wire Line
+	900  4600 800  4700
+Wire Wire Line
+	900  4800 1150 4800
+Wire Wire Line
+	900  4900 1150 4900
+Wire Wire Line
+	900  5100 1150 5100
+Text Label 900  4800 0    50   ~ 0
+3.3V
+Text Label 900  4900 0    50   ~ 0
+GND
+Text Label 900  4600 0    50   ~ 0
+9V
+Text Label 900  4700 0    50   ~ 0
+5V
+Text Label 900  5100 0    50   ~ 0
+~NRST
+Entry Wire Line
+	2700 4600 2800 4500
+Entry Wire Line
+	2700 4700 2800 4600
+Entry Wire Line
+	2700 4800 2800 4700
+Entry Wire Line
+	2700 4900 2800 4800
+Entry Wire Line
+	2700 5000 2800 4900
+Entry Wire Line
+	2700 5100 2800 5000
+Wire Wire Line
+	2050 5100 2700 5100
+Wire Wire Line
+	2050 5000 2700 5000
+Wire Wire Line
+	2700 4900 2050 4900
+Wire Wire Line
+	2050 4800 2700 4800
+Wire Wire Line
+	2700 4700 2050 4700
+Wire Wire Line
+	2050 4600 2700 4600
+Text Label 2700 4600 2    50   ~ 0
+WOW_TX
+Text Label 2700 4700 2    50   ~ 0
+WOW_RX
+Text Label 2700 4800 2    50   ~ 0
+WOW_EN
+Text Label 2700 4900 2    50   ~ 0
+ESTOP
+Text Label 2700 5000 2    50   ~ 0
+~ESTOP
+Text Label 2700 5100 2    50   ~ 0
+~ESTOP_CLR
+Entry Wire Line
+	3450 4600 3350 4500
+Entry Wire Line
+	3450 4700 3350 4600
+Entry Wire Line
+	3450 4800 3350 4700
+Entry Wire Line
+	3450 4900 3350 4800
+Entry Wire Line
+	3450 5000 3350 4900
+Entry Wire Line
+	3450 5100 3350 5000
+Wire Wire Line
+	3450 5100 4100 5100
+Wire Wire Line
+	3450 5000 4100 5000
+Wire Wire Line
+	4100 4900 3450 4900
+Wire Wire Line
+	3450 4800 4100 4800
+Wire Wire Line
+	4100 4700 3450 4700
+Wire Wire Line
+	3450 4600 4100 4600
+Text Label 3450 4600 0    50   ~ 0
+WOW_TX
+Text Label 3450 4700 0    50   ~ 0
+WOW_RX
+Text Label 3450 4800 0    50   ~ 0
+WOW_EN
+Text Label 3450 4900 0    50   ~ 0
+ESTOP
+Text Label 3450 5000 0    50   ~ 0
+~ESTOP
+Text Label 3450 5100 0    50   ~ 0
+~ESTOP_CLR
+Wire Bus Line
+	2800 4400 3350 4400
 Wire Bus Line
 	7100 3700 7100 4100
 Wire Bus Line
@@ -1057,6 +1188,10 @@ Wire Bus Line
 Wire Bus Line
 	6000 1500 6000 2000
 Wire Bus Line
+	2800 4400 2800 5100
+Wire Bus Line
+	3350 4400 3350 5100
+Wire Bus Line
 	2800 2200 2800 3400
 Wire Bus Line
 	7100 2100 7100 2900
@@ -1065,15 +1200,11 @@ Wire Bus Line
 Wire Bus Line
 	3400 2200 3400 3400
 Wire Bus Line
-	800  1000 800  6500
-Wire Bus Line
 	9000 1000 9000 6500
 Wire Bus Line
 	7100 4700 7100 6000
 Wire Bus Line
 	6100 4700 6100 6000
-Entry Wire Line
-	8900 3300 9000 3400
-Text Label 8900 3300 2    50   ~ 0
-~NRST
+Wire Bus Line
+	800  1000 800  6500
 $EndSCHEMATC
