@@ -1,0 +1,11 @@
+"74LVC1G74;TSSOP8", "U", "Package_SO:TSSOP-8_3x3mm_P0.65mm", "", "D-type flip-flop edge-trigger/set/reset", "D-type flip-flop edge-trigger/set/reset"
+"Pin", "Unit", "Type",     "Name",   "Style", "Side"
+"7",   "A",    "input",    "~SET",   "line",  "left"
+"2",   "A",    "input",    "D",      "line",  "left"
+"1",   "A",    "input",    "CLK" ,   "line",  "left"
+"6",   "A",    "input",    "~RESET", "line",  "left"
+"8",   "A",    "power_in", "VCC",    "line",  "right"
+"5",   "A",    "output",   "Q",      "line",  "right"
+"3",   "A",    "output",   "~Q",     "line",  "right"
+"4",   "A",    "power_in", "GND",    "line",  "right"
+,,,,,,

@@ -1,0 +1,11 @@
+"MCP2542;SOIC8", "U", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", "", "MCP2542 CAN Transceiver", "MCP2542", "MCP2542 CAN Transceiver"
+"Pin", "Unit", "Type",     "Name",  "Style", "Side"
+"1",   "A",    "input",    "TXD",   "line",  "left"
+"4",   "A",    "output",   "RXD",   "line",  "left"
+"8",   "A",    "input",    "STDBY", "line",  "left"
+"7",   "A",    "passive",  "CANH",  "line",  "right"
+"6",   "A",    "passive",  "CANL",  "line",  "right"
+"3",   "A",    "power_in", "VDD",   "line",  "right"
+"5",   "A",    "power_in", "VIO",   "line",  "right"
+"2",   "A",    "power_in", "VSS",   "line",  "right"
+,,,,,,

@@ -3,9 +3,9 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 5 9
+Sheet 5 10
 Title "HR2 LED's"
-Date "2020-10-03"
+Date "2020-10-17"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
@@ -1164,8 +1164,8 @@ Wire Wire Line
 	3000 2300 9700 2300
 Wire Wire Line
 	3000 2700 6500 2700
-Wire Bus Line
-	3500 2000 3500 6100
 Text HLabel 1000 5600 0    50   Input ~ 0
 LED_NSS
+Wire Bus Line
+	3500 2000 3500 6100
 $EndSCHEMATC

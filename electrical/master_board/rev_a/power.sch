@@ -3,9 +3,9 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 2 9
+Sheet 2 10
 Title "HR2 Power"
-Date "2020-10-03"
+Date "2020-10-17"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
@@ -15,7 +15,7 @@ Comment4 ""
 $EndDescr
 Text HLabel 8750 3200 2    50   Output ~ 0
 9V
-Text HLabel 8750 4300 2    50   Output ~ 0
+Text HLabel 8750 4400 2    50   Output ~ 0
 5V
 Wire Wire Line
 	7600 3100 8200 3100
@@ -103,12 +103,10 @@ Wire Wire Line
 Wire Wire Line
 	2950 4900 3600 4900
 Wire Wire Line
-	3600 4900 3600 4800
-Wire Wire Line
 	2950 5000 2950 4900
 Connection ~ 2950 4900
 Wire Wire Line
-	4200 4600 4200 4300
+	4200 4600 4200 4400
 Wire Wire Line
 	3250 5200 4200 5200
 Wire Wire Line
@@ -133,10 +131,10 @@ Wire Wire Line
 	5300 3300 5300 4600
 Connection ~ 2950 4300
 Wire Wire Line
-	4200 4300 4800 4300
+	4200 4400 4800 4400
 Wire Wire Line
-	4800 4300 4800 4600
-Connection ~ 4200 4300
+	4800 4400 4800 4600
+Connection ~ 4200 4400
 Wire Wire Line
 	4700 5200 5300 5200
 Wire Wire Line
@@ -170,7 +168,7 @@ Wire Wire Line
 Wire Wire Line
 	2950 6000 4800 6000
 Connection ~ 4800 6000
-Connection ~ 4800 4300
+Connection ~ 4800 4400
 Wire Wire Line
 	4800 5600 4800 5500
 Connection ~ 4800 5500
@@ -235,9 +233,9 @@ Connection ~ 7800 3600
 Wire Wire Line
 	7800 3600 7800 3500
 Wire Wire Line
-	4800 4300 6150 4300
+	4800 4400 6150 4400
 Wire Wire Line
-	7800 3600 7800 4300
+	7800 3600 7800 4400
 $Comp
 L HR2:AP2114HA-3.3TRG1_1A;SOT223 VR1
 U 1 1 5F4C5F9D
@@ -250,7 +248,7 @@ F 4 "1A 3.3V LDO Voltage Linear Regulator" H 6500 4500 60  0001 L CNN "Field5"
 	1    6300 4750
 	1    0    0    -1  
 $EndComp
-Connection ~ 7800 4300
+Connection ~ 7800 4400
 Wire Wire Line
 	8200 3100 8200 3200
 Wire Wire Line
@@ -289,14 +287,14 @@ F 3 "~" H 7800 5050 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	6150 4850 6150 4750
-Connection ~ 6150 4300
+Connection ~ 6150 4400
 Wire Wire Line
-	6150 4300 7800 4300
+	6150 4400 7800 4400
 Wire Wire Line
 	6300 4750 6150 4750
 Connection ~ 6150 4750
 Wire Wire Line
-	6150 4750 6150 4300
+	6150 4750 6150 4400
 Wire Wire Line
 	7800 4900 7800 4750
 Wire Wire Line
@@ -318,7 +316,7 @@ Wire Wire Line
 	6150 6000 5300 6000
 Text Label 8750 3200 2    50   ~ 0
 9V
-Text Label 8750 4300 2    50   ~ 0
+Text Label 8750 4400 2    50   ~ 0
 5V
 Text Label 8750 6000 2    50   ~ 0
 GND
@@ -411,24 +409,24 @@ Wire Wire Line
 $Comp
 L HR2:POWER_PFET_GSD Q2
 U 1 1 5F56BDDA
-P 3100 4300
-F 0 "Q2" H 3350 4450 50  0000 C CNN
-F 1 "PFET_6A_GSD;SOT23" H 4050 4450 50  0000 C CNN
-F 2 "HR2:" H 3300 4350 60  0001 L CNN
-F 3 "Power PFG (GSD pinout)" H 3300 4150 60  0001 L CNN
-F 4 "Power PFG (GSD pinout)" H 3300 4250 60  0001 L CNN "manf#"
-F 5 "Power PFET (GSD pinout)" H 3300 4050 60  0001 L CNN "Field5"
-	1    3100 4300
+P 3300 4300
+F 0 "Q2" H 3550 4450 50  0000 C CNN
+F 1 "PFET_6A_GSD;SOT23" H 3650 4050 50  0000 C CNN
+F 2 "HR2:" H 3500 4350 60  0001 L CNN
+F 3 "Power PFG (GSD pinout)" H 3500 4150 60  0001 L CNN
+F 4 "Power PFG (GSD pinout)" H 3500 4250 60  0001 L CNN "manf#"
+F 5 "Power PFET (GSD pinout)" H 3500 4050 60  0001 L CNN "Field5"
+	1    3300 4300
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3100 4300 2950 4300
+	3300 4300 2950 4300
 Wire Wire Line
 	2950 4300 2950 3300
 Wire Wire Line
-	4100 4300 4200 4300
+	4100 4400 4200 4400
 Wire Wire Line
-	7800 4300 8750 4300
+	7800 4400 8750 4400
 Text Notes 3000 3900 0    50   ~ 0
 Note: The PFET's in the KiCAD library have passive pins\n  for design rule checks.  A PFET with Power In on the\n  Source and Power Out on the Drain is needed.\n  It was easier to do an ugly box than a pretty PFET.\n  Deal with it.
 $Comp
@@ -529,4 +527,12 @@ Text Notes 5900 1650 0    50   ~ 0
 Note:\n1. The capacitor is a radial through hole electrolytic with a diameter\n    of 10mm and lead pitch of 5mm.  The capacitance is 1000µF at 16V.\n2. The ideal diode should prevent accidental change...\n
 Text Label 8750 2400 2    50   ~ 0
 P5V
+Wire Wire Line
+	3300 4400 3200 4400
+Wire Wire Line
+	3200 4400 3200 4650
+Wire Wire Line
+	3200 4650 3600 4650
+Wire Wire Line
+	3600 4650 3600 4900
 $EndSCHEMATC

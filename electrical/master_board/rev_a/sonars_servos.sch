@@ -3,9 +3,9 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 6 9
+Sheet 6 10
 Title "HR2 Servos and Sonars"
-Date "2020-10-03"
+Date "2020-10-17"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
