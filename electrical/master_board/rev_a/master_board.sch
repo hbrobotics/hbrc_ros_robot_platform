@@ -102,22 +102,9 @@ F21 "D0_RX" I L 7850 5300 50
 F22 "INT1" O L 7850 6000 50 
 F23 "INT0" O L 7850 5900 50 
 $EndSheet
-NoConn ~ 1800 1600
-$Sheet
-S 1150 3800 1050 500 
-U 5F4877FA
-F0 "Single Board Computer" 50
-F1 "sbc.sch" 50
-F2 "SBC_TX" O R 2200 3900 50 
-F3 "SBC_RX" O R 2200 4000 50 
-F4 "5V" I L 1150 3900 50 
-F5 "GND" I L 1150 4200 50 
-F6 "3.3V" I L 1150 4000 50 
-F7 "SBC_ALIVE" O R 2200 4100 50 
-F8 "SBC_SHUTDOWN" I R 2200 4200 50 
-$EndSheet
+NoConn ~ 2100 1600
 Wire Bus Line
-	800  6500 3200 6500
+	800  6500 3400 6500
 Wire Wire Line
 	1150 5600 900  5600
 Entry Wire Line
@@ -182,29 +169,19 @@ Text Label 900  4200 0    50   ~ 0
 GND
 Text Label 900  4000 0    50   ~ 0
 3.3V
-Wire Wire Line
-	2200 3900 2300 3900
-Wire Wire Line
-	2300 3900 2300 4000
-Wire Wire Line
-	2300 4000 2200 4000
 Entry Wire Line
 	8900 1700 9000 1800
 Text Label 8900 1900 2    50   ~ 0
 3.3V
-Wire Wire Line
-	3300 6000 4100 6000
-Wire Wire Line
-	3300 5900 4100 5900
 Entry Wire Line
-	3300 5900 3200 6000
+	3500 5900 3400 6000
 Entry Wire Line
-	3300 6000 3200 6100
-Text Label 3300 5900 0    50   ~ 0
+	3500 6000 3400 6100
+Text Label 3500 5900 0    50   ~ 0
 5V
-Text Label 3300 6000 0    50   ~ 0
+Text Label 3500 6000 0    50   ~ 0
 GND
-Connection ~ 3200 6500
+Connection ~ 3400 6500
 Wire Wire Line
 	4100 1000 3500 1000
 Wire Wire Line
@@ -217,44 +194,24 @@ Wire Wire Line
 	3500 1300 4100 1300
 Wire Wire Line
 	3500 1400 4100 1400
-Text Label 2300 1100 2    50   ~ 0
-STL_SWDIO
 Text Label 3500 1200 0    50   ~ 0
 STL_NRST
 Text Label 3500 1300 0    50   ~ 0
 STL_RX
 Text Label 3500 1400 0    50   ~ 0
 STL_TX
-Text Label 2300 1000 2    50   ~ 0
-STL_SWCLK
-Text Label 2300 1200 2    50   ~ 0
-STL_NRST
 Text Label 3500 1100 0    50   ~ 0
 STL_SWDIO
-Text Label 2300 1300 2    50   ~ 0
-STL_RX
-Text Label 2300 1400 2    50   ~ 0
-STL_TX
-Wire Wire Line
-	1800 1000 2300 1000
-Wire Wire Line
-	2300 1100 1800 1100
-Wire Wire Line
-	2300 1200 1800 1200
-Wire Wire Line
-	2300 1300 1800 1300
-Wire Wire Line
-	1800 1400 2300 1400
 Entry Wire Line
-	2300 1000 2400 900 
+	2700 1000 2800 900 
 Entry Wire Line
-	2300 1100 2400 1000
+	2700 1100 2800 1000
 Entry Wire Line
-	2300 1200 2400 1100
+	2700 1200 2800 1100
 Entry Wire Line
-	2300 1300 2400 1200
+	2700 1300 2800 1200
 Entry Wire Line
-	2300 1400 2400 1300
+	2700 1400 2800 1300
 Entry Wire Line
 	3500 1000 3400 900 
 Entry Wire Line
@@ -343,68 +300,60 @@ Text Label 8700 4000 0    50   ~ 0
 3.3V
 Wire Wire Line
 	8600 3900 8900 3900
-Wire Wire Line
-	2200 4200 2300 4200
-Wire Wire Line
-	2300 4200 2300 4100
-Wire Wire Line
-	2300 4100 2200 4100
-Text Label 5900 1100 2    50   ~ 0
+Text Label 6000 1100 2    50   ~ 0
 LED_SCLK
-Text Label 5900 1200 2    50   ~ 0
+Text Label 6000 1200 2    50   ~ 0
 ~LED_NSS
-Wire Wire Line
-	5400 1000 5900 1000
 Entry Wire Line
-	5900 1000 6000 900 
+	6000 1000 6100 900 
 Wire Wire Line
-	5400 1100 5900 1100
+	5400 1100 6000 1100
 Entry Wire Line
-	5900 1100 6000 1000
+	6000 1100 6100 1000
 Wire Wire Line
-	5400 2300 5900 2300
+	5400 2300 6000 2300
 Entry Wire Line
-	5900 2300 6000 2200
+	6000 2300 6100 2200
 Wire Wire Line
-	5400 1200 5900 1200
+	5400 1200 6000 1200
 Entry Wire Line
-	5900 1200 6000 1100
-Text Label 5900 2400 2    50   ~ 0
+	6000 1200 6100 1100
+Text Label 6000 2400 2    50   ~ 0
 ECHO2
 Wire Wire Line
-	5400 2400 5900 2400
+	5400 2400 6000 2400
 Entry Wire Line
-	5900 2400 6000 2300
-Text Label 5900 2500 2    50   ~ 0
+	6000 2400 6100 2300
+Text Label 6000 2500 2    50   ~ 0
 ECHO3
 Wire Wire Line
-	5400 2500 5900 2500
+	5400 2500 6000 2500
 Entry Wire Line
-	5900 2500 6000 2400
-Text Label 5900 2600 2    50   ~ 0
+	6000 2500 6100 2400
+Text Label 6000 2600 2    50   ~ 0
 ECHO4
 Wire Wire Line
-	5400 2600 5900 2600
+	5400 2600 6000 2600
 Entry Wire Line
-	5900 2600 6000 2500
-Text Label 5900 2700 2    50   ~ 0
+	6000 2600 6100 2500
+Text Label 6000 2700 2    50   ~ 0
 ECHO5
 Wire Wire Line
-	5400 2700 5900 2700
+	5400 2700 6000 2700
 Entry Wire Line
-	5900 2700 6000 2600
-Text Label 5900 2800 2    50   ~ 0
+	6000 2700 6100 2600
+Text Label 6000 2800 2    50   ~ 0
 ECHO6
 Wire Wire Line
-	5400 2800 5900 2800
+	5400 2800 6000 2800
 Entry Wire Line
-	5900 2800 6000 2700
-Text Label 5900 2900 2    50   ~ 0
+	6000 2800 6100 2700
+Text Label 6000 2900 2    50   ~ 0
 ECHO7
 Wire Wire Line
-	5400 2900 5900 2900
+	5400 2900 6000 2900
 Entry Wire Line
-	5900 2900 6000 2800
+	6000 2900 6100 2800
 Text Label 7200 1000 0    50   ~ 0
 LED_MOSI
 Text Label 7200 1100 0    50   ~ 0
@@ -463,9 +412,9 @@ Wire Wire Line
 	7200 2800 7850 2800
 Entry Wire Line
 	7200 2900 7100 2800
-Text Label 5900 1000 2    50   ~ 0
+Text Label 6000 1000 2    50   ~ 0
 LED_MOSI
-Text Label 5900 2300 2    50   ~ 0
+Text Label 6000 2300 2    50   ~ 0
 ECHO1
 Text Label 8900 3500 2    50   ~ 0
 GND
@@ -520,8 +469,6 @@ F19 "MISC_NSS" I L 7850 3300 50
 F20 "SER_OUT" O L 7850 3500 50 
 F21 "~NRST" I R 8600 3300 50 
 $EndSheet
-Wire Bus Line
-	6000 2100 7100 2100
 Entry Wire Line
 	8900 3500 9000 3600
 Wire Wire Line
@@ -543,15 +490,15 @@ Wire Wire Line
 Entry Wire Line
 	8900 1100 9000 1200
 Wire Bus Line
-	3200 6500 9000 6500
+	3400 6500 9000 6500
 Wire Wire Line
 	7200 2900 7850 2900
 Entry Wire Line
-	5900 2000 6000 1900
+	6000 2000 6100 1900
 Entry Wire Line
-	5900 1900 6000 1800
+	6000 1900 6100 1800
 Entry Wire Line
-	5900 1800 6000 1700
+	6000 1800 6100 1700
 Entry Wire Line
 	6000 4100 6100 4000
 Entry Wire Line
@@ -565,20 +512,20 @@ Wire Wire Line
 Wire Wire Line
 	5400 3900 6000 3900
 Wire Wire Line
-	5900 2000 5400 2000
+	6000 2000 5400 2000
 Wire Wire Line
-	5400 1900 5900 1900
+	5400 1900 6000 1900
 Wire Wire Line
-	5900 1800 5400 1800
+	6000 1800 5400 1800
 Wire Wire Line
-	5400 1700 5900 1700
-Text Label 5900 1700 2    50   ~ 0
+	5400 1700 6000 1700
+Text Label 6000 1700 2    50   ~ 0
 SERVO1
-Text Label 5900 2000 2    50   ~ 0
+Text Label 6000 2000 2    50   ~ 0
 SERVO4
-Text Label 5900 1900 2    50   ~ 0
+Text Label 6000 1900 2    50   ~ 0
 SERVO3
-Text Label 5900 1800 2    50   ~ 0
+Text Label 6000 1800 2    50   ~ 0
 SERVO2
 Text Label 6000 3900 2    50   ~ 0
 MISC_MOSI
@@ -625,23 +572,21 @@ Entry Wire Line
 Entry Wire Line
 	7200 2000 7100 1900
 $Sheet
-S 1150 900  650  800 
+S 1150 900  950  800 
 U 5F4A9AB5
 F0 "ST_Link" 50
 F1 "st_link.sch" 50
 F2 "3.3V" I L 1150 1000 50 
-F3 "SWCLK" O R 1800 1000 50 
+F3 "SWCLK" O R 2100 1000 50 
 F4 "GND" I L 1150 1600 50 
-F5 "SWDIO" B R 1800 1100 50 
-F6 "NRST" O R 1800 1200 50 
-F7 "SWO" U R 1800 1600 50 
-F8 "RX" I R 1800 1300 50 
-F9 "TX" O R 1800 1400 50 
+F5 "SWDIO" B R 2100 1100 50 
+F6 "NRST" O R 2100 1200 50 
+F7 "SWO" U R 2100 1600 50 
+F8 "RX" I R 2100 1300 50 
+F9 "TX" O R 2100 1400 50 
 $EndSheet
 Wire Bus Line
-	2400 800  3400 800 
-Wire Bus Line
-	7100 800  6000 800 
+	7100 800  6100 800 
 Wire Bus Line
 	7100 4200 6100 4200
 Entry Wire Line
@@ -676,10 +621,8 @@ Text Label 6000 4600 2    50   ~ 0
 LDR_PWM
 Text Label 6000 4400 2    50   ~ 0
 LDR_TX
-Wire Bus Line
-	6000 1500 7100 1500
 Entry Wire Line
-	5900 1700 6000 1600
+	6000 1700 6100 1600
 Entry Wire Line
 	7200 1700 7100 1600
 Wire Wire Line
@@ -961,10 +904,8 @@ INT0
 Text Label 6000 6000 2    50   ~ 0
 INT1
 Entry Wire Line
-	3200 5900 3300 5800
-Wire Wire Line
-	3300 5800 4100 5800
-Text Label 3300 5800 0    50   ~ 0
+	3400 5900 3500 5800
+Text Label 3500 5800 0    50   ~ 0
 ~NRST
 Wire Wire Line
 	8600 5800 8900 5800
@@ -1035,6 +976,10 @@ F54 "WOW_EN" I L 4100 4800 50
 F55 "ESTOP" I L 4100 4900 50 
 F56 "~ESTOP" I L 4100 5000 50 
 F57 "~ESTOP_CLR" I L 4100 5100 50 
+F58 "SBC_TX" O L 4100 3900 50 
+F59 "SBC_RX" I L 4100 4000 50 
+F60 "SBC_ALIVE" I L 4100 4100 50 
+F61 "SBC_STOP" O L 4100 4200 50 
 $EndSheet
 Wire Wire Line
 	8900 3300 8600 3300
@@ -1126,43 +1071,140 @@ Text Label 2700 5000 2    50   ~ 0
 Text Label 2700 5100 2    50   ~ 0
 ~ESTOP_CLR
 Entry Wire Line
-	3450 4600 3350 4500
+	3500 4600 3400 4500
 Entry Wire Line
-	3450 4700 3350 4600
+	3500 4700 3400 4600
 Entry Wire Line
-	3450 4800 3350 4700
+	3500 4800 3400 4700
 Entry Wire Line
-	3450 4900 3350 4800
+	3500 4900 3400 4800
 Entry Wire Line
-	3450 5000 3350 4900
+	3500 5000 3400 4900
 Entry Wire Line
-	3450 5100 3350 5000
-Wire Wire Line
-	3450 5100 4100 5100
-Wire Wire Line
-	3450 5000 4100 5000
-Wire Wire Line
-	4100 4900 3450 4900
-Wire Wire Line
-	3450 4800 4100 4800
-Wire Wire Line
-	4100 4700 3450 4700
-Wire Wire Line
-	3450 4600 4100 4600
-Text Label 3450 4600 0    50   ~ 0
+	3500 5100 3400 5000
+Text Label 3500 4600 0    50   ~ 0
 WOW_TX
-Text Label 3450 4700 0    50   ~ 0
+Text Label 3500 4700 0    50   ~ 0
 WOW_RX
-Text Label 3450 4800 0    50   ~ 0
+Text Label 3500 4800 0    50   ~ 0
 WOW_EN
-Text Label 3450 4900 0    50   ~ 0
+Text Label 3500 4900 0    50   ~ 0
 ESTOP
-Text Label 3450 5000 0    50   ~ 0
+Text Label 3500 5000 0    50   ~ 0
 ~ESTOP
-Text Label 3450 5100 0    50   ~ 0
+Text Label 3500 5100 0    50   ~ 0
 ~ESTOP_CLR
 Wire Bus Line
-	2800 4400 3350 4400
+	2800 4400 3400 4400
+Wire Wire Line
+	3500 4600 4100 4600
+Wire Wire Line
+	4100 4700 3500 4700
+Wire Wire Line
+	3500 4800 4100 4800
+Wire Wire Line
+	4100 4900 3500 4900
+Wire Wire Line
+	3500 5000 4100 5000
+Wire Wire Line
+	4100 5100 3500 5100
+Wire Wire Line
+	3500 5800 4100 5800
+Wire Wire Line
+	4100 5900 3500 5900
+Wire Wire Line
+	3500 6000 4100 6000
+Wire Bus Line
+	2800 800  3400 800 
+Text Label 2700 1400 2    50   ~ 0
+STL_TX
+Text Label 2700 1300 2    50   ~ 0
+STL_RX
+Text Label 2700 1200 2    50   ~ 0
+STL_NRST
+Text Label 2700 1000 2    50   ~ 0
+STL_SWCLK
+Text Label 2700 1100 2    50   ~ 0
+STL_SWDIO
+Text Label 2700 3900 2    50   ~ 0
+SPBC_TX
+Text Label 2700 4000 2    50   ~ 0
+SPBC_RX
+Text Label 2700 4100 2    50   ~ 0
+SBC_ALIVE
+$Sheet
+S 1150 3800 900  500 
+U 5F4877FA
+F0 "Single Board Computer" 50
+F1 "sbc.sch" 50
+F2 "SBC_TX" O R 2050 3900 50 
+F3 "SBC_RX" O R 2050 4000 50 
+F4 "5V" I L 1150 3900 50 
+F5 "GND" I L 1150 4200 50 
+F6 "3.3V" I L 1150 4000 50 
+F7 "SBC_ALIVE" O R 2050 4100 50 
+F8 "SBC_STOP" I R 2050 4200 50 
+$EndSheet
+Text Label 2700 4200 2    50   ~ 0
+SBC_STOP
+Wire Wire Line
+	2050 3900 2700 3900
+Wire Wire Line
+	2050 4000 2700 4000
+Wire Wire Line
+	2050 4100 2700 4100
+Wire Wire Line
+	2050 4200 2700 4200
+Entry Wire Line
+	2800 4100 2700 4200
+Entry Wire Line
+	2800 4000 2700 4100
+Entry Wire Line
+	2800 3900 2700 4000
+Entry Wire Line
+	2700 3900 2800 3800
+Entry Wire Line
+	3400 4100 3500 4200
+Entry Wire Line
+	3400 4000 3500 4100
+Entry Wire Line
+	3400 3900 3500 4000
+Entry Wire Line
+	3500 3900 3400 3800
+Text Label 3500 3900 0    50   ~ 0
+SPBC_TX
+Text Label 3500 4000 0    50   ~ 0
+SPBC_RX
+Text Label 3500 4100 0    50   ~ 0
+SBC_ALIVE
+Text Label 3500 4200 0    50   ~ 0
+SBC_STOP
+Wire Wire Line
+	3500 3900 4100 3900
+Wire Wire Line
+	3500 4000 4100 4000
+Wire Wire Line
+	3500 4100 4100 4100
+Wire Wire Line
+	3500 4200 4100 4200
+Wire Bus Line
+	2800 3700 3400 3700
+Wire Wire Line
+	2100 1400 2700 1400
+Wire Wire Line
+	2100 1300 2700 1300
+Wire Wire Line
+	2100 1200 2700 1200
+Wire Wire Line
+	2100 1100 2700 1100
+Wire Wire Line
+	2100 1000 2700 1000
+Wire Bus Line
+	6100 2100 7100 2100
+Wire Bus Line
+	6100 1500 7100 1500
+Wire Wire Line
+	5400 1000 6000 1000
 Wire Bus Line
 	7100 3700 7100 4100
 Wire Bus Line
@@ -1178,25 +1220,29 @@ Wire Bus Line
 Wire Bus Line
 	7100 800  7100 1200
 Wire Bus Line
-	6000 800  6000 1200
+	6100 800  6100 1200
 Wire Bus Line
-	3200 5750 3200 6500
+	3400 5750 3400 6500
 Wire Bus Line
-	2400 800  2400 1400
+	2800 800  2800 1400
 Wire Bus Line
 	3400 800  3400 1400
 Wire Bus Line
-	6000 1500 6000 2000
+	6100 1500 6100 2000
 Wire Bus Line
 	2800 4400 2800 5100
 Wire Bus Line
-	3350 4400 3350 5100
+	3400 4400 3400 5100
+Wire Bus Line
+	2800 3700 2800 4200
+Wire Bus Line
+	3400 3700 3400 4200
 Wire Bus Line
 	2800 2200 2800 3400
 Wire Bus Line
 	7100 2100 7100 2900
 Wire Bus Line
-	6000 2100 6000 2900
+	6100 2100 6100 2900
 Wire Bus Line
 	3400 2200 3400 3400
 Wire Bus Line
@@ -1207,4 +1253,26 @@ Wire Bus Line
 	6100 4700 6100 6000
 Wire Bus Line
 	800  1000 800  6500
+Text Notes 2800 750  0    50   ~ 0
+ST-Link Signals
+Text Notes 2700 2150 0    50   ~ 0
+Motor/Encoder Signals
+Text Notes 2600 3650 0    50   ~ 0
+Single Board Computer Signals
+Text Notes 2800 4350 0    50   ~ 0
+WOWBus Signals
+Text Notes 4100 6450 0    50   ~ 0
+Power/Ground/Reset Signals
+Text Notes 6350 750  0    50   ~ 0
+LED Signals
+Text Notes 6350 1450 0    50   ~ 0
+Servo Signals
+Text Notes 6300 2050 0    50   ~ 0
+Sonar Signals
+Text Notes 6000 3650 0    50   ~ 0
+Miscellaneous I/O Signals
+Text Notes 6350 4150 0    50   ~ 0
+LIDAR Signals
+Text Notes 6300 4650 0    50   ~ 0
+"Arduino" Signals
 $EndSCHEMATC

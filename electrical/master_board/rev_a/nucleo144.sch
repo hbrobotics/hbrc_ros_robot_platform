@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 9 10
+Sheet 8 10
 Title "HR2 Master Board"
 Date "2020-10-17"
 Rev "A"
@@ -601,4 +601,24 @@ Wire Wire Line
 	8900 3300 8900 3500
 Wire Wire Line
 	8900 3500 9000 3500
+Text HLabel 8500 4000 2    50   Output ~ 0
+SBC_TX
+Text HLabel 8500 4100 2    50   Input ~ 0
+SBC_RX
+Text HLabel 8500 4200 2    50   Input ~ 0
+SBC_ALIVE
+Text HLabel 8500 4300 2    50   Output ~ 0
+SBC_STOP
+Wire Wire Line
+	8500 4000 8400 4000
+Wire Wire Line
+	8400 4000 8400 4100
+Wire Wire Line
+	8400 4100 8500 4100
+Wire Wire Line
+	8500 4200 8400 4200
+Wire Wire Line
+	8400 4200 8400 4300
+Wire Wire Line
+	8400 4300 8500 4300
 $EndSCHEMATC
