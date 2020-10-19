@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 4 10
+Sheet 10 10
 Title "HR2 LED's"
 Date "2020-10-17"
 Rev "A"
@@ -914,9 +914,9 @@ Wire Wire Line
 Wire Wire Line
 	9700 3200 9700 2300
 Text HLabel 1000 5400 0    50   Input ~ 0
-LED_MOSI
+LEDS_MOSI
 Text HLabel 1000 5500 0    50   Input ~ 0
-LED_SCLK
+LEDS_SCLK
 $Comp
 L HR2:SN74HCS595;TTSOP16 U?
 U 1 1 5FB58AAF
@@ -1165,7 +1165,7 @@ Wire Wire Line
 Wire Wire Line
 	3000 2700 6500 2700
 Text HLabel 1000 5600 0    50   Input ~ 0
-LED_NSS
+~LEDS_NSS
 Wire Bus Line
 	3500 2000 3500 6100
 $EndSCHEMATC

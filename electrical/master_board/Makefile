@@ -22,7 +22,7 @@
 IOC_DIR := rev_a/hr2
 IOC_CSV := $(IOC_DIR)/hr2.ioc
 F767ZI_DIR := rev_a
-F767ZI_CSV := $(F767ZI_DIR)/f767zi.csv
+F767ZI_CSV := $(F767ZI_DIR)/master.csv
 KIPART_DIR := ../orders/order1/kiparts
 KIPART_CSV := $(KIPART_DIR)/NUCLEO_F767ZI_2xF2x35.kipart.csv
 

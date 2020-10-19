@@ -65,7 +65,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PD8     ------> USART3_TX
     PD9     ------> USART3_RX 
     */
-    GPIO_InitStruct.Pin = STLINK_RX_Pin|STLINK_TX_Pin;
+    GPIO_InitStruct.Pin = STL_RX_Pin|STL_TX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -93,7 +93,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     PD8     ------> USART3_TX
     PD9     ------> USART3_RX 
     */
-    HAL_GPIO_DeInit(GPIOD, STLINK_RX_Pin|STLINK_TX_Pin);
+    HAL_GPIO_DeInit(GPIOD, STL_RX_Pin|STL_TX_Pin);
 
   /* USER CODE BEGIN USART3_MspDeInit 1 */
 

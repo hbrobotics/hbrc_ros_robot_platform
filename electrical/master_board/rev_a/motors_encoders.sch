@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 9 10
+Sheet 5 10
 Title "HR2 Motors and Encoders"
 Date "2020-10-17"
 Rev "A"
@@ -18,7 +18,7 @@ L HR2:HR2_EncoderMate;2XF1X3 CN55
 U 1 1 5F4A855F
 P 9000 1500
 F 0 "CN55" H 9300 1650 50  0000 C CNN
-F 1 "HR2_EncoderMate;2XF1X3" H 9450 850 50  0000 C CNN
+F 1 "HR2_ENCODER;2XF1X3" H 9450 850 50  0000 C CNN
 F 2 "HR2:ENCODER_MATE" H 9200 1550 60  0001 L CNN
 F 3 "HR2 Encoder Mating Connector" H 9200 1350 60  0001 L CNN
 F 4 "HR2 Encoder Mating Connector" H 9200 1250 60  0001 L CNN "Field5"
@@ -32,7 +32,7 @@ P 9000 3400
 AR Path="/5F4A92D6" Ref="CN?"  Part="1" 
 AR Path="/5F4A826A/5F4A92D6" Ref="CN56"  Part="1" 
 F 0 "CN56" H 9300 3550 50  0000 C CNN
-F 1 "HR2_EncoderMate;2XF1X3" H 9450 2750 50  0000 C CNN
+F 1 "HR2_ENCODER;2xF1x3" H 9450 2750 50  0000 C CNN
 F 2 "HR2:ENCODER_MATE" H 9200 3450 60  0001 L CNN
 F 3 "HR2 Encoder Mating Connector" H 9200 3250 60  0001 L CNN
 F 4 "HR2 Encoder Mating Connector" H 9200 3150 60  0001 L CNN "Field5"
@@ -318,15 +318,15 @@ F 3 "~" H 7250 3200 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	4400 3400 8100 3400
-Text HLabel 8700 2800 2    50   Input ~ 0
+Text HLabel 9500 2800 2    50   Input ~ 0
 3.3V
-Text HLabel 8500 2550 2    50   Output ~ 0
+Text HLabel 9500 2400 2    50   Output ~ 0
 LQUAD_B
-Text HLabel 8500 2450 2    50   Output ~ 0
+Text HLabel 9500 2500 2    50   Output ~ 0
 LQUAD_A
-Text HLabel 8500 4400 2    50   Output ~ 0
+Text HLabel 9500 4500 2    50   Output ~ 0
 RQUAD_A
-Text HLabel 8500 4500 2    50   Output ~ 0
+Text HLabel 9500 4400 2    50   Output ~ 0
 RQUAD_B
 Wire Wire Line
 	6000 5000 7600 5000
@@ -353,10 +353,10 @@ Wire Wire Line
 Wire Wire Line
 	7600 1800 7600 2300
 Connection ~ 7600 2300
-Text HLabel 8500 5000 2    50   Input ~ 0
+Text HLabel 9500 5000 2    50   Input ~ 0
 GND
 Wire Wire Line
-	7600 5000 8500 5000
+	7600 5000 9500 5000
 Connection ~ 7600 5000
 Wire Wire Line
 	8100 3600 7700 3600
@@ -365,46 +365,46 @@ Wire Wire Line
 Wire Wire Line
 	7700 1700 8100 1700
 Wire Wire Line
-	8700 2800 7700 2800
+	9500 2800 7700 2800
 Connection ~ 7700 2800
 Wire Wire Line
 	7700 2800 7700 1700
 Wire Wire Line
 	8100 1900 7900 1900
 Wire Wire Line
-	7900 1900 7900 2550
+	7900 1900 7900 2500
 Wire Wire Line
-	7900 2550 8500 2550
+	7900 2500 9500 2500
 Wire Wire Line
 	8100 2000 8000 2000
 Wire Wire Line
-	8000 2000 8000 2450
+	8000 2000 8000 2400
 Wire Wire Line
-	8000 2450 8500 2450
+	8000 2400 9500 2400
 Wire Wire Line
 	8100 3800 7900 3800
 Wire Wire Line
-	8500 4400 7900 4400
+	9500 4500 7900 4500
 Wire Wire Line
-	7900 3800 7900 4400
+	7900 3800 7900 4500
 Wire Wire Line
-	8500 4500 8000 4500
+	9500 4400 8000 4400
 Wire Wire Line
-	8000 4500 8000 3900
+	8000 4400 8000 3900
 Wire Wire Line
 	8000 3900 8100 3900
-Text Label 8400 2800 0    50   ~ 0
+Text Label 8500 2800 2    50   ~ 0
 3.3V
-Text Label 8050 4400 0    50   ~ 0
+Text Label 9500 4500 2    50   ~ 0
 RQUAD_A
-Text Label 8050 4500 0    50   ~ 0
+Text Label 9500 4400 2    50   ~ 0
 RQUAD_B
-Text Label 8050 2450 0    50   ~ 0
+Text Label 8500 2500 2    50   ~ 0
 LQUAD_A
-Text Label 8050 2550 0    50   ~ 0
+Text Label 8500 2400 2    50   ~ 0
 LQUAD_B
 Text Label 4900 4100 0    50   ~ 0
 9V
-Text Label 8050 5000 0    50   ~ 0
+Text Label 9500 5000 2    50   ~ 0
 GND
 $EndSCHEMATC

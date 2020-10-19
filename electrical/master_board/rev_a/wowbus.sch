@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 10 10
+Sheet 6 10
 Title "HR2: WOWBus"
 Date "2020-10-17"
 Rev "A"
@@ -104,16 +104,16 @@ $EndComp
 $Comp
 L Transistor_FET:2N7000 Q?
 U 1 1 5F86962A
-P 3400 5400
+P 3400 5600
 AR Path="/5F79BC00/5F86962A" Ref="Q?"  Part="1" 
 AR Path="/5FA4A874/5F86962A" Ref="Q?"  Part="1" 
 AR Path="/5FAD82EE/5F86962A" Ref="Q?"  Part="1" 
 AR Path="/5F8C2F57/5F86962A" Ref="Q5"  Part="1" 
-F 0 "Q5" H 3300 5550 50  0000 L CNN
-F 1 "2N7000;SOT23" H 2900 5200 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 3600 5325 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3400 5400 50  0001 L CNN
-	1    3400 5400
+F 0 "Q5" H 3300 5750 50  0000 L CNN
+F 1 "2N7000;SOT23" H 2900 5400 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3600 5525 50  0001 L CIN
+F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3400 5600 50  0001 L CNN
+	1    3400 5600
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -147,7 +147,7 @@ Wire Wire Line
 Connection ~ 2800 1800
 Text HLabel 1000 6800 0    50   Input ~ 0
 GND
-Text HLabel 1000 5400 0    50   Input ~ 0
+Text HLabel 1000 5600 0    50   Input ~ 0
 WOW_EN
 $Comp
 L Device:R_US R38
@@ -374,15 +374,12 @@ F 3 "~" H 9000 4150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3500 5600 3500 6800
+	3500 5800 3500 6800
 Connection ~ 3500 6800
-Wire Wire Line
-	3500 6800 4100 6800
 Wire Wire Line
 	1000 3900 1700 3900
 Wire Wire Line
 	3500 3900 3500 4000
-Connection ~ 4700 5100
 $Comp
 L Device:R_US R35
 U 1 1 5F98DD9D
@@ -395,29 +392,27 @@ F 3 "~" H 1600 6500 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	1600 6350 1600 5400
-Wire Wire Line
-	6200 3900 4100 3900
+	1600 6350 1600 5600
 Connection ~ 3500 3900
 Wire Wire Line
 	6200 2200 6200 3400
 $Comp
 L Transistor_FET:2N7000 Q?
 U 1 1 5F9A0944
-P 2700 5700
+P 2700 4500
 AR Path="/5F79BC00/5F9A0944" Ref="Q?"  Part="1" 
 AR Path="/5FA4A874/5F9A0944" Ref="Q?"  Part="1" 
 AR Path="/5FAD82EE/5F9A0944" Ref="Q?"  Part="1" 
 AR Path="/5F8C2F57/5F9A0944" Ref="Q4"  Part="1" 
-F 0 "Q4" H 2600 5850 50  0000 L CNN
-F 1 "2N7000;SOT23" H 2850 5550 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 2900 5625 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 2700 5700 50  0001 L CNN
-	1    2700 5700
+F 0 "Q4" H 2600 4650 50  0000 L CNN
+F 1 "2N7000;SOT23" H 2850 4350 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 2900 4425 50  0001 L CIN
+F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 2700 4500 50  0001 L CNN
+	1    2700 4500
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2800 2350 2800 5500
+	2800 2350 2800 4300
 Wire Wire Line
 	6300 3500 10200 3500
 Text HLabel 1000 3200 0    50   Input ~ 0
@@ -458,14 +453,6 @@ F 4 "D-type flip-flop edge-trigger/set/reset" H 5000 5650 60  0001 L CNN "Field5
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4800 4900 4600 4900
-Wire Wire Line
-	4600 4900 4600 5600
-Wire Wire Line
-	4600 5600 6000 5600
-Wire Wire Line
-	6000 5600 6000 6100
-Wire Wire Line
 	6000 6100 5900 6100
 Wire Wire Line
 	6100 5900 5900 5900
@@ -479,7 +466,6 @@ Wire Wire Line
 	6000 6100 6000 7200
 Wire Wire Line
 	6000 7200 1000 7200
-Connection ~ 6000 6100
 Wire Wire Line
 	5900 6000 6100 6000
 Wire Wire Line
@@ -490,57 +476,8 @@ Text HLabel 1000 7300 0    50   Output ~ 0
 ESTOP
 Text HLabel 1000 7200 0    50   Output ~ 0
 ~ESTOP
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5F9C400A
-P 4000 6500
-AR Path="/5F79BC00/5F9C400A" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5F9C400A" Ref="Q?"  Part="1" 
-AR Path="/5FAD82EE/5F9C400A" Ref="Q?"  Part="1" 
-AR Path="/5F8C2F57/5F9C400A" Ref="Q17"  Part="1" 
-F 0 "Q17" H 3900 6650 50  0000 L CNN
-F 1 "2N7000;SOT23" H 4150 6350 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 4200 6425 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 4000 6500 50  0001 L CNN
-	1    4000 6500
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	6100 5000 6100 5700
-Wire Wire Line
-	4800 5000 3700 5000
-Wire Wire Line
-	3700 5000 3700 6500
-Wire Wire Line
-	3700 6500 3800 6500
-Wire Wire Line
-	4100 6700 4100 6800
-Connection ~ 4100 6800
-Wire Wire Line
-	4100 6800 6300 6800
-$Comp
-L Device:R_US R39
-U 1 1 5FA11EAD
-P 4100 4150
-F 0 "R39" H 3950 4250 50  0000 L CNN
-F 1 "100KΩ;1608" H 4150 4050 50  0000 L CNN
-F 2 "" V 4140 4140 50  0001 C CNN
-F 3 "~" H 4100 4150 50  0001 C CNN
-	1    4100 4150
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3500 4300 3500 5100
-Wire Wire Line
-	4100 4000 4100 3900
-Connection ~ 4100 3900
-Wire Wire Line
-	4100 3900 3500 3900
-Wire Wire Line
-	4700 5100 3500 5100
-Connection ~ 3500 5100
-Wire Wire Line
-	3500 5100 3500 5200
 Text HLabel 1000 6000 0    50   Input ~ 0
 ~ESTOP_CLR
 Text HLabel 1000 6100 0    50   Input ~ 0
@@ -556,13 +493,6 @@ Wire Wire Line
 Connection ~ 6100 5700
 Wire Wire Line
 	6100 5700 6100 5900
-Wire Wire Line
-	4100 4300 4100 6100
-Wire Wire Line
-	4800 6100 4100 6100
-Connection ~ 4100 6100
-Wire Wire Line
-	4100 6100 4100 6300
 Wire Wire Line
 	4800 5900 4700 5900
 Connection ~ 4700 5900
@@ -604,7 +534,7 @@ Text Notes 1950 6250 0    40   ~ 0
 Wire Wire Line
 	2200 6800 2800 6800
 Wire Wire Line
-	2800 5900 2800 6800
+	2800 4700 2800 6800
 Connection ~ 2800 6800
 Wire Wire Line
 	2800 6800 3500 6800
@@ -630,13 +560,13 @@ Wire Wire Line
 Wire Wire Line
 	1000 6800 1600 6800
 Wire Wire Line
-	1000 5400 1600 5400
+	1000 5600 1600 5600
 Wire Wire Line
-	2400 5700 2400 5400
+	2400 4500 2400 5600
 Wire Wire Line
-	2400 5700 2500 5700
+	2400 4500 2500 4500
 Wire Wire Line
-	2400 5400 3200 5400
+	2400 5600 3200 5600
 $Comp
 L Device:R_US R36
 U 1 1 5FC61F4D
@@ -716,7 +646,7 @@ Text Label 1000 3300 0    50   ~ 0
 WOW_RX
 Text Label 1000 3900 0    50   ~ 0
 3.3V
-Text Label 1000 5400 0    50   ~ 0
+Text Label 1000 5600 0    50   ~ 0
 WOW_EN
 Text Label 1000 6000 0    50   ~ 0
 ~ESTOP_CLR
@@ -728,18 +658,18 @@ Text Label 1000 7300 0    50   ~ 0
 ESTOP
 Text Label 1000 6800 0    50   ~ 0
 GND
-Text Label 4150 6200 0    50   ~ 0
+Text Label 4250 6200 0    50   ~ 0
 ~ESTOP_RESET
-Text Label 4150 6100 0    50   ~ 0
+Text Label 4250 6100 0    50   ~ 0
 ESTOP_TRIG
-Text Label 4150 5000 0    50   ~ 0
-WOW_RXD
-Text Label 4150 5100 0    50   ~ 0
+Text Label 4400 5000 0    50   ~ 0
+~ESTOP
+Text Label 4100 4500 0    50   ~ 0
 WOW_STDBY
 Wire Wire Line
-	2400 5400 1600 5400
-Connection ~ 2400 5400
-Connection ~ 1600 5400
+	2400 5600 1600 5600
+Connection ~ 2400 5600
+Connection ~ 1600 5600
 Text Label 7900 1900 0    50   ~ 0
 WOW_POW_OUT
 Text Label 7500 2600 0    50   ~ 0
@@ -754,7 +684,7 @@ Wire Wire Line
 	6000 3600 9000 3600
 Connection ~ 4700 3800
 Wire Wire Line
-	4700 3800 4700 5100
+	4700 3800 4700 4500
 Wire Wire Line
 	9000 4000 9000 3600
 Connection ~ 9000 3600
@@ -774,4 +704,33 @@ Wire Wire Line
 	6500 6200 6700 6200
 Wire Wire Line
 	6700 6200 6700 6100
+Wire Wire Line
+	4800 6100 4200 6100
+Wire Wire Line
+	4800 4900 4200 4900
+Wire Wire Line
+	4200 4900 4200 6100
+Connection ~ 4700 4500
+Wire Wire Line
+	4700 4500 4700 5100
+Wire Wire Line
+	6000 6100 6000 5500
+Wire Wire Line
+	6000 5500 4300 5500
+Wire Wire Line
+	4300 5500 4300 5000
+Wire Wire Line
+	4300 5000 4800 5000
+Connection ~ 6000 6100
+Wire Wire Line
+	3500 6800 6300 6800
+Wire Wire Line
+	3500 3900 6200 3900
+Wire Wire Line
+	3500 4300 3500 4500
+Connection ~ 3500 4500
+Wire Wire Line
+	3500 4500 3500 5400
+Wire Wire Line
+	3500 4500 4700 4500
 $EndSCHEMATC

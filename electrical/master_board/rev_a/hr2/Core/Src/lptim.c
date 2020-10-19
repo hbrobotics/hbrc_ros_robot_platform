@@ -64,19 +64,19 @@ void HAL_LPTIM_MspInit(LPTIM_HandleTypeDef* lptimHandle)
     PD12     ------> LPTIM1_IN1
     PE1     ------> LPTIM1_IN2 
     */
-    GPIO_InitStruct.Pin = LENCODER_A_Pin;
+    GPIO_InitStruct.Pin = LQUAD_A_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF3_LPTIM1;
-    HAL_GPIO_Init(LENCODER_A_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(LQUAD_A_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = LENCODER_BE1_Pin;
+    GPIO_InitStruct.Pin = LQUAD_BE1_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF3_LPTIM1;
-    HAL_GPIO_Init(LENCODER_BE1_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(LQUAD_BE1_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN LPTIM1_MspInit 1 */
 
@@ -99,9 +99,9 @@ void HAL_LPTIM_MspDeInit(LPTIM_HandleTypeDef* lptimHandle)
     PD12     ------> LPTIM1_IN1
     PE1     ------> LPTIM1_IN2 
     */
-    HAL_GPIO_DeInit(LENCODER_A_GPIO_Port, LENCODER_A_Pin);
+    HAL_GPIO_DeInit(LQUAD_A_GPIO_Port, LQUAD_A_Pin);
 
-    HAL_GPIO_DeInit(LENCODER_BE1_GPIO_Port, LENCODER_BE1_Pin);
+    HAL_GPIO_DeInit(LQUAD_BE1_GPIO_Port, LQUAD_BE1_Pin);
 
   /* USER CODE BEGIN LPTIM1_MspDeInit 1 */
 
