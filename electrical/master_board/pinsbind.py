@@ -484,18 +484,18 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
         # get assigned to the RENCODER.  The none of the other encoder enabled timers
         # (TIM1/2/3/4/5/6/8) have both CH1/2 available.  This is fixed by shorting a Morpho
         # pin to LPTIM1_IN2.  This allows TIM1 to be used for LENCODER.
-        ("LPTIM1_IN1", "LENCODER_A", daughter_signals, ""),
-        ("LPTIM1_IN2", "LENCODER_B", morpho_signals, "PE1"),    # LPTIM1_IN2 only on PE1.
-        ("LPTIM1_IN2", "LENCODER_B", daughter_signals, "PA4"),  # Short these two lines together
-        ("TIM8_CH1", "RENCODER_A", daughter_signals, ""),
-        ("TIM8_CH2", "RENCODER_B", daughter_signals, ""),
+        ("LPTIM1_IN1", "LQUAD_A", daughter_signals, ""),
+        ("LPTIM1_IN2", "LQUAD_B", morpho_signals, "PE1"),    # LPTIM1_IN2 only on PE1.
+        ("LPTIM1_IN2", "LQUAD_B", daughter_signals, "PA4"),  # Short these two lines together
+        ("TIM8_CH1", "RQUAD_A", daughter_signals, ""),
+        ("TIM8_CH2", "RQUAD_B", daughter_signals, ""),
 
         # It is a requirement that each motor have both its +/- outputs on the same timer.
         # TIM3 fits the bill:
-        ("TIM3_CH1", "LMOTOR+", daughter_signals, ""),
-        ("TIM3_CH2", "LMOTOR-", daughter_signals, ""),
-        ("TIM3_CH3", "RMOTOR+", daughter_signals, ""),
-        ("TIM3_CH4", "RMOTOR-", daughter_signals, ""),
+        ("TIM3_CH1", "LMOTOR_CTL1", daughter_signals, ""),
+        ("TIM3_CH2", "LMOTOR_CTL2", daughter_signals, ""),
+        ("TIM3_CH3", "RMOTOR_CTL1", daughter_signals, ""),
+        ("TIM3_CH4", "RMOTOR_CTL2", daughter_signals, ""),
 
         # The Lidar just needs one dedicated timer.
         # There are plenty to choose from, so TIM4_CH2 is used.
@@ -580,18 +580,18 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
     # UARTS's come next.  Note that the schematic signal names swapped from the peripheral names:
     if "USART1" in peripheral_set:
         pin_binds.extend([
-            ("USART1_RX", "U1_TX", daughter_signals, ""),
-            ("USART1_TX", "U1_RX", daughter_signals, ""),
+            ("USART1_RX", "SBC_TX", daughter_signals, ""),
+            ("USART1_TX", "SBC_RX", daughter_signals, ""),
         ])
     if "USART2" in peripheral_set:
         pin_binds.extend([
-            ("USART2_RX", "U2_RX", daughter_signals, ""),
-            ("USART2_TX", "U2_TX", daughter_signals, ""),
+            ("USART2_RX", "WOW_TX", daughter_signals, ""),
+            ("USART2_TX", "WOW_RX", daughter_signals, ""),
         ])
     if "USART3" in peripheral_set:
         pin_binds.extend([
-            ("USART3_RX", "STLINK_TX", morpho_signals, ""),  # Nucleo manual expects USART3
-            ("USART3_TX", "STLINK_RX", morpho_signals, ""),
+            ("USART3_RX", "STL_TX", morpho_signals, ""),  # Nucleo manual expects USART3
+            ("USART3_TX", "STL_RX", morpho_signals, ""),
         ])
     if "USART4" in peripheral_set:
         pin_binds.extend([
@@ -600,8 +600,8 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
         ])
     if "UART5" in peripheral_set:
         pin_binds.extend([
-            ("UART5_RX", "U5_TX", daughter_signals, ""),
-            ("UART5_TX", "U5_RX", daughter_signals, ""),
+            ("UART5_RX", "LIDAR_TX", daughter_signals, ""),
+            ("UART5_TX", "LIDAR_RX", daughter_signals, ""),
         ])
     if "UART6" in peripheral_set:  # UART6 already been bound with the arduino pins.
         assert False, "UART6 is already connected to Arduino pins already"
@@ -611,8 +611,8 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
         ])
     if "UART7" in peripheral_set:
         pin_binds.extend([
-            ("UART7_RX", "U7_TX", daughter_signals, ""),
-            ("UART7_TX", "U7_RX", daughter_signals, ""),
+            ("UART7_RX", "FPGA_TX", daughter_signals, ""),
+            ("UART7_TX", "FPGA_RX", daughter_signals, ""),
         ])
 
     if "UART8" in peripheral_set:
@@ -629,15 +629,27 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
         # Each port bit number must be different in order to support external interrupts.
         # '>' means digital input:
         pin_binds.extend([
-            (">PE0", "SONAR1_ECHO", daughter_signals, "PE0"),
-            (">PE8", "SONAR2_ECHO", daughter_signals, "PE8"),
-            (">PE10", "SONAR3_ECHO", daughter_signals, "PE10"),
-            (">PE12", "SONAR4_ECHO", daughter_signals, "PE12"),
-            (">PE14", "SONAR5_ECHO", daughter_signals, "PE14"),
-            (">PE15", "SONAR6_ECHO", daughter_signals, "PE15"),
-            (">PF9", "SONAR7_ECHO", daughter_signals, "PF9"),
+            (">PE0", "ECHO1", daughter_signals, "PE0"),
+            (">PD1", "INT1", daughter_signals, "PD1"),
+            (">PD2", "INT0", daughter_signals, "PD2"),
+
+            # (">PD3", "??", daughter_signals, "PD3"),  # Available interrupt pin.
+            (">PD7", "ESTOP", daughter_signals, "PD7"),
+
+            (">PE8", "ECHO2", daughter_signals, "PE8"),
+            (">PF9", "ECHO7", daughter_signals, "PF9"),
+            (">PE10", "ECHO3", daughter_signals, "PE10"),
+            (">PE12", "ECHO4", daughter_signals, "PE12"),
+            (">PE14", "ECHO5", daughter_signals, "PE14"),
+            (">PE15", "ECHO6", daughter_signals, "PE15"),
         ])
 
+        # Miscellaneous pins.
+        pin_binds.extend([
+             (">PC2", "ESTOP_CLR", daughter_signals, "PC2"),
+             (">PC12", "WOW_EN", daughter_signals, "PC12"),
+             (">PD0", "SBC_ALIVE", daughter_signals, "PD0"),
+        ])
     return pin_binds
 
 
@@ -959,8 +971,11 @@ def summary_show(peripheral_permutation: TextTuple,
     pin_bindings: List[Quad] = [binding_extract(binding)
                                 for binding in pin_bindings_table.values()]
     pin_bindings = sorted(pin_bindings)
-    pin_numbers_bindings: List[Tuple[int, Quad]] = []
     quad: Quad
+    for quad in pin_bindings:
+        print(f"{quad}")
+
+    pin_numbers_bindings: List[Tuple[int, Quad]] = []
     pin_number: int
     for quad in pin_bindings:
         pin_number = pin_numbers_table[f"{quad[0]}{quad[1]}"]

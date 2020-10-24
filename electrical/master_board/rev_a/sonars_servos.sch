@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 6 10
+Sheet 3 10
 Title "HR2 Servos and Sonars"
 Date "2020-10-17"
 Rev "A"
@@ -328,13 +328,13 @@ NoConn ~ 5850 1800
 Wire Wire Line
 	3800 3200 4750 3200
 Text HLabel 1300 2900 0    50   Input ~ 0
-MISC_MOSI
+DIO_MOSI
 Text HLabel 1300 3900 0    50   Output ~ 0
 SER_OUT
 Text HLabel 1300 3000 0    50   Input ~ 0
-MISC_SCK
+DIO_SCK
 Text HLabel 1300 3100 0    50   Input ~ 0
-MISC_NSS
+~DIO_NSS
 Text Notes 4900 1100 0    50   ~ 0
 3.3V to 5V Level Shifter
 Entry Wire Line
@@ -395,11 +395,11 @@ Wire Wire Line
 Wire Wire Line
 	1300 3900 3900 3900
 Text Label 1300 2900 0    50   ~ 0
-MISC_MOSI
+DIO_MOSI
 Text Label 1300 3000 0    50   ~ 0
-MISC_SCK
+DIO_SCK
 Text Label 1300 3100 0    50   ~ 0
-MISC_NSS
+~DIO_NSS
 Text Label 1300 3900 0    50   ~ 0
 SER_IO
 Text Label 1900 3200 0    50   ~ 0
@@ -539,7 +539,7 @@ Text HLabel 1300 4700 0    50   Input ~ 0
 P5V
 Wire Wire Line
 	2000 5200 2000 5900
-Text Label 2000 5200 0    50   ~ 0
+Text Label 1300 5900 0    50   ~ 0
 ECHO1
 Text Label 3200 5200 0    50   ~ 0
 ECHO2
@@ -1174,6 +1174,20 @@ Entry Wire Line
 	6400 1900 6500 2000
 Wire Wire Line
 	5850 1900 6400 1900
+Text Label 2000 5200 0    50   ~ 0
+ECHO1
+Text Label 1300 6000 0    50   ~ 0
+ECHO2
+Text Label 1300 6500 0    50   ~ 0
+ECHO7
+Text Label 1300 6400 0    50   ~ 0
+ECHO6
+Text Label 1300 6300 0    50   ~ 0
+ECHO5
+Text Label 1300 6200 0    50   ~ 0
+ECHO4
+Text Label 1300 6100 0    50   ~ 0
+ECHO3
 Wire Bus Line
 	4350 2250 6300 2250
 Wire Bus Line
