@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 10 10
+Sheet 7 10
 Title "HR2 LED's"
 Date "2020-10-17"
 Rev "A"
@@ -13,11 +13,8 @@ Comment2 "MIT License"
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Notes 1050 1950 0    50   ~ 0
+Text Notes 900  1900 0    50   ~ 0
 Note:\n1. The LED's are controlled by a 16-bit shift regester that is\n   filled using an SPI controller.  The 3.3V outputs are fed into\n   FET's that drive the LED's.\n
-Connection ~ 4500 6400
-Wire Wire Line
-	4500 6400 3100 6400
 Wire Wire Line
 	9300 4200 10100 4200
 Connection ~ 9300 4200
@@ -924,7 +921,7 @@ P 1900 5100
 AR Path="/5F48CAAD/5FB58AAF" Ref="U?"  Part="1" 
 AR Path="/5FA4A874/5FB58AAF" Ref="U8"  Part="1" 
 F 0 "U8" H 2150 5250 50  0000 C CNN
-F 1 "SN74HCS595;TTSOP16" H 2300 3450 50  0000 C CNN
+F 1 "SN74HCS595;TTSOP16" H 2450 3950 50  0000 C CNN
 F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2100 5150 60  0001 L CNN
 F 3 "Tri-state 8-Bit Shift Register" H 2100 4950 60  0001 L CNN
 F 4 "Tri-State 8-Bit Shift Register" H 2100 4850 60  0001 L CNN "Field5"
@@ -947,7 +944,7 @@ Text Label 3400 5600 2    50   ~ 0
 LED5
 Text Label 3400 5700 2    50   ~ 0
 LED6
-Text Notes 2250 1500 0    50   ~ 0
+Text Notes 1850 2000 0    50   ~ 0
 16-Bit SPI LED Shift Register
 Wire Wire Line
 	3000 5300 8900 5300
@@ -959,20 +956,6 @@ Wire Wire Line
 	4100 6100 4100 5900
 Text HLabel 1000 4500 0    50   Input ~ 0
 GND
-Wire Wire Line
-	10100 6400 10900 6400
-Wire Wire Line
-	10900 6400 10900 3500
-Wire Wire Line
-	10900 3500 10100 3500
-Connection ~ 10100 6400
-Connection ~ 10100 3500
-Wire Wire Line
-	4500 4200 3700 4200
-Wire Wire Line
-	3700 4200 3700 1300
-Wire Wire Line
-	3700 1300 4500 1300
 Connection ~ 4500 4200
 Text HLabel 1000 1300 0    50   Input ~ 0
 P5V
@@ -1002,9 +985,6 @@ Text Notes 7550 3850 0    50   ~ 0
 Notes (cont.):\n3. LED's are labeled from 1 to 16 in a counter-clockwise\n    direction starting in the NW quadrant nearest the X axis.
 Text HLabel 1000 4400 0    50   Input ~ 0
 3.3V
-Connection ~ 3700 1300
-Wire Wire Line
-	1000 1300 3700 1300
 Wire Wire Line
 	3000 5200 9700 5200
 $Comp
@@ -1045,21 +1025,19 @@ Wire Wire Line
 Entry Wire Line
 	3400 5100 3500 5000
 Entry Wire Line
-	3400 6100 3500 6000
+	3400 6400 3500 6300
 Wire Wire Line
 	3000 5100 3400 5100
 Wire Wire Line
-	3400 6100 3100 6100
+	3400 6400 3100 6400
 Wire Wire Line
 	1900 5800 1800 5800
 Wire Wire Line
 	1800 5800 1800 6400
 Wire Wire Line
 	3100 6400 3100 6100
-Connection ~ 3100 6100
 Wire Wire Line
 	3100 6100 3000 6100
-Connection ~ 3100 6400
 Wire Wire Line
 	1800 6400 3100 6400
 Wire Wire Line
@@ -1117,7 +1095,7 @@ Wire Wire Line
 	1500 5500 1900 5500
 Text Label 3400 5100 2    50   ~ 0
 3.3V
-Text Label 3400 6100 2    50   ~ 0
+Text Label 3400 6400 2    50   ~ 0
 GND
 NoConn ~ 3000 6000
 Text Label 1000 5400 0    50   ~ 0
@@ -1166,6 +1144,101 @@ Wire Wire Line
 	3000 2700 6500 2700
 Text HLabel 1000 5600 0    50   Input ~ 0
 ~LEDS_NSS
+Text Notes 3250 3950 0    50   ~ 0
+Power\nBus
+Entry Wire Line
+	3600 3500 3500 3400
+Text Label 3600 3500 0    50   ~ 0
+GND
+Wire Wire Line
+	3600 3500 4500 3500
+Connection ~ 4500 3500
+Connection ~ 3100 6400
+Entry Wire Line
+	3600 6400 3500 6300
+Wire Wire Line
+	3600 6400 4500 6400
+Connection ~ 4500 6400
+Text Label 3600 6400 0    50   ~ 0
+GND
+Entry Wire Line
+	3500 1400 3400 1300
+Entry Wire Line
+	3500 1400 3600 1300
+Entry Wire Line
+	3950 1000 4050 1100
+Wire Wire Line
+	1000 1300 3400 1300
+Text Label 3400 1300 2    50   ~ 0
+P5V
+Text Label 3600 1300 0    50   ~ 0
+P5V
+Entry Wire Line
+	3500 4300 3600 4200
+Text Label 3600 4200 0    50   ~ 0
+P5V
+Wire Wire Line
+	3600 4200 4500 4200
+Wire Wire Line
+	3600 1300 4500 1300
+Text Label 3600 6600 0    50   ~ 0
+3.3V
+Text Label 3600 7200 0    50   ~ 0
+GND
+$Comp
+L Device:C C?
+U 1 1 5FA78555
+P 3800 6950
+AR Path="/5F48CAAD/5FA78555" Ref="C?"  Part="1" 
+AR Path="/5F4CEE66/5FA78555" Ref="C?"  Part="1" 
+AR Path="/5FA4A874/5FA78555" Ref="C24"  Part="1" 
+F 0 "C24" H 3600 7050 50  0000 L CNN
+F 1 "10pF;1608" H 3850 6850 50  0000 L CNN
+F 2 "" H 3838 6800 50  0001 C CNN
+F 3 "~" H 3800 6950 50  0001 C CNN
+	1    3800 6950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3800 6800 3800 6700
+Wire Wire Line
+	3800 6700 3600 6700
+Wire Wire Line
+	3800 7100 3800 7200
+Entry Wire Line
+	3600 6600 3500 6500
+Entry Wire Line
+	3600 7200 3500 7100
+$Comp
+L Device:C C?
+U 1 1 5FA78560
+P 4400 6950
+AR Path="/5F48CAAD/5FA78560" Ref="C?"  Part="1" 
+AR Path="/5F4CEE66/5FA78560" Ref="C?"  Part="1" 
+AR Path="/5FA4A874/5FA78560" Ref="C25"  Part="1" 
+F 0 "C25" H 4200 7050 50  0000 L CNN
+F 1 "10pF;1608" H 4450 6850 50  0000 L CNN
+F 2 "" H 4438 6800 50  0001 C CNN
+F 3 "~" H 4400 6950 50  0001 C CNN
+	1    4400 6950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3800 6700 4400 6700
+Connection ~ 3800 6700
+Wire Wire Line
+	4400 6800 4400 6700
+Wire Wire Line
+	3800 7200 4400 7200
+Wire Wire Line
+	4400 7100 4400 7200
+Wire Wire Line
+	3600 6700 3600 6600
+Text Notes 3800 6650 0    50   ~ 0
+ByPass Capacitors
+Wire Wire Line
+	3600 7200 3800 7200
 Wire Bus Line
-	3500 2000 3500 6100
+	3500 1300 3500 7200
+Connection ~ 3800 7200
 $EndSCHEMATC

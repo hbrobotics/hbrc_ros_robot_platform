@@ -76,8 +76,8 @@ void Error_Handler(void);
 #define A3_GPIO_Port GPIOF
 #define A4_SDA_Pin GPIO_PIN_5
 #define A4_SDA_GPIO_Port GPIOF
-#define U7_TX_Pin GPIO_PIN_7
-#define U7_TX_GPIO_Port GPIOF
+#define FPGA_RX_Pin GPIO_PIN_7
+#define FPGA_RX_GPIO_Port GPIOF
 #define ECHO7_Pin GPIO_PIN_9
 #define ECHO7_GPIO_Port GPIOF
 #define A5_SCL_Pin GPIO_PIN_10
@@ -116,8 +116,8 @@ void Error_Handler(void);
 #define RMOTOR_CTL2_GPIO_Port GPIOB
 #define LEDS_MOSI_Pin GPIO_PIN_2
 #define LEDS_MOSI_GPIO_Port GPIOB
-#define U7_TXE7_Pin GPIO_PIN_7
-#define U7_TXE7_GPIO_Port GPIOE
+#define FPGA_TX_Pin GPIO_PIN_7
+#define FPGA_TX_GPIO_Port GPIOE
 #define ECHO2_Pin GPIO_PIN_8
 #define ECHO2_GPIO_Port GPIOE
 #define D6_PWM_Pin GPIO_PIN_9
@@ -188,6 +188,10 @@ void Error_Handler(void);
 #define LEDS_SCK_GPIO_Port GPIOC
 #define LEDS_MISO_Pin GPIO_PIN_11
 #define LEDS_MISO_GPIO_Port GPIOC
+#define INT1_Pin GPIO_PIN_1
+#define INT1_GPIO_Port GPIOD
+#define INT0_Pin GPIO_PIN_2
+#define INT0_GPIO_Port GPIOD
 #define WOW_RX_Pin GPIO_PIN_5
 #define WOW_RX_GPIO_Port GPIOD
 #define WOW_TX_Pin GPIO_PIN_6

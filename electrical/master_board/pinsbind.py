@@ -630,14 +630,26 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
         # '>' means digital input:
         pin_binds.extend([
             (">PE0", "ECHO1", daughter_signals, "PE0"),
+            (">PD1", "INT1", daughter_signals, "PD1"),
+            (">PD2", "INT0", daughter_signals, "PD2"),
+
+            # (">PD3", "??", daughter_signals, "PD3"),  # Available interrupt pin.
+            (">PD7", "ESTOP", daughter_signals, "PD7"),
+
             (">PE8", "ECHO2", daughter_signals, "PE8"),
+            (">PF9", "ECHO7", daughter_signals, "PF9"),
             (">PE10", "ECHO3", daughter_signals, "PE10"),
             (">PE12", "ECHO4", daughter_signals, "PE12"),
             (">PE14", "ECHO5", daughter_signals, "PE14"),
             (">PE15", "ECHO6", daughter_signals, "PE15"),
-            (">PF9", "ECHO7", daughter_signals, "PF9"),
         ])
 
+        # Miscellaneous pins.
+        pin_binds.extend([
+             (">PC2", "ESTOP_CLR", daughter_signals, "PC2"),
+             (">PC12", "WOW_EN", daughter_signals, "PC12"),
+             (">PD0", "SBC_ALIVE", daughter_signals, "PD0"),
+        ])
     return pin_binds
 
 

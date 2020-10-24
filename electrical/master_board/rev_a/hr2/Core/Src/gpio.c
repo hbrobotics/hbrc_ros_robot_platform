@@ -39,7 +39,6 @@
      PF1   ------> I2C2_SCL
      PF7   ------> UART7_TX
      PC1   ------> ETH_MDC
-     PA0/WKUP   ------> S_TIM5_CH1
      PA1   ------> ETH_REF_CLK
      PA2   ------> ETH_MDIO
      PA5   ------> SPI1_SCK
@@ -96,6 +95,9 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SERVO1_GPIO_Port, SERVO1_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GRN_LED_Pin|LD3_Pin|BLUE_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -124,12 +126,12 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = U7_TX_Pin;
+  GPIO_InitStruct.Pin = FPGA_RX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF8_UART7;
-  HAL_GPIO_Init(U7_TX_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(FPGA_RX_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = ECHO7_Pin;
@@ -147,10 +149,9 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = SERVO1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF2_TIM5;
   HAL_GPIO_Init(SERVO1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PAPin PAPin */
@@ -199,12 +200,12 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(LEDS_MOSI_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = U7_TXE7_Pin;
+  GPIO_InitStruct.Pin = FPGA_TX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF8_UART7;
-  HAL_GPIO_Init(U7_TXE7_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(FPGA_TX_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PEPin PEPin PEPin PEPin 
                            PEPin PEPin */
@@ -314,6 +315,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PDPin PDPin */
+  GPIO_InitStruct.Pin = INT1_Pin|INT0_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PDPin PDPin */
   GPIO_InitStruct.Pin = WOW_RX_Pin|WOW_TX_Pin;

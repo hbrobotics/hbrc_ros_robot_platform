@@ -1174,6 +1174,20 @@ Entry Wire Line
 	6400 1900 6500 2000
 Wire Wire Line
 	5850 1900 6400 1900
+Text Label 2000 5200 0    50   ~ 0
+ECHO1
+Text Label 1300 6000 0    50   ~ 0
+ECHO2
+Text Label 1300 6500 0    50   ~ 0
+ECHO7
+Text Label 1300 6400 0    50   ~ 0
+ECHO6
+Text Label 1300 6300 0    50   ~ 0
+ECHO5
+Text Label 1300 6200 0    50   ~ 0
+ECHO4
+Text Label 1300 6100 0    50   ~ 0
+ECHO3
 Wire Bus Line
 	4350 2250 6300 2250
 Wire Bus Line
@@ -1202,18 +1216,4 @@ Wire Bus Line
 	6500 1900 6500 4000
 Wire Bus Line
 	1800 2250 1800 5700
-Text Label 2000 5200 0    50   ~ 0
-ECHO1
-Text Label 1300 6000 0    50   ~ 0
-ECHO2
-Text Label 1300 6500 0    50   ~ 0
-ECHO7
-Text Label 1300 6400 0    50   ~ 0
-ECHO6
-Text Label 1300 6300 0    50   ~ 0
-ECHO5
-Text Label 1300 6200 0    50   ~ 0
-ECHO4
-Text Label 1300 6100 0    50   ~ 0
-ECHO3
 $EndSCHEMATC

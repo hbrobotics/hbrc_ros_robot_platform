@@ -35,7 +35,7 @@ pin mappings across all versions of the 144-LQFP (144 pin Low profile Quad Flat 
 Time will tell how good ST Microelectronics is at adhering to this goal.
 The nominal Nucleo-144 selected for revision A of the Master board is the Nucleo144-767ZI.
 This may change over time with subsequent PCB board revisions.
-
+g
 It is a strong goal of the HR2 support the development of development boards that
 plug onto the Nucleo-144.
 The Nucleo-144 has two groups of connectors:
@@ -410,19 +410,6 @@ The HR2 has the following timer needs:
   There are some interesting constraints concerning external interrupts that are
   discussed in further below in the sonars section.
   The timer requirements for the sonar is 1 free running timer.
-
-<!--
-	  The w
-  It is a little strange because,
-  there are 16 pin change interrupts and they can be mappped to pretty my any GPIO pin.
-  It is only possible to select one pin N form PA, ..., PJ for external interrupt.
-  Thus, PA0, PB1, ..., PJ15 would work, PA0, PA1, ..., PA15,
-  or some mixture mixture of PA0, PB1, PA2, PC3, ...., PB15.
-  The SYSCFG registers are used to set the pin selections up
-  in addition to the External Interrupts (EXTI).
-  There needs to be one a free running timer to time length of the echo pulses.
-  This uses up 14 GPIO pins and maybe one internal timer.
--->
 
 The Timer requirements summary is:
 
@@ -804,6 +791,17 @@ There are some timers left over, but not many -- TIM9/10/11/12/13/14.
 That is it.
 In general, Timer pin binding was every bit of a nightmare as expected.
 
-# Other bindings:
 
-{more here}
+## Inerrupts
+
+It is a little strange because,
+there are 16 pin change interrupts and they can be mappped to pretty much any GPIO pin.
+It is only possible to select one pin N form PA, ..., PJ for external interrupt.
+Thus, PA0, PB1, ..., PJ15 would work, PA0, PA1, ..., PA15,
+or some mixture mixture of PA0, PB1, PA2, PC3, ...., PB15.
+The SYSCFG registers are used to set the pin selections up
+in addition to the External Interrupts (EXTI).
+There needs to be one a free running timer to time the length of the echo pulses.
+There need to be 7 echo return interrupt pins and 2 MikroBus interrupt pins.
+This uses up 14 GPIO pins and maybe one internal timer.
+

@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 10 10
+Sheet 8 10
 Title "HR2 Connectors"
 Date "2020-10-17"
 Rev "A"
@@ -686,8 +686,6 @@ Text Label 1500 7450 0    50   ~ 0
 DIO_SCK
 Text Notes 2550 3450 0    50   ~ 0
 Arduino Connector Pins Bus
-Wire Bus Line
-	2400 1300 10300 1300
 Wire Wire Line
 	1500 6700 2800 6700
 Wire Wire Line
@@ -746,10 +744,94 @@ Text Notes 5350 6750 0    50   ~ 0
 Digitial I/O Bus
 Text Notes 6550 4150 0    50   ~ 0
 Digitial I/O Bus
+Text Notes 1750 2750 0    50   ~ 0
+Note\n1. D0_TX transmits from Nucleo to Arduiono pins.\n2. D1_RX recevies form Arduino pins t Nucleo.
+Text Notes 1750 4350 0    50   ~ 0
+Note\n1. D0_TX transmits from Nucleo to Arduiono pins.\n2. D1_RX recevies form Arduino pins t Nucleo.
+Text Label 4400 1400 0    50   ~ 0
+3.3V
+Text Label 6300 1400 0    50   ~ 0
+GND
+$Comp
+L Device:C C?
+U 1 1 5F97D822
+P 4600 1750
+AR Path="/5F48CAAD/5F97D822" Ref="C?"  Part="1" 
+AR Path="/5F4CEE66/5F97D822" Ref="C18"  Part="1" 
+F 0 "C18" H 4400 1850 50  0000 L CNN
+F 1 "10pF;1608" H 4650 1650 50  0000 L CNN
+F 2 "" H 4638 1600 50  0001 C CNN
+F 3 "~" H 4600 1750 50  0001 C CNN
+	1    4600 1750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4600 1600 4600 1500
+Wire Wire Line
+	4600 1500 4400 1500
+Wire Wire Line
+	4600 1900 4600 2000
+Entry Wire Line
+	4400 1400 4300 1300
+Entry Wire Line
+	6300 1400 6200 1300
+$Comp
+L Device:C C?
+U 1 1 5F97D82E
+P 5200 1750
+AR Path="/5F48CAAD/5F97D82E" Ref="C?"  Part="1" 
+AR Path="/5F4CEE66/5F97D82E" Ref="C19"  Part="1" 
+F 0 "C19" H 5000 1850 50  0000 L CNN
+F 1 "10pF;1608" H 5250 1650 50  0000 L CNN
+F 2 "" H 5238 1600 50  0001 C CNN
+F 3 "~" H 5200 1750 50  0001 C CNN
+	1    5200 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5F97D834
+P 5800 1750
+AR Path="/5F48CAAD/5F97D834" Ref="C?"  Part="1" 
+AR Path="/5F4CEE66/5F97D834" Ref="C20"  Part="1" 
+F 0 "C20" H 5600 1850 50  0000 L CNN
+F 1 "10pF;1608" H 5850 1650 50  0000 L CNN
+F 2 "" H 5838 1600 50  0001 C CNN
+F 3 "~" H 5800 1750 50  0001 C CNN
+	1    5800 1750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4600 1500 5200 1500
+Connection ~ 4600 1500
+Wire Wire Line
+	5200 1600 5200 1500
+Connection ~ 5200 1500
+Wire Wire Line
+	5200 1500 5800 1500
+Wire Wire Line
+	5800 1600 5800 1500
+Wire Wire Line
+	4600 2000 5200 2000
+Wire Wire Line
+	5800 1900 5800 2000
+Wire Wire Line
+	5200 1900 5200 2000
+Connection ~ 5200 2000
+Wire Wire Line
+	5200 2000 5800 2000
+Wire Wire Line
+	4400 1500 4400 1400
+Wire Wire Line
+	5800 2000 6300 2000
+Wire Wire Line
+	6300 2000 6300 1400
 Wire Wire Line
 	4600 6500 8100 6500
 Wire Bus Line
 	7400 6100 7400 6400
+Wire Bus Line
+	2400 1300 10300 1300
 Wire Bus Line
 	4700 6400 4700 7700
 Wire Bus Line
@@ -764,8 +846,9 @@ Wire Bus Line
 	6000 2900 6000 6400
 Wire Bus Line
 	3700 1500 3700 5000
-Text Notes 1750 2750 0    50   ~ 0
-Note\n1. D0_TX transmits from Nucleo to Arduiono pins.\n2. D1_RX recevies form Arduino pins t Nucleo.
-Text Notes 1750 4350 0    50   ~ 0
-Note\n1. D0_TX transmits from Nucleo to Arduiono pins.\n2. D1_RX recevies form Arduino pins t Nucleo.
+Connection ~ 5800 2000
+Text Notes 4900 1450 0    50   ~ 0
+ByPass Capacitors
+Text Notes 7200 1550 0    50   ~ 0
+Note: There are many extra input pins.  Most of these will be assignd\nto Grove connectors and edge detectors.
 $EndSCHEMATC
