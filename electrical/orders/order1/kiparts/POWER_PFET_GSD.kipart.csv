@@ -1,4 +1,4 @@
-"POWER_PFET_GSD", "Q", "HR2:POWER_PFET_GSD", "", "Power PFG (GSD pinout)", "Power PFET (GSD pinout)"
+"POWER_PFET_GSD", "Q", "Package_TO_SOT_SMD:SOT-23", "", "Power PFG (GSD pinout)", "Power PFET (GSD pinout)"
 "Pin", "Unit", "Type",      "Name", "Style", "Side"
 "2",   "A",    "power_in",  "S",    "line",  "left"
 "1",   "A",    "passive",   "G",    "line",  "left"
