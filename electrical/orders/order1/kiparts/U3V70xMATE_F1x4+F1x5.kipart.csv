@@ -1,4 +1,4 @@
-U3V70xMATE;F1x4+F1x5,CN,HR2:U3V70xMATE_F1x4+F1x5,Pololu U3V70x Voltage Regulator Mating Connector,Pololu U3V70x Voltage Regulator Mating Connector
+U3V70xMATE;F1x4+F1x5,CN,HR2:U3V70xMATE_F1x4+F1x5,,Pololu U3V70x Voltage Regulator Mating Connector,Pololu U3V70x Voltage Regulator Mating Connector
 "Pin", "Name",   "Type",      "Side",  "Unit", "Style", "Hidden"
 "1",   "ENABLE", "in",        "right", "1",    ,
 "2",   "GND",    "power_in",  "right", "1",    ,

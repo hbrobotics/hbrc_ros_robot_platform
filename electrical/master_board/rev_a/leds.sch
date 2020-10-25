@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 7 10
+Sheet 9 10
 Title "HR2 LED's"
 Date "2020-10-17"
 Rev "A"
@@ -1238,7 +1238,7 @@ Text Notes 3800 6650 0    50   ~ 0
 ByPass Capacitors
 Wire Wire Line
 	3600 7200 3800 7200
+Connection ~ 3800 7200
 Wire Bus Line
 	3500 1300 3500 7200
-Connection ~ 3800 7200
 $EndSCHEMATC
