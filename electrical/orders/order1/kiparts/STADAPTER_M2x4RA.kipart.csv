@@ -1,4 +1,4 @@
-"STADAPTER;M2x4RA","CN","HR2:STADAPTER_M2x4RA","ST Adapter Connector,ST Adapter Connector"
+"STADAPTER;M2x4RA","CN","HR2:STADAPTER_M2x4RA",,"ST Adapter Connector,ST Adapter Connector"
 "Pin", "Name",  "Type",     "Side", "Unit", "Style", "Hidden"
 "1",   "3V3",   "power_out", "right", "1",   ,
 "2",   "SWCLK", "in",       "right", "1",   ,

@@ -826,6 +826,11 @@ Wire Wire Line
 	5800 2000 6300 2000
 Wire Wire Line
 	6300 2000 6300 1400
+Connection ~ 5800 2000
+Text Notes 4900 1450 0    50   ~ 0
+ByPass Capacitors
+Text Notes 7200 1550 0    50   ~ 0
+Note: There are many extra input pins.  Most of these will be assignd\nto Grove connectors and edge detectors.
 Wire Wire Line
 	4600 6500 8100 6500
 Wire Bus Line
@@ -846,9 +851,4 @@ Wire Bus Line
 	6000 2900 6000 6400
 Wire Bus Line
 	3700 1500 3700 5000
-Connection ~ 5800 2000
-Text Notes 4900 1450 0    50   ~ 0
-ByPass Capacitors
-Text Notes 7200 1550 0    50   ~ 0
-Note: There are many extra input pins.  Most of these will be assignd\nto Grove connectors and edge detectors.
 $EndSCHEMATC

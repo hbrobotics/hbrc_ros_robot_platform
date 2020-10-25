@@ -1238,7 +1238,7 @@ Text Notes 3800 6650 0    50   ~ 0
 ByPass Capacitors
 Wire Wire Line
 	3600 7200 3800 7200
+Connection ~ 3800 7200
 Wire Bus Line
 	3500 1300 3500 7200
-Connection ~ 3800 7200
 $EndSCHEMATC

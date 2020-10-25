@@ -1,4 +1,4 @@
-STADAPTER;F2x4,CN,HR2:STADAPTER_F2x4,ST Adapter Mating Connector,ST Adapter Mating Connector
+STADAPTER;F2x4,CN,HR2:STADAPTER_F2x4,,ST Adapter Mating Connector,ST Adapter Mating Connector
 "Pin", "Name",  "Type",     "Side",  "Unit", "Style", "Hidden"
 "1",   "3V3",   "power_in", "right", "1",    ,
 "2",   "SWCLK", "out",      "right", "1",    ,
