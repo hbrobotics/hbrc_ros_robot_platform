@@ -4280,7 +4280,7 @@ class MasterBoard:
         u3v70x_position: P2D = P2D(22.0, -8.5)  # Trial and error
         u3v70x_9v_pcb_chunk: PCBChunk = (
             u3v70x.mate_pcb_chunk.reposition(origin2d, 0.0, u3v70x_position).
-            reference("CN42", True, 0.0, u3v70x_position, "U3V70x_F1x4+F1x5")
+            reference("CN93", True, 0.0, u3v70x_position, "U3V70x_F1x4+F1x5")
         )
 
         # Squirt everything into the associated KiCad PCB's:
@@ -4294,12 +4294,12 @@ class MasterBoard:
         encoder_mate_translate2d: P2D = P2D(36.3, 0.0)  # Trial and Error
         east_encoder_mate_pcb_chunk: PCBChunk = encoder_mate_pcb_chunk.reposition(
             origin2d, degrees180, encoder_mate_translate2d)
-        east_encoder_reference: Reference = Reference("CN55", True, 0.0, encoder_mate_translate2d,
+        east_encoder_reference: Reference = Reference("CN91", True, 0.0, encoder_mate_translate2d,
                                                       east_encoder_mate_pcb_chunk,
                                                       "HR2_EncoderMate;2XF1X3")
         west_encoder_mate_pcb_chunk: PCBChunk = encoder_mate_pcb_chunk.reposition(
             origin2d, 0.0, -encoder_mate_translate2d)
-        west_encoder_reference: Reference = Reference("CN56", True, 0.0, -encoder_mate_translate2d,
+        west_encoder_reference: Reference = Reference("CN92", True, 0.0, -encoder_mate_translate2d,
                                                       west_encoder_mate_pcb_chunk,
                                                       "HR2_EncoderMate;2XF1X3")
         encoder_references_pcb_chunk: PCBChunk = PCBChunk("Encoder References", [], [],
@@ -4308,7 +4308,7 @@ class MasterBoard:
         raspi4b_mate_pcb_chunk: PCBChunk = raspi4b.mate_pcb_chunk.reposition(
             origin2d, degrees90, origin2d)
         raspi4b_mate_reference: Reference = Reference(
-            "CN57", True, 0.0, origin2d, raspi4b_mate_pcb_chunk, "RASPI;F2X20")
+            "CN80", True, 0.0, origin2d, raspi4b_mate_pcb_chunk, "RASPI;F2X20")
         raspi4b_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "Raspi4b References", [], [], references=[raspi4b_mate_reference])
 
@@ -4331,7 +4331,7 @@ class MasterBoard:
         st_mate_pcb_chunk: PCBChunk = (
             st_link.st_mate_pcb_chunk.reposition(origin2d, 0.0, st_mate_location))
         st_mate_reference: Reference = Reference(
-            "CN58", True, 0.0, st_mate_location, st_mate_pcb_chunk, "ST_MATE;ST_MATE")
+            "CN90", True, 0.0, st_mate_location, st_mate_pcb_chunk, "ST_MATE;ST_MATE")
         st_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "ST_Mate References", [], [], references=[st_mate_reference])
 
@@ -5028,22 +5028,22 @@ class MasterBoard:
         placements: List[Tuple[str, bool, P2D, float, str,
                                PCBChunk, List[Reference], List[PCBChunk]]] = [
             ("NE Outer Bottom Center", False, P2D(47.75, 45.0), radians(-90),
-             "GV2", grove20x20_pcb_chunk, ne_references, ne_grove_pcb_chunks),
+             "GV82", grove20x20_pcb_chunk, ne_references, ne_grove_pcb_chunks),
             ("Center NE Inner Bottom (Left)", False, P2D(47.75, 25.0), radians(180.0),
-             "GV3", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+             "GV83", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
 
             # Note GV4/GV7 is the same Grove split across the center and nw PCB's:
             ("NW Outer Bottom", False, P2D(-42.0, 53.0), radians(-90),
-             "GV1", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
+             "GV81", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
             ("Center NW Inner Top (Left)", True, P2D(-50.5, 34.5), radians(30.0),
-             "GV4", left_grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
-            ("NW NW Inner Bottom (Right)", True, P2D(-50.5, 34.5), radians(30.0),
-             "GV7", right_grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
+             "GV84", left_grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+            # ("NW NW Inner Bottom (Right)", True, P2D(-50.5, 34.5), radians(30.0),
+            #  "GV7", right_grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
 
             ("Center SW Top", True, P2D(-48.0, -28.0), radians(-22.5),
-             "GV5", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+             "GV85", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
             ("Center SE Bottom", False, P2D(43.0, -24.25), radians(90),
-             "GV6", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+             "GV86", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
         ]
 
         # Create all of main *PCBChunk*'s and associated *Reference*'s:
@@ -5124,40 +5124,40 @@ class MasterBoard:
 
         # Define *led_positions* which specifies the locations of all of the LED's:
         led_positions: List[Tuple[str, str, float, float, List[PCBChunk], List[Reference]]] = [
-            ("NE LED1", "D1", radians(ne_center_angle - n_pitch_angle),
+            ("NE LED1", "D81", radians(ne_center_angle - n_pitch_angle),
              0.0, ne_led_pcb_chunks, ne_references),
-            ("NE LED2", "D2", radians(ne_center_angle),
+            ("NE LED2", "D82", radians(ne_center_angle),
              0.0, ne_led_pcb_chunks, ne_references),
-            ("NE LED3", "D3", radians(ne_center_angle + n_pitch_angle),
+            ("NE LED3", "D83", radians(ne_center_angle + n_pitch_angle),
              0.0, ne_led_pcb_chunks, ne_references),
 
-            ("NW LED1", "D4", radians(nw_center_angle - n_pitch_angle),
+            ("NW LED1", "D84", radians(nw_center_angle - n_pitch_angle),
              0.0, nw_led_pcb_chunks, nw_references),
-            ("NW LED2", "D5", radians(nw_center_angle),
+            ("NW LED2", "D85", radians(nw_center_angle),
              0.0, nw_led_pcb_chunks, nw_references),
-            ("NW LED3", "D6", radians(nw_center_angle + n_pitch_angle),
+            ("NW LED3", "D86", radians(nw_center_angle + n_pitch_angle),
              0.0, nw_led_pcb_chunks, nw_references),
 
-            ("SW LED1", "D7", radians(sw_center_angle - 2.0 * s_pitch_angle),
+            ("SW LED1", "D87", radians(sw_center_angle - 2.0 * s_pitch_angle),
              0.0, sw_led_pcb_chunks, sw_references),
-            ("SW LED2", "D8", radians(sw_center_angle - 1.0 * s_pitch_angle),
+            ("SW LED2", "D88", radians(sw_center_angle - 1.0 * s_pitch_angle),
              0.0, sw_led_pcb_chunks, sw_references),
-            ("SW LED3", "D9", radians(sw_center_angle),
+            ("SW LED3", "D89", radians(sw_center_angle),
              0.0, sw_led_pcb_chunks, sw_references),
-            ("SW LED4", "D10", radians(sw_center_angle + 1.0 * s_pitch_angle),
+            ("SW LED4", "D90", radians(sw_center_angle + 1.0 * s_pitch_angle),
              0.0, sw_led_pcb_chunks, sw_references),
-            ("SW LED5", "D11", radians(sw_center_angle + 2.0 * s_pitch_angle),
+            ("SW LED5", "D91", radians(sw_center_angle + 2.0 * s_pitch_angle),
              0.0, sw_led_pcb_chunks, sw_references),
 
-            ("SE LED1", "D12", radians(se_center_angle - 2.0 * s_pitch_angle),
+            ("SE LED1", "D92", radians(se_center_angle - 2.0 * s_pitch_angle),
              0.0, se_led_pcb_chunks, se_references),
-            ("SE LED2", "D13", radians(se_center_angle - 1.0 * s_pitch_angle),
+            ("SE LED2", "D93", radians(se_center_angle - 1.0 * s_pitch_angle),
              0.0, se_led_pcb_chunks, se_references),
-            ("SE LED3", "D14", radians(se_center_angle),
+            ("SE LED3", "D94", radians(se_center_angle),
              0.0, se_led_pcb_chunks, se_references),
-            ("SE LED4", "D15", radians(se_center_angle + 1.0 * s_pitch_angle),
+            ("SE LED4", "D95", radians(se_center_angle + 1.0 * s_pitch_angle),
              0.0, se_led_pcb_chunks, se_references),
-            ("SE LED5", "D16", radians(se_center_angle + 2.0 * s_pitch_angle),
+            ("SE LED5", "D96", radians(se_center_angle + 2.0 * s_pitch_angle),
              0.0, se_led_pcb_chunks, se_references),
         ]
         origin2d: P2D = P2D(0.0, 0.0)
@@ -5234,9 +5234,9 @@ class MasterBoard:
         # degrees90: float = degrees180 / 2.0
         placements: List[Tuple[str, str, MikroBus, str, bool,
                                P2D, float, List[PCBChunk], List[Reference]]] = [
-            ("NE MikroBus", "CN40", mikrobus_small, "SMALL",
+            ("NE MikroBus", "CN88", mikrobus_small, "SMALL",
              False, P2D(-45.0, -25.25), degrees180, center_pcb_chunks, center_references),
-            ("NW MikroBus", "CN41", mikrobus_medium, "MEDUIM",
+            ("NW MikroBus", "CN89", mikrobus_medium, "MEDUIM",
              False, P2D(-44.5, 25.25), 0.0, center_pcb_chunks, center_references),
         ]
 
@@ -5377,36 +5377,36 @@ class MasterBoard:
         nw_references: List[Reference] = []
         sonar_poses: List[Tuple[str, str, List[PCBChunk], List[Reference], str,
                                 float, float, float, bool]] = [
-            ("Rear Left Sonar", "high", ne_pcb_chunks, ne_references, "CN60",
+            ("Rear Left Sonar", "high", ne_pcb_chunks, ne_references, "CN81",
              (90.0 - 2 * 22.5 + 1.0) * degrees2radians,    # Trial and error to fit on PCB
              (90.0 + 0.5 * 22.5) * degrees2radians,
              2.8 * 2.54, True),  # robot perimeter and miss spacer.
-            ("Rear Right Sonar", "high", nw_pcb_chunks, nw_references, "CN70",
+            ("Rear Right Sonar", "high", nw_pcb_chunks, nw_references, "CN82",
              (90.0 + 2 * 22.5 - 1.0) * degrees2radians,    # Same Trial and error as above
              (90.0 - 0.5 * 22.5) * degrees2radians,
              2.8 * 2.540, True),
             ("Front Right Top Sonar", "normal",
-             center_pcb_chunks, center_references, "CN50",
+             center_pcb_chunks, center_references, "CN83",
              (270.0 - 2 * 22.5 + 10.5) * degrees2radians,  # Trail and error
              (270.0 - 2 * 22.5) * degrees2radians,
              0.0 * 2.54, True),
             ("Front Right Bottom Sonar", "low",
-             center_pcb_chunks, center_references, "CN51",
+             center_pcb_chunks, center_references, "CN84",
              (270.0 - 1 * 22.5 - 5.5) * degrees2radians,   # Trail and error
              (270.0 - 1 * 22.5) * degrees2radians,
              2.5 * 2.54, False),
             ("Front Center Sonar", "low",
-             center_pcb_chunks, center_references, "CN52",
+             center_pcb_chunks, center_references, "CN85",
              (270.0) * degrees2radians,                    # Rim Angle
              (270.0) * degrees2radians,                    # Beam Angle
              24.0, True),
             ("Front Left Bottom Sonar", "low",
-             center_pcb_chunks, center_references, "CN53",
+             center_pcb_chunks, center_references, "CN86",
              (270.0 + 1 * 22.5 + 5.5) * degrees2radians,   # Trail and error
              (270.0 + 1 * 22.5) * degrees2radians,
              2.5 * 2.54, False),
             ("Front Left Top Sonar", "normal",
-             center_pcb_chunks, center_references, "CN54",
+             center_pcb_chunks, center_references, "CN87",
              (270.0 + 2 * 22.5 - 10.5) * degrees2radians,  # Trail and error
              (270.0 + 2 * 22.5) * degrees2radians,
              0.0 * 2.54, True),
