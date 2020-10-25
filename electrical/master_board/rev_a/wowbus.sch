@@ -135,7 +135,7 @@ U 1 1 5F848F57
 P 9600 4600
 F 0 "CN10" H 9800 4750 50  0000 L CNN
 F 1 "WOW_OUT;M2x6S" H 9750 3350 50  0000 L CNN
-F 2 "Connector_PinHeader_2.54:PinHeader_2x06_P2.54mm_Vertical" H 9800 4650 60  0001 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Vertical" H 9800 4650 60  0001 L CNN
 F 3 "WOW Output Connector" H 9800 4450 60  0001 L CNN
 F 4 "WOW Output Connector" H 9800 4350 60  0001 L CNN "Field5"
 	1    9600 4600
