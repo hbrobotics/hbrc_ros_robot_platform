@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 8 10
+Sheet 7 10
 Title "HR2 Connectors"
 Date "2020-10-17"
 Rev "A"
@@ -830,7 +830,7 @@ Connection ~ 5800 2000
 Text Notes 4900 1450 0    50   ~ 0
 ByPass Capacitors
 Text Notes 7200 1550 0    50   ~ 0
-Note: There are many extra input pins.  Most of these will be assignd\nto Grove connectors and edge detectors.
+Note: There are many extra input pins.  Most of these will be assigned\nto Grove connectors and edge detectors.
 Wire Wire Line
 	4600 6500 8100 6500
 Wire Bus Line

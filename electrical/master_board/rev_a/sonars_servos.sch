@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 3 10
+Sheet 8 10
 Title "HR2 Servos and Sonars"
 Date "2020-10-17"
 Rev "A"
@@ -1209,7 +1209,7 @@ Wire Bus Line
 Wire Bus Line
 	6550 650  6550 1300
 Wire Bus Line
-	2250 4000 6500 4000
+	2300 4000 6500 4000
 Wire Bus Line
 	6500 4000 9500 4000
 Wire Bus Line
