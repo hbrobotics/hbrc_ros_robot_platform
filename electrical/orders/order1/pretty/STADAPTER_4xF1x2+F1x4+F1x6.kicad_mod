@@ -1,4 +1,4 @@
-(module HR2:STADAPTER_4xF1x2+F1x4+F1x6 (layer F.Cu) (tedit 5F45F067) (tstamp 5F45F067)
+(module HR2:STADAPTER_4xF1x2+F1x4+F1x6 (layer F.Cu) (tedit 5F9661C7) (tstamp 5F9661C7)
   (fp_text reference REF** (at 0 -2) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.2)))
   )

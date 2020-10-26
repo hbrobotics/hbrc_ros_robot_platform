@@ -1726,7 +1726,7 @@ class PCBChunk:
         scad_program.if3d.name_match_append(f"{name.lower()}_board", module3d, [f"{name} Board"])
 
         if isinstance(kicad_pcb_path, Path):
-            pcb_chunk.pcb_cuts_refereneces_zones_update(
+            pcb_chunk.pcb_cuts_references_zones_update(
                 kicad_pcb_path, pcb_exterior, pcb_origin, more_references, tracing=next_tracing)
 
         # Wrap up any requested *tracing*:
@@ -1738,12 +1738,12 @@ class PCBChunk:
         return module3d
 
     # PCBChunk.pcb_cuts_references_zones_update():
-    def pcb_cuts_refereneces_zones_update(self,
-                                          kicad_pcb_path: Optional[Path],
-                                          pcb_exterior: SimplePolygon,
-                                          pcb_origin: P2D,
-                                          more_references: List[Reference] = [],
-                                          tracing: str = "") -> None:
+    def pcb_cuts_references_zones_update(self,
+                                         kicad_pcb_path: Optional[Path],
+                                         pcb_exterior: SimplePolygon,
+                                         pcb_origin: P2D,
+                                         more_references: List[Reference] = [],
+                                         tracing: str = "") -> None:
         """Update reference positions and cut lines for a PCBChunk."""
         # Unpack some values from *pcb_chunk* (i.e. *self*):
         pcb_chunk: PCBChunk = self
@@ -2285,8 +2285,8 @@ class PCBModule:
             net_pattern: str = "  (net "
             net_pattern_size: int = len(net_pattern)
             preceding_lines: List[str] = pcb_module.preceding_lines
-            pcb_line: str
-            for pcb_line in preceding_lines:
+            offset: int
+            for offset, pcb_line in enumerate(preceding_lines):
                 if pcb_line.startswith(net_pattern) and pcb_line.endswith(')'):
                     # Now extract the *net_number*:
                     tail_text: str = pcb_line[net_pattern_size:]
@@ -2305,7 +2305,13 @@ class PCBModule:
                         net_name = net_name[1:-1]
                     elif net_name.startswith('/'):
                         net_name = net_name[1:]
+                    elif net_name.isalnum():
+                        pass
                     else:
+                        line: str
+                        line_number: int
+                        for line_number, line in enumerate(preceding_lines[:offset+1]):
+                            print(f"{line_number}: {line}")
                         assert False, f"Strange Net name format '{net_name}'"
 
                     # Stuff into *net_numbers_table*:
@@ -2319,8 +2325,8 @@ class PCBModule:
     def ground_zones_update(pcb_modules: "List[PCBModule]", zone_polygon: SimplePolygon,
                             pcb_origin: P2D, tracing: str = "") -> None:
         """Update the ground zone outline."""
-        # We are serching for:
-        #   (zone (net NUMBER) (net_name /GND) (layer X.Cu) ...  # X is B or F (i.e. Back/Front).
+        # We are serching for XXX where XXX is either GND or /GND:
+        #   (zone (net NUMBER) (net_name XXX) (layer X.Cu) ...  # X is B or F (i.e. Back/Front).
         #     ...
         #     (polygon
         #        (pts
@@ -2340,7 +2346,8 @@ class PCBModule:
             pcb_origin_x: float = pcb_origin.x
             pcb_origin_y: float = pcb_origin.y
 
-            zone_pattern = f"  (zone (net {ground_net_number}) (net_name /GND) (layer "
+            zone_pattern1 = f"  (zone (net {ground_net_number}) (net_name GND) (layer "
+            zone_pattern2 = f"  (zone (net {ground_net_number}) (net_name /GND) (layer "
             pcb_module: PCBModule
             for pcb_module in pcb_modules:
                 # Search through *preceeding_lines* looking for a ground zone and updating them
@@ -2355,7 +2362,7 @@ class PCBModule:
                 pcb_line_index: int
                 pcb_line: str
                 for pcb_line_index, pcb_line in enumerate(preceding_lines):
-                    if pcb_line.startswith(zone_pattern):
+                    if pcb_line.startswith(zone_pattern1) or pcb_line.startswith(zone_pattern2):
                         # Start of a fill zone -- (zone ...:
                         zone_started = True
                         polygon_started = False
@@ -3732,7 +3739,7 @@ class LidarAdapter:
         translated_lidar_adapter_scad: Scad3D = Translate3D(
             "Translated Lidar Adapter", lidar_adapter_scad, lidar_adapter_translate)
         translated_adapter_pcb_chunk: PCBChunk = PCBChunk(
-            "Traslated Lidar Adapter", mount_holes, [translated_lidar_adapter_scad])
+            "Translated Lidar Adapter Chunk", mount_holes, [translated_lidar_adapter_scad])
         print(f"mount_holes:{mount_holes}")
         print(f"translated_adapter_pcb_chunk:{translated_adapter_pcb_chunk}")
 
@@ -3980,6 +3987,7 @@ class Nucleo144:
         lower_cutout: Square = Square(
             "Lower Cutout", lower_cutout_dx, lower_cutout_dy, center=lower_cutout_center)
 
+        # These cennector names have changed names:
         # # Digikey: SAM1066-40-ND; pcb_pin=2.79  insulation=2.54  mating_length=15.75
         # # Digikey: S2212EC-40-ND; pcb_pin=3.05  insulation=2.50  mating_length=8.08  price=$1.15/1
         # Create the *cutouts_pcb_chunk*:
@@ -4226,7 +4234,7 @@ class MasterBoard:
         raspi4b_mate_pcb_chunk: PCBChunk = raspi4b.mate_pcb_chunk.reposition(
             origin2d, degrees90, origin2d)
         raspi4b_mate_reference: Reference = Reference(
-            "CN80", True, 0.0, origin2d, raspi4b_mate_pcb_chunk, "RASPI;F2X20")
+            "CN94", True, 0.0, origin2d, raspi4b_mate_pcb_chunk, "RASPI;F2X20")
         raspi4b_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "Raspi4b References", [], [], references=[raspi4b_mate_reference])
 
@@ -4239,7 +4247,7 @@ class MasterBoard:
 
         # Create *nucleo144_mate_refererence* and associated *PCBChunk*:
         nucleo144_mate_reference: Reference = Reference(
-            "CN43", True, nucleo_rotate, nucleo_offset2d,
+            "CN95", True, nucleo_rotate, nucleo_offset2d,
             nucleo144_mate_with_nucleo_pcb_chunk, "NUCLEO144;MORPHO144")
         nucleo144_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "Nucleo144 References", [], [], references=[nucleo144_mate_reference])
@@ -4939,7 +4947,7 @@ class MasterBoard:
         # Create the *Grove* and various *PCBChunk*s:
         grove20x20: Grove = Grove(scad_program, 20, 20, "Blue")
         grove20x20_pcb_chunk: PCBChunk = grove20x20.pcb_chunk
-        left_grove20x20_pcb_chunk: PCBChunk = grove20x20.left_pcb_chunk
+        # left_grove20x20_pcb_chunk: PCBChunk = grove20x20.left_pcb_chunk
         # right_grove20x20_pcb_chunk: PCBChunk = grove20x20.right_pcb_chunk
 
         # Create a list grove placements:
@@ -4954,7 +4962,7 @@ class MasterBoard:
             ("NW Outer Bottom", False, P2D(-42.0, 53.0), radians(-90),
              "GV81", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
             ("Center NW Inner Top (Left)", True, P2D(-50.5, 34.5), radians(30.0),
-             "GV84", left_grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+             "GV84", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
             # ("NW NW Inner Bottom (Right)", True, P2D(-50.5, 34.5), radians(30.0),
             #  "GV7", right_grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
 
@@ -9239,7 +9247,7 @@ class STLink:
         #     connectors.m1x2.pcb_chunk.scads_y_flip().sides_swap().
         #     reposition(origin2d, 0.0, P2D(power_connector_center.x, 1.27)))
         st_mate_signal_connector_pcb_chunk: PCBChunk = (
-            connectors.f2x4.pcb_chunk.scads_y_flip().sides_swap().pads_rebase(2).
+            connectors.f2x4.pcb_chunk.scads_y_flip().sides_swap().pads_rebase(0).
             reposition(origin2d, 0.0, P2D(signal_connector_center.x, 2.54)))
         st_mate_usb_cut_pcb_chunk: PCBChunk = PCBChunk("ST Mate Cuts", [], [], cuts=[
             Square("USB Cut", cn1_dx + 0.50, 1.5 * cn1_dz, P2D(cn1_center_x, 7.75),  # Trial & error
