@@ -418,7 +418,7 @@ class DXF:
 
         """
         # Use *dxf* (i.e. *self*) to convert *dxf_x1*, *dxf_y1*, *dxf_x2*, and *dxf_y2*
-        # into *x1*, *y1*, *x2*, and *y2* (i.e. millemeters with corrector X/Y origin.
+        # into *x1*, *y1*, *x2*, and *y2* (i.e. millemeters with corrector X/Y origin.)
         dxf: DXF = self
         x1: float = dxf.x_locate(dxf_x1)
         y1: float = dxf.y_locate(dxf_y1)
@@ -758,7 +758,7 @@ class Pad:
 
         # Using *pad_dx*, *pad_dy* and *drill_diameter*, figure out the
         # *shape_kind* (i.e. one of "oval", "circle", or "rect") and the
-        # hole kind (i.e. one of "np_thru_hole" or "thru_hole":
+        # hole kind (i.e. one of "np_thru_hole" or "thru_hole"):
         is_oval: bool = abs(pad_dx - pad_dy) > .0000001
         drill_text: str = ""
         shape_kind: str
@@ -848,7 +848,7 @@ class Pad:
         pad_dy: float = pad.pad_dy
         pad_rotate: float = pad.pad_rotate
 
-        # The math rotating about the Y axis is angle' = -(angle - d90) + d90 = d180 - angle:
+        # The math rotating about the Y axis is angle = -(angle - d90) + d90 = d180 - angle:
         degrees180: float = pi
         degrees360: float = 2 * degrees180
         y_mirrored_pad_rotate: float = degrees360 - pad_rotate
@@ -1531,7 +1531,7 @@ class PCBChunk:
         # Create the *new_body_lines*:
         origin2d: P2D = P2D(0.0, 0.0)
         prefix: str = ""
-        path_id: str = ""  # No *path_id*'s in a footprint.
+        path_id: str = ""  # No *path_id*s in a footprint.
         is_front: bool = True
         new_body_lines: List[str] = pcb_chunk.footprint_body_lines_generate(
             prefix, footprint_mode, is_front, origin2d, name, "REF**", value, path_id,
@@ -1728,88 +1728,6 @@ class PCBChunk:
         if isinstance(kicad_pcb_path, Path):
             pcb_chunk.pcb_cuts_refereneces_zones_update(
                 kicad_pcb_path, pcb_exterior, pcb_origin, more_references, tracing=next_tracing)
-
-        # Read in the *previous_pcb_lines* associated with *kicad_pcb_path*:
-        # !!!!!!!!!!!!!!!!!!!! OLD CODE !!!!!!!!!!!!!!!!!!!!!!
-        # if False and isinstance(kicad_pcb_path, Path):
-        #    assert kicad_pcb_path.is_file(), f"'{kicad_pcb_path}' does not exist."
-        #    previous_pcb_text: str
-        #    kicad_pcb_file: IO[Any]
-        #    with open(kicad_pcb_path, "r") as kicad_pcb_file:
-        #        previous_pcb_text = kicad_pcb_file.read()
-        #    previous_pcb_lines: List[str] = previous_pcb_text.splitlines()
-
-        #    # Extract the *pcb_modules_table* and *ordered_pcb_modules* from *previous_pcb_lines*:
-        #    pcb_modules_table: Dict[str, PCBModule]
-        #    ordered_pcb_modules: List[PCBModule]
-        #    pcb_modules_table, ordered_pcb_modules = PCBModule.modules_extract(previous_pcb_lines)
-
-        #    # Verify that nothing got lost:
-        #    reassembled_lines: List[str] = PCBModule.lines_join(ordered_pcb_modules)
-        #    assert reassembled_lines == previous_pcb_lines
-
-        #    # Remove the cut lines:
-        #    for pcb_module in ordered_pcb_modules:
-        #        pcb_module.cut_lines_strip()
-
-        #    # Sweep through all of *references*:
-        #    reference: Reference
-        #    for reference in references:
-        #        # Unpack some values from *reference*:
-        #        reference_is_front: bool = reference.is_front
-        #        reference_name: str = reference.name
-        #        reference_position: P2D = reference.position
-        #        reference_rotate: float = reference.rotate
-        #        reference_value: str = reference.value
-        #        reference_rotate = 0.0  # Kludge for now.
-        #        reference_pcb_chunk: PCBChunk = reference.pcb_chunk
-        #        if tracing:
-        #            print(f"{tracing}Ref: name:'{reference_name}' position:{reference_position} "
-        #                  f"rotate:{degrees(reference_rotate)} is_front:{reference_is_front}")
-
-        #         # Make sure that there is *reference_pcb_module* that match *reference_name*:
-        #         if reference_name in pcb_modules_table:
-        #             # We have a match; now unpack some values form *reference_pcb_module*:
-        #             reference_pcb_module: PCBModule = pcb_modules_table[reference_name]
-        #             create_timestamp: int = reference_pcb_module.create_timestamp
-        #             edit_timestamp: int = reference_pcb_module.edit_timestamp
-        #             footprint_name: str = reference.pcb_chunk.name
-        #             path_id: int = reference_pcb_module.path_id
-        #             module_prefix: str = reference_pcb_module.module_prefix
-
-        #             # Create the *footprint_header_line*:
-        #             library_name: str = "HR2"  # Kludge!
-        #             if tracing:
-        #                 print(f"{tracing}Ref '{reference_name}' for '{path_name}'")
-        #             footprint_header_line: str = (
-        #                 reference_pcb_chunk.footprint_header_line_generate(
-        #                     module_prefix, reference_is_front, library_name, footprint_name,
-        #                     edit_timestamp, create_timestamp, tracing=next_tracing))
-
-        #             # Create the *footprint_body_lines*:
-        #             footprint_mode: bool = False  # False implies PCB mode.
-        #             footprint_body_lines: List[str] = (
-        #                 reference_pcb_chunk.footprint_body_lines_generate(
-        #                     module_prefix, footprint_mode, reference_is_front, pcb_origin,
-        #                     f"{library_name}:{footprint_name}", reference_name,
-        #                     reference_value, path_id, reference_rotate,
-        #                     reference_position, True, tracing=next_tracing))
-        #             footprint_lines: List[str] = [footprint_header_line] + footprint_body_lines
-        #             reference_pcb_module.module_lines = footprint_lines
-        #         else:
-        #             # Obviously something is wrong:
-        #             if tracing:
-        #                 print(f"{tracing}Reference '{reference_name}' not for '{kicad_pcb_path}'")
-
-        #     # Insert the cuts into the *final_pcb_module*:
-        #     last_pcb_module: PCBModule = ordered_pcb_modules[-1]
-        #     last_pcb_module.cut_lines_insert(all_cuts, pcb_origin, "GND")
-        #     # final_pcb_module.zone_lines_insert(all_cuts[0], "GND")
-
-        #     # Create *final_assembled_lines* and write them out:
-        #     final_reassembled_lines = PCBModule.generate_lines(ordered_pcb_modules)
-        #     with open(kicad_pcb_path, "w") as kicad_pcb_file:
-        #         kicad_pcb_file.write('\n'.join(final_reassembled_lines + [""]))
 
         # Wrap up any requested *tracing*:
         if tracing:
@@ -2137,7 +2055,7 @@ class PCBModule:
         pcb_modules_table: Dict[str, PCBModule] = {}
         ordered_pcb_modules: List[PCBModule] = []
 
-        # State machine to extract *Modules*'s:
+        # State machine to extract *Modules*s:
         create_timestamp: int = 0
         edit_timestamp: int = 0
         in_module: bool = False
@@ -2254,7 +2172,7 @@ class PCBModule:
         reference_name: str = pcb_module.reference_name
         preceding_lines: List[str] = pcb_module.preceding_lines
 
-        # Require that this be the last *PCBModule" (i.e. empty reference name):
+        # Require that this be the last *PCBModule* (i.e. empty reference name):
         assert reference_name == ""
 
         # Search for the location where to insert cut lines:
@@ -2446,19 +2364,19 @@ class PCBModule:
                         new_xys_inserted = False
                         if tracing:
                             print(f"{tracing}Zone started: '{pcb_line}'")
-                    elif pcb_line.startswith("    (polygon"):
+                    elif pcb_line.startswith("    (polygon"):  # )
                         # Start of polygon outline (i.e. unfilled) -- (polygon ...:
                         polygon_started = zone_started
                         points_started = False
                         xys_skipping = False
-                    elif pcb_line.startswith("      (pts"):
-                        # Start of points -- (pts ...
+                    elif pcb_line.startswith("      (pts"):  # )
+                        # Start of points -- (pts ...)
                         points_started = polygon_started
                         xys_skipping = False
                     elif pcb_line.startswith("        (xy "):
-                        # Start of xy's -- (xy ...:
+                        # Start of xys -- (xy ...):
                         xys_skipping = points_started
-                        # Insert new xy's here if they have not already been inserted:
+                        # Insert new xys here if they have not already been inserted:
                         if xys_skipping and not new_xys_inserted:
                             index: int
                             zone_xys: List[str] = [
@@ -2495,13 +2413,13 @@ class PCBModule:
                                 if tracing:
                                     print(f"[{pcb_line_index}]\tI[{zone_index}]\t{quint_line}")
                             new_xys_inserted = True
-                    elif pcb_line.startswith("      )"):  # End of (pts ..
+                    elif pcb_line.startswith("      )"):  # End of (pts ...)
                         new_xys_inserted = False
                         xys_skipping = False
                         points_started = False
-                    elif pcb_line.startswith("    )"):  # End of (polygon ...
+                    elif pcb_line.startswith("    )"):  # End of (polygon ...)
                         polygon_started = False
-                    elif pcb_line.startswith("  )"):  # End of (zone ...
+                    elif pcb_line.startswith("  )"):  # End of (zone ...)
                         zone_started = False
 
                     # Copy over *pcb_line* to *updated_lines* if we are not in *xys_skipping*:
@@ -2632,7 +2550,7 @@ class Encoder:
         north_header_center2d: P2D = P2D(pcb_connector_x + 0.5 * 2.54, pcb_north_y - header_offset)
         south_header_center2d: P2D = P2D(pcb_connector_x + 0.5 * 2.54, pcb_south_y + header_offset)
 
-        # Create *encoder_pcb_chunk* and *master_pcb_chunk*" (for master board):
+        # Create *encoder_pcb_chunk* and *master_pcb_chunk* (for master board):
         m1x3ra_pcb_chunk: PCBChunk = connectors.m1x3ra.pcb_chunk
         # m1x3ra_pcb_chunk.pads_show("m1x3ra_pcb:")
         # print(f"north_header_center2d:{north_header_center2d}")
@@ -2877,7 +2795,7 @@ class Grove:
         scad_program.append(grove_module)
         scad_program.if3d.name_match_append(full_name, grove_module, [full_name])
 
-        # Create the Grove *PCBChunk*'s.  The left/right pad distinction is for on of the
+        # Create the Grove *PCBChunk*s.  The left/right pad distinction is for on of the
         # modules that needs to split across the center and NW PCB:
         footprint_name: str = f"GROVE{int(dx)}x{int(dy)}"
         grove_scads: List[Scad3D] = [grove_module.use_module_get()]
@@ -2931,7 +2849,7 @@ class HCSR04:
 
         # Do all of the sonar *PCBChunk* stuff now:
 
-        # Compute the tie down hole *Pad*'s, which are mechanical only (i.e. no copper pads.):
+        # Compute the tie down hole *Pad*s, which are mechanical only (i.e. no copper pads.):
         # The "miniture" nylon ties are 2.5mm wide.  The hole should be a little larger:
         # There are two tie down hole locations.  For the normal (F1X4) and low profile (F1X4LP)
         # locations and the a high (F1X4H) locations.  We use *lp* and *h* to differentiate,
@@ -3226,7 +3144,7 @@ class F1x4LP:
         insulation_polygon: Polygon = Polygon("F1x4LP Insulation Polygon",
                                               [insulation_square], lock=False)
 
-        # Start place in the *translate_pin*'s into the *f1x4lp_union*:
+        # Start place in the *translate_pin*s into the *f1x4lp_union*:
         pads: List[Pad] = []
         pads_group: PadsGroup = PadsGroup()
         f1x4lp_union: Union3D = Union3D("F1x4LP Union", [], lock=False)
@@ -3321,7 +3239,7 @@ class HR2BaseAssembly:
         battery_master_height: float = master_board_z - base_top_z + battery_dz
         battery_pi_height: float = pi_board_z - base_battery_top_z
 
-        # Create the 4 different *Spacer*'s:
+        # Create the 4 different *Spacer*s:
         base_master_spacer: Spacer = Spacer(
             scad_program, "Base Master Spacer", base_master_height, "M2.5")
         base_pi_spacer: Spacer = Spacer(
@@ -3562,7 +3480,7 @@ class HR2Robot:
         master_board_z: float = encoder_bottom_z - 0.2  # Leave .2mm slop between encoder connectors
         pi_board_z: float = master_board_z - 10.250
 
-        # It turns out that the code above computes the origin, so we'll just *pi_x* and
+        # It turns out that the code above computes the origin, so we will just *pi_x* and
         # *pi_y* to 0.0.
         # *pi_dz* is selected to make all the master pcb pins fit:
         pi_x: float = 0.0
@@ -3601,7 +3519,7 @@ class HR2Robot:
         plate: RomiExpansionPlate = RomiExpansionPlate(scad_program)
         plate_keys: List[Tuple[Any, ...]] = plate.keys_get()
 
-        # Create the *hr2_base_assembly* object that can accept the various PCB's and assemblies
+        # Create the *hr2_base_assembly* object that can accept the various PCBs and assemblies
         # that go on top of it:
         # Grab some Z values via *base_dxf*:
         base_battery_top_z: float = base_dxf.z_locate(-2.701374)
@@ -3980,7 +3898,7 @@ class Nucleo144:
         ethernet_pcb_chunk: PCBChunk = PCBChunk(
             "Nucleo144 Ethernet Connector", [], [colored_ethernet])
 
-        # Now do the *PCBChunk*'s:
+        # Now do the *PCBChunk*s:
         origin2d: P2D = P2D(0.0, 0.0)
 
         # Define mount hole centers:
@@ -4190,7 +4108,7 @@ class MasterBoard:
         # Define some PCB constants
         pcb_dz: float = 1.6
 
-        # Create the various exterior *SimplePolygon*'s:
+        # Create the various exterior *SimplePolygon*s:
         master_exterior: SimplePolygon
         center_exterior: SimplePolygon
         ne_exterior: SimplePolygon
@@ -4218,7 +4136,7 @@ class MasterBoard:
         sw_spacer_pcb_chunk: PCBChunk
         arm_spacer_dz: float = arm_z - master_board_bottom_z - pcb_dz
 
-        # Create the spacer *PCBChunk*'s:
+        # Create the spacer *PCBChunk*s:
         center_spacer_pcb_chunk, ne_spacer_pcb_chunk, nw_spacer_pcb_chunk, \
             se_spacer_pcb_chunk, sw_spacer_pcb_chunk = (master_board.spacer_mounts_create(
                 scad_program, base_spacer_positions, plate_spacer_positions,
@@ -4245,7 +4163,7 @@ class MasterBoard:
         center_sonars_pcb_chunk, ne_sonars_pcb_chunk, nw_sonars_pcb_chunk = (
             master_board.sonars_install(hcsr04, connectors, tracing=next_tracing))
 
-        # Grab the LED *PCBChunks*'s:
+        # Grab the LED *PCBChunks*s:
         ne_leds_pcb_chunk: PCBChunk
         nw_leds_pcb_chunk: PCBChunk
         se_leds_pcb_chunk: PCBChunk
@@ -4265,7 +4183,7 @@ class MasterBoard:
         # for i, r in enumerate(sw_leds_pcb_chunk.references):
         #     print(f"SW[{i}]:{r.name}")
 
-        # Create the MikroBus *PCBChunk*'s:
+        # Create the MikroBus *PCBChunk*s:
         center_mikro_bus_chunk: PCBChunk
         ne_mikrobus_pcb_chunk: PCBChunk
         nw_mikrobus_pcb_chunk: PCBChunk
@@ -4283,13 +4201,13 @@ class MasterBoard:
             reference("CN93", True, 0.0, u3v70x_position, "U3V70x_F1x4+F1x5")
         )
 
-        # Squirt everything into the associated KiCad PCB's:
+        # Squirt everything into the associated KiCad PCBs:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
         master_board_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
-        master_kicad_pcb_path: Path = master_board_directory / "master.kicad_pcb"
+        master_kicad_pcb_path: Path = master_board_directory / "master_board.kicad_pcb"
 
-        # Create the east and west encoder mating *PCBChunk*'s:
+        # Create the east and west encoder mating *PCBChunk*s:
         encoder_mate_pcb_chunk: PCBChunk = encoder.encoder_mate_pcb_chunk
         encoder_mate_translate2d: P2D = P2D(36.3, 0.0)  # Trial and Error
         east_encoder_mate_pcb_chunk: PCBChunk = encoder_mate_pcb_chunk.reposition(
@@ -4349,7 +4267,7 @@ class MasterBoard:
         lidar_adapter_mate_references_pcb_chunk: PCBChunk = PCBChunk(
             "Lidar Adapter Mate References", [], [], references=[lidar_adapter_mate_reference])
 
-        # Create *no_nucleo_chunk* which contains all the *PCBChunk*'s except the
+        # Create *no_nucleo_chunk* which contains all the *PCBChunk*s except the
         # Nucleo-144:
         no_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("No Nucelo Center", [
             center_grove_pcb_chunk,
@@ -4589,7 +4507,7 @@ class MasterBoard:
         m2x5: RectangularConnector = connectors.m2x5
         # m2x6: RectangularConnector = connectors.m2x6
 
-        # Create the 6 Center *PCBChunk*'s:
+        # Create the 6 Center *PCBChunk*s:
         degrees90: float = radians(90.0)
         origin2d: P2D = P2D(0.0, 0.0)
         # center_ne_inner_pcb_chunk: PCBChunk = (
@@ -4637,7 +4555,7 @@ class MasterBoard:
         sw_pcb_chunk: PCBChunk = (
             m1x8.pcb_chunk.reposition(origin2d, 0.0, sw_center))
 
-        # Create the centered *PCBChunk*'s, which have a reasonable origin for the footprint.
+        # Create the centered *PCBChunk*s, which have a reasonable origin for the footprint.
         ne_inner_bridge_pcb_chunk: PCBChunk = PCBChunk.join("BRIDGE_NE_INNER_3xM1x1+M1x5", [
             center_ne_inner_pcb_chunk,
             center_ne_middle_pcb_chunk,
@@ -4685,7 +4603,7 @@ class MasterBoard:
         se_outer_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
         sw_outer_bridge_pcb_chunk.footprint_generate("HR2", pretty_directory)
 
-        # Create the final repositioned *PCBChunk*'s:
+        # Create the final repositioned *PCBChunk*s:
         final_center_pcb_chunk: PCBChunk = PCBChunk.join("Center Bridges", [
             ne_inner_bridge_pcb_chunk.reposition(
                 origin2d, 0.0, center_ne_middle_center, reference_name="CN101"),
@@ -4713,7 +4631,7 @@ class MasterBoard:
                                                  SimplePolygon, SimplePolygon, SimplePolygon,
                                                  SimplePolygon]:
         """Create the master board PCB's with exterior contours."""
-        # This routine creates 6 *SimmplePolygon*'s named *master_exterior*, *center_exterior*,
+        # This routine creates 6 *SimmplePolygon*s named *master_exterior*, *center_exterior*,
         # *ne_exterior*, *nw_exterior*, *se_exteior*, *sw_exterior*, *master_exterior*.
         # When the first 5 boards are attached to one another, they form the final Master PCB.
         # The first 5 boards are designed to be manufatured using the Bantam Labs PCB milling
@@ -4784,9 +4702,9 @@ class MasterBoard:
         #   (|hm|=|HM|=|CX|=|BZ|).
 
         # These constants are defined first since other constants depend upon them:
-        wheel_well_dx: float = 125.0  # mm (from user's guide)
-        wheel_well_dy: float = 72.0  # mm (from user's guide)
-        radius: float = 163.0 / 2.0  # mm (from user's guide)
+        wheel_well_dx: float = 125.0  # mm (from users guide)
+        wheel_well_dy: float = 72.0  # mm (from users guide)
+        radius: float = 163.0 / 2.0  # mm (from users guide)
 
         # The remaining variable are defined in alphabetical order:
         arm_well_dx: float = 13.0  # mm (trail and error)
@@ -5004,7 +4922,7 @@ class MasterBoard:
         self.center_pcb_north = center_pcb_north
         self.center_pcb_south = center_pcb_south
 
-        # Return the resulting exterior *SimplePolygon*'s:
+        # Return the resulting exterior *SimplePolygon*s:
         return master_exterior, center_exterior, ne_exterior, nw_exterior, se_exterior, sw_exterior
 
     # MasterBoard.groves_install():
@@ -5018,11 +4936,11 @@ class MasterBoard:
         nw_grove_pcb_chunks: List[PCBChunk] = []
         nw_references: List[Reference] = []
 
-        # Create the *Grove* and various *PCBChunk*'s:
+        # Create the *Grove* and various *PCBChunk*s:
         grove20x20: Grove = Grove(scad_program, 20, 20, "Blue")
         grove20x20_pcb_chunk: PCBChunk = grove20x20.pcb_chunk
         left_grove20x20_pcb_chunk: PCBChunk = grove20x20.left_pcb_chunk
-        right_grove20x20_pcb_chunk: PCBChunk = grove20x20.right_pcb_chunk
+        # right_grove20x20_pcb_chunk: PCBChunk = grove20x20.right_pcb_chunk
 
         # Create a list grove placements:
         placements: List[Tuple[str, bool, P2D, float, str,
@@ -5032,7 +4950,7 @@ class MasterBoard:
             ("Center NE Inner Bottom (Left)", False, P2D(47.75, 25.0), radians(180.0),
              "GV83", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
 
-            # Note GV4/GV7 is the same Grove split across the center and nw PCB's:
+            # Note GV4/GV7 is the same Grove split across the center and nw PCBs:
             ("NW Outer Bottom", False, P2D(-42.0, 53.0), radians(-90),
              "GV81", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
             ("Center NW Inner Top (Left)", True, P2D(-50.5, 34.5), radians(30.0),
@@ -5046,7 +4964,7 @@ class MasterBoard:
              "GV86", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
         ]
 
-        # Create all of main *PCBChunk*'s and associated *Reference*'s:
+        # Create all of main *PCBChunk*s and associated *Reference*s:
         grove_file: IO[Any]
         with open("/tmp/groves.txt", "w") as grove_file:
             origin2d: P2D = P2D(0.0, 0.0)
@@ -5076,7 +4994,7 @@ class MasterBoard:
                 side_text: str = "Front" if is_front else "Back"
                 grove_file.write(f"{reference_name}: {side_text} {degrees(rotate):.1f}dg {name}\n")
 
-        # Create the reference *PCBChunk*'s:
+        # Create the reference *PCBChunk*s:
         center_references_pcb_chunk: PCBChunk = PCBChunk(
             "Center Grove References", [], [], references=center_references)
         nw_references_pcb_chunk: PCBChunk = PCBChunk(
@@ -5084,7 +5002,7 @@ class MasterBoard:
         ne_references_pcb_chunk: PCBChunk = PCBChunk(
             "Center Grove References", [], [], references=ne_references)
 
-        # Assemble the final *PCBChunk*'s and return them:
+        # Assemble the final *PCBChunk*s and return them:
         final_center_grove_pcb_chunk: PCBChunk = PCBChunk.join(
             "Center Groves", center_grove_pcb_chunks + [center_references_pcb_chunk])
         final_ne_grove_pcb_chunk: PCBChunk = PCBChunk.join(
@@ -5122,7 +5040,7 @@ class MasterBoard:
         sw_led_pcb_chunks: List[PCBChunk] = []
         sw_references: List[Reference] = []
 
-        # Define *led_positions* which specifies the locations of all of the LED's:
+        # Define *led_positions* which specifies the locations of all of the LEDs:
         led_positions: List[Tuple[str, str, float, float, List[PCBChunk], List[Reference]]] = [
             ("NE LED1", "D81", radians(ne_center_angle - n_pitch_angle),
              0.0, ne_led_pcb_chunks, ne_references),
@@ -5184,7 +5102,7 @@ class MasterBoard:
                 references.append(reference)
                 led_file.write(f"{led_name}: {reference_name} {degrees(led_angle):.1f}deg\n")
 
-        # Create the reference *PCBChunks*'s:
+        # Create the reference *PCBChunks*s:
         ne_references_pcb_chunk: PCBChunk = PCBChunk(
             "NE References", [], [], references=ne_references)
         nw_references_pcb_chunk: PCBChunk = PCBChunk(
@@ -5194,7 +5112,7 @@ class MasterBoard:
         sw_references_pcb_chunk: PCBChunk = PCBChunk(
             "SW References", [], [], references=sw_references)
 
-        # Create the final *PCBChunks*':
+        # Create the final *PCBChunks*s:
         final_ne_led_pcb_chunk: PCBChunk = PCBChunk.join(
             "NE LED's", ne_led_pcb_chunks + [ne_references_pcb_chunk])
         final_nw_led_pcb_chunk: PCBChunk = PCBChunk.join(
@@ -5223,7 +5141,7 @@ class MasterBoard:
         sw_pcb_chunks: List[PCBChunk] = []
         sw_references: List[Reference] = []
 
-        # Create the base MicroBus *PCBChunk*'s:
+        # Create the base MicroBus *PCBChunk*s:
         mikrobus_small: MikroBus = MikroBus(scad_program, connectors, "S")
         mikrobus_medium: MikroBus = MikroBus(scad_program, connectors, "M")
         mikrobus_large: MikroBus = MikroBus(scad_program, connectors, "L")
@@ -5274,7 +5192,7 @@ class MasterBoard:
         sw_references_pcb_chunk: PCBChunk = PCBChunk(
             "NW MikroBus References", [], [], references=sw_references)
 
-        # Create the final *PCBChunk*'s with references:
+        # Create the final *PCBChunk*s with references:
         final_center_pcb_chunk: PCBChunk = PCBChunk.join(
             "Center Mikrobus", center_pcb_chunks + [center_references_pcb_chunk])
         final_ne_pcb_chunk: PCBChunk = PCBChunk.join(
@@ -5320,7 +5238,7 @@ class MasterBoard:
         # * *low*: Use low profile (and more expensive) connector to keep Sonar close to PCB.
         # * *medium*: Use nominal (and inexpensive) height connector where sonar height unimportant.
         # * *high*: Use high profile (and more expensive) connecto to boost Sonar above rear
-        #   connectors on SBC (in particular the RaspBerry Pi.
+        #   connectors on SBC (in particular the RaspBerry Pi).
         low_recentered_hcsr04: Translate3D = Translate3D(
             "Low Recentered HC-SR04", z_rotated_hcsr04, P3D(0.0, low_dy, recenter_dz))
         medium_recentered_hcsr04: Translate3D = Translate3D(
@@ -5561,7 +5479,7 @@ class MasterBoard:
             expansion_keys_table[expansion_key_name] = expansion_key
             # print(f"[{index}]: '{expansion_key_name}', {expansion_key}")
 
-        # Collect the *Pad*s and *Scad3D*'s in various lists:
+        # Collect the *Pad*s and *Scad3D*s in various lists:
         center_pcb_chunks: List[PCBChunk] = []
         center_references: List[Reference] = []
         ne_pcb_chunks: List[PCBChunk] = []
@@ -5677,7 +5595,7 @@ class MasterBoard:
         # for index, reference in enumerate(all_references):
         #     print(f"Ref[{index}]: {reference}")
 
-        # Create various *PCBChunk*'s that contains the references:
+        # Create various *PCBChunk*s that contains the references:
         center_references_pcb_chunk: PCBChunk = PCBChunk(
             "Center Mount References", [], [], references=center_references)
         ne_references_pcb_chunk: PCBChunk = PCBChunk(
@@ -5689,7 +5607,7 @@ class MasterBoard:
         sw_references_pcb_chunk: PCBChunk = PCBChunk(
             "SW Mount References", [], [], references=sw_references)
 
-        # Create and return the final *PCBChunk*'s:
+        # Create and return the final *PCBChunk*s:
         final_center_pcb_chunk: PCBChunk = PCBChunk.join(
             "Center Spacers", center_pcb_chunks + [center_references_pcb_chunk])
         final_ne_pcb_chunk: PCBChunk = PCBChunk.join(
@@ -5775,7 +5693,7 @@ class MikroBus:
         mikrobus_module: Module3D = mikrobus_pcb_chunk.pcb_update(
             scad_program, origin2d, pcb_dz, mikrobus_exterior, "LightGreen", None, [])
 
-        # Create the east/west female *PCBChunk*'s:
+        # Create the east/west female *PCBChunk*s:
         f1x8_west_pcb_chunk: PCBChunk = (
             connectors.f1x8.pcb_chunk.pads_rebase(8).
             reposition(origin2d, degrees90, P2D(-connector_pitch_dx / 2.0, 0.0))
@@ -5905,7 +5823,7 @@ class OtherPi(PiBoard):
         # male_2x20_header_center = P3D(0.0, 0.0, 0.0)
         origin2d: P2D = P2D(0.0, 0.0)
 
-        # Assemble all of the various connector *Scad*'s:
+        # Assemble all of the various connector *Scad*s:
         connectors_origin: P3D = P3D(-holes_center.x, -holes_center.y, 0.0)
         connector_scads: List[Scad3D] = [
             Color("Silver Ethernet Connector",
@@ -6871,7 +6789,7 @@ class RomiBase:
         # The outer edge of the wheel well points are on the circle of *radius*.
         # We need to compute the X/Y coordinates using trigonometry.  Using math:
         #
-        #     (x, y) = (r * cos(angle), r * sin(angle)                   (1)
+        #     (x, y) = (r * cos(angle), r * sin(angle))                  (1)
         #     x = r * cos(angle)                                         (2)
         #     y = r * sin(angle)                                         (3)
         #     y/r = sin(angle)                                           (4)
@@ -7050,7 +6968,7 @@ class RomiBase:
     def battery_clips_get(self) -> List[SimplePolygon]:
         """Return the 4 battery clip polygons."""
         # A battery clip is identified by two rectangles -- the one on the left
-        # encloses the "dome* and the one the right that encloses the narrow slot.
+        # encloses the *dome* and the one the right that encloses the narrow slot.
         # They come in large and small varieties.
         def battery_clip_helper(name: str, is_large: bool, left_rectangle: Square,
                                 right_rectangle: Square) -> SimplePolygon:
@@ -7109,7 +7027,7 @@ class RomiBase:
         base_dxf: BaseDXF = romi_base.base_dxf
 
         # The lowest battery is identified by two rectangles -- the one on the left
-        # encloses the "dome* and the one the right is a narrow slot.  The batteries
+        # encloses the *dome* and the one the right is a narrow slot.  The batteries
         # are numbered from 0 (lower most) to 3 (upper most):
         battery0_left_rectangle: Square = base_dxf.rectangle_locate("Battery0 Left Rectangle",
                                                                     -3.060783, 2.425815,
@@ -7563,7 +7481,7 @@ class RomiBase:
         debugging: bool = romi_base.debugging
         base_dxf: BaseDXF = romi_base.base_dxf
 
-        # The resulting *Polygon*'s are collected into *lower_arc_holes_rectangles*:
+        # The resulting *Polygon*s are collected into *lower_arc_holes_rectangles*:
         lower_arc_holes_rectangles: List[SimplePolygon] = []
 
         # There are arcs of holes and and rectangular slots along the upper and lower rims.
@@ -7754,7 +7672,7 @@ class RomiBase:
         base_dxf: BaseDXF = romi_base.base_dxf
         debugging: bool = romi_base.debugging
 
-        # The resulting *Polygon*'s are collected into *upper_arc_holes_rectangles*:
+        # The resulting *Polygon*s are collected into *upper_arc_holes_rectangles*:
         upper_arc_holes_rectangles: List[SimplePolygon] = []
 
         # There are arcs of holes and and rectangular slots along the upper and lower rims.
@@ -8246,7 +8164,7 @@ class RomiExpansionPlate:
         # We need to figure out the (*arc_x*, *arc_y) value for the arc-end point.  To make the math
         # a little simpler, we will do the math in the quandrant 1 so both *arc_x* and *arc_y*
         # are positive.  Minus signs are added as needed when using *arg_x* and *arc_y*.
-        # We start with Pathagorean's Theorum:
+        # We start with Pathagoreans Theorum:
         #
         #     (1)   r^2 = dx^2 + dy^2
         #
@@ -8842,7 +8760,7 @@ class RomiMotorHolder:
         # room for the motor edge.  It is formed via a polygon that is subsequently  extruded,
         # rotated, and translated.  The west side final location is in the Y/Z plane, but the
         # polygon starts on the X/Y plane.  Thus, Z coordinates are show up in the X filed
-        # of *P2D*'s:
+        # of *P2D*s:
         west_side_polygon: SimplePolygon = SimplePolygon("West Side Polygon", [], lock=False)
         west_side_polygon.point_append(P2D(0.0, holder_north_y))
         west_side_polygon.point_append(P2D(base_bottom_z, holder_north_y))
@@ -9211,7 +9129,7 @@ class STLink:
         colored_cn1_cube: Color = Color("Colored CN1 USB Connector", cn1_cube, "Silver")
         st_link_scads_pcb_chunk: PCBChunk = PCBChunk("ST Link USB Scad", [], [colored_cn1_cube])
 
-        # Compute all directory and file names needed to generate footprint and update PCB's:
+        # Compute all directory and file names needed to generate footprint and update PCBs:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY is not a defined environment variable."
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
         st_adapter_directory: Path = hr2_directory / "electrical" / "st_adapter" / "rev_a"
@@ -9492,7 +9410,7 @@ class U3V70x:
         transistor_scad: Scad3D = Color("U3V70x Transistor", transistor_cube, "SaddleBrown")
         transistor_pcb_chunk: PCBChunk = PCBChunk("U3V70x Transistor", [], [transistor_scad])
 
-        # Create the connector *PCBChunk*'s:
+        # Create the connector *PCBChunk*s:
         origin2d: P2D = P2D(0.0, 0.0)
         n_connector_center: P2D = P2D(n_connector_center_x, n_connector_center_y)
         s_connector_center: P2D = P2D(s_connector_center_x, s_connector_center_y)
