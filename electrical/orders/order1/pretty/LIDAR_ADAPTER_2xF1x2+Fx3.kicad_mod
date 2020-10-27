@@ -1,4 +1,4 @@
-(module HR2:LIDAR_ADAPTER_2xF1x2+Fx3 (layer F.Cu) (tedit 5F5435A1) (tstamp 5F5434EA)
+(module HR2:LIDAR_ADAPTER_2xF1x2+Fx3 (layer F.Cu) (tedit 5F9661C7) (tstamp 5F9661C7)
   (fp_text reference REF** (at 0 -2) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.2)))
   )
