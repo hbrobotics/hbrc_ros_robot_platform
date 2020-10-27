@@ -1258,6 +1258,78 @@ F 4 "Grove 20x20 Module" H 2600 7500 60  0001 L CNN "manf#"
 	1    2400 7550
 	-1   0    0    -1  
 $EndComp
+$Comp
+L HR2:HOLE;M2.5 H1
+U 1 1 5F98C15A
+P 3450 6800
+F 0 "H1" H 3475 6846 50  0000 L CNN
+F 1 "HOLE;M2.5" H 3475 6755 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 3650 6850 60  0001 L CNN
+F 3 "M2.5 Mounting Hole" H 3650 6650 60  0001 L CNN
+F 4 "M2.5 Mounting Hole" H 3650 6750 60  0001 L CNN "manf#"
+	1    3450 6800
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:HOLE;M2.5 H2
+U 1 1 5F98CA97
+P 3450 7000
+F 0 "H2" H 3475 7046 50  0000 L CNN
+F 1 "HOLE;M2.5" H 3475 6955 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 3650 7050 60  0001 L CNN
+F 3 "M2.5 Mounting Hole" H 3650 6850 60  0001 L CNN
+F 4 "M2.5 Mounting Hole" H 3650 6950 60  0001 L CNN "manf#"
+	1    3450 7000
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:HOLE;M2.5 H3
+U 1 1 5F99FB35
+P 3450 7200
+F 0 "H3" H 3475 7246 50  0000 L CNN
+F 1 "HOLE;M2.5" H 3475 7155 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 3650 7250 60  0001 L CNN
+F 3 "M2.5 Mounting Hole" H 3650 7050 60  0001 L CNN
+F 4 "M2.5 Mounting Hole" H 3650 7150 60  0001 L CNN "manf#"
+	1    3450 7200
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:HOLE;M2.5 H4
+U 1 1 5F99FB96
+P 3900 6800
+F 0 "H4" H 3925 6846 50  0000 L CNN
+F 1 "HOLE;M2.5" H 3925 6755 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 4100 6850 60  0001 L CNN
+F 3 "M2.5 Mounting Hole" H 4100 6650 60  0001 L CNN
+F 4 "M2.5 Mounting Hole" H 4100 6750 60  0001 L CNN "manf#"
+	1    3900 6800
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:HOLE;M2.5 H5
+U 1 1 5F9B303C
+P 3900 7000
+F 0 "H5" H 3925 7046 50  0000 L CNN
+F 1 "HOLE;M2.5" H 3925 6955 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 4100 7050 60  0001 L CNN
+F 3 "M2.5 Mounting Hole" H 4100 6850 60  0001 L CNN
+F 4 "M2.5 Mounting Hole" H 4100 6950 60  0001 L CNN "manf#"
+	1    3900 7000
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:HOLE;M2.5 H6
+U 1 1 5F9B30B1
+P 3900 7200
+F 0 "H6" H 3925 7246 50  0000 L CNN
+F 1 "HOLE;M2.5" H 3925 7155 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 4100 7250 60  0001 L CNN
+F 3 "M2.5 Mounting Hole" H 4100 7050 60  0001 L CNN
+F 4 "M2.5 Mounting Hole" H 4100 7150 60  0001 L CNN "manf#"
+	1    3900 7200
+	1    0    0    -1  
+$EndComp
 Wire Bus Line
 	7600 3700 7600 4200
 Wire Bus Line

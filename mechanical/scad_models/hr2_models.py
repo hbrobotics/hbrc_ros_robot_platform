@@ -4133,8 +4133,9 @@ class MasterBoard:
         nw_bridges_pcb_chunk: PCBChunk
         se_bridges_pcb_chunk: PCBChunk
         sw_bridges_pcb_chunk: PCBChunk
-        (center_bridges_pcb_chunk, ne_bridges_pcb_chunk, nw_bridges_pcb_chunk, se_bridges_pcb_chunk,
-         sw_bridges_pcb_chunk) = master_board.bridges_install(scad_program, connectors)
+        # (center_bridges_pcb_chunk, ne_bridges_pcb_chunk, nw_bridges_pcb_chunk,
+        #  se_bridges_pcb_chunk, sw_bridges_pcb_chunk) = master_board.bridges_install(
+        #      scad_program, connectors)
 
         # Install various cut out slots, mount_holes and spacers:
         center_spacer_pcb_chunk: PCBChunk
@@ -4293,7 +4294,7 @@ class MasterBoard:
 
         # Create *center_without_nucleo_pcb_chunk* that does not contain the the Nucleo-14:
         center_without_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center Without Nucleo", [
-            center_bridges_pcb_chunk,
+            # center_bridges_pcb_chunk,
             center_mikrobus_pcb_chunk,
             center_spacer_pcb_chunk,
             # lidar_adapter_mate_pcb_chunk,
@@ -4310,7 +4311,7 @@ class MasterBoard:
 
         # Create *center_with_nucleo_pcb_chunk* that does contain the the Nucleo-14:
         center_with_nucleo_pcb_chunk: PCBChunk = PCBChunk.join("Master Center With Nucleo", [
-            center_bridges_pcb_chunk,
+            # center_bridges_pcb_chunk,
             center_mikrobus_pcb_chunk,
             center_without_nucleo_pcb_chunk,
             # lidar_adapter_mate_pcb_chunk,
@@ -4322,7 +4323,7 @@ class MasterBoard:
 
         # Create *ne_pcb_chunk* and update its associated PCB:
         ne_pcb_chunk: PCBChunk = PCBChunk.join("Master NE", [
-            ne_bridges_pcb_chunk,
+            # ne_bridges_pcb_chunk,
             ne_grove_pcb_chunk,
             ne_mikrobus_pcb_chunk,
             ne_leds_pcb_chunk,
@@ -4334,7 +4335,7 @@ class MasterBoard:
         #     scad_program, pcb_origin, pcb_dz, ne_exterior, "YellowGreen", ne_kicad_pcb_path, [])
 
         nw_pcb_chunk: PCBChunk = PCBChunk.join("Master NW", [
-            nw_bridges_pcb_chunk,
+            # nw_bridges_pcb_chunk,
             nw_grove_pcb_chunk,
             nw_mikrobus_pcb_chunk,
             nw_leds_pcb_chunk,
@@ -4346,7 +4347,7 @@ class MasterBoard:
         #     scad_program, pcb_origin, pcb_dz, nw_exterior, "Orange", nw_kicad_pcb_path, [])
 
         se_pcb_chunk: PCBChunk = PCBChunk.join("Master SE", [
-            se_bridges_pcb_chunk,
+            # se_bridges_pcb_chunk,
             se_leds_pcb_chunk,
             se_mikrobus_pcb_chunk,
             se_spacer_pcb_chunk,
@@ -4356,7 +4357,7 @@ class MasterBoard:
         #     scad_program, pcb_origin, pcb_dz, se_exterior, "Purple", se_kicad_pcb_path, [])
 
         sw_pcb_chunk: PCBChunk = PCBChunk.join("Master SW", [
-            sw_bridges_pcb_chunk,
+            # sw_bridges_pcb_chunk,
             sw_leds_pcb_chunk,
             sw_mikrobus_pcb_chunk,
             sw_spacer_pcb_chunk,
