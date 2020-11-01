@@ -1,0 +1,7 @@
+"CPC1017N;SOP4W3.8WL4.1", "U", "Package_SO:SOP-4_3.8x4.1mm_P2.54mm", "", "CPC1017 Solid State Relay", "CPC1017 Solid State Relay"
+"Pin", "Unit", "Type",    "Name",   "Style", "Side"
+"1",   "A",    "passive",  "A(+)",  "line",  "left"
+"2",   "A",    "passive",  "K(-)",  "line",  "left"
+"3",   "A",    "passive",  "LOAD1", "line",  "right"
+"4",   "A",    "passive",  "LOAD2", "line",  "right"
+,,,,,,

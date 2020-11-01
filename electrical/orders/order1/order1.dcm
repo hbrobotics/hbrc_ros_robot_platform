@@ -24,6 +24,12 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
+$CMP USB_B_MICRO_POWER_MASTER
+D USB_Mini Power (Slave)
+K ~
+F 2.3FLANGE
+$ENDCMP
+#
 $CMP MCP2542;SOIC8
 D MCP2542
 K ~
@@ -96,10 +102,10 @@ K ~
 F https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF
 $ENDCMP
 #
-$CMP USB_B_MINI_POWER_SLAVE
+$CMP USB_B_MICRO_POWER_SLAVE
 D USB_Mini Power (Slave)
 K ~
-F 
+F 2.3FLANGE
 $ENDCMP
 #
 $CMP SN74HCS595;TTSOP16

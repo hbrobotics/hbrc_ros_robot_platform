@@ -25,18 +25,6 @@ F 4 "Grove 20x20 Module" H 1750 7500 60  0001 L CNN "manf#"
 	1    1550 7550
 	-1   0    0    -1  
 $EndComp
-$Comp
-L HR2:GROVE;20x20 GV84
-U 1 1 5F304374
-P 2450 7050
-F 0 "GV84" H 2400 7100 50  0000 L CNN
-F 1 "GROVE;20x20" H 2200 7000 50  0000 L CNN
-F 2 "HR2:GROVE20x20" H 2650 7100 60  0001 L CNN
-F 3 "Grove 20x20 Module" H 2650 6900 60  0001 L CNN
-F 4 "Grove 20x20 Module" H 2650 7000 60  0001 L CNN "manf#"
-	1    2450 7050
-	-1   0    0    -1  
-$EndComp
 Text Notes 1150 6900 0    50   ~ 0
 Note: The Grove symbol has no electrical connections\n   but does get automatically positioned from the\n   mechanical model.  Each Grove module has two\n   mounting holes that are positioned this way.
 $Comp
@@ -1237,25 +1225,25 @@ $EndSheet
 $Comp
 L HR2:GROVE;20x20 GV85
 U 1 1 5F97A1E9
-P 2450 7300
-F 0 "GV85" H 2400 7350 50  0000 L CNN
-F 1 "GROVE;20x20" H 2200 7250 50  0000 L CNN
-F 2 "HR2:GROVE20x20" H 2650 7350 60  0001 L CNN
-F 3 "Grove 20x20 Module" H 2650 7150 60  0001 L CNN
-F 4 "Grove 20x20 Module" H 2650 7250 60  0001 L CNN "manf#"
-	1    2450 7300
+P 2400 7050
+F 0 "GV85" H 2350 7100 50  0000 L CNN
+F 1 "GROVE;20x20" H 2150 7000 50  0000 L CNN
+F 2 "HR2:GROVE20x20" H 2600 7100 60  0001 L CNN
+F 3 "Grove 20x20 Module" H 2600 6900 60  0001 L CNN
+F 4 "Grove 20x20 Module" H 2600 7000 60  0001 L CNN "manf#"
+	1    2400 7050
 	-1   0    0    -1  
 $EndComp
 $Comp
 L HR2:GROVE;20x20 GV86
 U 1 1 5F98D40B
-P 2400 7550
-F 0 "GV86" H 2350 7600 50  0000 L CNN
-F 1 "GROVE;20x20" H 2150 7500 50  0000 L CNN
-F 2 "HR2:GROVE20x20" H 2600 7600 60  0001 L CNN
-F 3 "Grove 20x20 Module" H 2600 7400 60  0001 L CNN
-F 4 "Grove 20x20 Module" H 2600 7500 60  0001 L CNN "manf#"
-	1    2400 7550
+P 2400 7300
+F 0 "GV86" H 2350 7350 50  0000 L CNN
+F 1 "GROVE;20x20" H 2150 7250 50  0000 L CNN
+F 2 "HR2:GROVE20x20" H 2600 7350 60  0001 L CNN
+F 3 "Grove 20x20 Module" H 2600 7150 60  0001 L CNN
+F 4 "Grove 20x20 Module" H 2600 7250 60  0001 L CNN "manf#"
+	1    2400 7300
 	-1   0    0    -1  
 $EndComp
 $Comp

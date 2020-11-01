@@ -1,4 +1,4 @@
-"USB_B_MINI_POWER_SLAVE", "CN", "Connector_USB:USB_Micro-B_Amphenol_10103594-0001LF_Horizontal", "", "USB_Mini Power (Slave)", "USB_Mini Power (Slave)"
+"USB_B_MICRO_POWER_SLAVE", "CN", "HR2:USB3140-30-230-1-C;VERT,2.3FLANGE", "", "USB_Mini Power (Slave)", "USB_Mini Power (Slave)"
 "Pin", "Unit", "Type",       "Name",   "Style", "Side"
 "1",   "A",    "power_in",   "VBUS",   "line",  "right"
 "2",   "A",    "no_connect", "D-",     "line",  "right"
