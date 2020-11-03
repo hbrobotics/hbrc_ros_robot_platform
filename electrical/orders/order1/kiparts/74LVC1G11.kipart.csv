@@ -1,0 +1,9 @@
+"74LVC1G11;SOT363", "U", "Package_TO_SOT_SMD:SOT-363_SC-70-6", "", "1 3-Input AND Gate", "1 3-Input and Gate"
+"Pin", "Unit", "Type",     "Name", "Style", "Side"
+"1",   "A",    "input",    "A",    "line",  "left"
+"3",   "A",    "input",    "B",    "line",  "left"
+"6",   "A",    "input",    "C",    "line",  "left"
+"5",   "A",    "power_in", "VCC",  "line",  "right"
+"4",   "A",    "output",   "Y",    "line",  "right"
+"2",   "A",    "power_in", "GND",  "line",  "right"
+,,,,,,

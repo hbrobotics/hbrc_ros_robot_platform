@@ -659,4 +659,6 @@ Wire Wire Line
 Connection ~ 7300 3700
 Text Notes 8250 3050 0    50   ~ 0
 Example Crystal Part:\nCM7V-T1A-LOW-ESR-32.768KHZ-9PF-20-TA-QC
+Text Label 7750 5400 0    50   ~ 0
+WP
 $EndSCHEMATC
