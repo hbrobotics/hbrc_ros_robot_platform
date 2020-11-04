@@ -93,82 +93,6 @@ Wire Wire Line
 Wire Wire Line
 	5000 5500 5000 4900
 Connection ~ 4800 5500
-$Comp
-L Device:R_US R22
-U 1 1 5F4D52D3
-P 6050 5300
-F 0 "R22" V 5950 5250 50  0000 C CNN
-F 1 "1KΩ.1W;1608" V 6150 5300 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 5290 50  0001 C CNN
-F 3 "~" H 6050 5300 50  0001 C CNN
-	1    6050 5300
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R_US R21
-U 1 1 5F4D52DD
-P 6050 5000
-F 0 "R21" V 5950 4950 50  0000 C CNN
-F 1 "1KΩ.1W;1608" V 6150 5000 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 4990 50  0001 C CNN
-F 3 "~" H 6050 5000 50  0001 C CNN
-	1    6050 5000
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R_US R20
-U 1 1 5F4D52E7
-P 6050 4700
-F 0 "R20" V 5950 4650 50  0000 C CNN
-F 1 "1KΩ.1W;1608" V 6150 4700 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 4690 50  0001 C CNN
-F 3 "~" H 6050 4700 50  0001 C CNN
-	1    6050 4700
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R_US R19
-U 1 1 5F4D52F1
-P 6050 4400
-F 0 "R19" V 5950 4350 50  0000 C CNN
-F 1 "1KΩ.1W;1608" V 6150 4400 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 4390 50  0001 C CNN
-F 3 "~" H 6050 4400 50  0001 C CNN
-	1    6050 4400
-	0    1    1    0   
-$EndComp
-Wire Wire Line
-	6200 5300 6400 5300
-Wire Wire Line
-	6400 5300 6400 5000
-Wire Wire Line
-	6400 4400 6200 4400
-Wire Wire Line
-	6200 4700 6400 4700
-Connection ~ 6400 4700
-Wire Wire Line
-	6400 4700 6400 4400
-Wire Wire Line
-	6200 5000 6400 5000
-Connection ~ 6400 5000
-Wire Wire Line
-	6400 5000 6400 4700
-Wire Wire Line
-	5900 5000 5700 5000
-Wire Wire Line
-	5700 5000 5700 5300
-Wire Wire Line
-	5700 5300 5900 5300
-Wire Wire Line
-	5900 4700 5700 4700
-Wire Wire Line
-	5700 4700 5700 5000
-Connection ~ 5700 5000
-Wire Wire Line
-	5900 4400 5700 4400
-Wire Wire Line
-	5700 4400 5700 4700
-Connection ~ 5700 4700
 Wire Wire Line
 	6900 4000 6000 4000
 Wire Wire Line
@@ -178,9 +102,9 @@ Wire Wire Line
 Wire Wire Line
 	4900 2000 6900 2000
 Text Label 3250 3600 0    50   ~ 0
-LMOTOR_OUT
+LMOTOR_OUT1
 Text Label 3250 3800 0    50   ~ 0
-LMOTOR_OUT
+LMOTOR_OUT2
 Text Label 3250 4300 0    50   ~ 0
 RMOTOR_CTL1
 Text Label 3250 4400 0    50   ~ 0
@@ -212,80 +136,14 @@ Text Label 3250 4200 0    50   ~ 0
 Wire Wire Line
 	3200 3600 4900 3600
 Wire Wire Line
-	3200 3700 5700 3700
-Connection ~ 5700 3700
-Connection ~ 5700 3100
-Wire Wire Line
-	5700 2800 5700 3100
-Wire Wire Line
-	5900 2800 5700 2800
-Connection ~ 5700 3400
-Wire Wire Line
-	5700 3100 5700 3400
-Wire Wire Line
-	5900 3100 5700 3100
-Wire Wire Line
-	5700 3700 5900 3700
-Wire Wire Line
-	5700 3400 5700 3700
-Wire Wire Line
-	5900 3400 5700 3400
-Wire Wire Line
-	6400 3400 6400 3100
-Connection ~ 6400 3400
-Wire Wire Line
-	6200 3400 6400 3400
-Wire Wire Line
-	6400 3100 6400 2800
-Connection ~ 6400 3100
-Wire Wire Line
-	6200 3100 6400 3100
-Wire Wire Line
-	6400 2800 6200 2800
-Wire Wire Line
-	6400 3700 6400 3400
-Wire Wire Line
 	6200 3700 6400 3700
-$Comp
-L Device:R_US R15
-U 1 1 5F4CD3C4
-P 6050 2800
-F 0 "R15" V 5950 2750 50  0000 C CNN
-F 1 "1KΩ.1W;1608" V 6150 2800 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 2790 50  0001 C CNN
-F 3 "~" H 6050 2800 50  0001 C CNN
-	1    6050 2800
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R_US R16
-U 1 1 5F4CCE9C
-P 6050 3100
-F 0 "R16" V 5950 3050 50  0000 C CNN
-F 1 "1KΩ.1W;1608" V 6150 3100 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 3090 50  0001 C CNN
-F 3 "~" H 6050 3100 50  0001 C CNN
-	1    6050 3100
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R_US R17
-U 1 1 5F4CC9D3
-P 6050 3400
-F 0 "R17" V 5950 3350 50  0000 C CNN
-F 1 "1KΩ.1W;1608" V 6150 3400 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 3390 50  0001 C CNN
-F 3 "~" H 6050 3400 50  0001 C CNN
-	1    6050 3400
-	0    1    1    0   
-$EndComp
 $Comp
 L Device:R_US R18
 U 1 1 5F4CC3F2
 P 6050 3700
 F 0 "R18" V 5950 3650 50  0000 C CNN
-F 1 "1KΩ.1W;1608" V 6150 3700 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6090 3690 50  0001 C CNN
+F 1 ".16Ω.25W;2012" V 6150 3700 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 6090 3690 50  0001 C CNN
 F 3 "~" H 6050 3700 50  0001 C CNN
 	1    6050 3700
 	0    1    1    0   
@@ -308,25 +166,13 @@ Wire Wire Line
 	6400 4200 6900 4200
 Connection ~ 5000 5500
 Wire Wire Line
-	5700 4400 5700 4000
-Wire Wire Line
 	5700 4000 3200 4000
-Connection ~ 5700 4400
-Wire Wire Line
-	6400 5500 6400 5300
-Connection ~ 6400 5300
-Wire Wire Line
-	6400 4200 6400 4400
-Connection ~ 6400 4400
 Wire Wire Line
 	6400 3700 6400 4200
 Connection ~ 6400 3700
 Connection ~ 6400 4200
 Wire Wire Line
 	6900 2300 6400 2300
-Wire Wire Line
-	6400 2300 6400 2800
-Connection ~ 6400 2800
 Text HLabel 8300 5500 2    50   Input ~ 0
 GND
 Wire Wire Line
@@ -381,8 +227,8 @@ Text Label 3700 4600 0    50   ~ 0
 9V
 Text Label 8300 5500 2    50   ~ 0
 GND
-Text Notes 5350 2650 0    50   ~ 0
-250Ω  .4W Current Sense
+Text Notes 5400 3550 0    50   ~ 0
+Current Sense Resistors
 Text Notes 5450 5650 0    50   ~ 0
 250Ω  .4W Current Sense
 Text Notes 2400 3300 0    50   ~ 0
@@ -436,4 +282,42 @@ F 4 "HR2 Encoder Connector" H 8000 3650 60  0001 L CNN "Field5"
 	1    7800 3900
 	-1   0    0    -1  
 $EndComp
+Text Notes 900  1600 0    50   ~ 0
+Motor Notes:\n1. Full Name: 120:1 Mini Plastic Gearmotor HP,\n   Offset 3mm D-Shaft Output, Extended Motor Shaft\n2. Vendor Number: Pololu #1520\n3. Size 36.5 x 20 x 27.4 mm\n3. Weight: 19 g\n4. Shaft diamter: 3 mm (D Shaft)\n5. Typical operating voltage: 4.5V\n6. No-load speed @ 4.5V = 150 rpm\n7. No-Load current @ 4.5V = 130 mA\n8. Stall current @ 4.5V = 1250 mA = 1.25 A\n9. Stall Torque @ 4.5V = 25 ozf-in = 25 / 141.612 N-m = 17.64 N-m\n
+Wire Wire Line
+	6400 2300 6400 3700
+Wire Wire Line
+	3200 3700 5900 3700
+Wire Wire Line
+	5700 4400 5700 4000
+Wire Wire Line
+	5900 4400 5700 4400
+Wire Wire Line
+	6400 4200 6400 4400
+Connection ~ 6400 4400
+Wire Wire Line
+	6400 4400 6200 4400
+Wire Wire Line
+	6400 4400 6400 5500
+$Comp
+L Device:R_US R19
+U 1 1 5FA3CBD5
+P 6050 4400
+F 0 "R19" V 5950 4350 50  0000 C CNN
+F 1 ".16Ω.25W;2012" V 6150 4400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 6090 4390 50  0001 C CNN
+F 3 "~" H 6050 4400 50  0001 C CNN
+	1    6050 4400
+	0    1    1    0   
+$EndComp
+Text Notes 900  2650 0    50   ~ 0
+DRV8833PWPR Notes:\n1. Manufacturer: Texas Instruments\n2. On-Resistance: HS + LS = 1725 mΩ (@ 25°C)\n3. Peak Current: 1 A per H-Bridge\n4. Section 7.3.3 Current Control: Ichip = 200 mV / Risense\n5. Risense = 200 mV / Ichip\n6. With Imax = 1.25 A => Risense = 200 mV / 200 mv / 1250 ma = .16Ω\n7. Power = Imax * Imax * Risense = 1.25A * 1.25A * .16Ω = .25W\n8. Use an 2012 (metric) = 0805 (US) package.\n\n
+Text Label 3250 3700 0    50   ~ 0
+LMOTOR_SEN
+Text Label 3250 4100 0    50   ~ 0
+BMOTOR_OUT1
+Text Label 3250 3900 0    50   ~ 0
+BMOTOR_OUT2
+Text Label 3250 4000 0    50   ~ 0
+BMOTOR_SEN
 $EndSCHEMATC
