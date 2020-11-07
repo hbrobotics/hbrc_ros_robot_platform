@@ -5088,7 +5088,7 @@ class MasterBoard:
              0.0, se_led_pcb_chunks, se_references),
         ]
         origin2d: P2D = P2D(0.0, 0.0)
-        led_radius: float = 79.0  # mm  Trial and error
+        led_radius: float = 78.5  # mm  Trial and error
         led_name: str
         reference_name: str
         led_angle: float  # radians
