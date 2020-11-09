@@ -133,8 +133,6 @@ Wire Wire Line
 Wire Wire Line
 	6900 2200 6900 1700
 Wire Wire Line
-	6900 1700 6700 1700
-Wire Wire Line
 	6100 1700 6100 1800
 Wire Wire Line
 	6100 2400 6100 2100
@@ -328,8 +326,6 @@ Wire Wire Line
 Wire Wire Line
 	4200 5600 6300 5600
 Wire Wire Line
-	8100 4800 8100 1700
-Wire Wire Line
 	8100 1700 6900 1700
 Connection ~ 8100 4800
 Connection ~ 6900 1700
@@ -440,7 +436,7 @@ Wire Wire Line
 Wire Wire Line
 	5500 3700 4000 3700
 Wire Wire Line
-	5750 2600 7000 2600
+	5750 2600 6700 2600
 Wire Wire Line
 	5750 3700 5500 3700
 Connection ~ 5750 3700
@@ -612,31 +608,6 @@ Connection ~ 5500 5400
 Wire Wire Line
 	5500 5400 5500 5800
 $Comp
-L Device:C C8
-U 1 1 5FA24EA3
-P 6700 2150
-AR Path="/5F4877FA/5FA24EA3" Ref="C8"  Part="1" 
-AR Path="/5FA587FE/5FA24EA3" Ref="C?"  Part="1" 
-F 0 "C8" H 6700 2250 50  0000 L CNN
-F 1 "10pF;1608" H 6300 2050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 6738 2000 50  0001 C CNN
-F 3 "~" H 6700 2150 50  0001 C CNN
-	1    6700 2150
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6700 2300 6700 2400
-Wire Wire Line
-	6100 2400 6700 2400
-Connection ~ 6700 2400
-Wire Wire Line
-	6700 2400 7000 2400
-Wire Wire Line
-	6700 2000 6700 1700
-Connection ~ 6700 1700
-Wire Wire Line
-	6700 1700 6100 1700
-$Comp
 L Device:C C10
 U 1 1 5FA44A8F
 P 7300 4450
@@ -661,4 +632,33 @@ Text Notes 8250 3050 0    50   ~ 0
 Example Crystal Part:\nCM7V-T1A-LOW-ESR-32.768KHZ-9PF-20-TA-QC
 Text Label 7750 5400 0    50   ~ 0
 WP
+Wire Wire Line
+	6700 1700 6100 1700
+Wire Wire Line
+	6900 1700 6700 1700
+Connection ~ 6700 1700
+Wire Wire Line
+	6700 2000 6700 1700
+Wire Wire Line
+	8100 4800 8100 1700
+$Comp
+L Device:C C8
+U 1 1 5FA24EA3
+P 6700 2150
+AR Path="/5F4877FA/5FA24EA3" Ref="C8"  Part="1" 
+AR Path="/5FA587FE/5FA24EA3" Ref="C?"  Part="1" 
+F 0 "C8" H 6700 2250 50  0000 L CNN
+F 1 "10pF;1608" H 6300 2050 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 6738 2000 50  0001 C CNN
+F 3 "~" H 6700 2150 50  0001 C CNN
+	1    6700 2150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6100 2400 7000 2400
+Wire Wire Line
+	6700 2300 6700 2600
+Connection ~ 6700 2600
+Wire Wire Line
+	6700 2600 7000 2600
 $EndSCHEMATC
