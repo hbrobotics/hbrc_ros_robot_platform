@@ -6204,7 +6204,7 @@ class RaspberryPi4:
 
         # Combined Ethernet/USB heat slot determined by trial and error.
         ethernet_usb_dx: float = 6.0
-        ethernet_usb_dy: float = 22.0
+        ethernet_usb_dy: float = 18.0  # 22.0
         ethernet_usb_center: P2D = P2D(23.0, 2.5)  # (Y, -X) in master board coordinate state
         ethernet_usb_slot: SimplePolygon = Square(
             "Ethernet USB Heat Sink Slot", ethernet_usb_dx, ethernet_usb_dy, ethernet_usb_center,

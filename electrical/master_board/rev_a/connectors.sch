@@ -429,15 +429,7 @@ Wire Wire Line
 Text Label 4500 7700 2    50   ~ 0
 ~NRST
 Wire Wire Line
-	4400 3900 5900 3900
-Entry Wire Line
-	5900 3900 6000 4000
-Text Label 5900 3900 2    50   ~ 0
-~NRST
-Wire Wire Line
 	4500 5100 4400 5100
-Wire Wire Line
-	4400 5500 5900 5500
 Entry Wire Line
 	5900 5500 6000 5600
 $Comp
@@ -863,10 +855,18 @@ NoConn ~ 4200 4700
 NoConn ~ 4200 4800
 NoConn ~ 4200 4900
 NoConn ~ 4200 5000
-NoConn ~ 4400 3500
-NoConn ~ 4400 3900
-NoConn ~ 4400 5100
-NoConn ~ 4400 5500
+Wire Wire Line
+	4400 5500 5900 5500
+Entry Wire Line
+	5900 3900 6000 4000
+Text Label 5900 3900 2    50   ~ 0
+~NRST
+Wire Wire Line
+	4400 3900 5900 3900
+Wire Wire Line
+	4400 3900 4400 3500
+Wire Wire Line
+	4400 5500 4400 5100
 Wire Wire Line
 	4600 6500 8100 6500
 Wire Bus Line
