@@ -1,0 +1,9 @@
+"USB_B_MICRO_POWER_MASTER", "CN", "HR2:USB3140-30-230-1-C;VERT,2.3FLANGE", "", "USB_Mini Power (Slave)", "USB_Mini Power (Slave)"
+"Pin", "Unit", "Type",       "Name",   "Style", "Side"
+"1",   "A",    "power_out",   "VBUS",   "line",  "right"
+"2",   "A",    "no_connect", "D-",     "line",  "right"
+"3",   "A",    "no_connect", "D+",     "line",  "right"
+"4",   "A",    "no_connect", "ID",     "line",  "right"
+"5",   "A",    "power_out",   "GND",    "line",  "right"
+"6",   "A",    "power_in",   "SHIELD", "line",  "right"
+,,,,,,

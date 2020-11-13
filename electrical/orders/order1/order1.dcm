@@ -24,6 +24,12 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
+$CMP USB_B_MICRO_POWER_MASTER
+D USB_Mini Power (Slave)
+K ~
+F 2.3FLANGE
+$ENDCMP
+#
 $CMP MCP2542;SOIC8
 D MCP2542
 K ~
@@ -96,14 +102,20 @@ K ~
 F https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF
 $ENDCMP
 #
-$CMP USB_B_MINI_POWER_SLAVE
+$CMP USB_B_MICRO_POWER_SLAVE
 D USB_Mini Power (Slave)
 K ~
-F 
+F 2.3FLANGE
 $ENDCMP
 #
 $CMP SN74HCS595;TTSOP16
 D Tri-State 8-Bit Shift Register
+K ~
+F 
+$ENDCMP
+#
+$CMP CPC1017N;SOP4W3.8WL4.1
+D CPC1017 Solid State Relay
 K ~
 F 
 $ENDCMP
@@ -118,6 +130,12 @@ $CMP HOLE;M2.5
 D 
 K ~
 F M2.5 Mounting Hole
+$ENDCMP
+#
+$CMP 74LVC1G11;SOT363
+D 1 3-Input and Gate
+K ~
+F 
 $ENDCMP
 #
 $CMP BRIDGE_NE_OUTER;3xM1x1+M1x5

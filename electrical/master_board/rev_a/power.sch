@@ -116,8 +116,8 @@ L Switch:SW_Push SW1
 U 1 1 5F4B612A
 P 4500 5200
 F 0 "SW1" H 4350 5300 50  0000 C CNN
-F 1 "PUSH_BUTTON;6x6x9.5H" H 4300 5150 50  0000 C CNN
-F 2 "Button_Switch_SMD:SW_SPST_PTS645" H 4500 5400 50  0001 C CNN
+F 1 "BUTTON;6x3.5" H 4450 5100 50  0000 C CNN
+F 2 "HR2:BUTTON_6x3.5" H 4500 5400 50  0001 C CNN
 F 3 "~" H 4500 5400 50  0001 C CNN
 	1    4500 5200
 	1    0    0    -1  
@@ -172,33 +172,8 @@ Connection ~ 4800 4400
 Wire Wire Line
 	4800 5600 4800 5500
 Connection ~ 4800 5500
-$Comp
-L Connector:USB_B_Mini CN2
-U 1 1 5F4B0748
-P 2000 4500
-F 0 "CN2" H 1900 4850 50  0000 C CNN
-F 1 "AMP10103594-0001LF;USB1x6H" H 1200 4150 50  0000 C CNN
-F 2 "Connector_USB:USB_Micro-B_Amphenol_10103594-0001LF_Horizontal" H 2150 4450 50  0001 C CNN
-F 3 "~" H 2150 4450 50  0001 C CNN
-	1    2000 4500
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	2300 4300 2950 4300
-NoConn ~ 2300 4500
-NoConn ~ 2300 4600
-NoConn ~ 2300 4700
-Wire Wire Line
-	1900 4900 1900 5000
-Wire Wire Line
-	1900 5000 2000 5000
-Wire Wire Line
-	2000 5000 2000 4900
-Wire Wire Line
-	1900 5000 1900 6000
-Wire Wire Line
-	1900 6000 2950 6000
-Connection ~ 1900 5000
 Connection ~ 2950 6000
 Wire Wire Line
 	8750 6000 8300 6000
@@ -239,13 +214,13 @@ Wire Wire Line
 $Comp
 L HR2:AP2114HA-3.3TRG1_1A;SOT223 VR1
 U 1 1 5F4C5F9D
-P 6300 4750
-F 0 "VR1" H 6550 4900 50  0000 C CNN
-F 1 "AP2114HA-3.3TRG1_1A;SOT223" H 7350 4900 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-223-3_TabPin2" H 6500 4800 60  0001 L CNN
-F 3 "1A 3.3V LDO Voltage Linear Regulator" H 6500 4600 60  0001 L CNN
-F 4 "1A 3.3V LDO Voltage Linear Regulator" H 6500 4500 60  0001 L CNN "Field5"
-	1    6300 4750
+P 6500 4750
+F 0 "VR1" H 6750 4900 50  0000 C CNN
+F 1 "AP2114HA-3.3TRG1_1A;SOT223" H 7050 4500 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-223-3_TabPin2" H 6700 4800 60  0001 L CNN
+F 3 "1A 3.3V LDO Voltage Linear Regulator" H 6700 4600 60  0001 L CNN
+F 4 "1A 3.3V LDO Voltage Linear Regulator" H 6700 4500 60  0001 L CNN "Field5"
+	1    6500 4750
 	1    0    0    -1  
 $EndComp
 Connection ~ 7800 4400
@@ -277,12 +252,12 @@ $EndComp
 $Comp
 L Device:C C3
 U 1 1 5F4D53A8
-P 7800 5050
-F 0 "C3" H 7650 5150 50  0000 L CNN
-F 1 "4.7µF;1608" H 7350 4950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 7838 4900 50  0001 C CNN
-F 3 "~" H 7800 5050 50  0001 C CNN
-	1    7800 5050
+P 7800 5250
+F 0 "C3" H 7650 5350 50  0000 L CNN
+F 1 "4.7µF;1608" H 7350 5150 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 7838 5100 50  0001 C CNN
+F 3 "~" H 7800 5250 50  0001 C CNN
+	1    7800 5250
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -291,25 +266,23 @@ Connection ~ 6150 4400
 Wire Wire Line
 	6150 4400 7800 4400
 Wire Wire Line
-	6300 4750 6150 4750
+	6500 4750 6150 4750
 Connection ~ 6150 4750
 Wire Wire Line
 	6150 4750 6150 4400
 Wire Wire Line
-	7800 4900 7800 4750
+	7800 5100 7800 4850
 Wire Wire Line
-	7800 4750 7500 4750
+	7800 4850 7500 4850
 Wire Wire Line
-	7800 5200 7800 6000
+	7800 5400 7800 6000
 Wire Wire Line
-	7800 6000 6900 6000
-Wire Wire Line
-	6900 6000 6900 5350
+	7800 6000 6400 6000
 Wire Wire Line
 	6150 5150 6150 6000
 Wire Wire Line
-	6150 6000 6900 6000
-Connection ~ 6900 6000
+	6150 6000 6400 6000
+Connection ~ 6400 6000
 Connection ~ 7800 6000
 Connection ~ 6150 6000
 Wire Wire Line
@@ -320,12 +293,9 @@ Text Label 8750 4400 2    50   ~ 0
 5V
 Text Label 8750 6000 2    50   ~ 0
 GND
-Text HLabel 8750 4750 2    50   Output ~ 0
+Text HLabel 8750 4850 2    50   Output ~ 0
 3.3V
-Wire Wire Line
-	7800 4750 8300 4750
-Connection ~ 7800 4750
-Text Label 8750 4750 2    50   ~ 0
+Text Label 8750 4850 2    50   ~ 0
 3.3V
 Text Label 2600 4300 0    50   ~ 0
 USB5V
@@ -334,8 +304,8 @@ L Device:CP1 C6
 U 1 1 5F4F1B8B
 P 8400 3450
 F 0 "C6" H 8450 3550 50  0000 L CNN
-F 1 "470µF,25V;D8_P3.5" H 8450 3300 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm" H 8400 3450 50  0001 C CNN
+F 1 "470µF,25Vmin;D10P5H13max" H 8450 3300 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 8400 3450 50  0001 C CNN
 F 3 "~" H 8400 3450 50  0001 C CNN
 	1    8400 3450
 	1    0    0    -1  
@@ -363,8 +333,8 @@ L Device:CP1 C5
 U 1 1 5F50C5A8
 P 8200 3950
 F 0 "C5" H 8250 4050 50  0000 L CNN
-F 1 "470µF,25V;D8_P3.5" H 8250 3800 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm" H 8200 3950 50  0001 C CNN
+F 1 "470µF,25Vmin;D10P5H13max" H 8250 3800 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 8200 3950 50  0001 C CNN
 F 3 "~" H 8200 3950 50  0001 C CNN
 	1    8200 3950
 	1    0    0    -1  
@@ -395,10 +365,9 @@ F 3 "~" H 8300 5600 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	8300 4950 8300 4750
-Connection ~ 8300 4750
+	8300 4950 8300 4850
 Wire Wire Line
-	8300 4750 8750 4750
+	8300 4850 8750 4850
 Wire Wire Line
 	8300 5450 8300 5250
 Wire Wire Line
@@ -417,19 +386,16 @@ Wire Wire Line
 Text Notes 3000 3900 0    50   ~ 0
 Note: The PFET's in the KiCAD library have passive pins\n  for design rule checks.  A PFET with Power In on the\n  Source and Power Out on the Drain is needed.\n  It was easier to do an ugly box than a pretty PFET.\n  Deal with it.
 Wire Wire Line
-	2400 3700 2500 3700
+	2300 3700 2500 3700
 Wire Wire Line
 	2500 3700 2500 3800
 Wire Wire Line
-	2500 5000 2000 5000
-Connection ~ 2000 5000
-Wire Wire Line
-	2400 3800 2500 3800
+	2300 3800 2500 3800
 Connection ~ 2500 3800
 Wire Wire Line
-	2500 3800 2500 5000
+	2500 3800 2500 4700
 Wire Wire Line
-	2400 3300 2950 3300
+	2300 3300 2950 3300
 Connection ~ 2950 3300
 Text Notes 950  3000 0    50   ~ 0
 Note: When the motors are running full bore\n  up a hill, the current drain becomes significant.\n  Use two USB connectors to maximize current\n  from the USB battery pack.
@@ -440,8 +406,8 @@ P 8200 2700
 AR Path="/5FA4A874/5F7AF36B" Ref="C?"  Part="1" 
 AR Path="/5F52F39E/5F7AF36B" Ref="C4"  Part="1" 
 F 0 "C4" H 8250 2800 50  0000 L CNN
-F 1 "1000µF@16V;D10P5" H 8250 2600 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D10.0mm_P3.50mm" H 8200 2700 50  0001 C CNN
+F 1 "1000µF@10Vmin;D10P5H13max" H 8250 2600 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 8200 2700 50  0001 C CNN
 F 3 "~" H 8200 2700 50  0001 C CNN
 	1    8200 2700
 	1    0    0    -1  
@@ -512,32 +478,64 @@ Text Notes 5550 3550 0    50   ~ 0
 9V for Motors and WOWBus\ngenerated by Pololu Boost regulator.
 Text Notes 8750 2650 0    50   ~ 0
 P5V is a "dirty" 5 volt supply used\nfor lighting LED's etc.
-Text Notes 8600 5000 0    50   ~ 0
+Text Notes 8600 5050 0    50   ~ 0
 3.3V for miscellanious\ndevices that need it.
 Text Notes 8450 5450 0    50   ~ 0
 Power On LED
 $Comp
-L HR2:USB_B_MINI_POWER_SLAVE CN1
-U 1 1 5F56C48C
-P 1600 3300
-F 0 "CN1" H 1850 3450 50  0000 C CNN
-F 1 "AMP10103594-0001LF;USB1x6H" H 1200 2650 50  0000 C CNN
-F 2 "Connector_USB:USB_Micro-B_Amphenol_10103594-0001LF_Horizontal" H 1800 3350 60  0001 L CNN
-F 3 "USB_Mini Power (Slave)" H 1800 3150 60  0001 L CNN
-F 4 "USB_Mini Power (Slave)" H 1800 3050 60  0001 L CNN "Field5"
-	1    1600 3300
-	1    0    0    -1  
-$EndComp
-$Comp
 L HR2:POWER_PFET_GSD Q2
 U 1 1 5F96763E
 P 3300 4300
-F 0 "Q2" H 3700 4590 60  0000 C CNN
-F 1 "POWER_PFET_GSD" H 3700 4484 60  0000 C CNN
+F 0 "Q2" H 3550 4450 50  0000 C CNN
+F 1 "POWER_PFET_GSD" H 3700 4050 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23" H 3500 4350 60  0001 L CNN
 F 3 "Power PFG (GSD pinout)" H 3500 4150 60  0001 L CNN
 F 4 "Power PFET (GSD pinout)" H 3500 4050 60  0001 L CNN "Field5"
 	1    3300 4300
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	2300 4700 2500 4700
+Wire Wire Line
+	2500 4800 2500 4700
+Connection ~ 2500 4700
+Wire Wire Line
+	2300 4800 2500 4800
+Wire Wire Line
+	2500 4800 2500 6000
+Connection ~ 2500 4800
+Wire Wire Line
+	2500 6000 2950 6000
+$Comp
+L HR2:USB_B_MICRO_POWER_SLAVE CN1
+U 1 1 5F9D0CA6
+P 1500 3300
+F 0 "CN1" H 1750 3450 50  0000 C CNN
+F 1 "USB3140-30-230-1-C;VERT,2.3FLANGE" H 1700 2650 50  0000 C CNN
+F 2 "HR2:USB3140-30-230-1-C;VERT,2.3FLANGE" H 1700 3350 60  0001 L CNN
+F 3 "2.3FLANGE" H 1700 3150 60  0001 L CNN
+F 4 "USB_Mini Power (Slave)" H 1700 3050 60  0001 L CNN "Field5"
+	1    1500 3300
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:USB_B_MICRO_POWER_MASTER CN2
+U 1 1 5F9D14A3
+P 1500 4300
+F 0 "CN2" H 1750 4450 50  0000 C CNN
+F 1 "USB3140-30-230-1-C;VERT,2.3FLANGE" H 1700 3650 50  0000 C CNN
+F 2 "HR2:USB3140-30-230-1-C;VERT,2.3FLANGE" H 1700 4350 60  0001 L CNN
+F 3 "2.3FLANGE" H 1700 4150 60  0001 L CNN
+F 4 "USB_Mini Power (Slave)" H 1700 4050 60  0001 L CNN "Field5"
+	1    1500 4300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6500 4850 6400 4850
+Wire Wire Line
+	6400 4850 6400 6000
+Wire Wire Line
+	7800 4850 8300 4850
+Connection ~ 7800 4850
+Connection ~ 8300 4850
 $EndSCHEMATC

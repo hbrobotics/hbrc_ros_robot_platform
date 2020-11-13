@@ -14,80 +14,26 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L HR2:MCP2542;SOIC8 U14
-U 1 1 5F846C97
-P 5400 2200
-F 0 "U14" H 5650 2350 50  0000 C CNN
-F 1 "LTV-827" H 5950 1650 50  0000 C CNN
-F 2 "Package_DIP:DIP-8_W7.62mm" H 5600 2250 60  0001 L CNN
-F 3 "http://optoelectronics.liteon.com/upload/download/DS-70-96-0016/LTV-8X7%20series%20201610%20.pdf" H 5600 2050 60  0001 L CNN
-F 4 "MCP2542" H 5600 1950 60  0001 L CNN "Field5"
-	1    5400 2200
-	1    0    0    -1  
-$EndComp
-$Comp
-L Isolator:LTV-827 U17
-U 1 1 5F8476A1
-P 7400 1400
-F 0 "U17" H 7250 1600 50  0000 C CNN
-F 1 "LTV-827" H 7400 1200 50  0000 C CNN
-F 2 "Package_DIP:DIP-8_W7.62mm" H 7200 1200 50  0001 L CIN
-F 3 "http://optoelectronics.liteon.com/upload/download/DS-70-96-0016/LTV-8X7%20series%20201610%20.pdf" H 7400 1400 50  0001 L CNN
-	1    7400 1400
-	1    0    0    -1  
-$EndComp
-$Comp
-L Isolator:LTV-827 U18
-U 1 1 5F849475
-P 8400 1400
-F 0 "U18" H 8550 1200 50  0000 C CNN
-F 1 "LTV-827" H 8400 1600 50  0000 C CNN
-F 2 "Package_DIP:DIP-8_W7.62mm" H 8200 1200 50  0001 L CIN
-F 3 "http://optoelectronics.liteon.com/upload/download/DS-70-96-0016/LTV-8X7%20series%20201610%20.pdf" H 8400 1400 50  0001 L CNN
-	1    8400 1400
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	7700 1500 8000 1500
-Wire Wire Line
-	7700 1300 7800 1300
-Wire Wire Line
-	7100 1500 7000 1500
-Wire Wire Line
-	7000 1700 8800 1700
-Wire Wire Line
-	8800 1700 8800 1500
-Wire Wire Line
-	8800 1500 8700 1500
-Wire Wire Line
-	7000 1500 7000 1700
-$Comp
 L Device:R_US R59
 U 1 1 5F846FDA
-P 8000 1950
-F 0 "R59" H 7850 2050 50  0000 L CNN
-F 1 "120Ω1/4W;1608" H 8050 1850 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8040 1940 50  0001 C CNN
-F 3 "~" H 8000 1950 50  0001 C CNN
-	1    8000 1950
+P 7300 1950
+F 0 "R59" H 7150 2050 50  0000 L CNN
+F 1 "120Ω1/4W;1608" H 7350 1850 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7340 1940 50  0001 C CNN
+F 3 "~" H 7300 1950 50  0001 C CNN
+	1    7300 1950
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6500 2200 7800 2200
+	6500 2200 7100 2200
 Wire Wire Line
-	7800 2200 7800 1300
-Connection ~ 7800 1300
+	7100 2200 7100 1600
 Wire Wire Line
-	7800 1300 8100 1300
+	7300 1800 7300 1700
 Wire Wire Line
-	8000 1800 8000 1500
-Connection ~ 8000 1500
+	6500 2300 7300 2300
 Wire Wire Line
-	8000 1500 8100 1500
-Wire Wire Line
-	6500 2300 8000 2300
-Wire Wire Line
-	8000 2300 8000 2100
+	7300 2300 7300 2100
 $Comp
 L Device:R_US R55
 U 1 1 5F869783
@@ -135,99 +81,43 @@ U 1 1 5F848F57
 P 9600 4600
 F 0 "CN10" H 9800 4750 50  0000 L CNN
 F 1 "WOW_OUT;M2x6S" H 9750 3350 50  0000 L CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Vertical" H 9800 4650 60  0001 L CNN
+F 2 "HR2:PinHeader_2x06_P2.54mm_Vertical_Shrouded" H 9800 4650 60  0001 L CNN
 F 3 "WOW Output Connector" H 9800 4450 60  0001 L CNN
 F 4 "WOW Output Connector" H 9800 4350 60  0001 L CNN "Field5"
 	1    9600 4600
 	1    0    0    -1  
 $EndComp
-$Comp
-L HR2:MCP2542;SOIC8 U15
-U 1 1 5F8496E2
-P 5400 3900
-F 0 "U15" H 5650 4050 50  0000 C CNN
-F 1 "LTV-827" H 5950 3350 50  0000 C CNN
-F 2 "Package_DIP:DIP-8_W7.62mm" H 5600 3950 60  0001 L CNN
-F 3 "http://optoelectronics.liteon.com/upload/download/DS-70-96-0016/LTV-8X7%20series%20201610%20.pdf" H 5600 3750 60  0001 L CNN
-F 4 "MCP2542" H 5600 3650 60  0001 L CNN "Field5"
-	1    5400 3900
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	5300 2500 5300 2900
 Wire Wire Line
 	5300 4200 5400 4200
 $Comp
-L Isolator:LTV-827 U17
-U 2 1 5F84B285
-P 7400 3100
-F 0 "U17" H 7250 3300 50  0000 C CNN
-F 1 "LTV-827" H 7400 2900 50  0000 C CNN
-F 2 "Package_DIP:DIP-8_W7.62mm" H 7200 2900 50  0001 L CIN
-F 3 "http://optoelectronics.liteon.com/upload/download/DS-70-96-0016/LTV-8X7%20series%20201610%20.pdf" H 7400 3100 50  0001 L CNN
-	2    7400 3100
-	1    0    0    -1  
-$EndComp
-$Comp
-L Isolator:LTV-827 U18
-U 2 1 5F84B28F
-P 8400 3100
-F 0 "U18" H 8550 2900 50  0000 C CNN
-F 1 "LTV-827" H 8400 3300 50  0000 C CNN
-F 2 "Package_DIP:DIP-8_W7.62mm" H 8200 2900 50  0001 L CIN
-F 3 "http://optoelectronics.liteon.com/upload/download/DS-70-96-0016/LTV-8X7%20series%20201610%20.pdf" H 8400 3100 50  0001 L CNN
-	2    8400 3100
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	7100 3200 7000 3200
-Wire Wire Line
-	7000 3400 9100 3400
-Wire Wire Line
-	7000 3200 7000 3400
-$Comp
 L Device:R_US R60
 U 1 1 5F84B29E
-P 8000 3650
-F 0 "R60" H 7850 3750 50  0000 L CNN
-F 1 "120Ω1/4W;1608" H 8050 3550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8040 3640 50  0001 C CNN
-F 3 "~" H 8000 3650 50  0001 C CNN
-	1    8000 3650
+P 7300 3650
+F 0 "R60" H 7150 3750 50  0000 L CNN
+F 1 "120Ω1/4W;1608" H 7350 3550 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7340 3640 50  0001 C CNN
+F 3 "~" H 7300 3650 50  0001 C CNN
+	1    7300 3650
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6500 3900 7800 3900
+	6500 3900 7100 3900
 Wire Wire Line
-	8000 3500 8000 3200
+	6500 4000 7300 4000
 Wire Wire Line
-	6500 4000 8000 4000
+	7300 4000 7300 3800
 Wire Wire Line
-	8000 4000 8000 3800
+	7100 3900 7100 3200
 Wire Wire Line
-	7800 3900 7800 3000
+	7300 3300 7400 3300
 Wire Wire Line
-	8700 3200 9100 3200
+	7100 3900 8900 3900
+Connection ~ 7100 3900
 Wire Wire Line
-	9100 3200 9100 3400
-Wire Wire Line
-	7700 3200 8000 3200
-Wire Wire Line
-	7700 3000 7800 3000
-Connection ~ 8000 3200
-Wire Wire Line
-	8000 3200 8100 3200
-Connection ~ 7800 3000
-Wire Wire Line
-	7800 3000 8100 3000
-Wire Wire Line
-	7800 3900 8900 3900
-Connection ~ 7800 3900
-Wire Wire Line
-	8000 4000 8800 4000
-Connection ~ 8000 4000
-Connection ~ 8000 2300
-Connection ~ 7800 2200
+	7300 4000 8800 4000
+Connection ~ 7300 4000
+Connection ~ 7300 2300
+Connection ~ 7100 2200
 Wire Wire Line
 	4500 1000 4400 1000
 Wire Wire Line
@@ -238,8 +128,6 @@ Wire Wire Line
 	6800 2500 6500 2500
 Wire Wire Line
 	6500 4200 6800 4200
-Wire Wire Line
-	8700 1300 9400 1300
 Text HLabel 1100 1600 0    50   Input ~ 0
 5V
 Wire Wire Line
@@ -255,19 +143,12 @@ Wire Wire Line
 Connection ~ 6600 2400
 Wire Wire Line
 	6500 4300 6900 4300
-Wire Wire Line
-	6800 1300 7100 1300
-Connection ~ 6800 2500
-Wire Wire Line
-	7100 3000 6800 3000
 Connection ~ 6800 3000
 Wire Wire Line
 	6800 3000 6800 2500
 Wire Wire Line
 	6900 5900 6900 5300
 Connection ~ 6900 4300
-Wire Wire Line
-	6900 2600 6900 4300
 Connection ~ 4600 5900
 $Comp
 L Device:R_US R56
@@ -280,25 +161,23 @@ F 3 "~" H 4000 5650 50  0001 C CNN
 	1    4000 5650
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	6800 1300 6800 2500
 $Comp
 L Transistor_FET:2N7000 Q?
 U 1 1 5F9A0944
-P 3700 4200
+P 3700 4000
 AR Path="/5F79BC00/5F9A0944" Ref="Q?"  Part="1" 
 AR Path="/5FA4A874/5F9A0944" Ref="Q?"  Part="1" 
 AR Path="/5FAD82EE/5F9A0944" Ref="Q?"  Part="1" 
 AR Path="/5F8C2F57/5F9A0944" Ref="Q20"  Part="1" 
-F 0 "Q20" H 3600 4350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 3850 4050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 3900 4125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3700 4200 50  0001 L CNN
-	1    3700 4200
+F 0 "Q20" H 3600 4150 50  0000 L CNN
+F 1 "2N7000;SOT23" H 3850 3850 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3900 3925 50  0001 L CIN
+F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3700 4000 50  0001 L CNN
+	1    3700 4000
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3800 1450 3800 4000
+	3800 1450 3800 3800
 Text HLabel 1100 2300 0    50   Input ~ 0
 WOW_TX
 Text HLabel 1100 2400 0    50   Output ~ 0
@@ -308,20 +187,20 @@ Wire Wire Line
 Wire Wire Line
 	1100 2400 5400 2400
 Wire Wire Line
-	9400 1300 9400 1400
+	9400 1600 9400 1700
 $Comp
 L Device:R_US R61
 U 1 1 5F8EAE9D
-P 9400 1550
-F 0 "R61" H 9250 1650 50  0000 L CNN
-F 1 "100KΩ;1608" H 8900 1400 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 9440 1540 50  0001 C CNN
-F 3 "~" H 9400 1550 50  0001 C CNN
-	1    9400 1550
+P 9400 1850
+F 0 "R61" H 9250 1950 50  0000 L CNN
+F 1 "100KΩ;1608" H 8900 1700 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9440 1840 50  0001 C CNN
+F 3 "~" H 9400 1850 50  0001 C CNN
+	1    9400 1850
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9400 1700 9400 2400
+	9400 2000 9400 2700
 $Comp
 L HR2:74LVC1G74;TSSOP8 U16
 U 1 1 5F8C5AF5
@@ -336,7 +215,6 @@ F 4 "D-type flip-flop edge-trigger/set/reset" H 5600 4750 60  0001 L CNN "Field5
 $EndComp
 Wire Wire Line
 	6600 5000 6500 5000
-Connection ~ 6600 4100
 Wire Wire Line
 	6500 5300 6900 5300
 Connection ~ 6900 5300
@@ -368,27 +246,25 @@ Text Notes 5450 4800 0    50   ~ 0
 E-Stop x74 D Style Flip-Flop
 Text Notes 6950 1100 0    50   ~ 0
 Opto-isolator
-Text Notes 7600 2850 0    50   ~ 0
-Dual Opto-isolator
+Text Notes 7650 3000 0    50   ~ 0
+Solid State Relay
 Text Notes 9500 4400 0    50   ~ 0
 WOWBus Output Connector
 Wire Wire Line
-	3400 4200 3400 4500
-Wire Wire Line
-	3400 4200 3500 4200
+	3400 4000 3500 4000
 $Comp
 L Device:R_US R53
 U 1 1 5FC61F4D
-P 2300 3250
-F 0 "R53" H 2150 3350 50  0000 L CNN
-F 1 "100KΩ;1608" H 2300 3100 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2340 3240 50  0001 C CNN
-F 3 "~" H 2300 3250 50  0001 C CNN
-	1    2300 3250
+P 2300 3450
+F 0 "R53" H 2150 3550 50  0000 L CNN
+F 1 "100KΩ;1608" H 2300 3300 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2340 3440 50  0001 C CNN
+F 3 "~" H 2300 3450 50  0001 C CNN
+	1    2300 3450
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2300 3100 2300 3000
+	2300 3300 2300 3000
 Connection ~ 2300 3000
 $Comp
 L Device:LED D?
@@ -429,9 +305,9 @@ Text Label 8800 2200 0    50   ~ 0
 WOW_COMH
 Text Label 8800 2300 0    50   ~ 0
 WOW_COML
-Text Label 7100 3900 0    50   ~ 0
+Text Label 7600 3900 0    50   ~ 0
 WOW_STOPH
-Text Label 7100 4000 0    50   ~ 0
+Text Label 7600 4000 0    50   ~ 0
 WOW_STOPL
 Text Label 1100 900  0    50   ~ 0
 9V
@@ -462,22 +338,9 @@ WOW_STDBY
 Connection ~ 3400 4500
 Text Label 7900 1000 0    50   ~ 0
 WOW_POW_OUT
-Text Label 8200 1700 0    50   ~ 0
-WOW_COM_TERM
-Text Label 8350 3400 0    50   ~ 0
-WOW_ESTOP_TERM
-Wire Wire Line
-	5300 2900 6500 2900
-Wire Wire Line
-	6500 2900 6500 2700
-Wire Wire Line
-	6500 2700 7000 2700
-Connection ~ 5300 2900
-Wire Wire Line
-	5300 2900 5300 3900
-Text Label 8700 3000 0    50   ~ 0
+Text Label 8700 3300 0    50   ~ 0
 WOW_ESTOP_OPTO
-Text Label 8800 1300 0    50   ~ 0
+Text Label 8800 1600 0    50   ~ 0
 WOW_COM_OPTO
 Text Notes 600  7600 0    50   ~ 0
 WOWBus Notes:\n\n1. WOWBus is an an expansion bus.\n2. WOWBus stands for Wayne's Omnipotent Wonderful Bus (heavy sarcasm.)\n3. WOWBus uses 2x6 ribbon daisy chain cables for interconnect.\n4. WOWBus has a nominal 9V rail, but this can droop due to resistive losses down the daisy chain.\n5. The WOWBus connector is designed to mirror image power, ground, and signaling.\n6. If a WOWBus connector is accidently reversed on a daisy cable, nothing shorts out.\n7. However, an accidentally reversed cable, will basically make the bus non-fuctional until corrected.\n8. The WOWBus has two "CAN bus" (ISO-11898-2) physical differential pairs for siginalling.\n9. The first differential pair is used as a multi-drop bidirectional data transfer.\n10. The second differential pair is used to signal Emergency Stop.\n11. When the WOWBus is enabled, it powers up both the transceivers and the differential\n    pair termination resistors.\n12. The expansions boards are responsible for providing the bus terminator resistors for\n    for the other end of the differential pairs.\n13. The Bus powers up in the EStop conndition and must be explicitly cleared out.\n14. When ESTOP occurs, it latches up and must be explicitly cleared.\n
@@ -504,9 +367,6 @@ Wire Wire Line
 Wire Wire Line
 	6600 4700 6600 5000
 Wire Wire Line
-	6600 4100 6600 4700
-Connection ~ 6600 4700
-Wire Wire Line
 	6600 4700 5300 4700
 Text Label 4850 5000 0    50   ~ 0
 ~ESTOP_SET
@@ -514,11 +374,11 @@ Text Label 4850 5200 0    50   ~ 0
 ESTOP_TRIG
 Connection ~ 2300 4900
 Wire Wire Line
-	2300 3400 2300 4900
+	2300 3600 2300 4900
 Wire Wire Line
 	1100 4900 2300 4900
 Wire Wire Line
-	2300 4900 3000 4900
+	2300 4900 2800 4900
 Wire Wire Line
 	7100 5200 7100 5300
 Wire Wire Line
@@ -552,14 +412,14 @@ Wire Wire Line
 $Comp
 L Switch:SW_Push SW?
 U 1 1 5FC73CCB
-P 2500 5700
+P 2400 5700
 AR Path="/5F52F39E/5FC73CCB" Ref="SW?"  Part="1" 
 AR Path="/5F8C2F57/5FC73CCB" Ref="SW3"  Part="1" 
-F 0 "SW3" H 2350 5800 50  0000 C CNN
-F 1 "PUSH_BUTTON;6x6x9.5H" H 2650 5600 50  0000 C CNN
-F 2 "Button_Switch_SMD:SW_SPST_PTS645" H 2500 5900 50  0001 C CNN
-F 3 "~" H 2500 5900 50  0001 C CNN
-	1    2500 5700
+F 0 "SW3" H 2250 5800 50  0000 C CNN
+F 1 "BUTTON;6x3.5" H 2400 5600 50  0000 C CNN
+F 2 "HR2:BUTTON_6x3.5" H 2400 5900 50  0001 C CNN
+F 3 "~" H 2400 5900 50  0001 C CNN
+	1    2400 5700
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -568,41 +428,24 @@ Wire Wire Line
 	5400 4000 4800 4000
 Wire Wire Line
 	4800 4000 4800 5200
-Wire Wire Line
-	3800 4400 3800 5200
 Connection ~ 3800 5900
 $Comp
 L Device:R_US R54
 U 1 1 5FF6B902
-P 2800 3250
-F 0 "R54" H 2650 3350 50  0000 L CNN
-F 1 "100KΩ;1608" H 2800 3100 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2840 3240 50  0001 C CNN
-F 3 "~" H 2800 3250 50  0001 C CNN
-	1    2800 3250
+P 2700 3250
+F 0 "R54" H 2550 3350 50  0000 L CNN
+F 1 "100KΩ;1608" H 2700 3100 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2740 3240 50  0001 C CNN
+F 3 "~" H 2700 3250 50  0001 C CNN
+	1    2700 3250
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2800 3100 2800 3000
-Connection ~ 2800 3000
+	2700 3100 2700 3000
+Connection ~ 2700 3000
 Wire Wire Line
 	3800 1450 3800 1350
 Connection ~ 3800 1450
-$Comp
-L 74xGxx:74LVC1G11 U13
-U 1 1 5FFD471D
-P 3300 5000
-F 0 "U13" H 3200 5200 50  0000 C CNN
-F 1 "74LVC1G11;6TSSOP" H 3350 4750 50  0000 C CNN
-F 2 "Package_SO:TSOP-6_1.65x3.05mm_P0.95mm" H 3300 5000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/sg/scyt129e/scyt129e.pdf" H 3300 5000 50  0001 C CNN
-	1    3300 5000
-	1    0    0    -1  
-$EndComp
-Text Notes 3300 4850 0    40   ~ 0
-5
-Text Notes 3250 5200 0    40   ~ 0
-2\n
 Connection ~ 4000 4500
 Wire Wire Line
 	4000 4500 4300 4500
@@ -612,43 +455,34 @@ Connection ~ 4000 5900
 Wire Wire Line
 	4000 5900 3800 5900
 Wire Wire Line
-	2300 3000 2800 3000
+	2300 3000 2700 3000
 Wire Wire Line
-	2800 3400 2800 5100
+	2700 3400 2700 5100
 Wire Wire Line
-	3000 5100 2800 5100
+	2800 5100 2700 5100
 Wire Wire Line
 	1100 4500 3400 4500
 Wire Wire Line
-	5400 5000 3600 5000
+	5400 5000 3700 5000
 Wire Wire Line
-	1100 5000 3000 5000
+	1100 5000 2800 5000
 Wire Wire Line
 	1100 5300 5400 5300
 Wire Wire Line
 	1100 5900 2100 5900
 Wire Wire Line
-	2800 5100 2800 5700
+	2700 5100 2700 5700
 Wire Wire Line
-	2800 5700 2700 5700
-Connection ~ 2800 5100
+	2700 5700 2600 5700
+Connection ~ 2700 5100
 Wire Wire Line
-	2300 5700 2100 5700
+	2200 5700 2100 5700
 Wire Wire Line
 	2100 5700 2100 5900
 Connection ~ 2100 5900
-Wire Wire Line
-	3300 5125 3300 5200
-Wire Wire Line
-	2800 3000 3300 3000
-Wire Wire Line
-	3300 4875 3300 3000
-Connection ~ 3300 3000
-Wire Wire Line
-	3300 3000 4600 3000
-Text Notes 2400 5550 0    50   ~ 0
+Text Notes 2200 5550 0    50   ~ 0
 Manual\nE-Stop\nButton
-Text Notes 2850 4750 0    50   ~ 0
+Text Notes 3150 4800 0    50   ~ 0
 E-Stop Set\n3-Input\nAND Gate
 $Comp
 L Device:C C?
@@ -725,7 +559,7 @@ Wire Wire Line
 Wire Wire Line
 	2100 3700 2100 4000
 Connection ~ 2100 4000
-Text Notes 3850 4050 0    50   ~ 0
+Text Notes 3850 3800 0    50   ~ 0
 3.3 to 9V\nLevel Shift
 Text Notes 4050 4900 0    50   ~ 0
 WOW Standby\nInverter
@@ -755,16 +589,16 @@ Connection ~ 1300 3400
 Wire Wire Line
 	1300 3400 1300 3000
 Wire Wire Line
-	9400 3000 9400 2850
+	9400 3300 9400 3100
 $Comp
 L Device:R_US R62
 U 1 1 5F8E9E6C
-P 9400 2700
-F 0 "R62" H 9250 2800 50  0000 L CNN
-F 1 "100KΩ;1608" H 8900 2550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 9440 2690 50  0001 C CNN
-F 3 "~" H 9400 2700 50  0001 C CNN
-	1    9400 2700
+P 9400 2950
+F 0 "R62" H 9250 3050 50  0000 L CNN
+F 1 "100KΩ;1608" H 8900 2800 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9440 2940 50  0001 C CNN
+F 3 "~" H 9400 2950 50  0001 C CNN
+	1    9400 2950
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -800,7 +634,7 @@ Wire Wire Line
 Wire Wire Line
 	9600 4000 9600 2300
 Wire Wire Line
-	8000 2300 9600 2300
+	7300 2300 9600 2300
 Wire Wire Line
 	9600 5100 9100 5100
 Wire Wire Line
@@ -810,9 +644,9 @@ Wire Wire Line
 Wire Wire Line
 	9500 3900 9500 2200
 Wire Wire Line
-	7800 2200 9500 2200
+	7100 2200 9500 2200
 Wire Wire Line
-	7100 5900 9500 5900
+	7100 5900 8600 5900
 Wire Wire Line
 	9500 5900 9500 5500
 Wire Wire Line
@@ -859,14 +693,12 @@ Wire Wire Line
 Wire Wire Line
 	9800 1000 9800 4200
 Wire Wire Line
-	7000 2700 7000 2400
+	7000 2900 7000 2700
 Wire Wire Line
-	7000 2400 9400 2400
-Connection ~ 9400 2400
+	7000 2700 9400 2700
+Connection ~ 9400 2700
 Wire Wire Line
-	9400 2400 9400 2550
-Wire Wire Line
-	8700 3000 9400 3000
+	9400 2700 9400 2800
 $Comp
 L HR2:POWER_PFET_GSD Q21
 U 1 1 5F9BEDD5
@@ -884,10 +716,128 @@ Wire Wire Line
 Wire Wire Line
 	4600 4700 4600 5900
 Wire Wire Line
-	3300 5200 3800 5200
-Connection ~ 3800 5200
-Wire Wire Line
-	3800 5200 3800 5900
-Wire Wire Line
 	2100 5900 3800 5900
+$Comp
+L HR2:MCP2542;SOIC8 U14
+U 1 1 5F9A7EB1
+P 5400 2200
+F 0 "U14" H 5650 2350 50  0000 C CNN
+F 1 "MCP2542;SOIC8" H 5950 1650 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 5600 2250 60  0001 L CNN
+F 3 "MCP2542 CAN Transceiver" H 5600 2050 60  0001 L CNN
+F 4 "MCP2542" H 5600 1950 60  0001 L CNN "Field5"
+	1    5400 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:MCP2542;SOIC8 U15
+U 1 1 5F9AA16D
+P 5400 3900
+F 0 "U15" H 5650 4050 50  0000 C CNN
+F 1 "MCP2542;SOIC8" H 5950 3350 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 5600 3950 60  0001 L CNN
+F 3 "MCP2542 CAN Transceiver" H 5600 3750 60  0001 L CNN
+F 4 "MCP2542" H 5600 3650 60  0001 L CNN "Field5"
+	1    5400 3900
+	1    0    0    -1  
+$EndComp
+Text Notes 7150 6000 0    50   ~ 0
+https://www.ti.com/lit/ug/tiducf3/tiducf3.pdf
+$Comp
+L HR2:CPC1017N;SOP4W3.8WL4.1 U18
+U 1 1 5F9EEF8D
+P 8500 3200
+F 0 "U18" H 9350 3350 50  0000 C CNN
+F 1 "CPC1017N;SOP4W3.8L4.1" H 9050 2950 50  0000 C CNN
+F 2 "Package_SO:SOP-4_3.8x4.1mm_P2.54mm" H 8700 3250 60  0001 L CNN
+F 3 "CPC1017 Solid State Relay" H 8700 3050 60  0001 L CNN
+F 4 "CPC1017 Solid State Relay" H 8700 2950 60  0001 L CNN "Field5"
+	1    8500 3200
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	7300 3300 7300 3500
+Wire Wire Line
+	7100 3200 7400 3200
+Wire Wire Line
+	6900 2600 6900 4300
+Wire Wire Line
+	8500 3300 9400 3300
+Wire Wire Line
+	7100 1600 7400 1600
+Wire Wire Line
+	7300 1700 7400 1700
+$Comp
+L HR2:CPC1017N;SOP4W3.8WL4.1 U17
+U 1 1 5F9ECFD5
+P 8500 1600
+F 0 "U17" H 8750 1750 50  0000 C CNN
+F 1 "CPC1017N;SOP4W3.8L4.1" H 9050 1350 50  0000 C CNN
+F 2 "Package_SO:SOP-4_3.8x4.1mm_P2.54mm" H 8700 1650 60  0001 L CNN
+F 3 "CPC1017 Solid State Relay" H 8700 1450 60  0001 L CNN
+F 4 "CPC1017 Solid State Relay" H 8700 1350 60  0001 L CNN "Field5"
+	1    8500 1600
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	8500 1600 9400 1600
+Wire Wire Line
+	8500 3200 8600 3200
+Wire Wire Line
+	8600 3200 8600 5900
+Connection ~ 8600 5900
+Wire Wire Line
+	8600 5900 9500 5900
+Wire Wire Line
+	8500 1700 8600 1700
+Wire Wire Line
+	8600 1700 8600 3200
+Connection ~ 8600 3200
+Wire Wire Line
+	5300 2500 5300 3900
+Wire Wire Line
+	7000 2900 3400 2900
+Wire Wire Line
+	3400 2900 3400 4000
+Connection ~ 3400 4000
+Wire Wire Line
+	3400 4000 3400 4500
+$Comp
+L HR2:74LVC1G11;SOT363 U13
+U 1 1 5FA1469C
+P 2800 4900
+F 0 "U13" H 3050 5050 50  0000 C CNN
+F 1 "74LVC1G11;SOT363" H 3250 4550 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-363_SC-70-6" H 3000 4950 60  0001 L CNN
+F 3 "1 3-Input AND Gate" H 3000 4750 60  0001 L CNN
+F 4 "1 3-Input and Gate" H 3000 4650 60  0001 L CNN "Field5"
+	1    2800 4900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3800 4200 3800 5100
+Wire Wire Line
+	3700 5100 3800 5100
+Connection ~ 3800 5100
+Wire Wire Line
+	3800 5100 3800 5900
+Wire Wire Line
+	2700 3000 4400 3000
+Wire Wire Line
+	3700 4900 3900 4900
+Wire Wire Line
+	3900 4900 3900 4250
+Wire Wire Line
+	3900 4250 4400 4250
+Wire Wire Line
+	4400 4250 4400 3000
+Connection ~ 4400 3000
+Wire Wire Line
+	4400 3000 4600 3000
+Wire Wire Line
+	6800 4200 6800 4700
+Wire Wire Line
+	6800 4700 6600 4700
+Connection ~ 6800 4200
+Connection ~ 6600 4700
 $EndSCHEMATC

@@ -484,7 +484,7 @@ AR Path="/5F7F066C" Ref="CN?"  Part="1"
 AR Path="/5F48CAAD/5F7F066C" Ref="CN81"  Part="1" 
 F 0 "CN81" H 3800 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 3850 3950 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4LP" H 3600 4450 60  0001 L CNN
+F 2 "HR2:HCSR04_F1x4H" H 3600 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3600 4250 60  0001 L CNN
 F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3600 4350 60  0001 L CNN "manf#"
 F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 3600 4150 60  0001 L CNN "Field5"
@@ -499,7 +499,7 @@ AR Path="/5F7F06A3" Ref="CN?"  Part="1"
 AR Path="/5F48CAAD/5F7F06A3" Ref="CN82"  Part="1" 
 F 0 "CN82" H 5000 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 5050 3950 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4LP" H 4800 4450 60  0001 L CNN
+F 2 "HR2:HCSR04_F1x4H" H 4800 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4800 4250 60  0001 L CNN
 F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4800 4350 60  0001 L CNN "manf#"
 F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 4800 4150 60  0001 L CNN "Field5"
@@ -641,7 +641,7 @@ AR Path="/5F7F06DA" Ref="CN?"  Part="1"
 AR Path="/5F48CAAD/5F7F06DA" Ref="CN83"  Part="1" 
 F 0 "CN83" H 6200 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 6250 3950 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4LP" H 6000 4450 60  0001 L CNN
+F 2 "HR2:HCSR04_F1x4" H 6000 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 6000 4250 60  0001 L CNN
 F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 6000 4350 60  0001 L CNN "manf#"
 F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 6000 4150 60  0001 L CNN "Field5"
@@ -835,7 +835,7 @@ AR Path="/5F7E7561" Ref="CN?"  Part="1"
 AR Path="/5F48CAAD/5F7E7561" Ref="CN87"  Part="1" 
 F 0 "CN87" H 11000 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 11050 3950 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4LP" H 10800 4450 60  0001 L CNN
+F 2 "HR2:HCSR04_F1x4" H 10800 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 10800 4250 60  0001 L CNN
 F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 10800 4350 60  0001 L CNN "manf#"
 F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 10800 4150 60  0001 L CNN "Field5"

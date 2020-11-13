@@ -2497,7 +2497,7 @@ class Encoder:
         pcb_east_x: float = motor_casing_dz / 2.0
         pcb_header_dx: float = 6.5  # Trial and error
         pcb_corner_x: float = -2.5  # Trial and error
-        pcb_dy_extra: float = 8.0 * 2.54
+        pcb_dy_extra: float = 10.0 * 2.54
         pcb_dz: float = 1.6  # mm
         pcb_north_y: float = (motor_casing_dy + pcb_dy_extra) / 2.0
         pcb_north_corner_y: float = motor_casing_dy / 2.0
@@ -4962,8 +4962,8 @@ class MasterBoard:
             # Note GV4/GV7 is the same Grove split across the center and nw PCBs:
             ("NW Outer Bottom", False, P2D(-42.0, 53.0), radians(-90),
              "GV81", grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
-            ("Center NW Inner Top (Left)", True, P2D(-50.5, 34.5), radians(30.0),
-             "GV84", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
+            # ("Center NW Inner Top (Left)", True, P2D(-50.5, 34.5), radians(30.0),
+            #  "GV84", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
             # ("NW NW Inner Bottom (Right)", True, P2D(-50.5, 34.5), radians(30.0),
             #  "GV7", right_grove20x20_pcb_chunk, nw_references, nw_grove_pcb_chunks),
 
@@ -5088,7 +5088,7 @@ class MasterBoard:
              0.0, se_led_pcb_chunks, se_references),
         ]
         origin2d: P2D = P2D(0.0, 0.0)
-        led_radius: float = 79.0  # mm  Trial and error
+        led_radius: float = 78.5  # mm  Trial and error
         led_name: str
         reference_name: str
         led_angle: float  # radians
@@ -5305,11 +5305,11 @@ class MasterBoard:
         sonar_poses: List[Tuple[str, str, List[PCBChunk], List[Reference], str,
                                 float, float, float, bool]] = [
             ("Rear Left Sonar", "high", ne_pcb_chunks, ne_references, "CN81",
-             (90.0 - 2 * 22.5 + 1.0) * degrees2radians,    # Trial and error to fit on PCB
+             (90.0 - 2 * 22.5 - 0.5) * degrees2radians,    # Trial and error to fit on PCB
              (90.0 + 0.5 * 22.5) * degrees2radians,
              2.8 * 2.54, True),  # robot perimeter and miss spacer.
             ("Rear Right Sonar", "high", nw_pcb_chunks, nw_references, "CN82",
-             (90.0 + 2 * 22.5 - 1.0) * degrees2radians,    # Same Trial and error as above
+             (90.0 + 2 * 22.5 + 0.5) * degrees2radians,    # Same Trial and error as above
              (90.0 - 0.5 * 22.5) * degrees2radians,
              2.8 * 2.540, True),
             ("Front Right Top Sonar", "normal",
@@ -6204,7 +6204,7 @@ class RaspberryPi4:
 
         # Combined Ethernet/USB heat slot determined by trial and error.
         ethernet_usb_dx: float = 6.0
-        ethernet_usb_dy: float = 22.0
+        ethernet_usb_dy: float = 18.0  # 22.0
         ethernet_usb_center: P2D = P2D(23.0, 2.5)  # (Y, -X) in master board coordinate state
         ethernet_usb_slot: SimplePolygon = Square(
             "Ethernet USB Heat Sink Slot", ethernet_usb_dx, ethernet_usb_dy, ethernet_usb_center,
