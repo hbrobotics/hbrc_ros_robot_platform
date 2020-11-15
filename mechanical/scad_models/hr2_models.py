@@ -4717,7 +4717,7 @@ class MasterBoard:
 
         # The remaining variable are defined in alphabetical order:
         arm_well_dx: float = 13.0  # mm (trail and error)
-        arm_well_north: float = -53.0  # mm (trail and error)
+        arm_well_north: float = -55.0  # mm -53.0  # mm (trail and error)
         # bantam_dx: float = 5 * 25.4  # mm (size of Bantam Labs PCB blank)
         bantam_dy: float = 4 * 25.4  # mm (size of Bantam Labs PCB blank)
         center_pcb_north: float = wheel_well_dy / 2.0 + 1.0  # mm (trail and error)
