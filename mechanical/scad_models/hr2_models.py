@@ -4855,6 +4855,8 @@ class MasterBoard:
         # For some reason there is an extra segment genterated that covers the rounded corner.
         # Eventually this needs to be debugged or kludged around, but not for now.
         master_exterior.corner_arc_append(A, corner_radius, "SE")  # Strange! no rounded corner!
+        # master_exterior.show("master_polygon:")
+        # master_exterior.scrub()
         master_exterior.lock()
 
         # Create *center_exterior*:

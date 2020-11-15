@@ -2192,6 +2192,23 @@ class SimplePolygon(Scad2D):
         # `polygon` command:
         super().polygon_scad_lines_append([simple_polygon], scad_lines, indent)
 
+    # SimplePolygon.scrub():
+    def scrub(self) -> None:
+        """Scrub a polygon of duplicate points."""
+        # Unpack some values from *simple_polygon* (i.e. *self*):
+        simple_polygon: SimplePolygon = self
+        points: List[P2D] = simple_polygon.points
+        duplicates_table: Dict[Tuple[int, int], int] = {}
+        scale: float = 10000.0
+        index: int
+        point: P2D
+        for index, point in enumerate(points):
+            key: Tuple[int, int] = (int(point.x * scale), int(point.y * scale))
+            if key in duplicates_table:
+                # We have a duplicate:
+                previous_index: int = duplicates_table[key]
+                print(f"Duplicate point at index {previous_index} and {index}: {point}")
+
     # SimplePolygon.show():
     def show(self, prefix: str = "") -> None:
         """Show each point of a SimplePolygon."""
@@ -2203,7 +2220,7 @@ class SimplePolygon(Scad2D):
         index: int
         point: P2D
         for index, point in enumerate(points):
-            print(f"{prefix}Point[Index]:{point}")
+            print(f"{prefix}Point[{index}]:{point}")
 
     # SimplePolygon.reposition():
     def reposition(self, center: P2D, rotate_angle: float,
