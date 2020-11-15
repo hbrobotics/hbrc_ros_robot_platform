@@ -1319,7 +1319,7 @@ F 4 "M2.5 Mounting Hole" H 4100 7150 60  0001 L CNN "manf#"
 	1    0    0    -1  
 $EndComp
 Text Notes 2050 7950 0    80   ~ 0
-TO DO:\n1. Make sure all off the standoff holes have no trace incursion.\n2. Work on Ground bottleneck.\n3. Ground stitch.
+TO DO:\n1. Work on Ground bottleneck.\n2. Ground stitch.
 Wire Bus Line
 	7600 3700 7600 4200
 Wire Bus Line
