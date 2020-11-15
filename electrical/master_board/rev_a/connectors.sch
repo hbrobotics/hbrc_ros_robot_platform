@@ -760,9 +760,7 @@ Wire Wire Line
 Wire Wire Line
 	4600 1900 4600 2000
 Entry Wire Line
-	4100 1400 4000 1300
-Entry Wire Line
-	6300 1400 6200 1300
+	6300 1350 6200 1250
 $Comp
 L Device:C C?
 U 1 1 5F97D82E
@@ -809,11 +807,11 @@ Connection ~ 5200 2000
 Wire Wire Line
 	5200 2000 5800 2000
 Wire Wire Line
-	4400 1500 4400 1400
+	4400 1500 4400 1350
 Wire Wire Line
 	5800 2000 6300 2000
 Wire Wire Line
-	6300 2000 6300 1400
+	6300 2000 6300 1350
 Connection ~ 5800 2000
 Text Notes 4900 1450 0    50   ~ 0
 ByPass Capacitors
@@ -867,18 +865,22 @@ Wire Wire Line
 	4400 3900 4400 3500
 Wire Wire Line
 	4400 5500 4400 5100
+Text Notes 3900 1150 0    80   ~ 0
+TO DO:\n1. Add test points.\n2. Add edge sense connectors.\n3. Add Grove connectors.\n4. Add a button.
+Entry Wire Line
+	4400 1350 4300 1250
 Wire Wire Line
 	4600 6500 8100 6500
 Wire Bus Line
 	7400 6100 7400 6400
 Wire Bus Line
-	2400 1300 10300 1300
+	2400 1250 10300 1250
+Wire Bus Line
+	2400 800  2400 1250
 Wire Bus Line
 	4700 6400 4700 7700
 Wire Bus Line
-	2400 800  2400 1300
-Wire Bus Line
-	10300 1300 10300 6400
+	10300 1250 10300 6400
 Wire Bus Line
 	7250 1700 7250 6600
 Wire Bus Line

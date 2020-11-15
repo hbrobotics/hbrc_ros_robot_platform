@@ -840,4 +840,6 @@ Wire Wire Line
 	6800 4700 6600 4700
 Connection ~ 6800 4200
 Connection ~ 6600 4700
+Text Notes 750  1200 0    50   ~ 0
+TO DO:\n1. Add connector for external EStop.\n2. Add WOW bus 0 Ohm resistor and test points to measure power.
 $EndSCHEMATC

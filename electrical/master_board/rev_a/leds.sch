@@ -1117,7 +1117,7 @@ Connection ~ 3100 5900
 Wire Wire Line
 	3100 5900 4100 5900
 Text Label 2100 3700 0    50   ~ 0
-LED8_TO_LED9
+LED8
 Text Label 3400 2500 2    50   ~ 0
 LED11
 Text Label 3400 2600 2    50   ~ 0
@@ -1165,8 +1165,6 @@ Entry Wire Line
 	3500 1400 3400 1300
 Entry Wire Line
 	3500 1400 3600 1300
-Entry Wire Line
-	3950 1000 4050 1100
 Wire Wire Line
 	1000 1300 3400 1300
 Text Label 3400 1300 2    50   ~ 0
@@ -1239,6 +1237,8 @@ ByPass Capacitors
 Wire Wire Line
 	3600 7200 3800 7200
 Connection ~ 3800 7200
+Text Notes 4400 850  0    80   ~ 0
+TO DO:\n1. Add test points.
 Wire Bus Line
 	3500 1300 3500 7200
 $EndSCHEMATC

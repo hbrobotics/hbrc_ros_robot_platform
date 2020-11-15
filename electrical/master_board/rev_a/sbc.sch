@@ -190,16 +190,16 @@ $EndComp
 Wire Wire Line
 	8200 5300 8100 5300
 Wire Wire Line
-	8100 5300 8100 4800
+	8100 5300 8100 4200
 Wire Wire Line
-	8100 4800 7500 4800
+	8100 4200 7500 4200
 Wire Wire Line
-	6900 4800 6900 4900
+	6900 4200 6900 4900
 Wire Wire Line
-	7500 4900 7500 4800
-Connection ~ 7500 4800
+	7500 4900 7500 4200
+Connection ~ 7500 4200
 Wire Wire Line
-	7500 4800 7300 4800
+	7500 4200 7300 4200
 $Comp
 L Device:R_US R12
 U 1 1 5F50FCF9
@@ -214,10 +214,8 @@ F 3 "~" H 6300 5050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6300 4900 6300 4800
-Wire Wire Line
-	6300 4800 6900 4800
-Connection ~ 6900 4800
+	6300 4200 6900 4200
+Connection ~ 6900 4200
 Wire Wire Line
 	8200 5400 7500 5400
 Wire Wire Line
@@ -246,7 +244,7 @@ Wire Wire Line
 Connection ~ 8000 5800
 Wire Wire Line
 	8000 5800 8000 5900
-Text Notes 6450 6550 0    50   ~ 0
+Text Notes 8300 4600 0    50   ~ 0
 EEPROM Notes:\n1. As per Raspberry PI I2C ID specification, the EEPROM\n     address is 0x50 (i.e. A0=A1=A2=0=Ground.)\n2. To enable the storage into the EEPROM s, short jumper.\n
 Wire Wire Line
 	3900 4600 4200 4600
@@ -304,13 +302,13 @@ Text HLabel 5000 2100 2    50   Input ~ 0
 Wire Wire Line
 	4000 2100 5000 2100
 Connection ~ 4000 2100
-Text HLabel 5000 6000 2    50   Input ~ 0
+Text HLabel 8400 6300 2    50   Input ~ 0
 GND
 Wire Wire Line
-	4000 5800 4000 6000
+	4000 5800 4000 6300
 Wire Wire Line
-	4000 6000 5000 6000
-Text Label 4100 6000 0    50   ~ 0
+	4000 6300 8400 6300
+Text Label 5950 6300 0    50   ~ 0
 GND
 Wire Wire Line
 	3900 4400 4000 4400
@@ -327,7 +325,7 @@ Wire Wire Line
 	4200 5600 6300 5600
 Wire Wire Line
 	8100 1700 6900 1700
-Connection ~ 8100 4800
+Connection ~ 8100 4200
 Connection ~ 6900 1700
 Text HLabel 8400 1700 2    50   Input ~ 0
 3.3V
@@ -364,7 +362,7 @@ Wire Wire Line
 Connection ~ 4000 3900
 Wire Wire Line
 	4000 3900 4000 4400
-Text HLabel 5000 4300 2    50   Output ~ 0
+Text HLabel 5600 4500 2    50   Output ~ 0
 SBC_ALIVE
 Wire Wire Line
 	3900 5800 4000 5800
@@ -407,7 +405,7 @@ Text Label 7750 5800 0    50   ~ 0
 GND
 Text Label 4500 3700 0    50   ~ 0
 GND
-Text Label 7600 4800 0    50   ~ 0
+Text Label 7600 4200 0    50   ~ 0
 3.3V
 Text Label 7750 5500 0    50   ~ 0
 ID_SCL
@@ -485,14 +483,14 @@ Connection ~ 4500 4200
 $Comp
 L Switch:SW_Push SW?
 U 1 1 5F8FBAFA
-P 5200 4000
+P 5900 4200
 AR Path="/5F52F39E/5F8FBAFA" Ref="SW?"  Part="1" 
 AR Path="/5F4877FA/5F8FBAFA" Ref="SW2"  Part="1" 
-F 0 "SW2" H 5050 4100 50  0000 C CNN
-F 1 "BUTTON;6x3.5" H 5200 3900 50  0000 C CNN
-F 2 "HR2:BUTTON_6x3.5" H 5200 4200 50  0001 C CNN
-F 3 "~" H 5200 4200 50  0001 C CNN
-	1    5200 4000
+F 0 "SW2" H 5750 4300 50  0000 C CNN
+F 1 "BUTTON;6x3.5" H 5900 4100 50  0000 C CNN
+F 2 "HR2:BUTTON_6x3.5" H 5900 4400 50  0001 C CNN
+F 3 "~" H 5900 4400 50  0001 C CNN
+	1    5900 4200
 	1    0    0    -1  
 $EndComp
 Text Label 4100 2900 0    50   ~ 0
@@ -503,26 +501,22 @@ Text Label 4100 2100 0    50   ~ 0
 5V
 NoConn ~ 3900 2000
 Wire Wire Line
-	4500 4200 4500 4000
-Wire Wire Line
-	4500 4000 5000 4000
+	4500 4200 4750 4200
 $Comp
 L Device:R_US R11
 U 1 1 5FAF8B92
-P 6300 4250
+P 4900 4200
 AR Path="/5F4877FA/5FAF8B92" Ref="R11"  Part="1" 
 AR Path="/5FA587FE/5FAF8B92" Ref="R?"  Part="1" 
-F 0 "R11" H 6150 4350 50  0000 L CNN
-F 1 "1KΩ;1608" H 6350 4150 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6340 4240 50  0001 C CNN
-F 3 "~" H 6300 4250 50  0001 C CNN
-	1    6300 4250
-	1    0    0    -1  
+F 0 "R11" V 4800 4150 50  0000 L CNN
+F 1 "1KΩ;1608" V 5000 4050 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 4940 4190 50  0001 C CNN
+F 3 "~" H 4900 4200 50  0001 C CNN
+	1    4900 4200
+	0    1    1    0   
 $EndComp
 Wire Wire Line
-	5400 4000 6300 4000
-Wire Wire Line
-	6300 4000 6300 4100
+	5050 4200 5700 4200
 $Comp
 L Device:LED D?
 U 1 1 5FB21992
@@ -551,30 +545,22 @@ F 3 "~" H 5500 4750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6300 4800 6300 4400
-Connection ~ 6300 4800
+	4400 4300 4400 4500
 Wire Wire Line
-	4900 4300 4900 4500
-Wire Wire Line
-	4900 4500 5300 4500
+	4400 4500 5300 4500
 Wire Wire Line
 	5500 4500 5500 4600
-Connection ~ 4900 4300
-Wire Wire Line
-	4900 4300 5000 4300
 Wire Wire Line
 	5500 5000 5500 4900
-Wire Wire Line
-	5500 5300 5500 5400
 Connection ~ 5500 5800
 Wire Wire Line
-	5500 5800 4500 5800
-Text Notes 5250 3900 0    50   ~ 0
-Manual Stop Button
+	5500 5800 5300 5800
+Text Notes 4650 4000 0    50   ~ 0
+SBC Shutdown Request Button
 Text Notes 5600 5200 0    50   ~ 0
 SBC Alive LED
 Wire Wire Line
-	3900 4300 4900 4300
+	3900 4300 4400 4300
 Wire Wire Line
 	4000 5800 4500 5800
 Wire Wire Line
@@ -600,33 +586,24 @@ Wire Wire Line
 Connection ~ 5300 4500
 Wire Wire Line
 	5300 4500 5500 4500
-Wire Wire Line
-	5300 5300 5300 5400
-Wire Wire Line
-	5300 5400 5500 5400
-Connection ~ 5500 5400
-Wire Wire Line
-	5500 5400 5500 5800
 $Comp
 L Device:C C10
 U 1 1 5FA44A8F
-P 7300 4450
+P 7300 3950
 AR Path="/5F4877FA/5FA44A8F" Ref="C10"  Part="1" 
 AR Path="/5FA587FE/5FA44A8F" Ref="C?"  Part="1" 
-F 0 "C10" H 7150 4550 50  0000 L CNN
-F 1 "10pF;1608" H 7300 4350 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 7338 4300 50  0001 C CNN
-F 3 "~" H 7300 4450 50  0001 C CNN
-	1    7300 4450
+F 0 "C10" H 7150 4050 50  0000 L CNN
+F 1 "10pF;1608" H 7300 3850 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 7338 3800 50  0001 C CNN
+F 3 "~" H 7300 3950 50  0001 C CNN
+	1    7300 3950
 	1    0    0    -1  
 $EndComp
+Connection ~ 7300 4200
 Wire Wire Line
-	7300 4600 7300 4800
-Connection ~ 7300 4800
+	7300 4200 6900 4200
 Wire Wire Line
-	7300 4800 6900 4800
-Wire Wire Line
-	7300 4300 7300 3700
+	7300 3800 7300 3700
 Connection ~ 7300 3700
 Text Notes 8250 3050 0    50   ~ 0
 Example Crystal Part:\nCM7V-T1A-LOW-ESR-32.768KHZ-9PF-20-TA-QC
@@ -640,7 +617,7 @@ Connection ~ 6700 1700
 Wire Wire Line
 	6700 2000 6700 1700
 Wire Wire Line
-	8100 4800 8100 1700
+	8100 4200 8100 1700
 $Comp
 L Device:C C8
 U 1 1 5FA24EA3
@@ -661,4 +638,27 @@ Wire Wire Line
 Connection ~ 6700 2600
 Wire Wire Line
 	6700 2600 7000 2600
+Text Notes 1200 6700 0    80   ~ 0
+TO DO:\n1. Add test points.\n2. Add ability to power up Rasperry Pi Display with 0 Ohm resistor\n    and test points to measure current.
+Wire Wire Line
+	5500 4500 5600 4500
+Connection ~ 5500 4500
+Wire Wire Line
+	6300 4200 6300 4900
+Wire Wire Line
+	6100 4200 6300 4200
+Connection ~ 6300 4200
+Wire Wire Line
+	7300 4100 7300 4200
+Connection ~ 5300 5800
+Wire Wire Line
+	5300 5800 4500 5800
+Text Notes 6200 5950 0    50   ~ 0
+EEPROM Program Enable Jumper
+Wire Wire Line
+	5300 5300 5300 5800
+Wire Wire Line
+	5500 5300 5500 5800
+Text Label 5100 4200 0    50   ~ 0
+SBC_REQ
 $EndSCHEMATC
