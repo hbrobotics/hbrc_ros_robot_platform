@@ -55,12 +55,12 @@ Note: The bipolar transtistors are generic\n  small signal NPN SOT23 in a BEC (i
 $Comp
 L Device:Q_NPN_BEC Q3
 U 1 1 5F4AC33E
-P 5200 5500
-F 0 "Q3" H 5390 5546 50  0000 L CNN
-F 1 "2N2222;SOT23" H 5390 5455 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 5400 5600 50  0001 C CNN
-F 3 "~" H 5200 5500 50  0001 C CNN
-	1    5200 5500
+P 5400 5500
+F 0 "Q3" H 5590 5546 50  0000 L CNN
+F 1 "2N2222;SOT23" H 5590 5455 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 5600 5600 50  0001 C CNN
+F 3 "~" H 5400 5500 50  0001 C CNN
+	1    5400 5500
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -77,12 +77,12 @@ $EndComp
 $Comp
 L Device:R_US R4
 U 1 1 5F4ACD3F
-P 5300 4750
-F 0 "R4" H 5150 4850 50  0000 L CNN
-F 1 "100KΩ;1608" H 5350 4650 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5340 4740 50  0001 C CNN
-F 3 "~" H 5300 4750 50  0001 C CNN
-	1    5300 4750
+P 5500 4750
+F 0 "R4" H 5350 4850 50  0000 L CNN
+F 1 "100KΩ;1608" H 5550 4650 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5540 4740 50  0001 C CNN
+F 3 "~" H 5500 4750 50  0001 C CNN
+	1    5500 4750
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -126,9 +126,9 @@ Wire Wire Line
 	4200 5200 4300 5200
 Connection ~ 4200 5200
 Wire Wire Line
-	2950 3300 5300 3300
+	2950 3300 5500 3300
 Wire Wire Line
-	5300 3300 5300 4600
+	5500 3300 5500 4600
 Connection ~ 2950 4300
 Wire Wire Line
 	4200 4400 4800 4400
@@ -136,14 +136,14 @@ Wire Wire Line
 	4800 4400 4800 4600
 Connection ~ 4200 4400
 Wire Wire Line
-	4700 5200 5300 5200
+	4700 5200 5500 5200
 Wire Wire Line
-	5300 5200 5300 5300
+	5500 5200 5500 5300
 Wire Wire Line
-	5300 5200 5300 4900
-Connection ~ 5300 5200
+	5500 5200 5500 4900
+Connection ~ 5500 5200
 Wire Wire Line
-	5000 5500 4800 5500
+	5200 5500 4800 5500
 Wire Wire Line
 	4800 5500 4800 4900
 $Comp
@@ -160,9 +160,9 @@ $EndComp
 Wire Wire Line
 	4800 5900 4800 6000
 Wire Wire Line
-	4800 6000 5300 6000
+	4800 6000 5500 6000
 Wire Wire Line
-	5300 6000 5300 5700
+	5500 6000 5500 5700
 Wire Wire Line
 	2950 5400 2950 6000
 Wire Wire Line
@@ -177,7 +177,7 @@ Wire Wire Line
 Connection ~ 2950 6000
 Wire Wire Line
 	8750 6000 8300 6000
-Connection ~ 5300 6000
+Connection ~ 5500 6000
 Wire Wire Line
 	7800 3500 7600 3500
 Connection ~ 8000 6000
@@ -286,7 +286,7 @@ Connection ~ 6400 6000
 Connection ~ 7800 6000
 Connection ~ 6150 6000
 Wire Wire Line
-	6150 6000 5300 6000
+	6150 6000 5500 6000
 Text Label 8750 3200 2    50   ~ 0
 9V
 Text Label 8750 4400 2    50   ~ 0
@@ -356,12 +356,12 @@ $EndComp
 $Comp
 L Device:LED D1
 U 1 1 5F4D441C
-P 8300 5600
-F 0 "D1" V 8400 5700 50  0000 R CNN
-F 1 "LEDGRN;1608" V 8300 5500 50  0000 R CNN
-F 2 "LED_SMD:LED_0603_1608Metric" H 8300 5600 50  0001 C CNN
-F 3 "~" H 8300 5600 50  0001 C CNN
-	1    8300 5600
+P 8300 5750
+F 0 "D1" V 8400 5850 50  0000 R CNN
+F 1 "LEDGRN;1608" V 8300 5650 50  0000 R CNN
+F 2 "LED_SMD:LED_0603_1608Metric" H 8300 5750 50  0001 C CNN
+F 3 "~" H 8300 5750 50  0001 C CNN
+	1    8300 5750
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
@@ -369,9 +369,9 @@ Wire Wire Line
 Wire Wire Line
 	8300 4850 8750 4850
 Wire Wire Line
-	8300 5450 8300 5250
+	8300 5600 8300 5250
 Wire Wire Line
-	8300 5750 8300 6000
+	8300 5900 8300 6000
 Connection ~ 8300 6000
 Wire Wire Line
 	8300 6000 8000 6000
@@ -480,7 +480,7 @@ Text Notes 8750 2650 0    50   ~ 0
 P5V is a "dirty" 5 volt supply used\nfor lighting LED's etc.
 Text Notes 8600 5050 0    50   ~ 0
 3.3V for miscellanious\ndevices that need it.
-Text Notes 8450 5450 0    50   ~ 0
+Text Notes 8600 5600 0    50   ~ 0
 Power On LED
 $Comp
 L HR2:POWER_PFET_GSD Q2
@@ -538,4 +538,16 @@ Wire Wire Line
 	7800 4850 8300 4850
 Connection ~ 7800 4850
 Connection ~ 8300 4850
+Text Notes 1000 1300 0    80   ~ 0
+TO DO:\n1. Do power supply review with somebody.\n2. Put 0 Ohm shunt resistors and associated test points to meassure current.\n3. Add power rail status LED's with jumper to enable/disable.\n4. Add test points.
+Text Label 3400 5200 0    50   ~ 0
+PWR_SW_A
+Text Label 4850 5200 0    50   ~ 0
+PWR_SW_B
+Text Label 3050 4900 0    50   ~ 0
+PWR_FET_G
+Text Label 4850 5500 0    50   ~ 0
+PWR_QBASE
+Text Label 8300 5400 0    50   ~ 0
+PWR_LED
 $EndSCHEMATC

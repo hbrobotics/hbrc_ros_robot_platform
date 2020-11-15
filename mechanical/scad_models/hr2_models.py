@@ -4956,7 +4956,7 @@ class MasterBoard:
                                PCBChunk, List[Reference], List[PCBChunk]]] = [
             ("NE Outer Bottom Center", False, P2D(47.75, 45.0), radians(-90),
              "GV82", grove20x20_pcb_chunk, ne_references, ne_grove_pcb_chunks),
-            ("Center NE Inner Bottom (Left)", False, P2D(47.75, 25.0), radians(180.0),
+            ("Center NE Inner Bottom (Left)", False, P2D(47.75, 25.0), radians(90.0),
              "GV83", grove20x20_pcb_chunk, center_references, center_grove_pcb_chunks),
 
             # Note GV4/GV7 is the same Grove split across the center and nw PCBs:

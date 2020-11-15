@@ -1188,6 +1188,8 @@ Text Label 1300 6200 0    50   ~ 0
 ECHO4
 Text Label 1300 6100 0    50   ~ 0
 ECHO3
+Text Notes 1400 7400 0    80   ~ 0
+TO DO:\n1. Add test points.\n2. Add position sense pin for gripper servo; connect to A/D pin.\n3. Add position sense current sense circuit and connect to A/D pin.
 Wire Bus Line
 	4350 2250 6300 2250
 Wire Bus Line
