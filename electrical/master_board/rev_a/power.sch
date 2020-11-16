@@ -430,7 +430,7 @@ Wire Wire Line
 Wire Wire Line
 	6000 4400 6000 5500
 Text Notes 750  1300 0    80   ~ 0
-TO DO:\n1. Do power supply review with somebody.\n2. Put 0 Ohm shunt resistors and associated test points to meassure current.\n3. Add power rail status LED's with jumper to enable/disable.\n4. Add test points.
+TO DO:\n1. Do power supply review with somebody.
 Text Label 3000 4700 0    50   ~ 0
 PWR_SW_A
 Text Label 4450 4700 0    50   ~ 0

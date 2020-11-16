@@ -689,10 +689,6 @@ Wire Wire Line
 	9400 4200 9800 4200
 Connection ~ 9400 4600
 Wire Wire Line
-	5300 1000 9800 1000
-Wire Wire Line
-	9800 1000 9800 4200
-Wire Wire Line
 	7000 2900 7000 2700
 Wire Wire Line
 	7000 2700 9400 2700
@@ -716,7 +712,7 @@ Wire Wire Line
 Wire Wire Line
 	4600 4700 4600 5900
 Wire Wire Line
-	2100 5900 3800 5900
+	2100 5900 3500 5900
 $Comp
 L HR2:MCP2542;SOIC8 U14
 U 1 1 5F9A7EB1
@@ -841,5 +837,72 @@ Wire Wire Line
 Connection ~ 6800 4200
 Connection ~ 6600 4700
 Text Notes 750  1200 0    50   ~ 0
-TO DO:\n1. Add connector for external EStop.\n2. Add WOW bus 0 Ohm resistor and test points to measure power.
+TO DO:\n1. Add Test Points.\n
+Wire Wire Line
+	5800 700  5800 1000
+Wire Wire Line
+	5900 700  5800 700 
+Wire Wire Line
+	6400 1000 6250 1000
+Wire Wire Line
+	6400 700  6400 1000
+Wire Wire Line
+	6300 700  6400 700 
+$Comp
+L Jumper:Jumper_2_Open JP?
+U 1 1 5FB530EF
+P 6100 700
+AR Path="/5F52F39E/5FB530EF" Ref="JP?"  Part="1" 
+AR Path="/5F8C2F57/5FB530EF" Ref="JP8"  Part="1" 
+F 0 "JP8" H 5900 750 50  0000 C CNN
+F 1 "SHUNT;M1x2" H 6100 600 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 6100 700 50  0001 C CNN
+F 3 "~" H 6100 700 50  0001 C CNN
+	1    6100 700 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5950 1000 5800 1000
+$Comp
+L Device:R_US R?
+U 1 1 5FB530F6
+P 6100 1000
+AR Path="/5F52F39E/5FB530F6" Ref="R?"  Part="1" 
+AR Path="/5F8C2F57/5FB530F6" Ref="R64"  Part="1" 
+F 0 "R64" V 6150 1150 50  0000 L CNN
+F 1 "0Ω;1608" V 6000 850 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6140 990 50  0001 C CNN
+F 3 "~" H 6100 1000 50  0001 C CNN
+	1    6100 1000
+	0    -1   -1   0   
+$EndComp
+Connection ~ 5800 1000
+Wire Wire Line
+	6400 1000 9800 1000
+Connection ~ 6400 1000
+Wire Wire Line
+	5300 1000 5800 1000
+Wire Wire Line
+	9800 1000 9800 4200
+$Comp
+L Jumper:Jumper_2_Open JP7
+U 1 1 5FB85177
+P 3100 5700
+F 0 "JP7" H 2950 5800 50  0000 C CNN
+F 1 "EXT_ESTOP;M1x2" H 3100 5600 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 3100 5700 50  0001 C CNN
+F 3 "~" H 3100 5700 50  0001 C CNN
+	1    3100 5700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2700 5700 2900 5700
+Connection ~ 2700 5700
+Wire Wire Line
+	3300 5700 3500 5700
+Wire Wire Line
+	3500 5700 3500 5900
+Connection ~ 3500 5900
+Wire Wire Line
+	3500 5900 3800 5900
 $EndSCHEMATC
