@@ -14,12 +14,10 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 Wire Wire Line
-	7200 2600 7800 2600
+	7200 2600 7300 2600
 Wire Wire Line
 	7600 2800 7200 2800
 NoConn ~ 7200 3400
-Wire Wire Line
-	7600 5500 7600 3700
 $Comp
 L Device:R_US R1
 U 1 1 5F4AAFD8
@@ -170,8 +168,6 @@ Wire Wire Line
 	1900 3800 2550 3800
 Connection ~ 2550 5500
 Connection ~ 5100 5500
-Wire Wire Line
-	7400 3000 7200 3000
 Connection ~ 7600 5500
 $Comp
 L HR2:U3V70xMATE;F1x4+F1x5 CN?
@@ -191,14 +187,7 @@ Wire Wire Line
 	7200 3300 7600 3300
 Connection ~ 7600 3300
 Wire Wire Line
-	7200 2700 7800 2700
-Wire Wire Line
-	7200 3100 7400 3100
-Connection ~ 7400 3100
-Wire Wire Line
-	7400 3100 7400 3000
-Wire Wire Line
-	7400 3100 7400 3900
+	7200 2700 7300 2700
 $Comp
 L HR2:AP2114HA-3.3TRG1_1A;SOT223 VR1
 U 1 1 5F4C5F9D
@@ -212,7 +201,7 @@ F 4 "1A 3.3V LDO Voltage Linear Regulator" H 6300 4050 60  0001 L CNN "Field5"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7800 2600 7800 2700
+	7300 2600 7300 2700
 Wire Wire Line
 	7600 2900 7600 2800
 Wire Wire Line
@@ -248,13 +237,6 @@ F 3 "~" H 7400 4800 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5750 4400 5750 4300
-Wire Wire Line
-	6100 4300 5750 4300
-Connection ~ 5750 4300
-Wire Wire Line
-	5750 4300 5750 3900
-Wire Wire Line
 	7400 4650 7400 4400
 Wire Wire Line
 	7400 4950 7400 5500
@@ -276,41 +258,15 @@ USB5V
 $Comp
 L Device:CP1 C6
 U 1 1 5F4F1B8B
-P 8000 2950
-F 0 "C6" H 8050 3050 50  0000 L CNN
-F 1 "470µF,25Vmin;D10P5H13max" H 8050 2850 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 8000 2950 50  0001 C CNN
-F 3 "~" H 8000 2950 50  0001 C CNN
-	1    8000 2950
+P 8800 3150
+F 0 "C6" H 8850 3250 50  0000 L CNN
+F 1 "470µF,25Vmin;D10P5H13max" H 7650 3050 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 8800 3150 50  0001 C CNN
+F 3 "~" H 8800 3150 50  0001 C CNN
+	1    8800 3150
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	8000 3100 8000 3200
-Wire Wire Line
-	8000 3200 7600 3200
-Wire Wire Line
-	8000 2800 8000 2700
-Wire Wire Line
-	7800 3600 7800 3700
-Wire Wire Line
-	7800 3700 7600 3700
-Connection ~ 7600 3700
-Wire Wire Line
-	7600 3700 7600 3300
-Wire Wire Line
-	7800 3300 7800 2700
-Connection ~ 7800 2700
-$Comp
-L Device:CP1 C5
-U 1 1 5F50C5A8
-P 7800 3450
-F 0 "C5" H 7850 3550 50  0000 L CNN
-F 1 "470µF,25Vmin;D10P5H13max" H 7850 3350 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 7800 3450 50  0001 C CNN
-F 3 "~" H 7800 3450 50  0001 C CNN
-	1    7800 3450
-	1    0    0    -1  
-$EndComp
+Connection ~ 7300 2700
 $Comp
 L Device:R_US R5
 U 1 1 5F4D39A5
@@ -362,21 +318,21 @@ Note: When the motors are running full bore\n  up a hill, the current drain beco
 $Comp
 L Device:CP1 C?
 U 1 1 5F7AF36B
-P 7800 2200
+P 9050 2150
 AR Path="/5FA4A874/5F7AF36B" Ref="C?"  Part="1" 
 AR Path="/5F52F39E/5F7AF36B" Ref="C4"  Part="1" 
-F 0 "C4" H 7850 2300 50  0000 L CNN
-F 1 "1000µF@10Vmin;D10P5H13max" H 7850 2100 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 7800 2200 50  0001 C CNN
-F 3 "~" H 7800 2200 50  0001 C CNN
-	1    7800 2200
+F 0 "C4" H 9100 2250 50  0000 L CNN
+F 1 "1000µF@10Vmin;D10P5H13max" H 7800 2050 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 9050 2150 50  0001 C CNN
+F 3 "~" H 9050 2150 50  0001 C CNN
+	1    9050 2150
 	1    0    0    -1  
 $EndComp
 $Comp
 L HR2:LM66100;SOT363 U1
 U 1 1 5F7B1947
 P 6400 1400
-F 0 "U1" H 6650 1550 60  0000 C CNN
+F 0 "U1" H 6650 1550 50  0000 C CNN
 F 1 "LM66100;SOT363" H 6750 750 60  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-363_SC-70-6" H 6600 1450 60  0001 L CNN
 F 3 "1.5A Ideal Diode" H 6600 1250 60  0001 L CNN
@@ -387,34 +343,24 @@ $EndComp
 Wire Wire Line
 	7100 1500 7600 1500
 Wire Wire Line
-	7600 1500 7600 2450
+	7600 1500 7600 2400
 Connection ~ 7600 2800
 Wire Wire Line
-	7400 3000 7400 1800
-Wire Wire Line
-	7400 1400 7100 1400
-Connection ~ 7400 3000
+	7500 1400 7100 1400
 Wire Wire Line
 	7100 1900 7200 1900
+Connection ~ 7600 2400
 Wire Wire Line
-	7800 1900 7800 2050
-Wire Wire Line
-	7800 2350 7800 2450
-Wire Wire Line
-	7800 2450 7600 2450
-Connection ~ 7600 2450
-Wire Wire Line
-	7600 2450 7600 2800
+	7600 2400 7600 2800
 Wire Wire Line
 	7100 1600 7200 1600
 Wire Wire Line
 	7200 1600 7200 1900
 Connection ~ 7200 1900
 Wire Wire Line
-	7100 1800 7400 1800
-Connection ~ 7400 1800
+	7100 1800 7500 1800
 Wire Wire Line
-	7400 1800 7400 1400
+	7500 1800 7500 1400
 Text Notes 3750 1800 0    50   ~ 0
 Note:\n1. The capacitor is a radial through hole electrolytic with a diameter\n   of 10mm and lead pitch of 5mm.  The capacitance is 1000µF at 16V.\n2. The ideal diode should keep the 5V rail clean while the P5V rail\n   gets abused.\n
 Wire Wire Line
@@ -514,13 +460,11 @@ U 1 1 5FB5A2C2
 P 2100 7150
 F 0 "JP2" H 2250 7050 50  0000 C CNN
 F 1 "LED_EN;M1x3" H 2100 7300 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 2100 7150 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 2100 7150 50  0001 C CNN
 F 3 "~" H 2100 7150 50  0001 C CNN
 	1    2100 7150
 	-1   0    0    1   
 $EndComp
-Connection ~ 8000 2700
-Connection ~ 7800 1900
 $Comp
 L Device:R_US R15
 U 1 1 5FD17541
@@ -628,10 +572,6 @@ Wire Wire Line
 	2100 5500 2100 7000
 Connection ~ 2100 5500
 Wire Wire Line
-	7800 2700 8000 2700
-Wire Wire Line
-	7200 1900 7800 1900
-Wire Wire Line
 	7600 5500 7400 5500
 Wire Wire Line
 	7400 4400 7100 4400
@@ -640,47 +580,38 @@ Wire Wire Line
 Connection ~ 9700 1900
 Connection ~ 9050 1900
 Connection ~ 8450 1900
+Connection ~ 9650 2900
+Connection ~ 8700 2900
 Wire Wire Line
-	7800 1900 8450 1900
-Connection ~ 9650 2800
-Connection ~ 9050 2800
+	8200 2600 8100 2600
 Wire Wire Line
-	8450 2700 8450 2800
-Connection ~ 8450 2700
+	8700 2900 8600 2900
 Wire Wire Line
-	8000 2700 8450 2700
+	8700 2600 8700 2900
 Wire Wire Line
-	8450 2500 8450 2700
-Wire Wire Line
-	8550 2500 8450 2500
-Wire Wire Line
-	9050 2800 8900 2800
-Wire Wire Line
-	9050 2500 9050 2800
-Wire Wire Line
-	8950 2500 9050 2500
+	8600 2600 8700 2600
 $Comp
 L Jumper:Jumper_2_Open JP6
 U 1 1 5FBC51EE
-P 8750 2500
-F 0 "JP6" H 8550 2550 50  0000 C CNN
-F 1 "SHUNT;M1x2" H 8750 2400 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8750 2500 50  0001 C CNN
-F 3 "~" H 8750 2500 50  0001 C CNN
-	1    8750 2500
+P 8400 2600
+F 0 "JP6" H 8200 2650 50  0000 C CNN
+F 1 "SHUNT;M1x2" H 8400 2500 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8400 2600 50  0001 C CNN
+F 3 "~" H 8400 2600 50  0001 C CNN
+	1    8400 2600
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8600 2800 8450 2800
+	8300 2900 8100 2900
 $Comp
 L Device:R_US R63
 U 1 1 5FBC4F2B
-P 8750 2800
-F 0 "R63" V 8800 2950 50  0000 L CNN
-F 1 "0Ω;1608" V 8650 2600 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8790 2790 50  0001 C CNN
-F 3 "~" H 8750 2800 50  0001 C CNN
-	1    8750 2800
+P 8450 2900
+F 0 "R63" V 8500 3050 50  0000 L CNN
+F 1 "0Ω;1608" V 8350 2750 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 8490 2890 50  0001 C CNN
+F 3 "~" H 8450 2900 50  0001 C CNN
+	1    8450 2900
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
@@ -711,29 +642,16 @@ L Device:R_US R22
 U 1 1 5FB92C4A
 P 8750 1900
 F 0 "R22" V 8800 2050 50  0000 L CNN
-F 1 "0Ω;1608" V 8650 1700 50  0000 L CNN
+F 1 "0Ω;1608" V 8650 1750 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 8790 1890 50  0001 C CNN
 F 3 "~" H 8750 1900 50  0001 C CNN
 	1    8750 1900
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	9650 2800 9950 2800
+	9650 2900 9950 2900
 Wire Wire Line
 	9700 1900 9950 1900
-Wire Wire Line
-	9650 2800 9650 2700
-$Comp
-L Connector:TestPoint TP7
-U 1 1 5FB40221
-P 9650 2700
-F 0 "TP7" H 9708 2818 50  0000 L CNN
-F 1 "9V" H 9708 2727 50  0000 L CNN
-F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 9850 2700 50  0001 C CNN
-F 3 "~" H 9850 2700 50  0001 C CNN
-	1    9650 2700
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	9700 1900 9700 1800
 $Comp
@@ -753,11 +671,11 @@ Text Label 9950 1900 2    50   ~ 0
 P5V
 Text HLabel 9950 1900 2    50   Output ~ 0
 P5V
-Text Label 9950 2800 2    50   ~ 0
+Text Label 9950 2900 2    50   ~ 0
 9V
 Text HLabel 9900 5500 2    50   Output ~ 0
 GND
-Text HLabel 9950 2800 2    50   Output ~ 0
+Text HLabel 9950 2900 2    50   Output ~ 0
 9V
 Wire Wire Line
 	5000 6000 9500 6000
@@ -766,7 +684,7 @@ Wire Wire Line
 Wire Wire Line
 	4200 5900 9400 5900
 Wire Wire Line
-	9050 2800 9400 2800
+	8700 2900 8800 2900
 Wire Wire Line
 	3400 5800 9300 5800
 Wire Wire Line
@@ -797,7 +715,7 @@ L Device:R_US R20
 U 1 1 5FBB68C5
 P 8700 4100
 F 0 "R20" V 8750 4250 50  0000 L CNN
-F 1 "0Ω;1608" V 8600 3900 50  0000 L CNN
+F 1 "0Ω;1608" V 8600 3950 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 8740 4090 50  0001 C CNN
 F 3 "~" H 8700 4100 50  0001 C CNN
 	1    8700 4100
@@ -830,7 +748,7 @@ L Device:R_US R21
 U 1 1 5FBCAFEC
 P 8700 4700
 F 0 "R21" V 8750 4850 50  0000 L CNN
-F 1 "0Ω;1608" V 8600 4500 50  0000 L CNN
+F 1 "0Ω;1608" V 8600 4550 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 8740 4690 50  0001 C CNN
 F 3 "~" H 8700 4700 50  0001 C CNN
 	1    8700 4700
@@ -883,8 +801,6 @@ Wire Wire Line
 Wire Wire Line
 	9500 1900 9500 6000
 Wire Wire Line
-	9400 2800 9400 5900
-Wire Wire Line
 	9300 4100 9300 5800
 Connection ~ 9300 4100
 Wire Wire Line
@@ -896,15 +812,14 @@ Wire Wire Line
 	9200 4700 9700 4700
 Wire Wire Line
 	8400 3800 8400 3900
-Connection ~ 9400 2800
 Connection ~ 9500 1900
 Wire Wire Line
 	9500 1900 9700 1900
 Wire Wire Line
-	9400 2800 9650 2800
+	9400 2900 9650 2900
 Wire Wire Line
-	7400 3900 8400 3900
-Connection ~ 7400 3900
+	7500 3900 8400 3900
+Connection ~ 7500 3900
 Connection ~ 8400 3900
 Wire Wire Line
 	8400 3900 8400 4100
@@ -912,11 +827,6 @@ Wire Wire Line
 	7400 4400 8400 4400
 Connection ~ 7400 4400
 Connection ~ 8400 4400
-Wire Wire Line
-	4400 3900 5750 3900
-Connection ~ 5750 3900
-Wire Wire Line
-	5750 3900 7400 3900
 Wire Wire Line
 	8400 4400 8400 4700
 Connection ~ 9700 4700
@@ -1022,5 +932,114 @@ NoConn ~ 1850 7150
 Text Notes 1600 7550 0    50   ~ 0
 Enable/Disble Power LED's
 NoConn ~ 8150 50  
-NoConn ~ 9150 3500
+Text Label 7650 1900 0    50   ~ 0
+SHUNT_P5V
+Text Notes 8300 900  0    50   ~ 0
+To measure current, remove 0Ω resistor\nand place a current meter across jumper.
+Wire Wire Line
+	9050 2000 9050 1900
+Wire Wire Line
+	7200 1900 8450 1900
+Wire Wire Line
+	8100 2600 8100 2700
+Wire Wire Line
+	9050 2300 9050 2400
+Wire Wire Line
+	7600 2400 9050 2400
+Wire Wire Line
+	7300 2700 8100 2700
+Connection ~ 8100 2700
+Wire Wire Line
+	8100 2700 8100 2900
+Wire Wire Line
+	8800 3000 8800 2900
+Connection ~ 8800 2900
+Wire Wire Line
+	8800 3300 8800 3400
+Wire Wire Line
+	8800 3400 7600 3400
+Connection ~ 7600 3400
+Wire Wire Line
+	7600 3400 7600 3300
+Wire Wire Line
+	9200 3500 9200 3600
+Connection ~ 7600 3600
+Wire Wire Line
+	7600 3600 7600 3400
+Wire Wire Line
+	7600 3600 7600 5500
+Wire Wire Line
+	7600 3600 9200 3600
+Wire Wire Line
+	8800 2900 9200 2900
+Connection ~ 9400 2900
+Wire Wire Line
+	9400 2900 9400 5900
+Wire Wire Line
+	9200 3200 9200 2900
+Connection ~ 9200 2900
+Wire Wire Line
+	9200 2900 9400 2900
+Wire Wire Line
+	9650 2900 9650 2700
+$Comp
+L Connector:TestPoint TP7
+U 1 1 5FB40221
+P 9650 2700
+F 0 "TP7" H 9708 2818 50  0000 L CNN
+F 1 "9V" H 9708 2727 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 9850 2700 50  0001 C CNN
+F 3 "~" H 9850 2700 50  0001 C CNN
+	1    9650 2700
+	1    0    0    -1  
+$EndComp
+Text Label 7650 2700 0    50   ~ 0
+SHUNT_9V
+Text Label 7650 3900 0    50   ~ 0
+SHUNT_5V
+Text Label 7650 4400 0    50   ~ 0
+SHUNT_3.3
+$Comp
+L Device:CP1 C5
+U 1 1 5F50C5A8
+P 9200 3350
+F 0 "C5" H 9250 3450 50  0000 L CNN
+F 1 "470µF,25Vmin;D10P5H13max" H 8050 3250 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 9200 3350 50  0001 C CNN
+F 3 "~" H 9200 3350 50  0001 C CNN
+	1    9200 3350
+	1    0    0    -1  
+$EndComp
+Connection ~ 7500 1800
+Wire Wire Line
+	7500 1800 7500 3900
+Wire Wire Line
+	7200 3000 7400 3000
+Wire Wire Line
+	7400 3000 7400 3100
+Wire Wire Line
+	7400 3100 7200 3100
+Wire Wire Line
+	7400 3100 7400 4100
+Wire Wire Line
+	7400 4250 9000 4250
+Wire Wire Line
+	9000 4250 9000 4100
+Connection ~ 7400 3100
+Wire Wire Line
+	6100 4300 6000 4300
+Wire Wire Line
+	6000 4300 6000 4100
+Wire Wire Line
+	6000 4100 7400 4100
+Connection ~ 7400 4100
+Wire Wire Line
+	7400 4100 7400 4250
+Wire Wire Line
+	6000 4100 5750 4100
+Connection ~ 6000 4100
+Wire Wire Line
+	5750 4100 5750 4400
+Wire Wire Line
+	4400 3900 7500 3900
 $EndSCHEMATC
