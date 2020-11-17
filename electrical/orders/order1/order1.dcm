@@ -228,6 +228,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP SHUNT
+D 0 Ohme Power shunt
+K ~
+F 
+$ENDCMP
+#
 $CMP STADAPTER;F2x4
 D ST Adapter Mating Connector
 K ~

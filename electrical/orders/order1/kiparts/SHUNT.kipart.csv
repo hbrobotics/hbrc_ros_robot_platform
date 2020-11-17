@@ -1,0 +1,5 @@
+"SHUNT", "R", "Resistor_SMD:R_0603_1608Metric", "", "0 Ohm Power Shunt", "0 Ohme Power shunt"
+"Pin", "Unit", "Type",      "Name", "Style", "Side"
+"2",   "A",    "power_out", "OUT",  "line",  "right"
+"1",   "A",    "power_in",  "IN",   "line",  "left"
+,,,,,,
