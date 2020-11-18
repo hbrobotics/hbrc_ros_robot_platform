@@ -14,7 +14,6 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 NoConn ~ 3900 2600
-NoConn ~ 3900 3000
 NoConn ~ 3900 3100
 NoConn ~ 3900 3200
 NoConn ~ 3900 3400
@@ -244,7 +243,7 @@ Wire Wire Line
 Connection ~ 8000 5800
 Wire Wire Line
 	8000 5800 8000 5900
-Text Notes 8300 4600 0    50   ~ 0
+Text Notes 8200 4600 0    50   ~ 0
 EEPROM Notes:\n1. As per Raspberry PI I2C ID specification, the EEPROM\n     address is 0x50 (i.e. A0=A1=A2=0=Ground.)\n2. To enable the storage into the EEPROM s, short jumper.\n
 Wire Wire Line
 	3900 4600 4200 4600
@@ -287,11 +286,11 @@ Wire Wire Line
 Text HLabel 5000 2700 2    50   Output ~ 0
 SBC_TX
 Wire Wire Line
-	3900 2700 5000 2700
+	3900 2700 4800 2700
 Text HLabel 5000 2900 2    50   Output ~ 0
 SBC_RX
 Wire Wire Line
-	3900 2900 5000 2900
+	3900 2900 4800 2900
 Wire Wire Line
 	3900 2800 4000 2800
 Connection ~ 4000 2800
@@ -332,7 +331,7 @@ Text HLabel 8400 1700 2    50   Input ~ 0
 Wire Wire Line
 	8100 1700 8400 1700
 Connection ~ 8100 1700
-Text Label 7200 1700 0    50   ~ 0
+Text Label 8400 1700 2    50   ~ 0
 3.3V
 $Comp
 L Device:Jumper_NO_Small JP1
@@ -385,7 +384,7 @@ Text Label 4050 4200 0    50   ~ 0
 SBC_STOP
 Text Label 4050 4300 0    50   ~ 0
 SBC_ALIVE
-Text Notes 1900 1600 0    50   ~ 0
+Text Notes 1900 1150 0    50   ~ 0
 SBC (Single Board Computer) Connector Notes:\n1. Any SBC that is compatible with the defacto 40-pin Raspbery Pi Standard is allowed.\n2. 5V power is provided by the 2 5V pins.\n3. The SBC_ALIVE is High (3.3V) when the operating system is up and running.\n4. The SBC_SHUTDOWN is pulled High to ask the operating system to shutdown.\n5. The SBC_TX/SBC_RX provide a dedicated serial connection to the Nucleo.
 $Comp
 L Device:R_US R6
@@ -555,7 +554,7 @@ Wire Wire Line
 Connection ~ 5500 5800
 Wire Wire Line
 	5500 5800 5300 5800
-Text Notes 4650 4000 0    50   ~ 0
+Text Notes 4850 4000 0    50   ~ 0
 SBC Shutdown Request Button
 Text Notes 5600 5200 0    50   ~ 0
 SBC Alive LED
@@ -639,7 +638,7 @@ Connection ~ 6700 2600
 Wire Wire Line
 	6700 2600 7000 2600
 Text Notes 1200 6700 0    80   ~ 0
-TO DO:\n1. Add test points.\n2. Add ability to power up Rasperry Pi Display with 0 Ohm resistor\n    and test points to measure current.
+TO DO:\n1. Add test points.\n
 Wire Wire Line
 	5500 4500 5600 4500
 Connection ~ 5500 4500
@@ -662,86 +661,211 @@ Wire Wire Line
 Text Label 5100 4200 0    50   ~ 0
 SBC_REQ
 $Comp
-L Connector:TestPoint TP?
+L Connector:TestPoint TP16
 U 1 1 5FB4ED7C
-P 8600 3700
-F 0 "TP?" H 8658 3818 50  0000 L CNN
-F 1 "TestPoint" H 8658 3727 50  0000 L CNN
-F 2 "" H 8800 3700 50  0001 C CNN
-F 3 "~" H 8800 3700 50  0001 C CNN
-	1    8600 3700
-	1    0    0    -1  
-$EndComp
-$Comp
-L HR2:POWER_PFET_GSD Q?
-U 1 1 5FB5982B
-P 2050 2300
-AR Path="/5F52F39E/5FB5982B" Ref="Q?"  Part="1" 
-AR Path="/5F4877FA/5FB5982B" Ref="Q?"  Part="1" 
-F 0 "Q?" H 2300 2450 50  0000 C CNN
-F 1 "POWER_PFET_GSD" H 2450 2050 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 2250 2350 60  0001 L CNN
-F 3 "Power PFG (GSD pinout)" H 2250 2150 60  0001 L CNN
-F 4 "Power PFET (GSD pinout)" H 2250 2050 60  0001 L CNN "Field5"
-	1    2050 2300
+P 4800 2600
+F 0 "TP16" H 4850 2750 50  0000 L CNN
+F 1 "SPC_TX;M1x2" H 4858 2627 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 5000 2600 50  0001 C CNN
+F 3 "~" H 5000 2600 50  0001 C CNN
+	1    4800 2600
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	4000 2100 4000 1650
-Wire Wire Line
-	4000 1650 1950 1650
-Wire Wire Line
-	1950 1650 1950 2300
-Wire Wire Line
-	1950 2300 2050 2300
 $Comp
-L Jumper:Jumper_3_Open JP?
+L Jumper:Jumper_3_Open JP9
 U 1 1 5FB67673
-P 1400 2150
-F 0 "JP?" H 1400 2374 50  0000 C CNN
-F 1 "Jumper_3_Open" H 1400 2283 50  0000 C CNN
-F 2 "" H 1400 2150 50  0001 C CNN
-F 3 "~" H 1400 2150 50  0001 C CNN
-	1    1400 2150
-	1    0    0    -1  
+P 750 3400
+F 0 "JP9" V 800 3250 50  0000 C CNN
+F 1 "RPI_DISP_EN;M1x3" V 650 3000 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 750 3400 50  0001 C CNN
+F 3 "~" H 750 3400 50  0001 C CNN
+	1    750  3400
+	0    -1   -1   0   
 $EndComp
 $Comp
-L Device:R_US R?
+L Device:R_US R65
 U 1 1 5FB68DCD
-P 1000 2400
-AR Path="/5F4877FA/5FB68DCD" Ref="R?"  Part="1" 
+P 750 1750
+AR Path="/5F4877FA/5FB68DCD" Ref="R65"  Part="1" 
 AR Path="/5FA587FE/5FB68DCD" Ref="R?"  Part="1" 
-F 0 "R?" H 850 2500 50  0000 L CNN
-F 1 "3.9KΩ;1608" H 1050 2300 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1040 2390 50  0001 C CNN
-F 3 "~" H 1000 2400 50  0001 C CNN
-	1    1000 2400
+F 0 "R65" H 600 1850 50  0000 L CNN
+F 1 "100KΩ;1608" H 750 1650 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 790 1740 50  0001 C CNN
+F 3 "~" H 750 1750 50  0001 C CNN
+	1    750  1750
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R?
-U 1 1 5FB69F2A
-P 1750 1900
-AR Path="/5F4877FA/5FB69F2A" Ref="R?"  Part="1" 
-AR Path="/5FA587FE/5FB69F2A" Ref="R?"  Part="1" 
-F 0 "R?" H 1600 2000 50  0000 L CNN
-F 1 "3.9KΩ;1608" H 1800 1800 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1790 1890 50  0001 C CNN
-F 3 "~" H 1750 1900 50  0001 C CNN
-	1    1750 1900
+L Transistor_FET:2N7000 Q?
+U 1 1 5FB7067A
+P 1600 3400
+AR Path="/5F79BC00/5FB7067A" Ref="Q?"  Part="1" 
+AR Path="/5FA4A874/5FB7067A" Ref="Q?"  Part="1" 
+AR Path="/5FAD82EE/5FB7067A" Ref="Q?"  Part="1" 
+AR Path="/5F8C2F57/5FB7067A" Ref="Q?"  Part="1" 
+AR Path="/5F4877FA/5FB7067A" Ref="Q24"  Part="1" 
+F 0 "Q24" H 1500 3550 50  0000 L CNN
+F 1 "2N7000;SOT23" H 1750 3250 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 1800 3325 50  0001 L CIN
+F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 1600 3400 50  0001 L CNN
+	1    1600 3400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R67
+U 1 1 5FB84C0D
+P 1600 2800
+AR Path="/5F4877FA/5FB84C0D" Ref="R67"  Part="1" 
+AR Path="/5FA587FE/5FB84C0D" Ref="R?"  Part="1" 
+F 0 "R67" H 1400 2900 50  0000 L CNN
+F 1 "100KΩ;1608" H 1100 2650 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1640 2790 50  0001 C CNN
+F 3 "~" H 1600 2800 50  0001 C CNN
+	1    1600 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 CN3
+U 1 1 5FB885F0
+P 2900 2800
+F 0 "CN3" H 2800 2900 50  0000 L CNN
+F 1 "RPI_DSP_PWR;M1x2" H 2550 2600 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 2900 2800 50  0001 C CNN
+F 3 "~" H 2900 2800 50  0001 C CNN
+	1    2900 2800
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	1650 2150 1750 2150
+	750  3150 750  1900
 Wire Wire Line
-	1750 2150 1750 2050
+	1400 3400 1000 3400
 Wire Wire Line
-	1750 1750 1750 1650
+	1700 2800 1800 2800
 Wire Wire Line
-	1750 1650 1950 1650
-Connection ~ 1950 1650
+	2500 4200 2500 2900
 Wire Wire Line
-	1150 2150 1000 2150
+	2500 2900 2700 2900
 Wire Wire Line
-	1000 2150 1000 2250
+	2600 2800 2700 2800
+$Comp
+L HR2:POWER_PFET_GSD Q?
+U 1 1 5FB5982B
+P 1800 2700
+AR Path="/5F52F39E/5FB5982B" Ref="Q?"  Part="1" 
+AR Path="/5F4877FA/5FB5982B" Ref="Q23"  Part="1" 
+F 0 "Q23" H 2050 2850 50  0000 C CNN
+F 1 "POWER_PFET_GSD" H 2100 2450 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 2000 2750 60  0001 L CNN
+F 3 "Power PFG (GSD pinout)" H 2000 2550 60  0001 L CNN
+F 4 "Power PFET (GSD pinout)" H 2000 2450 60  0001 L CNN "Field5"
+	1    1800 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1800 2700 1700 2700
+Wire Wire Line
+	1700 2700 1700 2550
+Wire Wire Line
+	1700 1650 4000 1650
+Wire Wire Line
+	750  4200 1700 4200
+Wire Wire Line
+	1700 3600 1700 4200
+Connection ~ 1700 4200
+Wire Wire Line
+	1700 4200 2500 4200
+Wire Wire Line
+	4000 6300 2500 6300
+Wire Wire Line
+	2500 6300 2500 4200
+Connection ~ 4000 6300
+Connection ~ 2500 4200
+Wire Wire Line
+	5500 1700 5500 1400
+Wire Wire Line
+	5500 1400 750  1400
+Connection ~ 5500 1700
+Wire Wire Line
+	750  1400 750  1600
+Wire Wire Line
+	1600 2650 1600 2550
+Wire Wire Line
+	1600 2550 1700 2550
+Connection ~ 1700 2550
+Wire Wire Line
+	1700 1650 1700 2550
+Wire Wire Line
+	1600 2950 1600 3050
+Wire Wire Line
+	1600 3050 1700 3050
+Connection ~ 1700 3050
+Wire Wire Line
+	1700 3050 1700 2800
+Wire Wire Line
+	1700 3050 1700 3200
+Wire Wire Line
+	750  4100 750  4200
+Wire Wire Line
+	750  3800 750  3650
+$Comp
+L Device:R_US R66
+U 1 1 5FB69F2A
+P 750 3950
+AR Path="/5F4877FA/5FB69F2A" Ref="R66"  Part="1" 
+AR Path="/5FA587FE/5FB69F2A" Ref="R?"  Part="1" 
+F 0 "R66" H 600 4050 50  0000 L CNN
+F 1 "100KΩ;1608" H 800 3850 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 790 3940 50  0001 C CNN
+F 3 "~" H 750 3950 50  0001 C CNN
+	1    750  3950
+	1    0    0    -1  
+$EndComp
+Text Notes 1900 2300 0    50   ~ 0
+Raspberry Pi Display\nPower Enable Circuit
+Wire Wire Line
+	1000 3400 1000 2550
+Wire Wire Line
+	1000 2550 1300 2550
+Wire Wire Line
+	1300 2550 1300 1500
+Wire Wire Line
+	1300 1500 4600 1500
+Wire Wire Line
+	4600 1500 4600 3000
+Wire Wire Line
+	4600 3000 3900 3000
+Connection ~ 1000 3400
+Wire Wire Line
+	1000 3400 900  3400
+Text Notes 500  4650 0    50   ~ 0
+Notes:\n1. Jumper controlls default display Power On/Off.\n2. Transistor shifts from 3.3V to 5V Gate On/Off.\n3. Jumper provides switched 5V to Ras Pi Display.\n4. Raspberry Pi can override jumper.
+Text Notes 800  3700 0    50   ~ 0
+ON
+Text Notes 800  3150 0    50   ~ 0
+OFF
+Text Label 4100 3000 0    50   ~ 0
+RPI_DSP_EN
+$Comp
+L Connector:TestPoint TP17
+U 1 1 5FC4D458
+P 4800 3000
+F 0 "TP17" H 4600 3150 50  0000 L CNN
+F 1 "SBC_RX;M1x2" H 4250 3050 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 5000 3000 50  0001 C CNN
+F 3 "~" H 5000 3000 50  0001 C CNN
+	1    4800 3000
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4800 2600 4800 2700
+Connection ~ 4800 2700
+Wire Wire Line
+	4800 2700 5000 2700
+Wire Wire Line
+	4800 3000 4800 2900
+Connection ~ 4800 2900
+Wire Wire Line
+	4800 2900 5000 2900
 $EndSCHEMATC
