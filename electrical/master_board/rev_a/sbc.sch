@@ -661,4 +661,87 @@ Wire Wire Line
 	5500 5300 5500 5800
 Text Label 5100 4200 0    50   ~ 0
 SBC_REQ
+$Comp
+L Connector:TestPoint TP?
+U 1 1 5FB4ED7C
+P 8600 3700
+F 0 "TP?" H 8658 3818 50  0000 L CNN
+F 1 "TestPoint" H 8658 3727 50  0000 L CNN
+F 2 "" H 8800 3700 50  0001 C CNN
+F 3 "~" H 8800 3700 50  0001 C CNN
+	1    8600 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:POWER_PFET_GSD Q?
+U 1 1 5FB5982B
+P 2050 2300
+AR Path="/5F52F39E/5FB5982B" Ref="Q?"  Part="1" 
+AR Path="/5F4877FA/5FB5982B" Ref="Q?"  Part="1" 
+F 0 "Q?" H 2300 2450 50  0000 C CNN
+F 1 "POWER_PFET_GSD" H 2450 2050 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 2250 2350 60  0001 L CNN
+F 3 "Power PFG (GSD pinout)" H 2250 2150 60  0001 L CNN
+F 4 "Power PFET (GSD pinout)" H 2250 2050 60  0001 L CNN "Field5"
+	1    2050 2300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4000 2100 4000 1650
+Wire Wire Line
+	4000 1650 1950 1650
+Wire Wire Line
+	1950 1650 1950 2300
+Wire Wire Line
+	1950 2300 2050 2300
+$Comp
+L Jumper:Jumper_3_Open JP?
+U 1 1 5FB67673
+P 1400 2150
+F 0 "JP?" H 1400 2374 50  0000 C CNN
+F 1 "Jumper_3_Open" H 1400 2283 50  0000 C CNN
+F 2 "" H 1400 2150 50  0001 C CNN
+F 3 "~" H 1400 2150 50  0001 C CNN
+	1    1400 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 5FB68DCD
+P 1000 2400
+AR Path="/5F4877FA/5FB68DCD" Ref="R?"  Part="1" 
+AR Path="/5FA587FE/5FB68DCD" Ref="R?"  Part="1" 
+F 0 "R?" H 850 2500 50  0000 L CNN
+F 1 "3.9KΩ;1608" H 1050 2300 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1040 2390 50  0001 C CNN
+F 3 "~" H 1000 2400 50  0001 C CNN
+	1    1000 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 5FB69F2A
+P 1750 1900
+AR Path="/5F4877FA/5FB69F2A" Ref="R?"  Part="1" 
+AR Path="/5FA587FE/5FB69F2A" Ref="R?"  Part="1" 
+F 0 "R?" H 1600 2000 50  0000 L CNN
+F 1 "3.9KΩ;1608" H 1800 1800 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1790 1890 50  0001 C CNN
+F 3 "~" H 1750 1900 50  0001 C CNN
+	1    1750 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1650 2150 1750 2150
+Wire Wire Line
+	1750 2150 1750 2050
+Wire Wire Line
+	1750 1750 1750 1650
+Wire Wire Line
+	1750 1650 1950 1650
+Connection ~ 1950 1650
+Wire Wire Line
+	1150 2150 1000 2150
+Wire Wire Line
+	1000 2150 1000 2250
 $EndSCHEMATC
