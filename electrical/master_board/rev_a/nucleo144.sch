@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 3 10
+Sheet 10 10
 Title "HR2 Master Board"
 Date "2020-10-17"
 Rev "A"
@@ -85,7 +85,6 @@ NoConn ~ 3000 2000
 NoConn ~ 3000 3700
 NoConn ~ 5500 4800
 NoConn ~ 5500 4900
-NoConn ~ 5500 5600
 NoConn ~ 5500 5000
 NoConn ~ 5500 5100
 NoConn ~ 8500 3800
@@ -219,9 +218,9 @@ Text HLabel 3500 1200 2    50   Input ~ 0
 LQUAD_B
 Text HLabel 3500 3000 2    50   Output ~ 0
 LEDS_MOSI
-Text HLabel 6000 2800 2    50   Input ~ 0
+Text HLabel 6000 1000 2    50   Input ~ 0
 ECHO1
-Text HLabel 6000 3600 2    50   Input ~ 0
+Text HLabel 6000 5700 2    50   Input ~ 0
 ECHO2
 Text HLabel 6000 3800 2    50   Input ~ 0
 ECHO3
@@ -231,7 +230,7 @@ Text HLabel 6000 4200 2    50   Input ~ 0
 ECHO5
 Text HLabel 6000 4300 2    50   Input ~ 0
 ECHO6
-Text HLabel 6000 5700 2    50   Input ~ 0
+Text HLabel 6000 3600 2    50   Input ~ 0
 ECHO7
 Text HLabel 3500 4000 2    50   Output ~ 0
 LIDAR_TX
@@ -285,7 +284,7 @@ Text HLabel 3500 1300 2    50   Output ~ 0
 D13_SCK
 Text HLabel 9000 3500 2    50   Output ~ 0
 ~NRST
-Text HLabel 6000 1000 2    50   Input ~ 0
+Text HLabel 6000 2800 2    50   Input ~ 0
 INT0
 Text HLabel 6000 900  2    50   Input ~ 0
 INT1
@@ -480,7 +479,6 @@ Text Notes 8850 4350 0    50   ~ 0
 Morpho Power Pins.
 Text HLabel 7000 4600 2    50   Output ~ 0
 ~MOTOR_SLEEP
-NoConn ~ 6400 2100
 Wire Wire Line
 	7000 4500 6900 4500
 Wire Wire Line
@@ -542,7 +540,7 @@ NoConn ~ 3000 5900
 NoConn ~ 3000 5300
 NoConn ~ 3000 5200
 NoConn ~ 3000 4900
-Text HLabel 3500 5000 2    50   Output ~ 0
+Text HLabel 6000 1100 2    50   Output ~ 0
 ~ESTOP_CLR
 Wire Wire Line
 	3000 5000 3500 5000
@@ -552,4 +550,14 @@ Wire Wire Line
 	5500 800  6000 800 
 Text Notes 6900 4400 0    50   ~ 0
 Cross Sheet Connetions
+Text HLabel 3500 5000 2    50   Input ~ 0
+SERVO_CUR
+Text HLabel 6000 5600 2    50   Input ~ 0
+SERVO_POS
+NoConn ~ 7000 5000
+NoConn ~ 7000 5100
+Wire Wire Line
+	5500 1100 6000 1100
+Wire Wire Line
+	5500 5600 6000 5600
 $EndSCHEMATC

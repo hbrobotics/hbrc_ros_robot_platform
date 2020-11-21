@@ -4717,7 +4717,7 @@ class MasterBoard:
 
         # The remaining variable are defined in alphabetical order:
         arm_well_dx: float = 13.0  # mm (trail and error)
-        arm_well_north: float = -53.0  # mm (trail and error)
+        arm_well_north: float = -55.0  # mm -53.0  # mm (trail and error)
         # bantam_dx: float = 5 * 25.4  # mm (size of Bantam Labs PCB blank)
         bantam_dy: float = 4 * 25.4  # mm (size of Bantam Labs PCB blank)
         center_pcb_north: float = wheel_well_dy / 2.0 + 1.0  # mm (trail and error)
@@ -4855,6 +4855,8 @@ class MasterBoard:
         # For some reason there is an extra segment genterated that covers the rounded corner.
         # Eventually this needs to be debugged or kludged around, but not for now.
         master_exterior.corner_arc_append(A, corner_radius, "SE")  # Strange! no rounded corner!
+        # master_exterior.show("master_polygon:")
+        # master_exterior.scrub()
         master_exterior.lock()
 
         # Create *center_exterior*:
@@ -6204,7 +6206,7 @@ class RaspberryPi4:
 
         # Combined Ethernet/USB heat slot determined by trial and error.
         ethernet_usb_dx: float = 6.0
-        ethernet_usb_dy: float = 18.0  # 22.0
+        ethernet_usb_dy: float = 22.0
         ethernet_usb_center: P2D = P2D(23.0, 2.5)  # (Y, -X) in master board coordinate state
         ethernet_usb_slot: SimplePolygon = Square(
             "Ethernet USB Heat Sink Slot", ethernet_usb_dx, ethernet_usb_dy, ethernet_usb_center,
