@@ -1237,8 +1237,6 @@ ByPass Capacitors
 Wire Wire Line
 	3600 7200 3800 7200
 Connection ~ 3800 7200
-Text Notes 4400 850  0    80   ~ 0
-TO DO:\n1. Add test points.
 NoConn ~ 3050 -850
 NoConn ~ 11600 -650
 Wire Bus Line

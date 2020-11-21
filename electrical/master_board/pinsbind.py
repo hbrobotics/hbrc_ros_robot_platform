@@ -646,7 +646,9 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
 
         # Miscellaneous pins.
         pin_binds.extend([
-             (">PC2", "ESTOP_CLR", daughter_signals, "PC2"),
+             (">PD3", "ESTOP_CLR", daughter_signals, "PD3"),  # Was PC2
+             ("ADC3_IN12", "SERVO_CUR", daughter_signals, "PC2"),
+             ("ADC3_IN6", "SERVO_POS", dauhgter_signal, "PF8")
              (">PC12", "WOW_EN", daughter_signals, "PC12"),
              (">PD0", "SBC_ALIVE", daughter_signals, "PD0"),
         ])
@@ -1083,6 +1085,33 @@ def zios_table_create() -> Dict[Text, Text]:
             pin_name: Text = f"{port_name}{bit_index}"
             zios_table[pin_name] = flag
     return zios_table
+
+# ADC search
+# 
+# ~MOTOR_SLEEP     (wired to ~ESTOP_IN)
+# ~ESTOP_IN        (wired to ~MOTOR_SLEEP)
+# ~MOTOR_FAULT_IN  (wired to ~MOTOR_FAUTL_OUT)
+# ~MOTOR_FAULT_OUT (wired to ~MOTOR_FAUTL_IN)
+# SBC_ALIVE        (PD0)  Daughter
+# WOW_EN           (PC12) Daughter
+# ESTOP            (PD7)  Daughter
+# ~ESTOP_CLR       (PC2)  Daughter  ADC123_IN12
+
+# ADC availability:
+# 
+# Morpho:
+# PB14
+# PF11
+# PF6 ADC3_IN4
+# PG10
+# PG12
+# PG8
+#
+# Daughter:
+# PD3
+# PF8 ADC3_IN6
+
+
 
 
 if __name__ == "__main__":

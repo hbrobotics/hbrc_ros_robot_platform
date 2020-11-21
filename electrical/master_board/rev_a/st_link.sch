@@ -57,6 +57,4 @@ Wire Wire Line
 	6000 4250 6500 4250
 Wire Wire Line
 	6000 4350 6500 4350
-Text Notes 5250 2950 0    80   ~ 0
-TO DO:\n1. Add test points.
 $EndSCHEMATC

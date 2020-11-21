@@ -1,0 +1,12 @@
+"ACS711;SOIC8", "U", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", "", "Hall Effect Current Sensor", "Hall Effect Current Sensor"
+"Pin", "Unit", "Type",           "Name",   "Style", "Side"
+"1",   "A",    "power_out",      "IP+A",   "line",  "left"
+"2",   "A",    "power_in",       "IP+B",   "line",  "left"
+"3",   "A",    "power_in",       "IP-A",   "line",  "left"
+"4",   "A",    "power_in",       "IP-B",   "line",  "left"
+"8",   "A",    "power_in",       "VCC",    "line",  "right"
+"7",   "A",    "passive",        "VIOUT",  "line",  "right"
+"6",   "A",    "open_collector", "~FAULT", "line",  "right"
+"5",   "A",    "power_in",       "GND",    "line",  "right"
+,,,,,,
+

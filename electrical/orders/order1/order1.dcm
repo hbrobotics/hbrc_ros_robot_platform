@@ -84,6 +84,12 @@ K ~
 F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
 $ENDCMP
 #
+$CMP SERVO;M1x4
+D Servo M1X4
+K ~
+F 
+$ENDCMP
+#
 $CMP RASPI;F2X20
 D 
 K ~
@@ -144,6 +150,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP SERVO;M1x3
+D Servo F1X3
+K ~
+F 
+$ENDCMP
+#
 $CMP ENCODER;2xF1x3
 D HR2 Encoder Connector
 K ~
@@ -181,8 +193,8 @@ F
 $ENDCMP
 #
 $CMP NUCLEO-F767ZI;2xF2x35
-D NUCLEO144-REV_A/HR2/HR2
-K Nucleo144 STM32REV_A/HR2/HR2
+D NUCLEO144-F767ZI
+K Nucleo144 STM32F767ZI
 F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
 $ENDCMP
 #

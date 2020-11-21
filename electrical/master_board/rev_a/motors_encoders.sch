@@ -302,6 +302,4 @@ Wire Wire Line
 	4800 5500 6400 5500
 NoConn ~ 3200 4500
 NoConn ~ 6500 1450
-Text Notes 4350 1150 0    80   ~ 0
-TO DO:\n1. Add test points.\n2. Add current shunts for motor to measure current?\n    Put on encoder board instead?
 $EndSCHEMATC

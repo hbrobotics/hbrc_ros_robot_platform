@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 10 10
+Sheet 8 10
 Title "HR2: WOWBus"
 Date "2020-10-17"
 Rev "A"
