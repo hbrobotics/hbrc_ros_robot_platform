@@ -629,15 +629,15 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
         # Each port bit number must be different in order to support external interrupts.
         # '>' means digital input:
         pin_binds.extend([
-            (">PE0", "ECHO1", daughter_signals, "PE0"),
+            (">PE0", "INT0", daughter_signals, "PE0"),
             (">PD1", "INT1", daughter_signals, "PD1"),
-            (">PD2", "INT0", daughter_signals, "PD2"),
+            (">PD2", "ECHO1", daughter_signals, "PD2"),
 
             # (">PD3", "??", daughter_signals, "PD3"),  # Available interrupt pin.
             (">PD7", "ESTOP", daughter_signals, "PD7"),
 
-            (">PE8", "ECHO2", daughter_signals, "PE8"),
-            (">PF9", "ECHO7", daughter_signals, "PF9"),
+            (">PE8", "ECHO7", daughter_signals, "PE8"),
+            (">PF9", "ECHO2", daughter_signals, "PF9"),
             (">PE10", "ECHO3", daughter_signals, "PE10"),
             (">PE12", "ECHO4", daughter_signals, "PE12"),
             (">PE14", "ECHO5", daughter_signals, "PE14"),

@@ -218,9 +218,9 @@ Text HLabel 3500 1200 2    50   Input ~ 0
 LQUAD_B
 Text HLabel 3500 3000 2    50   Output ~ 0
 LEDS_MOSI
-Text HLabel 6000 2800 2    50   Input ~ 0
+Text HLabel 6000 1000 2    50   Input ~ 0
 ECHO1
-Text HLabel 6000 3600 2    50   Input ~ 0
+Text HLabel 6000 5700 2    50   Input ~ 0
 ECHO2
 Text HLabel 6000 3800 2    50   Input ~ 0
 ECHO3
@@ -230,7 +230,7 @@ Text HLabel 6000 4200 2    50   Input ~ 0
 ECHO5
 Text HLabel 6000 4300 2    50   Input ~ 0
 ECHO6
-Text HLabel 6000 5700 2    50   Input ~ 0
+Text HLabel 6000 3600 2    50   Input ~ 0
 ECHO7
 Text HLabel 3500 4000 2    50   Output ~ 0
 LIDAR_TX
@@ -284,7 +284,7 @@ Text HLabel 3500 1300 2    50   Output ~ 0
 D13_SCK
 Text HLabel 9000 3500 2    50   Output ~ 0
 ~NRST
-Text HLabel 6000 1000 2    50   Input ~ 0
+Text HLabel 6000 2800 2    50   Input ~ 0
 INT0
 Text HLabel 6000 900  2    50   Input ~ 0
 INT1
