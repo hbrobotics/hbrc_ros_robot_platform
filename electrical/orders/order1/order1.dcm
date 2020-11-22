@@ -12,6 +12,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP SENSE;M1x3
+D Sense F1X3
+K ~
+F 
+$ENDCMP
+#
 $CMP BRIDGE_NW_INNER;M1x2+M2x5
 D NW Inner Bridge Connectors
 K ~

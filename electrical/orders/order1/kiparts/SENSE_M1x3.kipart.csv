@@ -1,0 +1,6 @@
+"SENSE;M1x3","CN","Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",,"Sense M1X3","Sense F1X3"
+"Pin", "Unit", "Name",  "Type",     "Style", "Side"
+"2",   "A",    "VCC",   "power_in", "line",  "left"
+"1",   "A",    "GND",   "power_in", "line",  "left"
+"3",   "A",    "SIG",   "output",   "line",  "right"
+,,,,,,
