@@ -1140,8 +1140,6 @@ Text Label 1000 6200 0    50   ~ 0
 ECHO4
 Text Label 1000 6100 0    50   ~ 0
 ECHO3
-Text Notes 1100 7400 0    80   ~ 0
-TO DO:\n1. Add test points.\n2. Add position sense pin for gripper servo; connect to A/D pin.\n3. Add position sense current sense circuit and connect to A/D pin.
 $Comp
 L HR2:ACS711;SOIC8 U19
 U 1 1 5FC1C86E

@@ -389,17 +389,17 @@ SBC (Single Board Computer) Connector Notes:\n1. Any SBC that is compatible with
 $Comp
 L Device:R_US R6
 U 1 1 5F58D7BC
-P 4500 4850
+P 4600 4850
 AR Path="/5F4877FA/5F58D7BC" Ref="R6"  Part="1" 
 AR Path="/5FA587FE/5F58D7BC" Ref="R?"  Part="1" 
-F 0 "R6" H 4350 4950 50  0000 L CNN
-F 1 "100KΩ;1608" H 4550 4750 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 4540 4840 50  0001 C CNN
-F 3 "~" H 4500 4850 50  0001 C CNN
-	1    4500 4850
+F 0 "R6" H 4450 4950 50  0000 L CNN
+F 1 "100KΩ;1608" H 4650 4750 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 4640 4840 50  0001 C CNN
+F 3 "~" H 4600 4850 50  0001 C CNN
+	1    4600 4850
 	1    0    0    -1  
 $EndComp
-Connection ~ 4500 5800
+Connection ~ 4600 5800
 Text Label 7750 5800 0    50   ~ 0
 GND
 Text Label 4500 3700 0    50   ~ 0
@@ -460,7 +460,7 @@ X2
 Text Label 6900 2900 0    50   ~ 0
 X1
 Wire Wire Line
-	3900 4200 4500 4200
+	3900 4200 4600 4200
 $Comp
 L HR2:MCP7940;SOIC8 U2
 U 1 1 5F5D2D12
@@ -477,8 +477,8 @@ F 5 "I2C Real Time Clock" H 7900 2650 60  0001 L CNN "Field5"
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	4500 4700 4500 4200
-Connection ~ 4500 4200
+	4600 4700 4600 4200
+Connection ~ 4600 4200
 $Comp
 L Switch:SW_Push SW?
 U 1 1 5F8FBAFA
@@ -500,7 +500,7 @@ Text Label 4100 2100 0    50   ~ 0
 5V
 NoConn ~ 3900 2000
 Wire Wire Line
-	4500 4200 4750 4200
+	4600 4200 4750 4200
 $Comp
 L Device:R_US R11
 U 1 1 5FAF8B92
@@ -544,9 +544,9 @@ F 3 "~" H 5500 4750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4400 4300 4400 4500
+	4500 4300 4500 4500
 Wire Wire Line
-	4400 4500 5300 4500
+	4500 4500 5300 4500
 Wire Wire Line
 	5500 4500 5500 4600
 Wire Wire Line
@@ -559,11 +559,11 @@ SBC Shutdown Request Button
 Text Notes 5600 5200 0    50   ~ 0
 SBC Alive LED
 Wire Wire Line
-	3900 4300 4400 4300
+	3900 4300 4500 4300
 Wire Wire Line
-	4000 5800 4500 5800
+	4000 5800 4600 5800
 Wire Wire Line
-	4500 5000 4500 5800
+	4600 5000 4600 5800
 NoConn ~ 3900 3600
 Text Notes 3250 1800 0    50   ~ 0
 SBC Connector
@@ -624,7 +624,7 @@ P 6700 2150
 AR Path="/5F4877FA/5FA24EA3" Ref="C8"  Part="1" 
 AR Path="/5FA587FE/5FA24EA3" Ref="C?"  Part="1" 
 F 0 "C8" H 6700 2250 50  0000 L CNN
-F 1 "10pF;1608" H 6300 2050 50  0000 L CNN
+F 1 "10pF;1608" H 6250 2050 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 6738 2000 50  0001 C CNN
 F 3 "~" H 6700 2150 50  0001 C CNN
 	1    6700 2150
@@ -637,8 +637,6 @@ Wire Wire Line
 Connection ~ 6700 2600
 Wire Wire Line
 	6700 2600 7000 2600
-Text Notes 1200 6700 0    80   ~ 0
-TO DO:\n1. Add test points.\n
 Wire Wire Line
 	5500 4500 5600 4500
 Connection ~ 5500 4500
@@ -651,7 +649,7 @@ Wire Wire Line
 	7300 4100 7300 4200
 Connection ~ 5300 5800
 Wire Wire Line
-	5300 5800 4500 5800
+	5300 5800 4600 5800
 Text Notes 6200 5950 0    50   ~ 0
 EEPROM Program Enable Jumper
 Wire Wire Line
@@ -851,7 +849,7 @@ $Comp
 L Connector:TestPoint TP17
 U 1 1 5FC4D458
 P 4800 3000
-F 0 "TP17" H 4600 3150 50  0000 L CNN
+F 0 "TP17" H 4600 3200 50  0000 L CNN
 F 1 "SBC_RX;M1x2" H 4250 3050 50  0000 L CNN
 F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 5000 3000 50  0001 C CNN
 F 3 "~" H 5000 3000 50  0001 C CNN
