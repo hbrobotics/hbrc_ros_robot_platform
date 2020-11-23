@@ -4,8 +4,8 @@ EELAYER END
 $Descr A 11000 8500
 encoding utf-8
 Sheet 2 10
-Title "HR2 Power"
-Date "2020-10-17"
+Title "HR2 Power Supply"
+Date "2020-11-22"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
