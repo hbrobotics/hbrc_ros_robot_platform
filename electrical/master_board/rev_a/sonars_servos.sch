@@ -341,9 +341,7 @@ Wire Wire Line
 Text Label 3900 3600 2    50   ~ 0
 GND
 Wire Wire Line
-	3500 3400 3600 3400
-Wire Wire Line
-	3600 3400 3600 3900
+	3600 3500 3600 3900
 Wire Wire Line
 	1000 3900 3600 3900
 Text Label 1000 2900 0    50   ~ 0
@@ -1085,7 +1083,6 @@ F 4 "Tri-State 8-Bit Shift Register" H 2600 2350 60  0001 L CNN "Field5"
 	1    2400 2600
 	1    0    0    -1  
 $EndComp
-NoConn ~ 3500 3500
 Wire Wire Line
 	4100 3600 4350 3600
 Wire Wire Line
@@ -1259,6 +1256,9 @@ Text HLabel 1000 6600 0    50   Output ~ 0
 SERVO_CUR
 Text HLabel 1000 6700 0    50   Output ~ 0
 SERVO_POS
+Wire Wire Line
+	3500 3500 3600 3500
+NoConn ~ 3500 3400
 Wire Bus Line
 	4000 2250 6000 2250
 Wire Bus Line

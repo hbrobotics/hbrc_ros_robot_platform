@@ -1001,8 +1001,6 @@ F 4 "Tri-State 8-Bit Shift Register" H 2100 1950 60  0001 L CNN "Field5"
 	1    1900 2200
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3000 5900 3100 5900
 Entry Wire Line
 	3400 2200 3500 2100
 Wire Wire Line
@@ -1097,7 +1095,6 @@ Text Label 3400 5100 2    50   ~ 0
 3.3V
 Text Label 3400 6400 2    50   ~ 0
 GND
-NoConn ~ 3000 6000
 Text Label 1000 5400 0    50   ~ 0
 LED_MOSI
 Text Label 1000 5500 0    50   ~ 0
@@ -1106,18 +1103,13 @@ Text Label 1000 5600 0    50   ~ 0
 ~LED_NSS
 NoConn ~ 3000 3100
 Wire Wire Line
-	3100 5900 3100 3700
-Wire Wire Line
 	3100 3700 1400 3700
 Wire Wire Line
 	1400 3700 1400 2500
 Wire Wire Line
 	1400 2500 1900 2500
-Connection ~ 3100 5900
-Wire Wire Line
-	3100 5900 4100 5900
 Text Label 2100 3700 0    50   ~ 0
-LED8
+LED8_SER
 Text Label 3400 2500 2    50   ~ 0
 LED11
 Text Label 3400 2600 2    50   ~ 0
@@ -1239,6 +1231,12 @@ Wire Wire Line
 Connection ~ 3800 7200
 NoConn ~ 3050 -850
 NoConn ~ 11600 -650
+Wire Wire Line
+	3000 6000 3100 6000
 Wire Bus Line
 	3500 1300 3500 7200
+Wire Wire Line
+	3000 5900 4100 5900
+Wire Wire Line
+	3100 3700 3100 6000
 $EndSCHEMATC

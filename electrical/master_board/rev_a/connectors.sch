@@ -401,7 +401,6 @@ INT1
 Text HLabel 1700 2900 0    50   Output ~ 0
 INT0
 NoConn ~ 4500 4600
-NoConn ~ 3900 7300
 NoConn ~ 3900 7100
 NoConn ~ 3900 7000
 NoConn ~ 3900 6900
@@ -581,8 +580,6 @@ Connection ~ 10100 3200
 Wire Wire Line
 	10100 3200 10300 3200
 Wire Wire Line
-	3900 7200 4600 7200
-Wire Wire Line
 	8800 3600 8100 3600
 Wire Wire Line
 	8100 3500 8800 3500
@@ -598,7 +595,7 @@ Text Label 8100 3600 0    50   ~ 0
 ~DIO_NSS
 Text Label 8100 5800 0    50   ~ 0
 ~DIO_NSS
-Text Label 3900 7200 0    50   ~ 0
+Text Label 3900 7300 0    50   ~ 0
 SER_OUT_TO_IN1
 Text Label 9050 4050 0    50   ~ 0
 SER_IN1_TO_IN2
@@ -656,8 +653,6 @@ Text Label 2250 6800 0    50   ~ 0
 DIO_SCK
 Text Label 2250 6900 0    50   ~ 0
 ~DIO_NSS
-Wire Wire Line
-	4600 7200 4600 6600
 Wire Wire Line
 	10100 1700 8100 1700
 Entry Wire Line
@@ -1090,6 +1085,11 @@ Text Label 7300 5000 0    50   ~ 0
 SIG7
 Text Label 7300 5500 0    50   ~ 0
 SIG8
+Wire Wire Line
+	3900 7300 4600 7300
+Wire Wire Line
+	4600 6600 4600 7300
+NoConn ~ 3900 7200
 Wire Bus Line
 	8100 6100 8100 6400
 Wire Bus Line
