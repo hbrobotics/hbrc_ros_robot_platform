@@ -210,6 +210,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP SN74HCS165;TTSOP16
+D 8-Bit Parallel In Serial Out Shift Register
+K ~
+F 
+$ENDCMP
+#
 $CMP LIDAR_ADAPTER;2xF1x2
 D Lidar Adapter Connectors
 K ~
