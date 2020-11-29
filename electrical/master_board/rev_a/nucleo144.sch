@@ -171,12 +171,12 @@ Wire Wire Line
 Connection ~ 10000 4700
 Wire Wire Line
 	10000 4700 10000 4800
-Text HLabel 8100 5950 0    50   Input ~ 0
+Text HLabel 6700 6000 0    50   Input ~ 0
 GND
 Wire Wire Line
-	8100 5950 10000 5950
+	6700 6000 7100 6000
 Wire Wire Line
-	10000 5950 10000 5700
+	10000 6000 10000 5700
 Connection ~ 10000 5700
 NoConn ~ 8400 4800
 NoConn ~ 8400 4900
@@ -210,7 +210,7 @@ Text HLabel 3500 3300 2    50   Output ~ 0
 LMOTOR_CTL2
 Text HLabel 3500 2900 2    50   Output ~ 0
 RMOTOR_CTL2
-Text HLabel 7000 4700 2    50   Input ~ 0
+Text HLabel 4600 7200 2    50   Input ~ 0
 ~MOTOR_FAULT_IN
 Text HLabel 6000 2000 2    50   Input ~ 0
 LQUAD_A
@@ -416,7 +416,7 @@ Wire Wire Line
 Text HLabel 6000 3300 2    50   Input ~ 0
 DIO_MISO
 Wire Wire Line
-	5500 3200 6000 3200
+	5500 3200 5700 3200
 Wire Wire Line
 	6000 3300 5500 3300
 Wire Wire Line
@@ -461,30 +461,30 @@ Wire Wire Line
 	5500 900  6000 900 
 Wire Wire Line
 	6000 1000 5500 1000
-Text HLabel 7000 4800 2    50   Output ~ 0
+Text HLabel 4600 7300 2    50   Output ~ 0
 ~MOTOR_FAULT_OUT
 Wire Wire Line
-	7000 4700 6900 4700
+	4600 7200 4500 7200
 Wire Wire Line
-	6900 4700 6900 4800
+	4500 7200 4500 7300
 Wire Wire Line
-	6900 4800 7000 4800
+	4500 7300 4600 7300
 Wire Wire Line
 	5500 1400 6000 1400
-Text HLabel 7000 4500 2    50   Input ~ 0
+Text HLabel 4600 7000 2    50   Input ~ 0
 ~ESTOP_IN
 Text HLabel 6000 1500 2    50   Input ~ 0
 ESTOP
 Text Notes 8850 4350 0    50   ~ 0
 Morpho Power Pins.
-Text HLabel 7000 4600 2    50   Output ~ 0
+Text HLabel 4600 7100 2    50   Output ~ 0
 ~MOTOR_SLEEP
 Wire Wire Line
-	7000 4500 6900 4500
+	4600 7000 4500 7000
 Wire Wire Line
-	6900 4500 6900 4600
+	4500 7000 4500 7100
 Wire Wire Line
-	6900 4600 7000 4600
+	4500 7100 4600 7100
 Wire Wire Line
 	5500 1500 6000 1500
 Wire Wire Line
@@ -548,16 +548,74 @@ Wire Wire Line
 	3000 6000 3500 6000
 Wire Wire Line
 	5500 800  6000 800 
-Text Notes 6900 4400 0    50   ~ 0
+Text Notes 4500 6900 0    50   ~ 0
 Cross Sheet Connetions
 Text HLabel 3500 5000 2    50   Input ~ 0
 SERVO_CUR
 Text HLabel 6000 5600 2    50   Input ~ 0
 SERVO_POS
-NoConn ~ 7000 5000
-NoConn ~ 7000 5100
 Wire Wire Line
 	5500 1100 6000 1100
 Wire Wire Line
 	5500 5600 6000 5600
+$Comp
+L Transistor_FET:2N7000 Q?
+U 1 1 5FC61D2B
+P 7000 5400
+AR Path="/5F79BC00/5FC61D2B" Ref="Q?"  Part="1" 
+AR Path="/5FA4A874/5FC61D2B" Ref="Q?"  Part="1" 
+AR Path="/5FAD82EE/5FC61D2B" Ref="Q?"  Part="1" 
+AR Path="/5F8C2F57/5FC61D2B" Ref="Q?"  Part="1" 
+AR Path="/5F3221A2/5FC61D2B" Ref="Q25"  Part="1" 
+F 0 "Q25" H 6900 5550 50  0000 L CNN
+F 1 "2N7000;SOT23" H 7150 5250 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 7200 5325 50  0001 L CIN
+F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 7000 5400 50  0001 L CNN
+	1    7000 5400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5700 3200 5700 4400
+Wire Wire Line
+	5700 4400 6200 4400
+Wire Wire Line
+	6200 4400 6200 5400
+Wire Wire Line
+	6200 5400 6800 5400
+Connection ~ 5700 3200
+Wire Wire Line
+	5700 3200 6000 3200
+Connection ~ 7100 6000
+Wire Wire Line
+	7100 6000 10000 6000
+$Comp
+L Device:R_US R?
+U 1 1 5FC830FC
+P 7100 4850
+AR Path="/5F52F39E/5FC830FC" Ref="R?"  Part="1" 
+AR Path="/5F3221A2/5FC830FC" Ref="R68"  Part="1" 
+F 0 "R68" H 6950 4950 50  0000 L CNN
+F 1 "100KΩ;1608" H 7150 4750 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7140 4840 50  0001 C CNN
+F 3 "~" H 7100 4850 50  0001 C CNN
+	1    7100 4850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7100 5200 7100 5100
+Wire Wire Line
+	7100 5600 7100 6000
+Text HLabel 6850 4600 0    50   Input ~ 0
+3.3V
+Wire Wire Line
+	6850 4600 7100 4600
+Wire Wire Line
+	7100 4600 7100 4700
+Text HLabel 7350 5100 2    50   Output ~ 0
+DIO_SS
+Wire Wire Line
+	7350 5100 7100 5100
+Connection ~ 7100 5100
+Wire Wire Line
+	7100 5100 7100 5000
 $EndSCHEMATC
