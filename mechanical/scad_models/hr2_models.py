@@ -1028,7 +1028,7 @@ class LED:
 
         # Create the *led_pcb_chunk*:
         led_pcb_chunk: PCBChunk = PCBChunk(
-            f"LED_GRNRA", led_pads, [led_use_module], front_artworks=led_artwork)
+            "LED_GRNRA", led_pads, [led_use_module], front_artworks=led_artwork)
 
         # Generate the LED fooprint:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
@@ -1811,8 +1811,8 @@ class PCBChunk:
             # Insert the cuts into the *final_pcb_module*:
             final_pcb_module: PCBModule = ordered_pcb_modules[-1]
             final_pcb_module.cut_lines_insert(all_cuts, pcb_origin)
-            final_pcb_module.ground_zones_update(
-                ordered_pcb_modules, pcb_exterior, pcb_origin, tracing=next_tracing)
+            # final_pcb_module.ground_zones_update(
+            #     ordered_pcb_modules, pcb_exterior, pcb_origin, tracing=next_tracing)
 
             # Create *final_assembled_lines* and write them out:
             final_reassembled_lines = PCBModule.lines_join(ordered_pcb_modules)
@@ -2415,7 +2415,7 @@ class PCBModule:
                             zones_quint: List[str]
                             zone_index: int
                             for zone_index, zones_quint in enumerate(zones_quints):
-                                quint_line: str = f"        " + ' '.join(zones_quint)
+                                quint_line: str = "        " + ' '.join(zones_quint)
                                 updated_lines.append(quint_line)
                                 if tracing:
                                     print(f"[{pcb_line_index}]\tI[{zone_index}]\t{quint_line}")
@@ -5736,7 +5736,7 @@ class MikroBus:
 
         # Create *mikrobus_mate_pcb_chunk*:
         mikrobus_exterior_pcb_chunk: PCBChunk = PCBChunk(
-            f"MikroBus Exterior", [], [], front_artworks=[mikrobus_exterior])
+            "MikroBus Exterior", [], [], front_artworks=[mikrobus_exterior])
         # print(f"mikrobus_exterior_pcb_chunk:{mikrobus_exterior_pcb_chunk}")
         footprint_name: str = f"MIKROBUS_{pcb_suffix_table[size]}_MATE"
         mikrobus_mate_pcb_chunk: PCBChunk = PCBChunk.join(footprint_name, [
