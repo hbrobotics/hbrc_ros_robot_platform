@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 10 10
+Sheet 9 10
 Title "HR2 Nucleo"
 Date "2020-11-22"
 Rev "A"
@@ -171,10 +171,6 @@ Wire Wire Line
 Connection ~ 10000 4700
 Wire Wire Line
 	10000 4700 10000 4800
-Text HLabel 6700 6000 0    50   Input ~ 0
-GND
-Wire Wire Line
-	6700 6000 7100 6000
 Wire Wire Line
 	10000 6000 10000 5700
 Connection ~ 10000 5700
@@ -416,8 +412,6 @@ Wire Wire Line
 Text HLabel 6000 3300 2    50   Input ~ 0
 DIO_MISO
 Wire Wire Line
-	5500 3200 5700 3200
-Wire Wire Line
 	6000 3300 5500 3300
 Wire Wire Line
 	5500 3400 6000 3400
@@ -558,64 +552,10 @@ Wire Wire Line
 	5500 1100 6000 1100
 Wire Wire Line
 	5500 5600 6000 5600
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FC61D2B
-P 7000 5400
-AR Path="/5F79BC00/5FC61D2B" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FC61D2B" Ref="Q?"  Part="1" 
-AR Path="/5FAD82EE/5FC61D2B" Ref="Q?"  Part="1" 
-AR Path="/5F8C2F57/5FC61D2B" Ref="Q?"  Part="1" 
-AR Path="/5F3221A2/5FC61D2B" Ref="Q25"  Part="1" 
-F 0 "Q25" H 6900 5550 50  0000 L CNN
-F 1 "2N7000;SOT23" H 7150 5250 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 7200 5325 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 7000 5400 50  0001 L CNN
-	1    7000 5400
-	1    0    0    -1  
-$EndComp
+Text HLabel 8100 6000 0    50   Input ~ 0
+GND
 Wire Wire Line
-	5700 3200 5700 4400
+	8100 6000 10000 6000
 Wire Wire Line
-	5700 4400 6200 4400
-Wire Wire Line
-	6200 4400 6200 5400
-Wire Wire Line
-	6200 5400 6800 5400
-Connection ~ 5700 3200
-Wire Wire Line
-	5700 3200 6000 3200
-Connection ~ 7100 6000
-Wire Wire Line
-	7100 6000 10000 6000
-$Comp
-L Device:R_US R?
-U 1 1 5FC830FC
-P 7100 4850
-AR Path="/5F52F39E/5FC830FC" Ref="R?"  Part="1" 
-AR Path="/5F3221A2/5FC830FC" Ref="R68"  Part="1" 
-F 0 "R68" H 6950 4950 50  0000 L CNN
-F 1 "100KΩ;1608" H 7150 4750 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 7140 4840 50  0001 C CNN
-F 3 "~" H 7100 4850 50  0001 C CNN
-	1    7100 4850
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	7100 5200 7100 5100
-Wire Wire Line
-	7100 5600 7100 6000
-Text HLabel 6850 4600 0    50   Input ~ 0
-3.3V
-Wire Wire Line
-	6850 4600 7100 4600
-Wire Wire Line
-	7100 4600 7100 4700
-Text HLabel 7350 5100 2    50   Output ~ 0
-DIO_SS
-Wire Wire Line
-	7350 5100 7100 5100
-Connection ~ 7100 5100
-Wire Wire Line
-	7100 5100 7100 5000
+	5500 3200 6000 3200
 $EndSCHEMATC
