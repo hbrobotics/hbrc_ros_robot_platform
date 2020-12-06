@@ -132,6 +132,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP USB-C;USB-C
+D USB-C Connector
+K ~
+F http://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ117219.pdf
+$ENDCMP
+#
 $CMP U3V70xMATE;F1x4+F1x5
 D Pololu U3V70x Voltage Regulator Mating Connector
 K ~

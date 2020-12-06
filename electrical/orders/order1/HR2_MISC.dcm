@@ -1,0 +1,21 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 74x02G2
+D quad 2-input NOR gate
+K TTL Nor2
+F http://www.ti.com/lit/gpn/sn74ls02
+$ENDCMP
+#
+$CMP 74x11G1
+D Triple 3-input AND
+K TTL And3
+F http://www.ti.com/lit/gpn/sn74LS11
+$ENDCMP
+#
+$CMP Q_PWR_PMOS_GSD
+D P-MOSFET transistor, gate/source/drain
+K transistor PMOS P-MOS P-MOSFET
+F ~
+$ENDCMP
+#
+#End Doc Library
