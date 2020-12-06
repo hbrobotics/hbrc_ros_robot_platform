@@ -1,4 +1,5 @@
 .mypy_cache
+*.bck
 cube/
 fp-info-cache*
 kiparts/f767zi.kipart.csv

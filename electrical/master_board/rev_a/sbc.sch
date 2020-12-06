@@ -670,7 +670,7 @@ F 3 "~" H 5000 2600 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4000 2100 4000 1650
+	4000 2100 4000 1600
 $Comp
 L Jumper:Jumper_3_Open JP9
 U 1 1 5FB67673
@@ -714,59 +714,39 @@ $EndComp
 $Comp
 L Device:R_US R67
 U 1 1 5FB84C0D
-P 1600 2800
+P 1700 2750
 AR Path="/5F4877FA/5FB84C0D" Ref="R67"  Part="1" 
 AR Path="/5FA587FE/5FB84C0D" Ref="R?"  Part="1" 
-F 0 "R67" H 1400 2900 50  0000 L CNN
-F 1 "100KΩ;1608" H 1100 2650 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1640 2790 50  0001 C CNN
-F 3 "~" H 1600 2800 50  0001 C CNN
-	1    1600 2800
+F 0 "R67" H 1500 2850 50  0000 L CNN
+F 1 "100KΩ;1608" H 1200 2600 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1740 2740 50  0001 C CNN
+F 3 "~" H 1700 2750 50  0001 C CNN
+	1    1700 2750
 	1    0    0    -1  
 $EndComp
 $Comp
 L Connector_Generic:Conn_01x02 CN3
 U 1 1 5FB885F0
-P 2900 2800
-F 0 "CN3" H 2800 2900 50  0000 L CNN
-F 1 "RPI_DSP_PWR;M1x2" H 2550 2600 50  0000 L CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 2900 2800 50  0001 C CNN
-F 3 "~" H 2900 2800 50  0001 C CNN
-	1    2900 2800
+P 2900 2500
+F 0 "CN3" H 2800 2600 50  0000 L CNN
+F 1 "RPI_DSP_PWR;M1x2" H 2550 2300 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 2900 2500 50  0001 C CNN
+F 3 "~" H 2900 2500 50  0001 C CNN
+	1    2900 2500
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	750  3150 750  1900
 Wire Wire Line
-	1400 3400 1000 3400
+	1400 3400 1100 3400
 Wire Wire Line
-	1700 2800 1800 2800
+	2500 4200 2500 2600
 Wire Wire Line
-	2500 4200 2500 2900
+	2500 2600 2700 2600
 Wire Wire Line
-	2500 2900 2700 2900
+	1800 2500 1700 2500
 Wire Wire Line
-	2600 2800 2700 2800
-$Comp
-L HR2:POWER_PFET_GSD Q?
-U 1 1 5FB5982B
-P 1800 2700
-AR Path="/5F52F39E/5FB5982B" Ref="Q?"  Part="1" 
-AR Path="/5F4877FA/5FB5982B" Ref="Q23"  Part="1" 
-F 0 "Q23" H 2050 2850 50  0000 C CNN
-F 1 "POWER_PFET_GSD" H 2100 2450 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 2000 2750 60  0001 L CNN
-F 3 "Power PFG (GSD pinout)" H 2000 2550 60  0001 L CNN
-F 4 "Power PFET (GSD pinout)" H 2000 2450 60  0001 L CNN "Field5"
-	1    1800 2700
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	1800 2700 1700 2700
-Wire Wire Line
-	1700 2700 1700 2550
-Wire Wire Line
-	1700 1650 4000 1650
+	1700 1600 4000 1600
 Wire Wire Line
 	750  4200 1700 4200
 Wire Wire Line
@@ -788,21 +768,15 @@ Connection ~ 5500 1700
 Wire Wire Line
 	750  1400 750  1600
 Wire Wire Line
-	1600 2650 1600 2550
+	1700 2600 1700 2500
+Connection ~ 1700 2500
 Wire Wire Line
-	1600 2550 1700 2550
-Connection ~ 1700 2550
+	1700 1600 1700 2500
 Wire Wire Line
-	1700 1650 1700 2550
+	1700 2900 1700 3000
+Connection ~ 1700 3000
 Wire Wire Line
-	1600 2950 1600 3050
-Wire Wire Line
-	1600 3050 1700 3050
-Connection ~ 1700 3050
-Wire Wire Line
-	1700 3050 1700 2800
-Wire Wire Line
-	1700 3050 1700 3200
+	1700 3000 1700 3200
 Wire Wire Line
 	750  4100 750  4200
 Wire Wire Line
@@ -823,20 +797,20 @@ $EndComp
 Text Notes 1900 2300 0    50   ~ 0
 Raspberry Pi Display\nPower Enable Circuit
 Wire Wire Line
-	1000 3400 1000 2550
+	1100 3400 1100 2500
 Wire Wire Line
-	1000 2550 1300 2550
+	1100 2500 1300 2500
 Wire Wire Line
-	1300 2550 1300 1500
+	1300 2500 1300 1500
 Wire Wire Line
 	1300 1500 4600 1500
 Wire Wire Line
 	4600 1500 4600 3000
 Wire Wire Line
 	4600 3000 3900 3000
-Connection ~ 1000 3400
+Connection ~ 1100 3400
 Wire Wire Line
-	1000 3400 900  3400
+	1100 3400 900  3400
 Text Notes 500  4650 0    50   ~ 0
 Notes:\n1. Jumper controlls default display Power On/Off.\n2. Transistor shifts from 3.3V to 5V Gate On/Off.\n3. Jumper provides switched 5V to Ras Pi Display.\n4. Raspberry Pi can override jumper.
 Text Notes 800  3700 0    50   ~ 0
@@ -866,4 +840,21 @@ Wire Wire Line
 Connection ~ 4800 2900
 Wire Wire Line
 	4800 2900 5000 2900
+$Comp
+L HR2_MISC:Q_PWR_PMOS_GSD Q23
+U 1 1 5FF1459E
+P 2000 2600
+F 0 "Q23" V 1900 2500 50  0000 C CNN
+F 1 "PFET_6A;SOT23" V 2250 2600 50  0000 C CNN
+F 2 "" H 2200 2700 50  0001 C CNN
+F 3 "~" H 2000 2600 50  0001 C CNN
+	1    2000 2600
+	0    1    -1   0   
+$EndComp
+Wire Wire Line
+	1700 3000 2000 3000
+Wire Wire Line
+	2000 3000 2000 2800
+Wire Wire Line
+	2200 2500 2700 2500
 $EndSCHEMATC

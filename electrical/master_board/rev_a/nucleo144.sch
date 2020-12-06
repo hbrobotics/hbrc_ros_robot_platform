@@ -262,28 +262,8 @@ Text HLabel 6000 3000 2    50   Output ~ 0
 DIO_SCK
 Text HLabel 6000 3200 2    50   Output ~ 0
 ~DIO_NSS
-Text HLabel 3500 1100 2    50   Input ~ 0
-A0
-Text HLabel 6000 5800 2    50   BiDi ~ 0
-A5_SCL
-Text HLabel 9000 1700 2    50   Output ~ 0
-D0_RX
-Text HLabel 9000 2200 2    50   Input ~ 0
-D1_TX
-Text HLabel 6000 2200 2    50   Output ~ 0
-D10_PWM_NSS
-Text HLabel 3500 1500 2    50   Output ~ 0
-D11_PWM_MOSI
-Text HLabel 3500 1400 2    50   Input ~ 0
-D12_MISO
-Text HLabel 3500 1300 2    50   Output ~ 0
-D13_SCK
 Text HLabel 9000 3500 2    50   Output ~ 0
 ~NRST
-Text HLabel 6000 2800 2    50   Input ~ 0
-INT0
-Text HLabel 6000 900  2    50   Input ~ 0
-INT1
 Text HLabel 3500 2300 2    50   Output ~ 0
 ~LEDS_NSS
 Text HLabel 6000 2100 2    50   Output ~ 0
@@ -323,8 +303,6 @@ Wire Wire Line
 	6000 4200 5500 4200
 Wire Wire Line
 	5500 4300 6000 4300
-Wire Wire Line
-	5500 2800 6000 2800
 $Comp
 L HR2:NUCLEO-F767ZI;2xF2x35 CN95
 U 5 1 5F34B911
@@ -343,19 +321,11 @@ Wire Wire Line
 Wire Wire Line
 	5500 3800 6000 3800
 Wire Wire Line
-	3000 1500 3500 1500
-Wire Wire Line
-	3000 1400 3500 1400
-Wire Wire Line
-	3000 1300 3500 1300
-Wire Wire Line
 	5500 2900 5700 2900
 Wire Wire Line
 	3400 1200 3500 1200
 Wire Wire Line
 	3400 1200 3400 1600
-Wire Wire Line
-	3000 1100 3500 1100
 Wire Wire Line
 	3000 1200 3400 1200
 Connection ~ 3400 1200
@@ -380,10 +350,6 @@ Wire Wire Line
 Wire Wire Line
 	3000 3300 3500 3300
 Wire Wire Line
-	8500 2200 9000 2200
-Wire Wire Line
-	9000 1700 8500 1700
-Wire Wire Line
 	5500 1600 6000 1600
 Wire Wire Line
 	6000 1700 5500 1700
@@ -393,8 +359,6 @@ Wire Wire Line
 	3500 2200 3000 2200
 Wire Wire Line
 	5500 2100 6000 2100
-Wire Wire Line
-	6000 2200 5500 2200
 Wire Wire Line
 	5500 5800 5700 5800
 Wire Wire Line
@@ -440,9 +404,6 @@ Wire Wire Line
 	4100 4550 5700 4550
 Wire Wire Line
 	5700 4550 5700 5800
-Connection ~ 5700 5800
-Wire Wire Line
-	5700 5800 6000 5800
 Wire Wire Line
 	3400 1600 4200 1600
 Wire Wire Line
@@ -451,8 +412,6 @@ Wire Wire Line
 	4200 2500 5700 2500
 Wire Wire Line
 	3300 1700 4100 1700
-Wire Wire Line
-	5500 900  6000 900 
 Wire Wire Line
 	6000 1000 5500 1000
 Text HLabel 4600 7300 2    50   Output ~ 0
@@ -484,14 +443,9 @@ Wire Wire Line
 Wire Wire Line
 	4100 1700 4100 4550
 Wire Wire Line
-	3100 5700 3500 5700
-Connection ~ 3100 5700
-Wire Wire Line
 	3100 5100 3100 5700
 Wire Wire Line
 	3000 5100 3100 5100
-Wire Wire Line
-	3000 4800 3500 4800
 Wire Wire Line
 	3000 5600 3500 5600
 Wire Wire Line
@@ -515,10 +469,6 @@ F 5 "NUCLEO144-F767ZI;Nucleo144 STM32F767ZI" H 1000 4550 60  0001 L CNN "Field5"
 	3    800  4800
 	1    0    0    -1  
 $EndComp
-Text HLabel 3500 5700 2    50   BiDi ~ 0
-A4_SDA
-Text HLabel 3500 4800 2    50   Input ~ 0
-A1
 Text HLabel 3500 5800 2    50   Output ~ 0
 LEDS_SCLK
 Text HLabel 3500 5500 2    50   Input ~ 0
@@ -558,4 +508,14 @@ Wire Wire Line
 	8100 6000 10000 6000
 Wire Wire Line
 	5500 3200 6000 3200
+NoConn ~ 8500 2200
+NoConn ~ 8500 1700
+NoConn ~ 5500 2800
+NoConn ~ 5500 2200
+NoConn ~ 5500 900 
+NoConn ~ 3000 1100
+NoConn ~ 3000 1300
+NoConn ~ 3000 1400
+NoConn ~ 3000 1500
+NoConn ~ 3000 4800
 $EndSCHEMATC
