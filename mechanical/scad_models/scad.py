@@ -1026,7 +1026,7 @@ class Scad2D(Scad):
                 indices_text: str = ", ".join(indices)
                 begin_text: str = "[" if slice_index == 0 else " "
                 end_text = ("," if slice_index < slices_count - 1
-                            else (f"]" if last_polygon else "],"))
+                            else ("]" if last_polygon else "],"))
                 scad_lines.append(f"{indent}  {begin_text}{indices_text}{end_text}")
 
             # Update *begin_index* for the next batch of *points* for the next *simple_polygon*:
@@ -1867,7 +1867,7 @@ class SimplePolygon(Scad2D):
         simple_polygon: SimplePolygon = self
         points: List[P2D] = simple_polygon.points
         if len(points) == 0:
-            raise ValueError(f"Can not get bounding box of empty SimplePolygon")
+            raise ValueError("Can not get bounding box of empty SimplePolygon")
         point0: P2D = points[0]
         minimum_x: float = point0.x
         maximum_x: float = minimum_x
