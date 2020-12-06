@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 8 10
+Sheet 7 10
 Title "HR2: WOWBus"
 Date "2020-11-22"
 Rev "A"
@@ -46,11 +46,11 @@ F 3 "~" H 3800 1400 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4500 1100 3800 1100
+	4200 1100 3800 1100
 Wire Wire Line
 	3800 1100 3800 1250
 Wire Wire Line
-	3800 1650 4400 1650
+	3800 1700 4400 1700
 Wire Wire Line
 	6900 2800 6500 2800
 Wire Wire Line
@@ -119,9 +119,7 @@ Connection ~ 7300 4200
 Connection ~ 7300 2500
 Connection ~ 7100 2400
 Wire Wire Line
-	4500 1200 4400 1200
-Wire Wire Line
-	4400 1200 4400 1650
+	4400 1400 4400 1700
 Text HLabel 1100 3200 0    50   Input ~ 0
 3.3V
 Wire Wire Line
@@ -177,7 +175,7 @@ F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3700 4200 50  000
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3800 1650 3800 4000
+	3800 1700 3800 4000
 Text HLabel 1100 2500 0    50   Input ~ 0
 WOW_TX
 Text HLabel 1100 2600 0    50   Output ~ 0
@@ -240,7 +238,7 @@ Text Notes 5200 2200 0    50   ~ 0
 Communication CANBus Transceiver
 Text Notes 5550 3900 0    50   ~ 0
 ESTOP CANBus Transceiver
-Text Notes 4550 900  0    50   ~ 0
+Text Notes 3700 850  0    50   ~ 0
 WOW Power P-FET (6A)
 Text Notes 5400 5000 0    50   ~ 0
 E-Stop x74 D Style Flip-Flop
@@ -336,7 +334,7 @@ Text Label 5000 4800 0    50   ~ 0
 Text Label 4650 3800 0    50   ~ 0
 WOW_STDBY
 Connection ~ 3400 4700
-Text Label 7900 1200 0    50   ~ 0
+Text Label 6800 1100 0    50   ~ 0
 WOW_POW_OUT
 Text Label 8700 3500 0    50   ~ 0
 WOW_ESTOP_OPTO
@@ -444,8 +442,8 @@ Wire Wire Line
 	2700 3300 2700 3200
 Connection ~ 2700 3200
 Wire Wire Line
-	3800 1650 3800 1550
-Connection ~ 3800 1650
+	3800 1700 3800 1550
+Connection ~ 3800 1700
 Connection ~ 4000 4700
 Wire Wire Line
 	4000 4700 4300 4700
@@ -561,7 +559,7 @@ Text Notes 3850 4000 0    50   ~ 0
 3.3 to 9V\nLevel Shift
 Text Notes 4050 5100 0    50   ~ 0
 WOW Standby\nInverter
-Text Label 3800 1650 0    50   ~ 0
+Text Label 3800 1700 0    50   ~ 0
 ~WOW_EN
 $Comp
 L Device:C C?
@@ -693,18 +691,6 @@ Wire Wire Line
 Connection ~ 9400 2900
 Wire Wire Line
 	9400 2900 9400 3000
-$Comp
-L HR2:POWER_PFET_GSD Q21
-U 1 1 5F9BEDD5
-P 4500 1100
-F 0 "Q21" H 4750 1250 50  0000 C CNN
-F 1 "PFET_6A_GSD;SOT23" H 4900 850 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 4700 1150 60  0001 L CNN
-F 3 "Power PFG (GSD pinout)" H 4700 950 60  0001 L CNN
-F 4 "Power PFET (GSD pinout)" H 4700 850 60  0001 L CNN "Field5"
-	1    4500 1100
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	4000 5700 4000 4700
 Wire Wire Line
@@ -837,38 +823,36 @@ Connection ~ 6600 4900
 Text Notes 750  1400 0    50   ~ 0
 TO DO:\n1. Add Test Points.\n
 Wire Wire Line
-	5600 800  5600 1200
+	5600 700  5600 1100
 Wire Wire Line
-	5900 800  5600 800 
+	5900 700  5600 700 
 Wire Wire Line
-	6700 1200 6600 1200
+	6700 1100 6600 1100
 Wire Wire Line
-	6700 800  6700 1200
+	6700 700  6700 1100
 Wire Wire Line
-	6300 800  6700 800 
+	6300 700  6700 700 
 $Comp
 L Jumper:Jumper_2_Open JP?
 U 1 1 5FB530EF
-P 6100 800
+P 6100 700
 AR Path="/5F52F39E/5FB530EF" Ref="JP?"  Part="1" 
 AR Path="/5F8C2F57/5FB530EF" Ref="JP8"  Part="1" 
-F 0 "JP8" H 5900 850 50  0000 C CNN
-F 1 "SHUNT;M1x2" H 6100 700 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 6100 800 50  0001 C CNN
-F 3 "~" H 6100 800 50  0001 C CNN
-	1    6100 800 
+F 0 "JP8" H 5900 750 50  0000 C CNN
+F 1 "SHUNT;M1x2" H 6100 600 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 6100 700 50  0001 C CNN
+F 3 "~" H 6100 700 50  0001 C CNN
+	1    6100 700 
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5700 1200 5600 1200
-Connection ~ 5600 1200
+	5700 1100 5600 1100
+Connection ~ 5600 1100
 Wire Wire Line
-	6700 1200 9800 1200
-Connection ~ 6700 1200
+	6700 1100 9800 1100
+Connection ~ 6700 1100
 Wire Wire Line
-	5300 1200 5600 1200
-Wire Wire Line
-	9800 1200 9800 4400
+	9800 1100 9800 4400
 $Comp
 L Jumper:Jumper_2_Open JP7
 U 1 1 5FB85177
@@ -959,13 +943,26 @@ Wire Wire Line
 $Comp
 L HR2:SHUNT R64
 U 1 1 5FD3322D
-P 5700 1200
-F 0 "R64" H 5950 1350 50  0000 C CNN
-F 1 "0Ω;1608" H 6150 1050 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" H 5900 1250 60  0001 L CNN
-F 3 "0 Ohm Power Shunt" H 5900 1050 60  0001 L CNN
-F 4 "0 Ohm Power Shunt" H 5900 950 60  0001 L CNN "Field5"
-	1    5700 1200
+P 5700 1100
+F 0 "R64" H 5950 1250 50  0000 C CNN
+F 1 "0Ω;1608" H 6150 950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 5900 1150 60  0001 L CNN
+F 3 "0 Ohm Power Shunt" H 5900 950 60  0001 L CNN
+F 4 "0 Ohm Power Shunt" H 5900 850 60  0001 L CNN "Field5"
+	1    5700 1100
 	1    0    0    -1  
 $EndComp
+$Comp
+L HR2_MISC:Q_PWR_PMOS_GSD Q21
+U 1 1 5FD48C48
+P 4400 1200
+F 0 "Q21" V 4300 1100 50  0000 C CNN
+F 1 "PFET_6A;SOT23" V 4651 1200 50  0000 C CNN
+F 2 "" H 4600 1300 50  0001 C CNN
+F 3 "~" H 4400 1200 50  0001 C CNN
+	1    4400 1200
+	0    1    -1   0   
+$EndComp
+Wire Wire Line
+	4600 1100 5600 1100
 $EndSCHEMATC

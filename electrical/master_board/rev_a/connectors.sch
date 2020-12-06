@@ -325,9 +325,9 @@ Entry Wire Line
 Entry Wire Line
 	2250 6900 2150 7000
 Wire Bus Line
-	4850 7900 4850 6700
+	4900 7900 4900 6600
 Wire Bus Line
-	2150 7900 4850 7900
+	2150 7900 4900 7900
 Text Label 2250 6800 0    50   ~ 0
 DIO_SCK
 Text Label 2250 6900 0    50   ~ 0
@@ -352,13 +352,13 @@ Text Notes 6150 6350 0    50   ~ 0
 Power/Ground/Reset Bus
 Text Notes 2900 7850 0    50   ~ 0
 Digitial I/O Bus
-Text Notes 5350 6800 0    50   ~ 0
+Text Notes 5400 6700 0    50   ~ 0
 Digitial I/O Bus
 Text Notes 8050 1950 0    50   ~ 0
 Digitial I/O Bus
 Text Label 3900 1400 0    50   ~ 0
 3.3V
-Text Label 5800 1400 0    50   ~ 0
+Text Label 3600 1400 0    50   ~ 0
 GND
 $Comp
 L Device:C C?
@@ -380,7 +380,7 @@ Wire Wire Line
 Wire Wire Line
 	4100 1900 4100 2000
 Entry Wire Line
-	5800 1350 5700 1250
+	3600 1400 3500 1300
 $Comp
 L Device:C C?
 U 1 1 5F97D82E
@@ -427,18 +427,17 @@ Connection ~ 4700 2000
 Wire Wire Line
 	4700 2000 5300 2000
 Wire Wire Line
-	3900 1500 3900 1350
+	3900 1500 3900 1400
 Wire Wire Line
-	5300 2000 5800 2000
+	4100 2000 3600 2000
 Wire Wire Line
-	5800 2000 5800 1350
-Connection ~ 5300 2000
+	3600 2000 3600 1400
 Text Notes 4400 1450 0    50   ~ 0
 ByPass Capacitors
 Text Notes 7300 1550 0    50   ~ 0
 Note: The 8 extra input pins on U& that are currently unused.
 Entry Wire Line
-	3900 1350 3800 1250
+	3900 1400 3800 1300
 $Comp
 L HR2:SENSE;M1x3 CN4
 U 1 1 5FBBDB3C
@@ -658,11 +657,11 @@ Wire Wire Line
 Wire Wire Line
 	7500 2800 8900 2800
 Wire Bus Line
-	4850 6700 8000 6700
+	4900 6600 8000 6600
 Connection ~ 6000 6400
 Wire Bus Line
-	6000 1250 10400 1250
-Connection ~ 6000 1250
+	6000 1300 10400 1300
+Connection ~ 6000 1300
 Wire Wire Line
 	7300 3000 7400 3000
 Wire Wire Line
@@ -755,71 +754,87 @@ NoConn ~ 3900 7300
 $Comp
 L Transistor_FET:2N7000 Q?
 U 1 1 5FDEB033
-P 3250 4500
+P 3200 4400
 AR Path="/5F79BC00/5FDEB033" Ref="Q?"  Part="1" 
 AR Path="/5FA4A874/5FDEB033" Ref="Q?"  Part="1" 
 AR Path="/5FAD82EE/5FDEB033" Ref="Q?"  Part="1" 
 AR Path="/5F8C2F57/5FDEB033" Ref="Q?"  Part="1" 
 AR Path="/5F3221A2/5FDEB033" Ref="Q?"  Part="1" 
-AR Path="/5F4CEE66/5FDEB033" Ref="Q?"  Part="1" 
-F 0 "Q?" H 3150 4650 50  0000 L CNN
-F 1 "2N7000;SOT23" H 3400 4350 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 3450 4425 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3250 4500 50  0001 L CNN
-	1    3250 4500
+AR Path="/5F4CEE66/5FDEB033" Ref="Q25"  Part="1" 
+F 0 "Q25" H 3050 4550 50  0000 L CNN
+F 1 "2N7000;SOT23" H 3350 4250 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3400 4325 50  0001 L CIN
+F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3200 4400 50  0001 L CNN
+	1    3200 4400
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	2700 4500 3050 4500
 $Comp
 L Device:R_US R?
 U 1 1 5FDEB03A
-P 3350 3950
+P 3300 3850
 AR Path="/5F52F39E/5FDEB03A" Ref="R?"  Part="1" 
 AR Path="/5F3221A2/5FDEB03A" Ref="R?"  Part="1" 
-AR Path="/5F4CEE66/5FDEB03A" Ref="R?"  Part="1" 
-F 0 "R?" H 3200 4050 50  0000 L CNN
-F 1 "100KΩ;1608" H 3400 3850 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 3390 3940 50  0001 C CNN
-F 3 "~" H 3350 3950 50  0001 C CNN
-	1    3350 3950
+AR Path="/5F4CEE66/5FDEB03A" Ref="R68"  Part="1" 
+F 0 "R68" H 3150 3950 50  0000 L CNN
+F 1 "100KΩ;1608" H 3350 3750 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3340 3840 50  0001 C CNN
+F 3 "~" H 3300 3850 50  0001 C CNN
+	1    3300 3850
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3350 4300 3350 4200
+	3300 4200 3300 4100
 Wire Wire Line
-	3350 4700 3350 5100
-Text HLabel 3100 3700 0    50   Input ~ 0
+	3300 4600 3300 4700
+Wire Wire Line
+	2800 3600 3300 3600
+Wire Wire Line
+	3300 3600 3300 3700
+Connection ~ 3300 4100
+Wire Wire Line
+	3300 4100 3300 4000
+Wire Wire Line
+	3300 4700 2800 4700
+Entry Wire Line
+	2150 4500 2250 4400
+Text Label 2250 4400 0    50   ~ 0
+~DIO_NSS
+Entry Wire Line
+	2800 3600 2700 3500
+Text Label 2800 3600 0    50   ~ 0
 3.3V
 Wire Wire Line
-	3100 3700 3350 3700
-Wire Wire Line
-	3350 3700 3350 3800
-Text HLabel 3600 4200 2    50   Output ~ 0
-DIO_SS
-Wire Wire Line
-	3600 4200 3350 4200
-Connection ~ 3350 4200
-Wire Wire Line
-	3350 4200 3350 4100
-Text HLabel 3100 5100 0    50   Input ~ 0
+	2250 4400 3000 4400
+Entry Wire Line
+	2800 4700 2700 4600
+Text Label 2800 4700 0    50   ~ 0
 GND
-Wire Wire Line
-	3350 5100 3100 5100
-Text HLabel 2700 4500 0    50   Input ~ 0
-~DIO_NSS
 Wire Bus Line
-	2400 1250 6000 1250
+	2400 1300 2700 1300
+Connection ~ 2700 1300
+Wire Wire Line
+	3300 4100 2250 4100
+Text Label 2250 4100 0    50   ~ 0
+DIO_SS
+Entry Wire Line
+	2250 4100 2150 4200
+Text Notes 2800 3450 0    50   ~ 0
+~DIO_NSS~ to DIOS_SS Inverter
+Connection ~ 4100 2000
+Wire Bus Line
+	2700 1300 6000 1300
+Wire Bus Line
+	2700 1300 2700 4750
 Wire Bus Line
 	4700 6400 4700 7700
 Wire Bus Line
-	2400 800  2400 1250
+	2400 800  2400 1300
 Wire Bus Line
-	10400 1250 10400 6400
+	10400 1300 10400 6400
 Wire Bus Line
-	8000 1700 8000 6700
+	8000 1700 8000 6600
 Wire Bus Line
-	2150 6800 2150 7900
+	2150 4000 2150 7900
 Wire Bus Line
-	6000 1250 6000 6400
+	6000 1300 6000 6400
 $EndSCHEMATC

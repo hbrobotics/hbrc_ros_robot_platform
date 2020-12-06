@@ -1,4 +1,5 @@
 (sym_lib_table
   (lib (name HR2)(type Legacy)(uri ${KIPRJMOD}/HR2.lib)(options "")(descr "Symbols for HR2 Robot Project"))
   (lib (name HR2-rescue)(type Legacy)(uri ${KIPRJMOD}/HR2-rescue.lib)(options "")(descr "Rescue symbols for HR2 Robot Project")(disabled))
+  (lib (name HR2_MISC)(type Legacy)(uri ${KIPRJMOD}/HR2_MISC.lib)(options "")(descr ""))
 )
