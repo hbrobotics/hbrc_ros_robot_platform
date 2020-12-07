@@ -1174,6 +1174,9 @@ F13 "DIO_SS" I R 9100 4700 50
 $EndSheet
 Wire Bus Line
 	1300 6600 3900 6600
+Connection ~ 3900 6600
+Wire Bus Line
+	3900 6600 9500 6600
 Wire Bus Line
 	7600 3300 7600 3900
 Wire Bus Line
@@ -1218,7 +1221,4 @@ Wire Bus Line
 	9500 1000 9500 6600
 Wire Bus Line
 	1300 1000 1300 6600
-Connection ~ 3900 6600
-Wire Bus Line
-	3900 6600 9500 6600
 $EndSCHEMATC

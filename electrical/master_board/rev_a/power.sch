@@ -14,32 +14,32 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 Wire Wire Line
-	7200 2600 7300 2600
+	7200 2700 7300 2700
 Wire Wire Line
-	7600 2800 7200 2800
-NoConn ~ 7200 3400
+	7600 2900 7200 2900
+NoConn ~ 7200 3500
 $Comp
 L Device:R_US R1
 U 1 1 5F4AAFD8
-P 2550 4150
-F 0 "R1" H 2400 4250 50  0000 L CNN
-F 1 "100KΩ;1608" H 2600 4050 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2590 4140 50  0001 C CNN
-F 3 "~" H 2550 4150 50  0001 C CNN
-	1    2550 4150
+P 2500 4150
+F 0 "R1" H 2500 4300 50  0000 L CNN
+F 1 "100KΩ;1608" H 2550 4050 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2540 4140 50  0001 C CNN
+F 3 "~" H 2500 4150 50  0001 C CNN
+	1    2500 4150
 	1    0    0    -1  
 $EndComp
-Text Notes 2900 2700 0    50   ~ 0
-Note: Power On/Off circuit is from David Jones EEVBlog #262
+Text Notes 3100 3550 0    50   ~ 0
+Note: Power On/Off circuit is\nfrom David Jones EEVBlog #262
 $Comp
 L Device:Q_NPN_BEC Q1
 U 1 1 5F4ABAA0
-P 2650 4700
-F 0 "Q1" H 2550 4850 50  0000 L CNN
-F 1 "2N2222;SOT23" H 2100 4550 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 2850 4800 50  0001 C CNN
-F 3 "~" H 2650 4700 50  0001 C CNN
-	1    2650 4700
+P 2600 4700
+F 0 "Q1" H 2500 4850 50  0000 L CNN
+F 1 "2N2222;SOT23" H 2050 4550 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 2800 4800 50  0001 C CNN
+F 3 "~" H 2600 4700 50  0001 C CNN
+	1    2600 4700
 	-1   0    0    -1  
 $EndComp
 Text Notes 2650 5400 0    50   ~ 0
@@ -89,18 +89,18 @@ F 3 "~" H 4400 4250 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2550 3800 2550 4000
+	2500 3800 2500 4000
 Wire Wire Line
-	2550 4300 2550 4400
+	2500 4300 2500 4400
 Wire Wire Line
-	2550 4400 3200 4400
+	2500 4400 3200 4400
 Wire Wire Line
-	2550 4500 2550 4400
-Connection ~ 2550 4400
+	2500 4500 2500 4400
+Connection ~ 2500 4400
 Wire Wire Line
 	3800 4100 3800 3800
 Wire Wire Line
-	2850 4700 3800 4700
+	2800 4700 3800 4700
 Wire Wire Line
 	3800 4700 3800 4400
 $Comp
@@ -117,11 +117,7 @@ $EndComp
 Wire Wire Line
 	3800 4700 3900 4700
 Connection ~ 3800 4700
-Wire Wire Line
-	2550 2800 5100 2800
-Wire Wire Line
-	5100 2800 5100 4100
-Connection ~ 2550 3800
+Connection ~ 2500 3800
 Wire Wire Line
 	3800 3800 4400 3800
 Wire Wire Line
@@ -156,36 +152,31 @@ Wire Wire Line
 Wire Wire Line
 	5100 5500 5100 5200
 Wire Wire Line
-	2550 4900 2550 5500
-Wire Wire Line
-	2550 5500 4400 5500
+	2500 4900 2500 5000
 Connection ~ 4400 5500
 Connection ~ 4400 3800
 Wire Wire Line
 	4400 5100 4400 5000
 Connection ~ 4400 5000
-Wire Wire Line
-	1900 3800 2550 3800
-Connection ~ 2550 5500
 Connection ~ 5100 5500
 Connection ~ 7600 5500
 $Comp
 L HR2:U3V70xMATE;F1x4+F1x5 CN?
 U 1 1 5F5303B1
-P 6400 3400
+P 6400 3500
 AR Path="/5F5303B1" Ref="CN?"  Part="1" 
 AR Path="/5F52F39E/5F5303B1" Ref="CN93"  Part="1" 
-F 0 "CN93" H 6700 2450 50  0000 C CNN
-F 1 "POLOLU_U3V70F9;F1x4+F1x5" H 6800 3550 50  0000 C CNN
-F 2 "HR2:U3V70xMATE_F1x4+F1x5" H 6600 3450 60  0001 L CNN
-F 3 "Pololu U3V70x Voltage Regulator Mating Connector" H 6600 3250 60  0001 L CNN
-F 4 "Pololu U3V70x Voltage Regulator Mating Connector" H 6600 3350 60  0001 L CNN "manf#"
-	1    6400 3400
+F 0 "CN93" H 6700 2550 50  0000 C CNN
+F 1 "POLOLU_U3V70F9;F1x4+F1x5" H 6800 3650 50  0000 C CNN
+F 2 "HR2:U3V70xMATE_F1x4+F1x5" H 6600 3550 60  0001 L CNN
+F 3 "Pololu U3V70x Voltage Regulator Mating Connector" H 6600 3350 60  0001 L CNN
+F 4 "Pololu U3V70x Voltage Regulator Mating Connector" H 6600 3450 60  0001 L CNN "manf#"
+	1    6400 3500
 	1    0    0    1   
 $EndComp
 Wire Wire Line
-	7200 3300 7600 3300
-Connection ~ 7600 3300
+	7200 3400 7600 3400
+Connection ~ 7600 3400
 $Comp
 L HR2:AP2114HA-3.3TRG1_1A;SOT223 VR1
 U 1 1 5F4C5F9D
@@ -199,17 +190,17 @@ F 4 "1A 3.3V LDO Voltage Linear Regulator" H 6300 4250 60  0001 L CNN "Field5"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7600 2900 7600 2800
+	7600 3000 7600 2900
 Wire Wire Line
-	7200 2900 7600 2900
-Connection ~ 7600 3200
+	7200 3000 7600 3000
+Connection ~ 7600 3300
 Wire Wire Line
-	7200 3200 7600 3200
+	7200 3300 7600 3300
 Wire Wire Line
-	7600 3300 7600 3200
-Connection ~ 7600 2900
+	7600 3400 7600 3300
+Connection ~ 7600 3000
 Wire Wire Line
-	7600 3200 7600 2900
+	7600 3300 7600 3000
 $Comp
 L Device:C C2
 U 1 1 5F4D49AE
@@ -247,10 +238,8 @@ Connection ~ 7400 5500
 Connection ~ 5750 5500
 Wire Wire Line
 	5750 5500 5100 5500
-Text Label 9900 5500 2    50   ~ 0
+Text Label 10000 5500 2    50   ~ 0
 GND
-Text Label 2200 3800 0    50   ~ 0
-USB5V
 $Comp
 L Device:CP1 C6
 U 1 1 5F4F1B8B
@@ -288,118 +277,33 @@ Wire Wire Line
 	2600 6750 2600 6400
 Wire Wire Line
 	2600 7050 2600 7150
-Wire Wire Line
-	3000 3800 2550 3800
-Text Notes 2600 3400 0    50   ~ 0
-Note: The PFET's in the KiCAD library have passive pins\n  for design rule checks.  A PFET with Power In on the\n  Source and Power Out on the Drain is needed.\n  It was easier to do an ugly box than a pretty PFET.\n  Deal with it.
-Wire Wire Line
-	1900 3200 2100 3200
-Wire Wire Line
-	2100 3200 2100 3300
-Wire Wire Line
-	1900 3300 2100 3300
-Connection ~ 2100 3300
-Wire Wire Line
-	2100 3300 2100 4200
-Wire Wire Line
-	1900 2800 2550 2800
-Connection ~ 2550 2800
-Text Notes 1450 2350 0    50   ~ 0
+Text Notes 4500 3000 0    50   ~ 0
 Note: When the motors are running full bore\n  up a hill, the current drain becomes significant.\n  Use two USB connectors to maximize current\n  from the USB battery pack.
 $Comp
 L Device:CP1 C?
 U 1 1 5F7AF36B
-P 9300 2150
+P 9200 1450
 AR Path="/5FA4A874/5F7AF36B" Ref="C?"  Part="1" 
 AR Path="/5F52F39E/5F7AF36B" Ref="C4"  Part="1" 
-F 0 "C4" H 9350 2250 50  0000 L CNN
-F 1 "1000µF@10Vmin;D10P5H13max" H 8050 2050 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 9300 2150 50  0001 C CNN
-F 3 "~" H 9300 2150 50  0001 C CNN
-	1    9300 2150
+F 0 "C4" H 9250 1550 50  0000 L CNN
+F 1 "1000µF@10Vmin;D10P5H13max" H 7950 1350 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 9200 1450 50  0001 C CNN
+F 3 "~" H 9200 1450 50  0001 C CNN
+	1    9200 1450
 	1    0    0    -1  
 $EndComp
-$Comp
-L HR2:LM66100;SOT363 U1
-U 1 1 5F7B1947
-P 6400 1400
-F 0 "U1" H 6650 1550 50  0000 C CNN
-F 1 "LM66100;SOT363" H 6750 750 60  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-363_SC-70-6" H 6600 1450 60  0001 L CNN
-F 3 "1.5A Ideal Diode" H 6600 1250 60  0001 L CNN
-F 4 "1.5A Ideal Diod" H 6600 1150 60  0001 L CNN "Field5"
-	1    6400 1400
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	7100 1500 7600 1500
-Connection ~ 7600 2800
-Wire Wire Line
-	7500 1400 7100 1400
-Wire Wire Line
-	7100 1900 7200 1900
-Connection ~ 7600 2400
-Wire Wire Line
-	7600 2400 7600 2800
-Wire Wire Line
-	7100 1600 7200 1600
-Wire Wire Line
-	7200 1600 7200 1900
-Connection ~ 7200 1900
-Wire Wire Line
-	7100 1800 7500 1800
-Wire Wire Line
-	7500 1800 7500 1400
-Text Notes 3750 1800 0    50   ~ 0
+Text Notes 4600 2350 0    50   ~ 0
 Note:\n1. The capacitor is a radial through hole electrolytic with a diameter\n   of 10mm and lead pitch of 5mm.  The capacitance is 1000µF at 16V.\n2. The ideal diode should keep the 5V rail clean while the P5V rail\n   gets abused.\n
-Text Notes 5150 3050 0    50   ~ 0
+Text Notes 7700 4100 0    50   ~ 0
 9V for Motors and WOWBus\ngenerated by Pololu Boost regulator.
-Text Notes 8400 1350 0    50   ~ 0
-P5V is a "dirty" 5 volt supply used\nfor lighting LED's etc.
+Text Notes 8300 750  0    50   ~ 0
+P5V is a "dirty" 5 volt supply used\nfor lighting LED's, servos, etc.
 Text Notes 6200 5000 0    50   ~ 0
 3.3V for miscellanious\ndevices that need it.
-Wire Wire Line
-	1900 4200 2100 4200
-Wire Wire Line
-	2100 4300 2100 4200
-Connection ~ 2100 4200
-Wire Wire Line
-	1900 4300 2100 4300
-Wire Wire Line
-	2100 4300 2100 5500
-Connection ~ 2100 4300
-Wire Wire Line
-	2100 5500 2550 5500
-$Comp
-L HR2:USB_B_MICRO_POWER_SLAVE CN1
-U 1 1 5F9D0CA6
-P 1100 2800
-F 0 "CN1" H 1350 2950 50  0000 C CNN
-F 1 "USB3140-30-230-1-C;VERT,2.3FLANGE" H 1300 2150 50  0000 C CNN
-F 2 "HR2:USB3140-30-230-1-C;VERT,2.3FLANGE" H 1300 2850 60  0001 L CNN
-F 3 "2.3FLANGE" H 1300 2650 60  0001 L CNN
-F 4 "USB_Mini Power (Slave)" H 1300 2550 60  0001 L CNN "Field5"
-	1    1100 2800
-	1    0    0    -1  
-$EndComp
-$Comp
-L HR2:USB_B_MICRO_POWER_MASTER CN2
-U 1 1 5F9D14A3
-P 1100 3800
-F 0 "CN2" H 1350 3950 50  0000 C CNN
-F 1 "USB3140-30-230-1-C;VERT,2.3FLANGE" H 1300 3150 50  0000 C CNN
-F 2 "HR2:USB3140-30-230-1-C;VERT,2.3FLANGE" H 1300 3850 60  0001 L CNN
-F 3 "2.3FLANGE" H 1300 3650 60  0001 L CNN
-F 4 "USB_Mini Power (Slave)" H 1300 3550 60  0001 L CNN "Field5"
-	1    1100 3800
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	6100 4600 6000 4600
 Wire Wire Line
 	6000 4600 6000 5500
-Text Notes 750  1300 0    80   ~ 0
-TO DO:\n1. Do power supply review with somebody.
 Text Label 3000 4700 0    50   ~ 0
 PWR_SW_A
 Text Label 4450 4700 0    50   ~ 0
@@ -413,25 +317,25 @@ Text Label 2600 6550 0    50   ~ 0
 $Comp
 L Connector:TestPoint TP1
 U 1 1 5FB55C4E
-P 2550 2700
-F 0 "TP1" H 2608 2818 50  0000 L CNN
-F 1 "USB5V" H 2608 2727 50  0000 L CNN
-F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 2750 2700 50  0001 C CNN
-F 3 "~" H 2750 2700 50  0001 C CNN
-	1    2550 2700
+P 1700 800
+F 0 "TP1" H 1758 918 50  0000 L CNN
+F 1 "USB5V" H 1758 827 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 1900 800 50  0001 C CNN
+F 3 "~" H 1900 800 50  0001 C CNN
+	1    1700 800 
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2550 2800 2550 2700
+	1700 900  1700 800 
 $Comp
 L Jumper:Jumper_3_Open JP2
 U 1 1 5FB5A2C2
-P 2100 7150
-F 0 "JP2" H 2250 7050 50  0000 C CNN
-F 1 "LED_EN;M1x3" H 2100 7300 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 2100 7150 50  0001 C CNN
-F 3 "~" H 2100 7150 50  0001 C CNN
-	1    2100 7150
+P 1900 7150
+F 0 "JP2" H 2050 7050 50  0000 C CNN
+F 1 "LED_EN;M1x3" H 1900 7300 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 1900 7150 50  0001 C CNN
+F 3 "~" H 1900 7150 50  0001 C CNN
+	1    1900 7150
 	-1   0    0    1   
 $EndComp
 $Comp
@@ -530,7 +434,7 @@ Wire Wire Line
 	5000 7150 4200 7150
 Connection ~ 2600 7150
 Wire Wire Line
-	2600 7150 2350 7150
+	2600 7150 2150 7150
 Connection ~ 3400 7150
 Wire Wire Line
 	3400 7150 2600 7150
@@ -538,145 +442,137 @@ Connection ~ 4200 7150
 Wire Wire Line
 	4200 7150 3400 7150
 Wire Wire Line
-	2100 5500 2100 7000
-Connection ~ 2100 5500
-Wire Wire Line
 	7600 5500 7400 5500
 Wire Wire Line
 	7400 4600 7100 4600
 Wire Wire Line
 	7600 5500 7700 5500
-Connection ~ 9700 1900
-Connection ~ 9300 1900
-Connection ~ 7900 1900
-Connection ~ 9650 2900
+Connection ~ 9600 1200
+Connection ~ 9200 1200
+Connection ~ 9850 2900
 Connection ~ 9000 2900
 Wire Wire Line
-	8500 2500 7900 2500
+	8500 2600 7900 2600
 Wire Wire Line
 	9000 2900 8900 2900
-Wire Wire Line
-	9000 2500 9000 2900
-Wire Wire Line
-	8900 2500 9000 2500
 $Comp
 L Jumper:Jumper_2_Open JP6
 U 1 1 5FBC51EE
-P 8700 2500
-F 0 "JP6" H 8500 2550 50  0000 C CNN
-F 1 "SHUNT;M1x2" H 8700 2400 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8700 2500 50  0001 C CNN
-F 3 "~" H 8700 2500 50  0001 C CNN
-	1    8700 2500
+P 8700 2600
+F 0 "JP6" H 8500 2650 50  0000 C CNN
+F 1 "SHUNT;M1x2" H 8700 2500 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8700 2600 50  0001 C CNN
+F 3 "~" H 8700 2600 50  0001 C CNN
+	1    8700 2600
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	8000 2900 7900 2900
 Wire Wire Line
-	7900 1500 7900 1900
+	7900 900  7900 1200
 Wire Wire Line
-	8550 1500 7900 1500
+	8550 900  7900 900 
 Wire Wire Line
-	9300 1900 8900 1900
+	9200 1200 8900 1200
 Wire Wire Line
-	9300 1500 9300 1900
+	9200 900  9200 1200
 Wire Wire Line
-	8950 1500 9300 1500
+	8950 900  9200 900 
 $Comp
 L Jumper:Jumper_2_Open JP5
 U 1 1 5FB9F9CC
-P 8750 1500
-F 0 "JP5" H 8550 1550 50  0000 C CNN
-F 1 "SHUNT;M1x2" H 8750 1400 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8750 1500 50  0001 C CNN
-F 3 "~" H 8750 1500 50  0001 C CNN
-	1    8750 1500
+P 8750 900
+F 0 "JP5" H 8550 950 50  0000 C CNN
+F 1 "SHUNT;M1x2" H 8750 800 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8750 900 50  0001 C CNN
+F 3 "~" H 8750 900 50  0001 C CNN
+	1    8750 900 
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8000 1900 7900 1900
+	8000 1200 7900 1200
 Wire Wire Line
-	9650 2900 9950 2900
+	9850 2900 10000 2900
 Wire Wire Line
-	9700 1900 9950 1900
+	9600 1200 9850 1200
 Wire Wire Line
-	9700 1900 9700 1800
+	9850 1200 9850 1050
 $Comp
 L Connector:TestPoint TP8
 U 1 1 5FB39289
-P 9700 1800
-F 0 "TP8" H 9758 1918 50  0000 L CNN
-F 1 "P5V" H 9758 1827 50  0000 L CNN
-F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 9900 1800 50  0001 C CNN
-F 3 "~" H 9900 1800 50  0001 C CNN
-	1    9700 1800
+P 9850 1050
+F 0 "TP8" H 9908 1168 50  0000 L CNN
+F 1 "P5V" H 9908 1077 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 10050 1050 50  0001 C CNN
+F 3 "~" H 10050 1050 50  0001 C CNN
+	1    9850 1050
 	1    0    0    -1  
 $EndComp
 Text Notes 3500 7350 0    50   ~ 0
 Power On LED's
-Text Label 9950 1900 2    50   ~ 0
+Text Label 10000 1200 2    50   ~ 0
 P5V
-Text HLabel 9950 1900 2    50   Output ~ 0
+Text HLabel 10000 1200 2    50   Output ~ 0
 P5V
-Text Label 9950 2900 2    50   ~ 0
+Text Label 10000 2900 2    50   ~ 0
 9V
-Text HLabel 9900 5500 2    50   Output ~ 0
+Text HLabel 10000 5500 2    50   Output ~ 0
 GND
-Text HLabel 9950 2900 2    50   Output ~ 0
+Text HLabel 10000 2900 2    50   Output ~ 0
 9V
 Wire Wire Line
-	5000 6000 9500 6000
+	5000 6000 9600 6000
 Wire Wire Line
-	9300 1900 9500 1900
+	9200 1200 9600 1200
 Wire Wire Line
-	4200 5900 9400 5900
+	4200 5900 9500 5900
 Wire Wire Line
-	3400 5800 9300 5800
+	3400 5800 9400 5800
 Wire Wire Line
-	2600 5700 9200 5700
-Text HLabel 9900 4100 2    50   Output ~ 0
+	2600 5700 9300 5700
+Text HLabel 10000 2200 2    50   Output ~ 0
 5V
-Text Label 9900 4100 2    50   ~ 0
+Text Label 10000 2200 2    50   ~ 0
 5V
-Text HLabel 9900 4900 2    50   Output ~ 0
+Text HLabel 10000 4900 2    50   Output ~ 0
 3.3V
-Text Label 9900 4900 2    50   ~ 0
+Text Label 10000 4900 2    50   ~ 0
 3.3V
 $Comp
 L Connector:TestPoint TP10
 U 1 1 5FB4D981
-P 9700 4500
-F 0 "TP10" H 9758 4618 50  0000 L CNN
-F 1 "3.3V" H 9758 4527 50  0000 L CNN
-F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 9900 4500 50  0001 C CNN
-F 3 "~" H 9900 4500 50  0001 C CNN
-	1    9700 4500
+P 9800 4700
+F 0 "TP10" H 9858 4818 50  0000 L CNN
+F 1 "3.3V" H 9858 4727 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 10000 4700 50  0001 C CNN
+F 3 "~" H 10000 4700 50  0001 C CNN
+	1    9800 4700
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9700 4500 9700 4900
+	9800 4700 9800 4900
 Wire Wire Line
-	8000 4100 7900 4100
+	8000 2200 7900 2200
 $Comp
 L Jumper:Jumper_2_Open JP3
 U 1 1 5FBB6B5B
-P 8700 3800
-F 0 "JP3" H 8500 3850 50  0000 C CNN
-F 1 "SHUNT;M1x2" H 8700 3700 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8700 3800 50  0001 C CNN
-F 3 "~" H 8700 3800 50  0001 C CNN
-	1    8700 3800
+P 8700 1900
+F 0 "JP3" H 8500 1950 50  0000 C CNN
+F 1 "SHUNT;M1x2" H 8700 1800 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8700 1900 50  0001 C CNN
+F 3 "~" H 8700 1900 50  0001 C CNN
+	1    8700 1900
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8900 3800 9000 3800
+	8900 1900 9200 1900
 Wire Wire Line
-	9000 3800 9000 4100
+	9200 1900 9200 2200
 Wire Wire Line
-	9000 4100 8900 4100
+	9200 2200 8900 2200
 Wire Wire Line
-	8500 3800 7900 3800
-Connection ~ 9000 4100
+	8500 1900 7900 1900
+Connection ~ 9200 2200
 Wire Wire Line
 	8000 4900 7900 4900
 $Comp
@@ -697,74 +593,61 @@ Wire Wire Line
 Wire Wire Line
 	9000 4900 8900 4900
 Connection ~ 9000 4900
-Wire Wire Line
-	9000 4100 9300 4100
 $Comp
 L Connector:TestPoint TP9
 U 1 1 5FC189F6
-P 9700 3900
-F 0 "TP9" H 9758 4018 50  0000 L CNN
-F 1 "5V" H 9758 3927 50  0000 L CNN
-F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 9900 3900 50  0001 C CNN
-F 3 "~" H 9900 3900 50  0001 C CNN
-	1    9700 3900
+P 9850 2000
+F 0 "TP9" H 9908 2118 50  0000 L CNN
+F 1 "5V" H 9908 2027 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 10050 2000 50  0001 C CNN
+F 3 "~" H 10050 2000 50  0001 C CNN
+	1    9850 2000
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9700 3900 9700 4100
-Connection ~ 9700 4100
+	9850 2000 9850 2200
+Connection ~ 9850 2200
 Wire Wire Line
-	9700 4900 9900 4900
+	9800 4900 10000 4900
 Wire Wire Line
-	9000 4900 9200 4900
+	9000 4900 9300 4900
 Wire Wire Line
-	9700 4100 9900 4100
+	9850 2200 10000 2200
 Wire Wire Line
-	9500 1900 9500 6000
+	9600 1200 9600 6000
 Wire Wire Line
-	9300 4100 9300 5800
-Connection ~ 9300 4100
+	9300 4900 9300 5700
+Connection ~ 9300 4900
 Wire Wire Line
-	9300 4100 9700 4100
+	9300 4900 9800 4900
 Wire Wire Line
-	9200 4900 9200 5700
-Connection ~ 9200 4900
+	9500 2900 9850 2900
+Connection ~ 7900 1900
 Wire Wire Line
-	9200 4900 9700 4900
-Connection ~ 9500 1900
-Wire Wire Line
-	9500 1900 9700 1900
-Wire Wire Line
-	9400 2900 9650 2900
-Wire Wire Line
-	7500 3800 7900 3800
-Connection ~ 7500 3800
-Connection ~ 7900 3800
-Wire Wire Line
-	7900 3800 7900 4100
+	7900 1900 7900 2200
 Wire Wire Line
 	7400 4600 7900 4600
 Connection ~ 7400 4600
 Connection ~ 7900 4600
 Wire Wire Line
 	7900 4600 7900 4900
-Connection ~ 9700 4900
+Connection ~ 9800 4900
 $Comp
 L Connector:TestPoint TP11
 U 1 1 5FE99A87
-P 9700 5300
-F 0 "TP11" H 9758 5418 50  0000 L CNN
-F 1 "GND" H 9758 5327 50  0000 L CNN
-F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 9900 5300 50  0001 C CNN
-F 3 "~" H 9900 5300 50  0001 C CNN
-	1    9700 5300
+P 9800 5300
+F 0 "TP11" H 9858 5418 50  0000 L CNN
+F 1 "GND" H 9858 5327 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 10000 5300 50  0001 C CNN
+F 3 "~" H 10000 5300 50  0001 C CNN
+	1    9800 5300
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9700 5300 9700 5500
-Connection ~ 9700 5500
+	9800 5300 9800 5500
+Connection ~ 9800 5500
 Wire Wire Line
-	9700 5500 9900 5500
+	9800 5500 10000 5500
 $Comp
 L Connector:TestPoint TP2
 U 1 1 5FEA1D9F
@@ -844,34 +727,27 @@ Wire Wire Line
 	8900 5300 8900 5500
 Connection ~ 8900 5500
 Wire Wire Line
-	8900 5500 9700 5500
+	8900 5500 9800 5500
 Text Notes 7800 5650 0    50   ~ 0
 Extra Ground Test Points
-NoConn ~ 1850 7150
+NoConn ~ 1650 7150
 Text Notes 1600 7550 0    50   ~ 0
 Enable/Disble Power LED's
 NoConn ~ 8150 50  
-Text Label 7900 1500 0    50   ~ 0
+Text Label 7900 900  0    50   ~ 0
 SHUNT_P5V
-Text Notes 8300 900  0    50   ~ 0
+Text Notes 7700 3850 0    50   ~ 0
 To measure current, remove 0Ω resistor\nand place a current meter across jumper.
 Wire Wire Line
-	9300 2000 9300 1900
+	9200 1300 9200 1200
 Wire Wire Line
-	7200 1900 7900 1900
-Wire Wire Line
-	9300 2300 9300 2400
-Wire Wire Line
-	7600 2400 9300 2400
+	9200 1600 9200 1700
 Wire Wire Line
 	9000 3000 9000 2900
 Wire Wire Line
 	9000 3300 9000 3400
 Wire Wire Line
 	9000 3400 7600 3400
-Connection ~ 7600 3400
-Wire Wire Line
-	7600 3400 7600 3300
 Wire Wire Line
 	9200 3500 9200 3600
 Connection ~ 7600 3600
@@ -883,28 +759,28 @@ Wire Wire Line
 	7600 3600 9200 3600
 Wire Wire Line
 	9000 2900 9200 2900
-Connection ~ 9400 2900
+Connection ~ 9500 2900
 Wire Wire Line
-	9400 2900 9400 5900
+	9500 2900 9500 5900
 Wire Wire Line
 	9200 3200 9200 2900
 Connection ~ 9200 2900
 Wire Wire Line
-	9200 2900 9400 2900
+	9200 2900 9500 2900
 Wire Wire Line
-	9650 2900 9650 2700
+	9850 2900 9850 2700
 $Comp
 L Connector:TestPoint TP7
 U 1 1 5FB40221
-P 9650 2700
-F 0 "TP7" H 9708 2818 50  0000 L CNN
-F 1 "9V" H 9708 2727 50  0000 L CNN
-F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 9850 2700 50  0001 C CNN
-F 3 "~" H 9850 2700 50  0001 C CNN
-	1    9650 2700
+P 9850 2700
+F 0 "TP7" H 9908 2818 50  0000 L CNN
+F 1 "9V" H 9908 2727 50  0000 L CNN
+F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 10050 2700 50  0001 C CNN
+F 3 "~" H 10050 2700 50  0001 C CNN
+	1    9850 2700
 	1    0    0    -1  
 $EndComp
-Text Label 7900 3800 0    50   ~ 0
+Text Label 7900 1900 0    50   ~ 0
 SHUNT_5V
 Text Label 7900 4500 0    50   ~ 0
 SHUNT_3.3
@@ -913,26 +789,21 @@ L Device:CP1 C5
 U 1 1 5F50C5A8
 P 9200 3350
 F 0 "C5" H 9250 3450 50  0000 L CNN
-F 1 "470µF,25Vmin;D10P5H13max" H 8050 3250 50  0000 L CNN
+F 1 "470µF,25Vmin;D10P5H13max" H 8050 3200 50  0000 L CNN
 F 2 "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm" H 9200 3350 50  0001 C CNN
 F 3 "~" H 9200 3350 50  0001 C CNN
 	1    9200 3350
 	1    0    0    -1  
 $EndComp
-Connection ~ 7500 1800
 Wire Wire Line
-	7500 1800 7500 3800
+	7200 3100 7400 3100
 Wire Wire Line
-	7200 3000 7400 3000
+	7400 3100 7400 3200
 Wire Wire Line
-	7400 3000 7400 3100
+	7400 3200 7200 3200
 Wire Wire Line
-	7400 3100 7200 3100
-Wire Wire Line
-	7400 4300 9000 4300
-Wire Wire Line
-	9000 4300 9000 4100
-Connection ~ 7400 3100
+	9200 2400 9200 2200
+Connection ~ 7400 3200
 Wire Wire Line
 	6100 4500 6000 4500
 Wire Wire Line
@@ -944,17 +815,15 @@ Wire Wire Line
 $Comp
 L HR2:SHUNT R22
 U 1 1 5FB51E58
-P 8000 1900
-F 0 "R22" H 8250 2050 50  0000 C CNN
-F 1 "0Ω;1608" H 8450 1750 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" H 8200 1950 60  0001 L CNN
-F 3 "0 Ohm Power Shunt" H 8200 1750 60  0001 L CNN
-F 4 "0 Ohm Power Shunt" H 8200 1650 60  0001 L CNN "Field5"
-	1    8000 1900
+P 8000 1200
+F 0 "R22" H 8250 1350 50  0000 C CNN
+F 1 "0Ω;1608" H 8450 1050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 8200 1250 60  0001 L CNN
+F 3 "0 Ohm Power Shunt" H 8200 1050 60  0001 L CNN
+F 4 "0 Ohm Power Shunt" H 8200 950 60  0001 L CNN "Field5"
+	1    8000 1200
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	7600 1500 7600 2400
 $Comp
 L HR2:SHUNT R63
 U 1 1 5FBD5070
@@ -968,23 +837,23 @@ F 4 "0 Ohm Power Shunt" H 8200 2650 60  0001 L CNN "Field5"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7900 2500 7900 2600
+	7900 2600 7900 2700
 Wire Wire Line
-	7300 2600 7300 2700
+	7300 2700 7300 2800
 Wire Wire Line
-	7200 2700 7300 2700
-Text Label 7900 2500 0    50   ~ 0
+	7200 2800 7300 2800
+Text Label 7900 2600 0    50   ~ 0
 SHUNT_9V
 $Comp
 L HR2:SHUNT R20
 U 1 1 5FC2832D
-P 8000 4100
-F 0 "R20" H 8250 4250 50  0000 C CNN
-F 1 "0Ω;1608" H 8450 3950 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" H 8200 4150 60  0001 L CNN
-F 3 "0 Ohm Power Shunt" H 8200 3950 60  0001 L CNN
-F 4 "0 Ohm Power Shunt" H 8200 3850 60  0001 L CNN "Field5"
-	1    8000 4100
+P 8000 2200
+F 0 "R20" H 8250 2350 50  0000 C CNN
+F 1 "0Ω;1608" H 8450 2050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 8200 2250 60  0001 L CNN
+F 3 "0 Ohm Power Shunt" H 8200 2050 60  0001 L CNN
+F 4 "0 Ohm Power Shunt" H 8200 1950 60  0001 L CNN "Field5"
+	1    8000 2200
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -1004,21 +873,16 @@ F 4 "0 Ohm Power Shunt" H 8200 4650 60  0001 L CNN "Field5"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7300 2600 7900 2600
-Connection ~ 7300 2600
-Connection ~ 7900 2600
+	7300 2700 7900 2700
+Connection ~ 7300 2700
+Connection ~ 7900 2700
 Wire Wire Line
-	7900 2600 7900 2900
-Wire Wire Line
-	4400 3800 7500 3800
+	7900 2700 7900 2900
 Wire Wire Line
 	6000 4100 7400 4100
 Wire Wire Line
-	7400 3100 7400 4100
+	7400 3200 7400 4100
 Connection ~ 6000 4100
-Connection ~ 7400 4100
-Wire Wire Line
-	7400 4100 7400 4300
 $Comp
 L HR2_MISC:Q_PWR_PMOS_GSD Q2
 U 1 1 5FCF4323
@@ -1033,7 +897,472 @@ $EndComp
 Wire Wire Line
 	3400 3800 3800 3800
 Wire Wire Line
-	2550 2800 2550 3800
+	3200 4100 3200 4200
+$Comp
+L HR2:USB-C;USB-C CN2
+U 1 1 5FCFB047
+P 600 3800
+F 0 "CN2" H 900 3950 50  0000 C CNN
+F 1 "USB-C;USB-C" H 1050 1250 50  0000 C CNN
+F 2 "Connector_USB:1USB_C_Receptacle_JAE_DX07S024WJ1R350" H 800 3850 60  0001 L CNN
+F 3 "http://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ117219.pdf" H 800 3650 60  0001 L CNN
+F 4 "http://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ117219.pdf" H 800 3750 60  0001 L CNN "manf#"
+F 5 "USB-C Connector" H 800 3550 60  0001 L CNN "desc"
+	1    600  3800
+	1    0    0    -1  
+$EndComp
 Wire Wire Line
-	3200 4100 3200 4400
+	1600 6100 1900 6100
+Connection ~ 1900 6100
+Wire Wire Line
+	1900 6100 1900 7000
+Wire Wire Line
+	1600 6000 1900 6000
+Connection ~ 1900 6000
+Wire Wire Line
+	1900 6000 1900 6100
+Wire Wire Line
+	1600 2900 1700 2900
+Wire Wire Line
+	1700 2900 1700 3000
+Wire Wire Line
+	1600 3000 1700 3000
+Connection ~ 1700 3000
+Wire Wire Line
+	1700 3000 1700 3100
+Wire Wire Line
+	1600 3100 1700 3100
+Connection ~ 1700 3100
+Wire Wire Line
+	1600 3200 1700 3200
+Wire Wire Line
+	1600 5800 1900 5800
+Connection ~ 1900 5800
+Wire Wire Line
+	1900 5800 1900 5900
+Wire Wire Line
+	1600 5900 1900 5900
+Connection ~ 1900 5900
+Wire Wire Line
+	1900 5900 1900 6000
+Wire Wire Line
+	1600 4100 1800 4100
+Wire Wire Line
+	1800 4100 1800 4000
+Wire Wire Line
+	1700 900  1600 900 
+Wire Wire Line
+	1600 1000 1700 1000
+Connection ~ 1700 1000
+Wire Wire Line
+	1700 1000 1700 900 
+Wire Wire Line
+	1600 1100 1700 1100
+Connection ~ 1700 1100
+Wire Wire Line
+	1700 1100 1700 1000
+Wire Wire Line
+	1600 1200 1700 1200
+Wire Wire Line
+	1700 1200 1700 1100
+Wire Wire Line
+	1600 3800 1800 3800
+Wire Wire Line
+	1600 3900 1800 3900
+Connection ~ 1800 3900
+Wire Wire Line
+	1800 3900 1800 3800
+Wire Wire Line
+	1600 4000 1800 4000
+Connection ~ 1800 4000
+Wire Wire Line
+	1800 4000 1800 3900
+Text Label 2400 5500 0    50   ~ 0
+GND
+Wire Wire Line
+	5100 3600 5100 4100
+Wire Wire Line
+	2500 3600 2500 3800
+Wire Wire Line
+	2500 3800 3000 3800
+Wire Wire Line
+	2500 3600 5100 3600
+NoConn ~ 1600 1300
+NoConn ~ 1600 1400
+NoConn ~ 1600 1500
+NoConn ~ 1600 1600
+NoConn ~ 1600 1700
+NoConn ~ 1600 1800
+NoConn ~ 1600 1900
+NoConn ~ 1600 2000
+NoConn ~ 1600 2100
+NoConn ~ 1600 2200
+NoConn ~ 1600 2300
+NoConn ~ 1600 2400
+NoConn ~ 1600 2500
+NoConn ~ 1600 2600
+NoConn ~ 1600 3300
+NoConn ~ 1600 4200
+NoConn ~ 1600 4300
+NoConn ~ 1600 4400
+NoConn ~ 1600 4500
+NoConn ~ 1600 4600
+NoConn ~ 1600 4700
+NoConn ~ 1600 4800
+NoConn ~ 1600 4900
+NoConn ~ 1600 5000
+NoConn ~ 1600 5100
+NoConn ~ 1600 5200
+NoConn ~ 1600 5300
+NoConn ~ 1600 5400
+NoConn ~ 1600 5500
+NoConn ~ 1600 6200
+$Comp
+L HR2:USB-C;USB-C,POGND CN1
+U 1 1 5FCF242C
+P 600 900
+F 0 "CN1" H 850 1050 50  0000 C CNN
+F 1 "USB-C;USB-C,POGND" H 1100 -1650 50  0000 C CNN
+F 2 "Connector_USB:1USB_C_Receptacle_JAE_DX07S024WJ1R350" H 800 950 60  0001 L CNN
+F 3 "USB-C Connector" H 800 750 60  0001 L CNN
+F 4 "http://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ117219.pdf" H 800 850 60  0001 L CNN "manf#"
+F 5 "USB-C Connector" H 800 650 60  0001 L CNN "desc"
+	1    600  900 
+	1    0    0    -1  
+$EndComp
+Text Notes 2250 650  0    50   ~ 0
+Note: The following URL explains how to get 1.5A@5V from USB-C.\nhttps://www.st.com/resource/en/technical_article/dm00496853-overview-of-usb-type-c-and-power-delivery-technologies-stmicroelectronics.pdf
+$Comp
+L Device:R_US R72
+U 1 1 5FD0DD63
+P 2150 2700
+F 0 "R72" V 2050 2550 50  0000 L CNN
+F 1 "10KΩ;1608" V 2250 2500 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2190 2690 50  0001 C CNN
+F 3 "~" H 2150 2700 50  0001 C CNN
+	1    2150 2700
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R_US R71
+U 1 1 5FD612B2
+P 2150 2400
+F 0 "R71" V 2050 2250 50  0000 L CNN
+F 1 "10KΩ;1608" V 2250 2200 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2190 2390 50  0001 C CNN
+F 3 "~" H 2150 2400 50  0001 C CNN
+	1    2150 2400
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1600 2800 1800 2800
+Wire Wire Line
+	1800 2800 1800 2700
+Wire Wire Line
+	1800 2700 2000 2700
+Wire Wire Line
+	1700 2700 1700 2400
+Wire Wire Line
+	1700 2400 2000 2400
+Wire Wire Line
+	2300 2400 2400 2400
+Wire Wire Line
+	2400 2400 2400 2500
+Wire Wire Line
+	2300 2700 2400 2700
+Connection ~ 2400 2700
+$Comp
+L Device:R_US R70
+U 1 1 5FDAC6CA
+P 2050 5600
+F 0 "R70" V 1950 5450 50  0000 L CNN
+F 1 "10KΩ;1608" V 2150 5400 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2090 5590 50  0001 C CNN
+F 3 "~" H 2050 5600 50  0001 C CNN
+	1    2050 5600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1700 3100 1700 3200
+Wire Wire Line
+	1600 2700 1700 2700
+$Comp
+L Device:R_US R69
+U 1 1 5FDF2974
+P 2050 5300
+F 0 "R69" V 1950 5150 50  0000 L CNN
+F 1 "10KΩ;1608" V 2150 5100 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2090 5290 50  0001 C CNN
+F 3 "~" H 2050 5300 50  0001 C CNN
+	1    2050 5300
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1600 5600 1700 5600
+Wire Wire Line
+	1700 5600 1700 5300
+Wire Wire Line
+	1700 5300 1900 5300
+Wire Wire Line
+	1900 5600 1800 5600
+Wire Wire Line
+	1800 5600 1800 5700
+Wire Wire Line
+	1800 5700 1600 5700
+Wire Wire Line
+	2200 5300 2400 5300
+Connection ~ 2400 5300
+Wire Wire Line
+	2400 5300 2400 5500
+Wire Wire Line
+	2400 5500 2400 5600
+Connection ~ 2400 5500
+Wire Wire Line
+	2400 5800 1900 5800
+Wire Wire Line
+	2200 5600 2400 5600
+Connection ~ 2400 5600
+Wire Wire Line
+	2400 5600 2400 5800
+Wire Wire Line
+	2400 5000 2500 5000
+Connection ~ 2400 5000
+Wire Wire Line
+	2400 5000 2400 5300
+Wire Wire Line
+	2400 5500 4400 5500
+$Comp
+L HR2:LM5050-1;TSOT-23-6 U20
+U 1 1 5FCF6F49
+P 3000 1200
+F 0 "U20" H 3250 1350 50  0000 C CNN
+F 1 "LM5050-1;TSOT-23-6" H 3500 750 50  0000 C CNN
+F 2 "Connector_TO_SOT_SMD:TSOT-23-6" H 3200 1250 60  0001 L CNN
+F 3 "https://www.ti.com/lit/ds/symlink/lm5050-1.pdf" H 3200 1050 60  0001 L CNN
+F 4 "https://www.ti.com/lit/ds/symlink/lm5050-1.pdf" H 3200 1150 60  0001 L CNN "manf#"
+F 5 "Idealf Diode w/external NFET" H 3200 950 60  0001 L CNN "desc"
+	1    3000 1200
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2_MISC:Q_PWR_NMOS_DSG Q26
+U 1 1 5FCF8312
+P 4100 1000
+F 0 "Q26" V 4050 1150 50  0000 C CNN
+F 1 "3A_PWR_NMOS_DSG;SOT23" V 4300 1000 50  0000 C CNN
+F 2 "" H 4300 1100 50  0001 C CNN
+F 3 "~" H 4100 1000 50  0001 C CNN
+	1    4100 1000
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	1700 900  2900 900 
+Connection ~ 1700 900 
+Wire Wire Line
+	3000 1300 2900 1300
+Wire Wire Line
+	2900 1300 2900 1200
+Connection ~ 2900 900 
+Wire Wire Line
+	2900 900  3900 900 
+Wire Wire Line
+	3000 1200 2900 1200
+Connection ~ 2900 1200
+Wire Wire Line
+	2900 1200 2900 900 
+Wire Wire Line
+	3000 1400 2800 1400
+Connection ~ 2400 2400
+Wire Wire Line
+	4000 1300 4100 1300
+Wire Wire Line
+	4100 1300 4100 1200
+Wire Wire Line
+	4000 1400 4400 1400
+Wire Wire Line
+	4400 1400 4400 900 
+Wire Wire Line
+	4400 900  4300 900 
+$Comp
+L HR2:LM5050-1;TSOT-23-6 U21
+U 1 1 5FD748AE
+P 3000 2200
+F 0 "U21" H 3250 2350 50  0000 C CNN
+F 1 "LM5050-1;TSOT-23-6" H 3500 1750 50  0000 C CNN
+F 2 "Connector_TO_SOT_SMD:TSOT-23-6" H 3200 2250 60  0001 L CNN
+F 3 "https://www.ti.com/lit/ds/symlink/lm5050-1.pdf" H 3200 2050 60  0001 L CNN
+F 4 "https://www.ti.com/lit/ds/symlink/lm5050-1.pdf" H 3200 2150 60  0001 L CNN "manf#"
+F 5 "Idealf Diode w/external NFET" H 3200 1950 60  0001 L CNN "desc"
+	1    3000 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2900 2300 3000 2300
+Connection ~ 1800 3800
+Wire Wire Line
+	2900 2300 2900 2200
+Wire Wire Line
+	2900 2200 3000 2200
+Wire Wire Line
+	2400 2500 3000 2500
+Wire Wire Line
+	2900 1900 3900 1900
+Connection ~ 2900 2200
+Wire Wire Line
+	4000 2300 4100 2300
+Wire Wire Line
+	4100 2300 4100 2200
+Wire Wire Line
+	4000 2400 4400 2400
+Wire Wire Line
+	4400 2400 4400 1900
+Wire Wire Line
+	4400 1900 4300 1900
+$Comp
+L HR2_MISC:Q_PWR_NMOS_DSG Q27
+U 1 1 5FD75C02
+P 4100 2000
+F 0 "Q27" V 4000 2150 50  0000 C CNN
+F 1 "3A_NMOS_DSG;SOT23" V 4300 2200 50  0000 C CNN
+F 2 "" H 4300 2100 50  0001 C CNN
+F 3 "~" H 4100 2000 50  0001 C CNN
+	1    4100 2000
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4400 1900 4400 1400
+Connection ~ 4400 1900
+Connection ~ 4400 1400
+Wire Wire Line
+	4400 2400 4400 3800
+Connection ~ 4400 2400
+Connection ~ 2900 2300
+Wire Wire Line
+	2900 2200 2900 1900
+Wire Wire Line
+	2900 3200 2900 2300
+Wire Wire Line
+	1800 3800 1800 3200
+Wire Wire Line
+	1800 3200 2900 3200
+$Comp
+L HR2_MISC:Q_PWR_NMOS_DSG Q28
+U 1 1 603044B4
+P 6100 1000
+F 0 "Q28" V 6050 1150 50  0000 C CNN
+F 1 "3A_PWR_NMOS_DSG;SOT23" V 6300 1000 50  0000 C CNN
+F 2 "" H 6300 1100 50  0001 C CNN
+F 3 "~" H 6100 1000 50  0001 C CNN
+	1    6100 1000
+	0    -1   -1   0   
+$EndComp
+$Comp
+L HR2:LM5050-1;TSOT-23-6 U1
+U 1 1 60304C6A
+P 5000 1200
+F 0 "U1" H 5250 1350 50  0000 C CNN
+F 1 "LM5050-1;TSOT-23-6" H 5500 750 50  0000 C CNN
+F 2 "Connector_TO_SOT_SMD:TSOT-23-6" H 5200 1250 60  0001 L CNN
+F 3 "https://www.ti.com/lit/ds/symlink/lm5050-1.pdf" H 5200 1050 60  0001 L CNN
+F 4 "https://www.ti.com/lit/ds/symlink/lm5050-1.pdf" H 5200 1150 60  0001 L CNN "manf#"
+F 5 "Idealf Diode w/external NFET" H 5200 950 60  0001 L CNN "desc"
+	1    5000 1200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4400 900  4900 900 
+Connection ~ 4400 900 
+Wire Wire Line
+	6000 1300 6100 1300
+Wire Wire Line
+	6100 1300 6100 1200
+Wire Wire Line
+	5000 1200 4900 1200
+Wire Wire Line
+	4900 1200 4900 900 
+Connection ~ 4900 900 
+Wire Wire Line
+	4900 900  5900 900 
+Wire Wire Line
+	5000 1300 4900 1300
+Wire Wire Line
+	4900 1300 4900 1200
+Connection ~ 4900 1200
+Wire Wire Line
+	5000 1400 4900 1400
+Wire Wire Line
+	4900 1400 4900 1500
+Wire Wire Line
+	4900 1500 5000 1500
+Wire Wire Line
+	2400 1700 4900 1700
+Wire Wire Line
+	4900 1700 4900 1500
+Connection ~ 2400 1700
+Wire Wire Line
+	2400 1700 2400 2400
+Connection ~ 4900 1500
+Text Label 2400 1700 0    50   ~ 0
+GND
+Wire Wire Line
+	4400 1900 7900 1900
+Connection ~ 7900 900 
+Wire Wire Line
+	6300 900  6400 900 
+Wire Wire Line
+	6400 900  6400 1400
+Connection ~ 6400 900 
+Wire Wire Line
+	6400 900  7900 900 
+Wire Wire Line
+	6400 1400 6000 1400
+Connection ~ 4900 1700
+Wire Wire Line
+	4900 1700 9200 1700
+Wire Wire Line
+	1700 2900 2400 2900
+Connection ~ 1700 2900
+Connection ~ 2400 2900
+Wire Wire Line
+	2400 2900 2400 2700
+Wire Wire Line
+	2400 2900 2400 5000
+Wire Wire Line
+	9200 2200 9400 2200
+Wire Wire Line
+	9200 2600 9200 2900
+Wire Wire Line
+	8900 2600 9200 2600
+Wire Wire Line
+	7400 3100 7400 2400
+Wire Wire Line
+	7400 2400 9200 2400
+Connection ~ 7400 3100
+Connection ~ 9850 1200
+Wire Wire Line
+	9850 1200 10000 1200
+Wire Wire Line
+	9400 2200 9400 5800
+Connection ~ 9400 2200
+Wire Wire Line
+	9400 2200 9850 2200
+Wire Wire Line
+	2400 1500 2400 1700
+Connection ~ 2400 2500
+Wire Wire Line
+	2400 2500 2400 2700
+Wire Wire Line
+	2400 1500 3000 1500
+Wire Wire Line
+	2800 1400 2800 2400
+Wire Wire Line
+	2800 2400 3000 2400
+Wire Wire Line
+	2800 2400 2800 4200
+Wire Wire Line
+	2800 4200 3200 4200
+Connection ~ 2800 2400
+Connection ~ 3200 4200
+Wire Wire Line
+	3200 4200 3200 4400
 $EndSCHEMATC

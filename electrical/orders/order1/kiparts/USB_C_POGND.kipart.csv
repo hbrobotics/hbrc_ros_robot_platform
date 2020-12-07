@@ -1,4 +1,4 @@
-"USB-C;USB-C", "CN", "Connector_USB:1USB_C_Receptacle_JAE_DX07S024WJ1R350", "http://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ117219.pdf", "USB-C Connector", "USB-C Connector"
+"USB-C;USB-C,POGND", "CN", "Connector_USB:1USB_C_Receptacle_JAE_DX07S024WJ1R350", "http://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ117219.pdf", "USB-C Connector", "USB-C Connector"
 "Pin", "Unit", "Type",      "Name",       "Style", "Side"
 "A4",  "A",    "power_out", "A4_VBUS",    "line",  "right"
 "A9",  "A",    "power_in",  "A9_VBUS",    "line",  "right"
@@ -23,6 +23,6 @@
 "A1",  "A",    "power_in",  "A1_GND",     "line",  "right"
 "A12", "A",    "power_in",  "A12_GND",    "line",  "right"
 "B12", "A",    "power_in",  "B12_GND",    "line",  "right"
-"B1",  "A",    "power_in",  "B1_GND",     "line",  "right"
+"B1",  "A",    "power_out", "B1_GND(PO)", "line",  "right"
 "S1",  "A",    "passive",   "S1_SHLD",    "line",  "right"
 ,,,,,,
