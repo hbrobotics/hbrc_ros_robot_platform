@@ -12,6 +12,18 @@ K TTL And3
 F http://www.ti.com/lit/gpn/sn74LS11
 $ENDCMP
 #
+$CMP Q_PWR_NMOS_DSG
+D N-MOSFET transistor, drain/source/gate
+K transistor NMOS N-MOS N-MOSFET
+F ~
+$ENDCMP
+#
+$CMP Q_PWR_NMOS_DSG_PI
+D N-MOSFET transistor, drain/source/gate
+K transistor NMOS N-MOS N-MOSFET
+F ~
+$ENDCMP
+#
 $CMP Q_PWR_PMOS_GSD
 D P-MOSFET transistor, gate/source/drain
 K transistor PMOS P-MOS P-MOSFET

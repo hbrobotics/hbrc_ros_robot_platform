@@ -1,0 +1,9 @@
+"LM5050-1;TSOT-23-6", "U", "Connector_TO_SOT_SMD:TSOT-23-6", "https://www.ti.com/lit/ds/symlink/lm5050-1.pdf", "Ideal Diode w/external NFET", "Idealf Diode w/external NFET"
+"Pin", "Unit", "Type",     "Name", "Style", "Side"
+"4",   "A",    "passive",  "IN",   "line",  "left"
+"1",   "A",    "power_in", "VS",   "line",  "left"
+"3",   "A",    "passive",  "OFF",  "line",  "left"
+"2",   "A",    "power_in", "GND",  "line",  "left"
+"5",   "A",    "passive",  "GATE", "line",  "right"
+"6",   "A",    "passive",  "OUT",  "line",  "right"
+,,,,,,
