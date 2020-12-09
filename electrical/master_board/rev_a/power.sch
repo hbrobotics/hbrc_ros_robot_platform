@@ -971,8 +971,6 @@ Wire Wire Line
 Wire Wire Line
 	4000 1400 4400 1400
 Wire Wire Line
-	4400 1400 4400 1000
-Wire Wire Line
 	4400 900  4300 900 
 Wire Wire Line
 	2800 2300 3000 2300
@@ -1185,7 +1183,6 @@ F 3 "~" H 4100 1000 50  0001 C CNN
 	1    4100 1000
 	0    -1   -1   0   
 $EndComp
-Connection ~ 4400 1000
 Wire Wire Line
-	4400 1000 4400 900 
+	4400 900  4400 1400
 $EndSCHEMATC
