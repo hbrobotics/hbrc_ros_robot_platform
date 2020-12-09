@@ -56,7 +56,7 @@ L Device:C C17
 U 1 1 5F7FE24F
 P 2050 1050
 F 0 "C17" H 1850 1150 50  0000 L CNN
-F 1 "10pF;1608" H 2100 950 50  0000 L CNN
+F 1 "0.1µF;1608" H 2100 950 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2088 900 50  0001 C CNN
 F 3 "~" H 2050 1050 50  0001 C CNN
 	1    2050 1050
@@ -79,7 +79,7 @@ L Device:C C18
 U 1 1 5F8B3EAF
 P 2650 1050
 F 0 "C18" H 2450 1150 50  0000 L CNN
-F 1 "10pF;1608" H 2700 950 50  0000 L CNN
+F 1 "0.1µF;1608" H 2700 950 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2688 900 50  0001 C CNN
 F 3 "~" H 2650 1050 50  0001 C CNN
 	1    2650 1050
@@ -90,7 +90,7 @@ L Device:C C19
 U 1 1 5F8B4468
 P 3250 1050
 F 0 "C19" H 3050 1150 50  0000 L CNN
-F 1 "10pF;1608" H 3300 950 50  0000 L CNN
+F 1 "0.1µF;1608" H 3300 950 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 3288 900 50  0001 C CNN
 F 3 "~" H 3250 1050 50  0001 C CNN
 	1    3250 1050
@@ -308,8 +308,6 @@ Wire Wire Line
 Connection ~ 4000 2250
 Text Label 5650 2150 2    50   ~ 0
 GND
-Entry Wire Line
-	1600 3300 1500 3400
 Text Label 1600 3300 0    50   ~ 0
 GND
 Wire Wire Line
@@ -342,8 +340,6 @@ Text Label 3900 3600 2    50   ~ 0
 GND
 Wire Wire Line
 	3600 3500 3600 3900
-Wire Wire Line
-	1000 3900 3600 3900
 Text Label 1000 2900 0    50   ~ 0
 DIO_MOSI
 Text Label 1000 3000 0    50   ~ 0
@@ -354,22 +350,13 @@ Text Label 1000 3900 0    50   ~ 0
 SER_IO
 Text Label 1600 3200 0    50   ~ 0
 ~NRST
-Entry Wire Line
-	1500 3300 1600 3200
 Wire Bus Line
 	4000 650  1500 650 
 Connection ~ 4000 650 
-Wire Bus Line
-	1500 2250 4000 2250
-Connection ~ 1500 2250
 Text Notes 5300 3950 0    50   ~ 0
 5 Volt Trigger Bus
 Text Label 1400 5000 2    50   ~ 0
 ~NRST
-Wire Wire Line
-	1000 5000 1400 5000
-Entry Wire Line
-	1400 5000 1500 4900
 Text HLabel 1000 5000 0    50   Input ~ 0
 ~NRST
 Text Label 9200 4500 0    50   ~ 0
@@ -386,30 +373,16 @@ Text Label 3200 4500 0    50   ~ 0
 TRIG2_5V
 Text Label 2000 4500 0    50   ~ 0
 TRIG1_5V
-Wire Wire Line
-	4400 4500 4400 4100
-Wire Wire Line
-	3200 4500 3200 4100
-Wire Wire Line
-	2000 4500 2000 4100
 Text Label 2000 4100 2    50   ~ 0
 TRIG1_5V
 Text Label 3200 4100 2    50   ~ 0
 TRIG2_5V
 Text Label 4400 4100 2    50   ~ 0
 TRIG3_5V
-Wire Wire Line
-	5600 4500 5600 4100
 Text Label 5600 4100 2    50   ~ 0
 TRIG4_5V
 Text Label 6800 4100 0    50   ~ 0
 TRIG5_5V
-Wire Wire Line
-	6800 4500 6800 4100
-Wire Wire Line
-	9200 4500 9200 4100
-Wire Wire Line
-	8000 4500 8000 4100
 Text Label 8000 4100 0    50   ~ 0
 TRIG6_5V
 Entry Wire Line
@@ -459,50 +432,14 @@ $EndComp
 Text Notes 5900 4100 0    50   ~ 0
 Sonar Connectors
 Connection ~ 2300 4200
-Wire Wire Line
-	1600 4200 2300 4200
-Text Label 1750 5700 0    50   ~ 0
-GND
-Entry Wire Line
-	1600 5700 1500 5600
-Entry Wire Line
-	1500 4800 1400 4900
-Wire Wire Line
-	1000 4900 1400 4900
 Text Label 1600 4200 0    50   ~ 0
 5V
-Entry Wire Line
-	1600 4200 1500 4300
-Entry Wire Line
-	1500 4700 1400 4800
-Entry Wire Line
-	1500 4600 1400 4700
-Entry Wire Line
-	1500 4500 1400 4600
-Wire Wire Line
-	1000 4800 1400 4800
 Text Label 1400 4700 2    50   ~ 0
 P5V
-Wire Wire Line
-	1400 4700 1000 4700
 Text HLabel 1000 4700 0    50   Input ~ 0
 P5V
-Wire Wire Line
-	1700 5200 1700 5900
 Text Label 1000 5900 0    50   ~ 0
 ECHO1
-Text Label 2900 5200 0    50   ~ 0
-ECHO2
-Text Label 4100 5200 0    50   ~ 0
-ECHO3
-Text Label 5300 5200 0    50   ~ 0
-ECHO4
-Text Label 6500 5200 0    50   ~ 0
-ECHO5
-Text Label 7700 5200 0    50   ~ 0
-ECHO6
-Text Label 8900 5200 0    50   ~ 0
-ECHO7
 Text HLabel 1000 5900 0    50   Output ~ 0
 ECHO1
 Text HLabel 1000 6000 0    50   Output ~ 0
@@ -520,69 +457,18 @@ ECHO7
 Text Label 9200 4100 0    50   ~ 0
 TRIG7_5V
 Wire Wire Line
-	4900 5700 5600 5700
-Wire Wire Line
 	4700 4200 5900 4200
 Wire Wire Line
 	3500 4200 4700 4200
 Wire Wire Line
-	3700 5700 4400 5700
-Wire Wire Line
-	4400 5200 4400 5100
-Connection ~ 4400 5200
-Wire Wire Line
-	4400 5200 4100 5200
-Connection ~ 4900 5700
-Wire Wire Line
-	4900 4900 4900 5700
-Wire Wire Line
-	4700 4900 4900 4900
-Connection ~ 4400 5700
-Wire Wire Line
 	4800 4500 4400 4500
 Connection ~ 4700 4200
-Wire Wire Line
-	4400 5700 4900 5700
-Wire Wire Line
-	4400 5600 4400 5700
 Wire Wire Line
 	4700 4400 4700 4200
 Wire Wire Line
 	4800 4400 4700 4400
 Wire Wire Line
-	4700 4700 4700 4900
-Wire Wire Line
 	4800 4700 4700 4700
-Wire Wire Line
-	4400 5300 4400 5200
-Wire Wire Line
-	4400 4600 4800 4600
-Wire Wire Line
-	4400 4600 4400 4800
-Text Label 4400 4600 0    50   ~ 0
-ECHO3_5V
-$Comp
-L Device:R_US R28
-U 1 1 5F7F06EE
-P 4400 5450
-F 0 "R28" H 4450 5350 50  0000 L CNN
-F 1 "33KΩ;1608" H 3950 5550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 4440 5440 50  0001 C CNN
-F 3 "~" H 4400 5450 50  0001 C CNN
-	1    4400 5450
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R_US R27
-U 1 1 5F7F06E4
-P 4400 4950
-F 0 "R27" H 4450 4850 50  0000 L CNN
-F 1 "22KΩ;1608" H 3950 5050 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 4440 4940 50  0001 C CNN
-F 3 "~" H 4400 4950 50  0001 C CNN
-	1    4400 4950
-	-1   0    0    1   
-$EndComp
 $Comp
 L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7F06DA
@@ -601,182 +487,34 @@ $EndComp
 Wire Wire Line
 	2300 4200 3500 4200
 Wire Wire Line
-	2500 5700 3200 5700
-Wire Wire Line
-	3200 5200 3200 5100
-Connection ~ 3200 5200
-Wire Wire Line
-	3200 5200 2900 5200
-Connection ~ 3700 5700
-Wire Wire Line
-	3700 4900 3700 5700
-Wire Wire Line
-	3500 4900 3700 4900
-Connection ~ 3200 5700
-Wire Wire Line
 	3600 4500 3200 4500
 Connection ~ 3500 4200
-Wire Wire Line
-	3200 5700 3700 5700
-Wire Wire Line
-	3200 5600 3200 5700
 Wire Wire Line
 	3500 4400 3500 4200
 Wire Wire Line
 	3600 4400 3500 4400
 Wire Wire Line
-	3500 4700 3500 4900
-Wire Wire Line
 	3600 4700 3500 4700
 Wire Wire Line
-	3200 5300 3200 5200
-Wire Wire Line
-	3200 4600 3600 4600
-Wire Wire Line
-	3200 4600 3200 4800
-Text Label 3200 4600 0    50   ~ 0
-ECHO2_5V
-$Comp
-L Device:R_US R26
-U 1 1 5F7F06B7
-P 3200 5450
-F 0 "R26" H 3250 5350 50  0000 L CNN
-F 1 "33KΩ;1608" H 2750 5550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 3240 5440 50  0001 C CNN
-F 3 "~" H 3200 5450 50  0001 C CNN
-	1    3200 5450
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R_US R25
-U 1 1 5F7F06AD
-P 3200 4950
-F 0 "R25" H 3250 4850 50  0000 L CNN
-F 1 "22KΩ;1608" H 2750 5050 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 3240 4940 50  0001 C CNN
-F 3 "~" H 3200 4950 50  0001 C CNN
-	1    3200 4950
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	2000 5200 2000 5100
-Connection ~ 2000 5200
-Wire Wire Line
-	2000 5200 1700 5200
-Connection ~ 2500 5700
-Wire Wire Line
-	2500 4900 2500 5700
-Wire Wire Line
-	2300 4900 2500 4900
-Connection ~ 2000 5700
-Wire Wire Line
-	2000 5700 1600 5700
-Wire Wire Line
 	2400 4500 2000 4500
-Wire Wire Line
-	2000 5700 2500 5700
-Wire Wire Line
-	2000 5600 2000 5700
 Wire Wire Line
 	2300 4400 2300 4200
 Wire Wire Line
 	2400 4400 2300 4400
 Wire Wire Line
-	2300 4700 2300 4900
-Wire Wire Line
 	2400 4700 2300 4700
-Wire Wire Line
-	2000 5300 2000 5200
-Wire Wire Line
-	2000 4600 2400 4600
-Wire Wire Line
-	2000 4600 2000 4800
-Text Label 2000 4600 0    50   ~ 0
-ECHO1_5V
-$Comp
-L Device:R_US R24
-U 1 1 5F7F0680
-P 2000 5450
-F 0 "R24" H 2050 5350 50  0000 L CNN
-F 1 "33KΩ;1608" H 1550 5550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2040 5440 50  0001 C CNN
-F 3 "~" H 2000 5450 50  0001 C CNN
-	1    2000 5450
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R_US R23
-U 1 1 5F7F0676
-P 2000 4950
-F 0 "R23" H 2050 4850 50  0000 L CNN
-F 1 "22KΩ;1608" H 1550 5050 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2040 4940 50  0001 C CNN
-F 3 "~" H 2000 4950 50  0001 C CNN
-	1    2000 4950
-	-1   0    0    1   
-$EndComp
 Wire Wire Line
 	7100 4200 8300 4200
 Wire Wire Line
-	7300 5700 8000 5700
-Wire Wire Line
 	8300 4200 9500 4200
 Wire Wire Line
-	8500 5700 9200 5700
-Wire Wire Line
-	9200 5200 9200 5100
-Connection ~ 9200 5200
-Wire Wire Line
-	9200 5200 8900 5200
-Wire Wire Line
-	9750 4900 9750 5700
-Wire Wire Line
-	9500 4900 9750 4900
-Connection ~ 9200 5700
-Wire Wire Line
 	9600 4500 9200 4500
-Wire Wire Line
-	9200 5700 9750 5700
-Wire Wire Line
-	9200 5600 9200 5700
 Wire Wire Line
 	9500 4400 9500 4200
 Wire Wire Line
 	9600 4400 9500 4400
 Wire Wire Line
-	9500 4700 9500 4900
-Wire Wire Line
 	9600 4700 9500 4700
-Wire Wire Line
-	9200 5300 9200 5200
-Wire Wire Line
-	9200 4600 9600 4600
-Wire Wire Line
-	9200 4600 9200 4800
-Text Label 9200 4600 0    50   ~ 0
-ECHO7_5V
-$Comp
-L Device:R_US R36
-U 1 1 5F7E7575
-P 9200 5450
-F 0 "R36" H 9250 5350 50  0000 L CNN
-F 1 "33KΩ;1608" H 8750 5550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 9240 5440 50  0001 C CNN
-F 3 "~" H 9200 5450 50  0001 C CNN
-	1    9200 5450
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R_US R35
-U 1 1 5F7E756B
-P 9200 4950
-F 0 "R35" H 9250 4850 50  0000 L CNN
-F 1 "22KΩ;1608" H 8750 5050 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 9240 4940 50  0001 C CNN
-F 3 "~" H 9200 4950 50  0001 C CNN
-	1    9200 4950
-	-1   0    0    1   
-$EndComp
 $Comp
 L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7E7561
@@ -793,61 +531,14 @@ F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 10500 4150 60  0001 L CNN "Field5
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	8000 5200 8000 5100
-Connection ~ 8000 5200
-Wire Wire Line
-	8000 5200 7700 5200
-Connection ~ 8500 5700
-Wire Wire Line
-	8500 4900 8500 5700
-Wire Wire Line
-	8300 4900 8500 4900
-Connection ~ 8000 5700
-Wire Wire Line
 	8400 4500 8000 4500
 Connection ~ 8300 4200
-Wire Wire Line
-	8000 5700 8500 5700
-Wire Wire Line
-	8000 5600 8000 5700
 Wire Wire Line
 	8300 4400 8300 4200
 Wire Wire Line
 	8400 4400 8300 4400
 Wire Wire Line
-	8300 4700 8300 4900
-Wire Wire Line
 	8400 4700 8300 4700
-Wire Wire Line
-	8000 5300 8000 5200
-Wire Wire Line
-	8000 4600 8400 4600
-Wire Wire Line
-	8000 4600 8000 4800
-Text Label 8000 4600 0    50   ~ 0
-ECHO6_5V
-$Comp
-L Device:R_US R34
-U 1 1 5F7E753E
-P 8000 5450
-F 0 "R34" H 8050 5350 50  0000 L CNN
-F 1 "33KΩ;1608" H 7550 5550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8040 5440 50  0001 C CNN
-F 3 "~" H 8000 5450 50  0001 C CNN
-	1    8000 5450
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R_US R33
-U 1 1 5F7E7534
-P 8000 4950
-F 0 "R33" H 8050 4850 50  0000 L CNN
-F 1 "22KΩ;1608" H 7550 5050 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8040 4940 50  0001 C CNN
-F 3 "~" H 8000 4950 50  0001 C CNN
-	1    8000 4950
-	-1   0    0    1   
-$EndComp
 $Comp
 L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7E752A
@@ -866,63 +557,14 @@ $EndComp
 Wire Wire Line
 	5900 4200 7100 4200
 Wire Wire Line
-	6100 5700 6800 5700
-Wire Wire Line
-	6800 5200 6800 5100
-Connection ~ 6800 5200
-Wire Wire Line
-	6800 5200 6500 5200
-Connection ~ 7300 5700
-Wire Wire Line
-	7300 4900 7300 5700
-Wire Wire Line
-	7100 4900 7300 4900
-Connection ~ 6800 5700
-Wire Wire Line
 	7200 4500 6800 4500
 Connection ~ 7100 4200
-Wire Wire Line
-	6800 5700 7300 5700
-Wire Wire Line
-	6800 5600 6800 5700
 Wire Wire Line
 	7100 4400 7100 4200
 Wire Wire Line
 	7200 4400 7100 4400
 Wire Wire Line
-	7100 4700 7100 4900
-Wire Wire Line
 	7200 4700 7100 4700
-Wire Wire Line
-	6800 5300 6800 5200
-Wire Wire Line
-	6800 4600 7200 4600
-Wire Wire Line
-	6800 4600 6800 4800
-Text Label 6800 4600 0    50   ~ 0
-ECHO5_5V
-$Comp
-L Device:R_US R32
-U 1 1 5F7E2DCE
-P 6800 5450
-F 0 "R32" H 6850 5350 50  0000 L CNN
-F 1 "33KΩ;1608" H 6350 5550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6840 5440 50  0001 C CNN
-F 3 "~" H 6800 5450 50  0001 C CNN
-	1    6800 5450
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R_US R31
-U 1 1 5F7E2DC4
-P 6800 4950
-F 0 "R31" H 6850 4850 50  0000 L CNN
-F 1 "22KΩ;1608" H 6350 5050 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6840 4940 50  0001 C CNN
-F 3 "~" H 6800 4950 50  0001 C CNN
-	1    6800 4950
-	-1   0    0    1   
-$EndComp
 $Comp
 L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7E2DBA
@@ -939,69 +581,20 @@ F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 8100 4150 60  0001 L CNN "Field5"
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	5600 5200 5600 5100
-Connection ~ 5600 5200
-Wire Wire Line
-	5600 5200 5300 5200
-Connection ~ 6100 5700
-Wire Wire Line
-	6100 4900 6100 5700
-Wire Wire Line
-	5900 4900 6100 4900
-Connection ~ 5600 5700
-Wire Wire Line
 	6000 4500 5600 4500
 Connection ~ 5900 4200
-Wire Wire Line
-	5600 5700 6100 5700
-Wire Wire Line
-	5600 5600 5600 5700
 Wire Wire Line
 	5900 4400 5900 4200
 Wire Wire Line
 	6000 4400 5900 4400
 Wire Wire Line
-	5900 4700 5900 4900
-Wire Wire Line
 	6000 4700 5900 4700
-Wire Wire Line
-	5600 5300 5600 5200
-Wire Wire Line
-	5600 4600 6000 4600
-Wire Wire Line
-	5600 4600 5600 4800
-Text Label 5600 4600 0    50   ~ 0
-ECHO4_5V
-$Comp
-L Device:R_US R30
-U 1 1 5FADC37B
-P 5600 5450
-F 0 "R30" H 5650 5350 50  0000 L CNN
-F 1 "33KΩ;1608" H 5150 5550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5640 5440 50  0001 C CNN
-F 3 "~" H 5600 5450 50  0001 C CNN
-	1    5600 5450
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R_US R29
-U 1 1 5FADB964
-P 5600 4950
-F 0 "R29" H 5650 4850 50  0000 L CNN
-F 1 "22KΩ;1608" H 5150 5050 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5640 4940 50  0001 C CNN
-F 3 "~" H 5600 4950 50  0001 C CNN
-	1    5600 4950
-	-1   0    0    1   
-$EndComp
 Text Label 1400 4800 2    50   ~ 0
 3.3V
 Text Label 1400 4900 2    50   ~ 0
 GND
 Text Label 1400 4600 2    50   ~ 0
 5V
-Wire Wire Line
-	1000 4600 1400 4600
 Text HLabel 1000 4800 0    50   Input ~ 0
 3.3V
 $Comp
@@ -1023,32 +616,6 @@ Text HLabel 1000 4600 0    50   Input ~ 0
 5V
 Text HLabel 1000 4900 0    50   Input ~ 0
 GND
-Wire Wire Line
-	1000 5900 1700 5900
-Wire Wire Line
-	1000 6000 2900 6000
-Wire Wire Line
-	2900 5200 2900 6000
-Wire Wire Line
-	1000 6100 4100 6100
-Wire Wire Line
-	4100 5200 4100 6100
-Wire Wire Line
-	1000 6200 5300 6200
-Wire Wire Line
-	5300 5200 5300 6200
-Wire Wire Line
-	1000 6300 6500 6300
-Wire Wire Line
-	6500 5200 6500 6300
-Wire Wire Line
-	1000 6400 7700 6400
-Wire Wire Line
-	7700 5200 7700 6400
-Wire Wire Line
-	1000 6500 8900 6500
-Wire Wire Line
-	8900 5200 8900 6500
 Entry Wire Line
 	4000 3500 4100 3600
 Wire Wire Line
@@ -1061,10 +628,6 @@ Wire Wire Line
 	3500 2600 3900 2600
 Text Notes 2000 2800 0    50   ~ 0
 8-Bit Serial to\nParallel Shift\nRegister.
-Wire Wire Line
-	1600 3300 2400 3300
-Wire Wire Line
-	1600 3200 2400 3200
 Wire Wire Line
 	2400 3100 1000 3100
 Wire Wire Line
@@ -1106,7 +669,6 @@ Wire Wire Line
 	5550 3100 6100 3100
 Wire Wire Line
 	5550 3200 6100 3200
-Connection ~ 6200 4000
 Entry Wire Line
 	6100 2700 6200 2800
 Entry Wire Line
@@ -1123,8 +685,6 @@ Entry Wire Line
 	6100 1900 6200 2000
 Wire Wire Line
 	5550 1900 6100 1900
-Text Label 1700 5200 0    50   ~ 0
-ECHO1
 Text Label 1000 6000 0    50   ~ 0
 ECHO2
 Text Label 1000 6500 0    50   ~ 0
@@ -1259,6 +819,152 @@ SERVO_POS
 Wire Wire Line
 	3500 3500 3600 3500
 NoConn ~ 3500 3400
+Connection ~ 6200 4000
+Wire Wire Line
+	8000 4500 8000 4100
+Wire Wire Line
+	9200 4500 9200 4100
+Wire Wire Line
+	6800 4500 6800 4100
+Wire Wire Line
+	5600 4500 5600 4100
+Wire Wire Line
+	2000 4500 2000 4100
+Wire Wire Line
+	3200 4500 3200 4100
+Wire Wire Line
+	4400 4500 4400 4100
+Wire Wire Line
+	1000 3900 3600 3900
+Wire Wire Line
+	1000 4600 1400 4600
+Wire Wire Line
+	1400 4700 1000 4700
+Wire Wire Line
+	1000 4800 1400 4800
+Wire Wire Line
+	1600 4200 2300 4200
+Wire Wire Line
+	1000 4900 1400 4900
+Wire Wire Line
+	1000 5000 1400 5000
+Wire Wire Line
+	1600 3200 2400 3200
+Wire Wire Line
+	1600 3300 2400 3300
+Entry Wire Line
+	1500 4500 1400 4600
+Entry Wire Line
+	1500 4600 1400 4700
+Entry Wire Line
+	1500 4700 1400 4800
+Entry Wire Line
+	1600 4200 1500 4300
+Entry Wire Line
+	1500 4800 1400 4900
+Entry Wire Line
+	1400 5000 1500 4900
+Connection ~ 1500 2250
+Wire Bus Line
+	1500 2250 4000 2250
+Entry Wire Line
+	1500 3300 1600 3200
+Entry Wire Line
+	1600 3300 1500 3400
+Wire Wire Line
+	9200 4600 9600 4600
+Text Label 9200 4600 0    50   ~ 0
+ECHO7
+Wire Wire Line
+	8000 4600 8400 4600
+Text Label 8000 4600 0    50   ~ 0
+ECHO6
+Wire Wire Line
+	1000 6300 6800 6300
+Wire Wire Line
+	6800 4600 7200 4600
+Text Label 6800 4600 0    50   ~ 0
+ECHO5
+Wire Wire Line
+	1000 6200 5600 6200
+Wire Wire Line
+	5600 4600 6000 4600
+Text Label 5600 4600 0    50   ~ 0
+ECHO4
+Wire Wire Line
+	1000 6100 4400 6100
+Wire Wire Line
+	4400 4600 4800 4600
+Text Label 4400 4600 0    50   ~ 0
+ECHO3
+Wire Wire Line
+	1000 6000 3200 6000
+Wire Wire Line
+	3200 4600 3600 4600
+Text Label 3200 4600 0    50   ~ 0
+ECHO2
+Wire Wire Line
+	2000 4600 2400 4600
+Wire Wire Line
+	1000 5900 2000 5900
+Text Label 2000 4600 0    50   ~ 0
+ECHO1
+Wire Wire Line
+	6800 4600 6800 6300
+Wire Wire Line
+	5600 4600 5600 6200
+Wire Wire Line
+	8300 5700 9500 5700
+Wire Wire Line
+	4400 4600 4400 6100
+Wire Wire Line
+	3200 4600 3200 6000
+Wire Wire Line
+	2000 5900 2000 4600
+Wire Wire Line
+	7100 5700 8300 5700
+Wire Wire Line
+	2300 5700 3500 5700
+Wire Wire Line
+	1600 5700 2300 5700
+Wire Wire Line
+	3500 5700 4700 5700
+Wire Wire Line
+	4700 5700 5900 5700
+Wire Wire Line
+	5900 5700 7100 5700
+Connection ~ 5900 5700
+Connection ~ 7100 5700
+Connection ~ 8300 5700
+Connection ~ 2300 5700
+Connection ~ 3500 5700
+Connection ~ 4700 5700
+Entry Wire Line
+	1600 5700 1500 5600
+Text Label 1750 5700 0    50   ~ 0
+GND
+Wire Wire Line
+	8000 4600 8000 6400
+Wire Wire Line
+	1000 6400 8000 6400
+Wire Wire Line
+	3500 4700 3500 5700
+Wire Wire Line
+	2300 4700 2300 5700
+Wire Wire Line
+	4700 4700 4700 5700
+Wire Wire Line
+	5900 4700 5900 5700
+Wire Wire Line
+	8300 4700 8300 5700
+Wire Wire Line
+	9500 4700 9500 5700
+Wire Wire Line
+	1000 6500 9200 6500
+Wire Wire Line
+	9200 4600 9200 6500
+Wire Wire Line
+	7100 4700 7100 5700
 Wire Bus Line
 	4000 2250 6000 2250
 Wire Bus Line
