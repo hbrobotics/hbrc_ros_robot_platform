@@ -51,17 +51,6 @@ Text Notes 4600 2400 0    50   ~ 0
 3.3V to 5V Level Shifter
 Text Notes 6300 3800 0    50   ~ 0
 Notes:\n1. The Sonars are HC04's that operate off of 5V.\n2. The trigger signals are provided by a serial shift register.\n3. A level shifter is used to shift trigger signals from 3.3V to 5V.\n4. A resistor voltage divider is used to convert the echo from 5V to 3.3V.\n5. Most hobby servers operate off of approximately 5V - 6V.\n6. The P5V supply is a 5V supply that is used for servos and LED's.\n   This supply can be noisy due to changing current draw.\n7. The servo PWM signals are level shifted from 3.3V to 5v.\n8. The servos are manually labeled to support mechanical\n   automatic positioned derived from the mechanical model.\n9. The echo signals are fed to external interrupt pins on the Nucleo PCB.
-$Comp
-L Device:C C17
-U 1 1 5F7FE24F
-P 2050 1050
-F 0 "C17" H 1850 1150 50  0000 L CNN
-F 1 "0.1µF;1608" H 2100 950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 2088 900 50  0001 C CNN
-F 3 "~" H 2050 1050 50  0001 C CNN
-	1    2050 1050
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	2050 900  2050 800 
 Wire Wire Line
@@ -79,8 +68,8 @@ L Device:C C18
 U 1 1 5F8B3EAF
 P 2650 1050
 F 0 "C18" H 2450 1150 50  0000 L CNN
-F 1 "0.1µF;1608" H 2700 950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 2688 900 50  0001 C CNN
+F 1 "0.1µF;1005" H 2700 950 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 2688 900 50  0001 C CNN
 F 3 "~" H 2650 1050 50  0001 C CNN
 	1    2650 1050
 	1    0    0    -1  
@@ -90,8 +79,8 @@ L Device:C C19
 U 1 1 5F8B4468
 P 3250 1050
 F 0 "C19" H 3050 1150 50  0000 L CNN
-F 1 "0.1µF;1608" H 3300 950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 3288 900 50  0001 C CNN
+F 1 "0.1µF;1005" H 3300 950 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 3288 900 50  0001 C CNN
 F 3 "~" H 3250 1050 50  0001 C CNN
 	1    3250 1050
 	1    0    0    -1  
@@ -965,6 +954,17 @@ Wire Wire Line
 	9200 4600 9200 6500
 Wire Wire Line
 	7100 4700 7100 5700
+$Comp
+L Device:C C17
+U 1 1 5F7FE24F
+P 2050 1050
+F 0 "C17" H 1850 1150 50  0000 L CNN
+F 1 "0.1µF;1005" H 2100 950 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 2088 900 50  0001 C CNN
+F 3 "~" H 2050 1050 50  0001 C CNN
+	1    2050 1050
+	1    0    0    -1  
+$EndComp
 Wire Bus Line
 	4000 2250 6000 2250
 Wire Bus Line
