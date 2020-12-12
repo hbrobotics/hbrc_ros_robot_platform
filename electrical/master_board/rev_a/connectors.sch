@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 10 10
+Sheet 9 10
 Title "HR2 Connectors"
 Date "2020-11-22"
 Rev "A"
@@ -41,10 +41,8 @@ Text HLabel 1500 6100 0    50   Input ~ 0
 LDR_PWM
 Text HLabel 1500 6700 0    50   Input ~ 0
 SER_IN
-Text HLabel 1500 7450 0    50   Input ~ 0
+Text HLabel 1500 4600 0    50   Input ~ 0
 DIO_SCK
-Text HLabel 1500 7550 0    50   Input ~ 0
-~DIO_NSS
 $Comp
 L HR2:SN74HCS595;TTSOP16 U5
 U 1 1 5FD710B8
@@ -117,8 +115,6 @@ Wire Wire Line
 	5600 6000 5900 6000
 Text Label 1500 6700 0    50   ~ 0
 SER_IN
-Text Label 1500 7550 0    50   ~ 0
-~DIO_NSS
 Wire Wire Line
 	3900 6500 4100 6500
 Wire Wire Line
@@ -186,41 +182,26 @@ Wire Wire Line
 Wire Wire Line
 	10100 3000 10100 1700
 Wire Wire Line
-	8900 4700 8500 4700
+	8900 4700 8800 4700
 Wire Wire Line
-	8500 4700 8500 4800
+	8800 4700 8800 4800
 Wire Wire Line
-	8500 5400 8900 5400
+	8900 5100 8800 5100
 Wire Wire Line
-	8900 5300 8500 5300
-Connection ~ 8500 5300
+	8900 5000 8800 5000
+Connection ~ 8800 5000
 Wire Wire Line
-	8500 5300 8500 5400
+	8800 5000 8800 5100
 Wire Wire Line
-	8900 5200 8500 5200
-Connection ~ 8500 5200
+	8900 4900 8800 4900
+Connection ~ 8800 4900
 Wire Wire Line
-	8500 5200 8500 5300
+	8800 4900 8800 5000
 Wire Wire Line
-	8900 5100 8500 5100
-Connection ~ 8500 5100
+	8900 4800 8800 4800
+Connection ~ 8800 4800
 Wire Wire Line
-	8500 5100 8500 5200
-Wire Wire Line
-	8900 5000 8500 5000
-Connection ~ 8500 5000
-Wire Wire Line
-	8500 5000 8500 5100
-Wire Wire Line
-	8900 4900 8500 4900
-Connection ~ 8500 4900
-Wire Wire Line
-	8500 4900 8500 5000
-Wire Wire Line
-	8900 4800 8500 4800
-Connection ~ 8500 4800
-Wire Wire Line
-	8500 4800 8500 4900
+	8800 4800 8800 4900
 Entry Wire Line
 	10300 2900 10400 3000
 Entry Wire Line
@@ -243,7 +224,7 @@ Text Label 10300 5400 2    50   ~ 0
 GND
 Text Label 10300 5100 2    50   ~ 0
 3.3V
-Connection ~ 8500 4700
+Connection ~ 8800 4700
 Entry Wire Line
 	8100 5700 8000 5800
 Entry Wire Line
@@ -287,22 +268,22 @@ DIO_SCK
 Text Label 9050 4050 0    50   ~ 0
 DIO_IN_BRIDGE
 Wire Wire Line
-	8500 4250 10300 4250
+	8800 4250 10300 4250
 Entry Wire Line
 	10300 4250 10400 4350
 Text Label 10300 4250 2    50   ~ 0
 GND
 Text Notes 8600 2250 0    50   ~ 0
 8-Bit Parallel to\nSerial Shift Register
-Text Notes 8550 4450 0    50   ~ 0
+Text Notes 9200 4450 0    50   ~ 0
 8-Bit Parallel to\nSerial Shift Register
 Wire Wire Line
-	8500 4250 8500 4700
+	8800 4250 8800 4700
 Text Notes 5450 5700 0    50   ~ 0
 Lidar\nConnector
 Text Notes 2400 6550 0    50   ~ 0
 8-Bit Parallel\nto Serial\nShift Register
-Text Label 1500 7450 0    50   ~ 0
+Text Label 1500 4600 0    50   ~ 0
 DIO_SCK
 Wire Wire Line
 	1500 6700 2800 6700
@@ -313,13 +294,7 @@ Wire Wire Line
 Text Label 4500 7400 2    50   ~ 0
 GND
 Wire Wire Line
-	1500 7550 2050 7550
-Wire Wire Line
-	1500 7450 2050 7450
-Entry Wire Line
-	2050 7550 2150 7650
-Entry Wire Line
-	2050 7450 2150 7550
+	1500 4600 2050 4600
 Entry Wire Line
 	2250 6800 2150 6900
 Entry Wire Line
@@ -336,14 +311,14 @@ Wire Wire Line
 	10100 1700 8100 1700
 Entry Wire Line
 	8100 1700 8000 1800
-Text HLabel 1500 7350 0    50   Input ~ 0
+Text HLabel 1500 4500 0    50   Input ~ 0
 DIO_MISO
-Text Label 1500 7350 0    50   ~ 0
+Text Label 1500 4500 0    50   ~ 0
 DIO_MISO
 Wire Wire Line
-	2050 7350 1500 7350
+	2050 4500 1500 4500
 Entry Wire Line
-	2050 7350 2150 7450
+	2050 4500 2150 4600
 Text Label 8100 1700 0    50   ~ 0
 DIO_MISO
 Text Notes 6100 1200 0    50   ~ 0
@@ -697,14 +672,6 @@ SIG7
 Text Label 7300 5500 0    50   ~ 0
 SIG8
 NoConn ~ 3900 7200
-Text HLabel 1500 7650 0    50   Input ~ 0
-DIO_SS
-Entry Wire Line
-	2050 7650 2150 7750
-Wire Wire Line
-	1500 7650 2050 7650
-Text Label 1500 7650 0    50   ~ 0
-DIO_SS
 $Comp
 L HR2:SN74HCS165;TTSOP16 U7
 U 1 1 5FC4FA21
@@ -746,10 +713,7 @@ F 4 "8-Bit Parallel In Serial Out Shift Register" H 9100 2250 60  0001 L CNN "de
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8900 5500 8500 5500
-Wire Wire Line
-	8500 5500 8500 5400
-Connection ~ 8500 5400
+	8900 5500 8800 5500
 NoConn ~ 3900 7300
 $Comp
 L Transistor_FET:2N7000 Q?
@@ -783,16 +747,11 @@ F 3 "~" H 3300 3850 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3300 4200 3300 4100
-Wire Wire Line
 	3300 4600 3300 4700
 Wire Wire Line
 	2800 3600 3300 3600
 Wire Wire Line
 	3300 3600 3300 3700
-Connection ~ 3300 4100
-Wire Wire Line
-	3300 4100 3300 4000
 Wire Wire Line
 	3300 4700 2800 4700
 Entry Wire Line
@@ -812,15 +771,78 @@ GND
 Wire Bus Line
 	2400 1300 2700 1300
 Connection ~ 2700 1300
-Wire Wire Line
-	3300 4100 2250 4100
-Text Label 2250 4100 0    50   ~ 0
+Text Label 2250 4850 0    50   ~ 0
 DIO_SS
 Entry Wire Line
-	2250 4100 2150 4200
+	2250 4850 2150 4950
 Text Notes 2800 3450 0    50   ~ 0
 ~DIO_NSS~ to DIOS_SS Inverter
 Connection ~ 4100 2000
+Text HLabel 1500 5000 0    50   Input ~ 0
+~NMOTOR_FAULT
+Text HLabel 1500 5100 0    50   Input ~ 0
+~NBTN_ESTOP
+Text HLabel 1500 5200 0    50   Input ~ 0
+~NWOW_ESTOP
+Wire Wire Line
+	1500 5200 2050 5200
+Wire Wire Line
+	1500 5100 2050 5100
+Entry Wire Line
+	2050 5200 2150 5300
+Entry Wire Line
+	2050 5100 2150 5200
+Wire Wire Line
+	2050 5000 1500 5000
+Entry Wire Line
+	2050 5000 2150 5100
+Text Label 1500 5000 0    50   ~ 0
+~NMOTOR_FAULT
+Text Label 1500 5100 0    50   ~ 0
+~NBTN_ESTOP
+Text Label 1500 5200 0    50   ~ 0
+~NWOW_ESTOP
+Wire Wire Line
+	3300 4000 3300 4100
+Wire Wire Line
+	3300 4100 4000 4100
+Wire Wire Line
+	4000 4100 4000 4850
+Wire Wire Line
+	2250 4850 4000 4850
+Connection ~ 3300 4100
+Wire Wire Line
+	3300 4100 3300 4200
+Entry Wire Line
+	2050 4600 2150 4700
+Entry Wire Line
+	2050 4400 2150 4500
+Wire Wire Line
+	1500 4400 2050 4400
+Text Label 1500 4400 0    50   ~ 0
+~DIO_NSS
+Text HLabel 1500 4400 0    50   Input ~ 0
+~DIO_NSS
+Entry Wire Line
+	8100 5400 8000 5500
+Entry Wire Line
+	8100 5300 8000 5400
+Entry Wire Line
+	8100 5200 8000 5300
+Text Label 8650 5200 2    50   ~ 0
+~NMOTOR_FAULT
+Text Label 8650 5300 2    50   ~ 0
+~NBTN_ESTOP
+Text Label 8650 5400 2    50   ~ 0
+~NWOW_ESTOP
+Wire Wire Line
+	8100 5200 8900 5200
+Wire Wire Line
+	8100 5300 8900 5300
+Wire Wire Line
+	8100 5400 8900 5400
+Wire Wire Line
+	8800 5100 8800 5500
 Wire Bus Line
 	2700 1300 6000 1300
 Wire Bus Line
@@ -837,4 +859,5 @@ Wire Bus Line
 	2150 4000 2150 7900
 Wire Bus Line
 	6000 1300 6000 6400
+Connection ~ 8800 5100
 $EndSCHEMATC

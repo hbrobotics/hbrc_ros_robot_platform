@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
-Sheet 9 10
+Sheet 8 10
 Title "HR2 Nucleo"
 Date "2020-11-22"
 Rev "A"
@@ -55,27 +55,27 @@ $EndComp
 $Comp
 L HR2:NUCLEO-F767ZI;2xF2x35 CN95
 U 7 1 5F352849
-P 7100 800
-F 0 "CN95" H 7450 950 50  0000 C CNN
-F 1 "NUCLEO-F767ZI;2xF2x35" H 7800 -850 50  0000 C CNN
-F 2 "HR2:NUCLEO_F767ZI_2xF2x35" H 7300 850 60  0001 L CNN
-F 3 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 7300 650 60  0001 L CNN
-F 4 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 7300 750 60  0001 L CNN "manf#"
-F 5 "NUCLEO144-F767ZI;Nucleo144 STM32F767ZI" H 7300 550 60  0001 L CNN "Field5"
-	7    7100 800 
+P 8050 800
+F 0 "CN95" H 8400 950 50  0000 C CNN
+F 1 "NUCLEO-F767ZI;2xF2x35" H 8750 -850 50  0000 C CNN
+F 2 "HR2:NUCLEO_F767ZI_2xF2x35" H 8250 850 60  0001 L CNN
+F 3 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 8250 650 60  0001 L CNN
+F 4 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 8250 750 60  0001 L CNN "manf#"
+F 5 "NUCLEO144-F767ZI;Nucleo144 STM32F767ZI" H 8250 550 60  0001 L CNN "Field5"
+	7    8050 800 
 	1    0    0    -1  
 $EndComp
 $Comp
 L HR2:NUCLEO-F767ZI;2xF2x35 CN95
 U 9 1 5F35A1BA
-P 7700 3400
-F 0 "CN95" H 8000 3550 50  0000 C CNN
-F 1 "NUCLEO-F767ZI;2xF2x35" H 8400 2850 50  0000 C CNN
-F 2 "HR2:NUCLEO_F767ZI_2xF2x35" H 7900 3450 60  0001 L CNN
-F 3 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 7900 3250 60  0001 L CNN
-F 4 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 7900 3350 60  0001 L CNN "manf#"
-F 5 "NUCLEO144-F767ZI;Nucleo144 STM32F767ZI" H 7900 3150 60  0001 L CNN "Field5"
-	9    7700 3400
+P 8650 3400
+F 0 "CN95" H 8950 3550 50  0000 C CNN
+F 1 "NUCLEO-F767ZI;2xF2x35" H 9350 2850 50  0000 C CNN
+F 2 "HR2:NUCLEO_F767ZI_2xF2x35" H 8850 3450 60  0001 L CNN
+F 3 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 8850 3250 60  0001 L CNN
+F 4 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 8850 3350 60  0001 L CNN "manf#"
+F 5 "NUCLEO144-F767ZI;Nucleo144 STM32F767ZI" H 8850 3150 60  0001 L CNN "Field5"
+	9    8650 3400
 	1    0    0    -1  
 $EndComp
 NoConn ~ 3000 1700
@@ -87,19 +87,19 @@ NoConn ~ 5500 4800
 NoConn ~ 5500 4900
 NoConn ~ 5500 5000
 NoConn ~ 5500 5100
-NoConn ~ 8500 3800
-NoConn ~ 8500 800 
-NoConn ~ 8500 900 
-NoConn ~ 8500 1000
-NoConn ~ 8500 1100
-NoConn ~ 8500 1200
-NoConn ~ 8500 1300
-NoConn ~ 8500 1400
-NoConn ~ 8500 1500
-NoConn ~ 8500 1600
-NoConn ~ 8500 2000
-NoConn ~ 8500 2100
-NoConn ~ 8500 2300
+NoConn ~ 9450 3800
+NoConn ~ 9450 800 
+NoConn ~ 9450 900 
+NoConn ~ 9450 1000
+NoConn ~ 9450 1100
+NoConn ~ 9450 1200
+NoConn ~ 9450 1300
+NoConn ~ 9450 1400
+NoConn ~ 9450 1500
+NoConn ~ 9450 1600
+NoConn ~ 9450 2000
+NoConn ~ 9450 2100
+NoConn ~ 9450 2300
 NoConn ~ 3000 900 
 NoConn ~ 3000 1000
 $Comp
@@ -206,8 +206,6 @@ Text HLabel 3500 3300 2    50   Output ~ 0
 LMOTOR_CTL2
 Text HLabel 3500 2900 2    50   Output ~ 0
 RMOTOR_CTL2
-Text HLabel 4600 7200 2    50   Input ~ 0
-~MOTOR_FAULT_IN
 Text HLabel 6000 2000 2    50   Input ~ 0
 LQUAD_A
 Text HLabel 3500 1200 2    50   Input ~ 0
@@ -253,7 +251,7 @@ NoConn ~ 3000 3600
 NoConn ~ 5500 5900
 NoConn ~ 5500 2300
 NoConn ~ 5500 3700
-NoConn ~ 8500 1900
+NoConn ~ 9450 1900
 NoConn ~ 5500 5300
 NoConn ~ 5500 5500
 Text HLabel 6000 3400 2    50   Output ~ 0
@@ -262,7 +260,7 @@ Text HLabel 6000 3000 2    50   Output ~ 0
 DIO_SCK
 Text HLabel 6000 3200 2    50   Output ~ 0
 ~DIO_NSS
-Text HLabel 9000 3500 2    50   Output ~ 0
+Text HLabel 9950 3500 2    50   Output ~ 0
 ~NRST
 Text HLabel 3500 2300 2    50   Output ~ 0
 ~LEDS_NSS
@@ -362,7 +360,7 @@ Wire Wire Line
 Wire Wire Line
 	5500 5800 5700 5800
 Wire Wire Line
-	8500 3500 9000 3500
+	9450 3500 9950 3500
 Wire Wire Line
 	3500 4300 3000 4300
 Wire Wire Line
@@ -381,19 +379,19 @@ Wire Wire Line
 	5500 3400 6000 3400
 Wire Wire Line
 	5500 3000 6000 3000
-NoConn ~ 8500 2900
-NoConn ~ 8500 2800
+NoConn ~ 9450 2900
+NoConn ~ 9450 2800
 $Comp
 L HR2:NUCLEO-F767ZI;2xF2x35 CN95
 U 8 1 5F355CEA
-P 6500 2800
-F 0 "CN95" H 6850 2950 50  0000 C CNN
-F 1 "NUCLEO-F767ZI;2xF2x35" H 7200 2550 50  0000 C CNN
-F 2 "HR2:NUCLEO_F767ZI_2xF2x35" H 6700 2850 60  0001 L CNN
-F 3 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 6700 2650 60  0001 L CNN
-F 4 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 6700 2750 60  0001 L CNN "manf#"
-F 5 "NUCLEO144-F767ZI;Nucleo144 STM32F767ZI" H 6700 2550 60  0001 L CNN "Field5"
-	8    6500 2800
+P 7450 2800
+F 0 "CN95" H 7800 2950 50  0000 C CNN
+F 1 "NUCLEO-F767ZI;2xF2x35" H 8150 2550 50  0000 C CNN
+F 2 "HR2:NUCLEO_F767ZI_2xF2x35" H 7650 2850 60  0001 L CNN
+F 3 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 7650 2650 60  0001 L CNN
+F 4 "https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf" H 7650 2750 60  0001 L CNN "manf#"
+F 5 "NUCLEO144-F767ZI;Nucleo144 STM32F767ZI" H 7650 2550 60  0001 L CNN "Field5"
+	8    7450 2800
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -414,32 +412,12 @@ Wire Wire Line
 	3300 1700 4100 1700
 Wire Wire Line
 	6000 1000 5500 1000
-Text HLabel 4600 7300 2    50   Output ~ 0
-~MOTOR_FAULT_OUT
-Wire Wire Line
-	4600 7200 4500 7200
-Wire Wire Line
-	4500 7200 4500 7300
-Wire Wire Line
-	4500 7300 4600 7300
 Wire Wire Line
 	5500 1400 6000 1400
-Text HLabel 4600 7000 2    50   Input ~ 0
-~ESTOP_IN
 Text HLabel 6000 1500 2    50   Input ~ 0
-ESTOP
+~NESTOP
 Text Notes 8850 4350 0    50   ~ 0
 Morpho Power Pins.
-Text HLabel 4600 7100 2    50   Output ~ 0
-~MOTOR_SLEEP
-Wire Wire Line
-	4600 7000 4500 7000
-Wire Wire Line
-	4500 7000 4500 7100
-Wire Wire Line
-	4500 7100 4600 7100
-Wire Wire Line
-	5500 1500 6000 1500
 Wire Wire Line
 	4100 1700 4100 4550
 Wire Wire Line
@@ -485,15 +463,13 @@ NoConn ~ 3000 5300
 NoConn ~ 3000 5200
 NoConn ~ 3000 4900
 Text HLabel 6000 1100 2    50   Output ~ 0
-~ESTOP_CLR
+ESTOP_CLR
 Wire Wire Line
 	3000 5000 3500 5000
 Wire Wire Line
 	3000 6000 3500 6000
 Wire Wire Line
 	5500 800  6000 800 
-Text Notes 4500 6900 0    50   ~ 0
-Cross Sheet Connetions
 Text HLabel 3500 5000 2    50   Input ~ 0
 SERVO_CUR
 Text HLabel 6000 5600 2    50   Input ~ 0
@@ -508,8 +484,8 @@ Wire Wire Line
 	8100 6000 10000 6000
 Wire Wire Line
 	5500 3200 6000 3200
-NoConn ~ 8500 2200
-NoConn ~ 8500 1700
+NoConn ~ 9450 2200
+NoConn ~ 9450 1700
 NoConn ~ 5500 2800
 NoConn ~ 5500 2200
 NoConn ~ 5500 900 
@@ -518,4 +494,6 @@ NoConn ~ 3000 1300
 NoConn ~ 3000 1400
 NoConn ~ 3000 1500
 NoConn ~ 3000 4800
+Wire Wire Line
+	5500 1500 6000 1500
 $EndSCHEMATC

@@ -105,15 +105,15 @@ Wire Wire Line
 Wire Wire Line
 	3200 3500 4200 3500
 Text HLabel 4200 3500 2    50   Input ~ 0
-~MOTOR_SLEEP
+~NESTOP
 Text Label 3250 3500 0    50   ~ 0
-~MOTOR_SLEEP
+~NESTOP
 Text HLabel 4200 4200 2    50   Output ~ 0
-~MOTOR_FAULT
+~NMOTOR_FAULT
 Wire Wire Line
 	3200 4200 4200 4200
 Text Label 3250 4200 0    50   ~ 0
-~MOTOR_FAULT
+~NMOTOR_FAULT
 Wire Wire Line
 	3200 3600 4900 3600
 Wire Wire Line

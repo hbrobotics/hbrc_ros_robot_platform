@@ -11,7 +11,9 @@
 
 ## WOWBus
 
-* Resize 120Ω Resistors (requires .2W, prefer .25W): 0603 support .25W
+* (DONE) Update WOWBus schematic.
+* Resize 120Ω Resistors (requires .2W, prefer .25W)?:
+  Does 0603 support .25W?
 * Are solid state relay current limit resistors (R61, R62) are currently 100KΩ;1608.
   * Are the right value for Ohms to limit current?
   * Are the sized right, or can theye be down-sized?
@@ -44,6 +46,7 @@
 ## Nucleo144
 
 * Figure out why 3.3V is not in PCB footprint (KiCube problem?)
+* Switch PD7 to NESTOP in schematic symbol.
 
 ## LED's:
 
