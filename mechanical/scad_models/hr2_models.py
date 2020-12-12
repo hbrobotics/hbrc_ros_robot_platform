@@ -3682,16 +3682,16 @@ class LidarAdapter:
     # LidarAdapter.__init__():
     def __init__(self, scad_program: ScadProgram, connectors: Connectors, pcb_origin: P2D) -> None:
         """Initialize a LidarAdpater."""
-        pcb_dx: float = 7.0 * 2.54
+        pcb_dx: float = 7.75 * 2.54
         pcb_dy: float = 4.0 * 2.54
         pcb_dz: float = 1.6
 
         lidar_adapter_exterior: SimplePolygon = Square(
             "Lidar Adapter Exterior", pcb_dx, pcb_dy, corner_radius=1.0, corner_count=3)
 
-        power_center: P2D = P2D(-1.5 * 2.54, -1.5 * 2.54)
-        tx_rx_center: P2D = P2D(1.0 * 2.54, -1.5 * 2.54)
-        pwm_enable_center: P2D = P2D(0.0 * 2.54, 1.5 * 2.54)
+        a_connector_center: P2D = P2D(-2.25 * 2.54, -1.5 * 2.54)
+        b_connector_center: P2D = P2D(1.5 * 2.54, -1.5 * 2.54)
+        c_connector_center: P2D = P2D(0.0 * 2.54, 1.5 * 2.54)
 
         # PH1.25-P8 connector use by YDLidar X4:
         ph7_dx: float = 15.9
@@ -3715,20 +3715,20 @@ class LidarAdapter:
         origin2d: P2D = P2D(0.0, 0.0)
         lidar_adapter_pcb_chunk: PCBChunk = PCBChunk.join("Lidar Adapter", [
             ph7_pcb_chunk,
-            (connectors.m1x2.pcb_chunk.
-             sides_swap().
-             scads_x_flip().
-             reposition(origin2d, 0.0, power_center, is_front=False, reference_name="CN201")),
-            (connectors.m1x2.pcb_chunk.
-             sides_swap().
-             scads_x_flip().
-             pads_rebase(2).
-             reposition(origin2d, 0.0, tx_rx_center, is_front=False, reference_name="CN202")),
             (connectors.m1x3.pcb_chunk.
              sides_swap().
              scads_x_flip().
-             pads_rebase(4).
-             reposition(origin2d, 0.0, pwm_enable_center, is_front=False, reference_name="CN203")),
+             reposition(origin2d, 0.0, a_connector_center, is_front=False, reference_name="CN201")),
+            (connectors.m1x4.pcb_chunk.
+             sides_swap().
+             scads_x_flip().
+             pads_rebase(3).
+             reposition(origin2d, 0.0, b_connector_center, is_front=False, reference_name="CN202")),
+            (connectors.m1x4.pcb_chunk.
+             sides_swap().
+             scads_x_flip().
+             pads_rebase(7).
+             reposition(origin2d, 0.0, c_connector_center, is_front=False, reference_name="CN203")),
         ])
         lidar_adapter_module = lidar_adapter_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz, lidar_adapter_exterior, "Indigo", None, [])
@@ -3743,15 +3743,15 @@ class LidarAdapter:
         print(f"mount_holes:{mount_holes}")
         print(f"translated_adapter_pcb_chunk:{translated_adapter_pcb_chunk}")
 
-        lidar_adapter_mate_pcb_chunk: PCBChunk = PCBChunk.join("LIDAR_ADAPTER_2xF1x2+Fx3", [
-            (connectors.f1x2.pcb_chunk.
-             reposition(origin2d, 0.0, power_center)),
-            (connectors.f1x2.pcb_chunk.
-             pads_rebase(2).
-             reposition(origin2d, 0.00, tx_rx_center)),
+        lidar_adapter_mate_pcb_chunk: PCBChunk = PCBChunk.join("LIDAR_ADAPTER_2xF1x4+F1x3", [
             (connectors.f1x3.pcb_chunk.
-             pads_rebase(4).
-             reposition(origin2d, 0.0, pwm_enable_center)),
+             reposition(origin2d, 0.0, a_connector_center)),
+            (connectors.f1x4.pcb_chunk.
+             pads_rebase(3).
+             reposition(origin2d, 0.00, b_connector_center)),
+            (connectors.f1x4.pcb_chunk.
+             pads_rebase(7).
+             reposition(origin2d, 0.0, c_connector_center)),
             translated_adapter_pcb_chunk,
         ])
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"

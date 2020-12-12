@@ -72,11 +72,11 @@ case "$1" in
     "hr2_wheel_assembly")
 	scad "hr2_wheel_assembly"
 	;;
-    "lidar_adapter_2xf1x2+fx3_bare")
-	scad "lidar_adapter_2xf1x2+fx3_bare"
+    "lidar_adapter_2xf1x4+f1x3_bare")
+	scad "lidar_adapter_2xf1x4+f1x3_bare"
 	;;
-    "lidar_adapter_2xf1x2+fx3_board")
-	scad "lidar_adapter_2xf1x2+fx3_board"
+    "lidar_adapter_2xf1x4+f1x3_board")
+	scad "lidar_adapter_2xf1x4+f1x3_board"
 	;;
     "lidar_adapter_bare")
 	scad "lidar_adapter_bare"
@@ -230,8 +230,8 @@ case "$1" in
 	echo "hr2_nucleo_assembly"
 	echo "hr2_pi_assembly"
 	echo "hr2_wheel_assembly"
-	echo "lidar_adapter_2xf1x2+fx3_bare"
-	echo "lidar_adapter_2xf1x2+fx3_board"
+	echo "lidar_adapter_2xf1x4+f1x3_bare"
+	echo "lidar_adapter_2xf1x4+f1x3_board"
 	echo "lidar_adapter_bare"
 	echo "lidar_adapter_board"
 	echo "master_bare"

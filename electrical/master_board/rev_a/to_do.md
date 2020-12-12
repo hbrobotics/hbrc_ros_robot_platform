@@ -65,10 +65,11 @@
 ## Connectors
 
 * Make sure that 165's are 5V tollerant for sense connectors.
-* Add Lidar id pins to lidar connector.
-* Route Lidar id pins to U7.
-* Add nWOW_ESTOP, nMOTOR_FAULT, and nBTN_ESTOP to U7
-* The remaining bits are a PCB revision (00=>A, 01=>B, 10=>C, 11=>D).
+* (DONE) Add Lidar id pins to lidar connector.
+* (DONE) Add pull-up resistors to LDR_ID0, LDR_ID1, LDR_ID2.
+* Route LDR_ID0, LDR_ID1, LDR_ID2 to
+* Route NWOW_ESTOP, NMOTOR_FAULT, and NBTN_ESTOP to U7
+* (DONE) The remaining bits are a PCB revision (00=>A, 01=>B, 10=>C, 11=>D).
 
 ## Encoder Boards
 
