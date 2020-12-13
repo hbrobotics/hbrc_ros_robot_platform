@@ -234,12 +234,6 @@ K ~
 F 
 $ENDCMP
 #
-$CMP LIDAR_ADAPTER;2xF1x2
-D Lidar Adapter Connectors
-K ~
-F 
-$ENDCMP
-#
 $CMP BRIDGE_NE_INNER;3xM1x1+M1x5
 D NE Inner Bridge Connectors
 K ~

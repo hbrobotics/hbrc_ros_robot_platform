@@ -1027,6 +1027,8 @@ Wire Wire Line
 	9300 3100 9900 3100
 Entry Wire Line
 	9300 3100 9200 3000
+Text Label 9300 3100 0    50   ~ 0
+GND
 Wire Bus Line
 	4000 2000 4000 2250
 Wire Bus Line
@@ -1055,6 +1057,4 @@ Wire Bus Line
 	1500 2250 1500 5050
 Wire Bus Line
 	6200 1900 6200 4000
-Text Label 9300 3100 0    50   ~ 0
-GND
 $EndSCHEMATC

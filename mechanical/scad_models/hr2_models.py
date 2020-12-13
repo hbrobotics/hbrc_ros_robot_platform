@@ -3743,7 +3743,7 @@ class LidarAdapter:
         print(f"mount_holes:{mount_holes}")
         print(f"translated_adapter_pcb_chunk:{translated_adapter_pcb_chunk}")
 
-        lidar_adapter_mate_pcb_chunk: PCBChunk = PCBChunk.join("LIDAR_ADAPTER_2xF1x4+F1x3", [
+        lidar_adapter_mate_pcb_chunk: PCBChunk = PCBChunk.join("LIDAR_ADAPTER_2xF1x4_F1x3", [
             (connectors.f1x3.pcb_chunk.
              reposition(origin2d, 0.0, a_connector_center)),
             (connectors.f1x4.pcb_chunk.

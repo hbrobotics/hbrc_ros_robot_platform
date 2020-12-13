@@ -63,7 +63,7 @@ Text Label 4000 5800 2    50   ~ 0
 3.3V
 Wire Wire Line
 	1500 5400 4200 5400
-Text Label 5900 6200 2    50   ~ 0
+Text Label 5900 5900 2    50   ~ 0
 GND
 Entry Wire Line
 	5900 5800 6000 5700
@@ -92,11 +92,11 @@ LDR_TX
 Text Label 5900 5800 2    50   ~ 0
 3.3V
 Entry Wire Line
-	6000 6300 5900 6200
+	6000 5800 5900 5900
 Wire Wire Line
 	5500 5800 5900 5800
 Wire Wire Line
-	5500 6200 5900 6200
+	5500 5900 5900 5900
 Wire Wire Line
 	5500 5700 5900 5700
 Text Label 1500 6100 0    50   ~ 0
@@ -790,9 +790,9 @@ F 4 "Lidar Adapter Connectors" H 4700 5450 60  0001 L CNN "desc"
 	1    4500 5700
 	1    0    0    -1  
 $EndComp
-Text Label 7900 6000 2    50   ~ 0
-LDR_ID1
 Text Label 7900 6100 2    50   ~ 0
+LDR_ID1
+Text Label 7900 6200 2    50   ~ 0
 LDR_ID2
 Wire Wire Line
 	8800 4200 8800 4900
@@ -841,7 +841,7 @@ Wire Wire Line
 	4400 5700 4400 5200
 Wire Bus Line
 	4900 6700 8000 6700
-Text Label 7900 5900 2    50   ~ 0
+Text Label 7900 6000 2    50   ~ 0
 LDR_ID0
 $Comp
 L Device:R_US R?
@@ -890,32 +890,25 @@ Wire Wire Line
 Wire Wire Line
 	7550 5250 6950 5250
 Entry Wire Line
+	7900 6200 8000 6100
+Entry Wire Line
 	7900 6100 8000 6000
 Entry Wire Line
 	7900 6000 8000 5900
-Entry Wire Line
-	7900 5900 8000 5800
 Wire Wire Line
-	5500 5900 6350 5900
+	6350 5700 6350 6000
+Connection ~ 6350 6000
 Wire Wire Line
-	5500 6000 6950 6000
+	6350 6000 7900 6000
 Wire Wire Line
-	5500 6100 7550 6100
+	6950 5800 6950 6100
 Wire Wire Line
-	6350 5700 6350 5900
-Connection ~ 6350 5900
+	6950 6100 7900 6100
 Wire Wire Line
-	6350 5900 7900 5900
+	7550 5650 7550 6200
+Connection ~ 7550 6200
 Wire Wire Line
-	6950 5800 6950 6000
-Connection ~ 6950 6000
-Wire Wire Line
-	6950 6000 7900 6000
-Wire Wire Line
-	7550 5650 7550 6100
-Connection ~ 7550 6100
-Wire Wire Line
-	7550 6100 7900 6100
+	7550 6200 7900 6200
 Wire Wire Line
 	6950 5500 6950 5250
 Connection ~ 6950 5250
@@ -940,6 +933,13 @@ Wire Wire Line
 	8100 3250 10000 3250
 Wire Wire Line
 	10100 2600 10100 3350
+Wire Wire Line
+	5500 6200 7550 6200
+Connection ~ 6950 6100
+Wire Wire Line
+	5500 6100 6950 6100
+Wire Wire Line
+	5500 6000 6350 6000
 Wire Bus Line
 	4100 5600 4100 6500
 Wire Bus Line
