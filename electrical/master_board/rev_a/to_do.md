@@ -21,7 +21,7 @@
 ## SBC
 
 * Is NESTOP connected?
-  Not yet.
+  Unclear.
 * Are the I2C resistors the correct value?
   One is 3.9KΩ and the other is 4.7KΩ.  They should probably be the same.
 * Is the SBC Alive LED current limit resistor the right value?
@@ -38,8 +38,8 @@
 * (DONE) Are bypass capacitors C11 and C12, 10µF and 2.2µF (C11 and C12)? Yes.
   * Before C11 was 10pF not 10µF.
 * Resize 10K resistors to 1005 (i.e. 0402)?
-* Is NSLEEP routedto NESTOP?
-* Route LED (R58, D3) to be off of NESTOP.
+* (DONE) Is NSLEEP routed to NESTOP?
+* Route LED (R58, D3) to be off of ENSTOP.
 * Is LED current limit (R58) properly sized?
 
 ## ST_link
@@ -68,8 +68,8 @@
 * Make sure that 165's are 5V tolerant for sense connectors.
 * (DONE) Add Lidar id pins to lidar connector.
 * (DONE) Add pull-up resistors to LDR_ID0, LDR_ID1, LDR_ID2.
-* Route LDR_ID0, LDR_ID1, LDR_ID2 to
-* Route NWOW_ESTOP, NMOTOR_FAULT, and NBTN_ESTOP to U7
+* (DONE) Route LDR_ID0, LDR_ID1, LDR_ID2 to U7
+* (DONE) Route NWOW_ESTOP, NMOTOR_FAULT, and NBTN_ESTOP to U7
 * (DONE) The remaining bits are a PCB revision (00=>A, 01=>B, 10=>C, 11=>D).
 
 ## Encoder Boards
