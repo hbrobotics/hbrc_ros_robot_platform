@@ -20,7 +20,7 @@
 
 ## SBC
 
-* Is nESTOP connected?
+* Is NESTOP connected?
   Not yet.
 * Are the I2C resistors the correct value?
   One is 3.9KΩ and the other is 4.7KΩ.  They should probably be the same.
@@ -35,10 +35,11 @@
 
 * (DONE) Does nSLEEP need a pull up/down?  No
 * (DONE) Does nFAULT need a pull up/down?  Yes, 10K pull-up present
-* Are bypass capacitors are 2.2µF and 10µF (C11 and C12)? No! C11 is 10pF!
+* (DONE) Are bypass capacitors C11 and C12, 10µF and 2.2µF (C11 and C12)? Yes.
+  * Before C11 was 10pF not 10µF.
 * Resize 10K resistors to 1005 (i.e. 0402)?
-* Is nSLEEP connected to nESTOP?
-* Move LED (R58,D3) to be off of nESTOP.
+* Is NSLEEP routedto NESTOP?
+* Route LED (R58, D3) to be off of NESTOP.
 * Is LED current limit (R58) properly sized?
 
 ## ST_link
@@ -59,12 +60,12 @@
 
 ## Servos and Sonars
 
-* Add the low pass filter to the current sense.
-* Clean up schematic sheet to remove white space where voltage dividers were.
+* (DONE) Add the low pass filter to the current sense.
+* (DONE) Clean up schematic sheet to remove white space where voltage dividers were.
 
 ## Connectors
 
-* Make sure that 165's are 5V tollerant for sense connectors.
+* Make sure that 165's are 5V tolerant for sense connectors.
 * (DONE) Add Lidar id pins to lidar connector.
 * (DONE) Add pull-up resistors to LDR_ID0, LDR_ID1, LDR_ID2.
 * Route LDR_ID0, LDR_ID1, LDR_ID2 to
