@@ -14,7 +14,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L HR2:STLINK;4xF1x2+F1x4+F1x6 CN2
+L st_adapter-rescue:STLINK;4xF1x2+F1x4+F1x6-HR2 CN2
 U 1 1 5F448E80
 P 5400 5400
 F 0 "CN2" H 6100 5550 50  0000 R CNN
@@ -26,7 +26,7 @@ F 4 "ST Adapter Mating Connector" H 5600 5350 60  0001 L CNN "manf#"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:STLINK;4xF1x2+F1x4+F1x6 CN2
+L st_adapter-rescue:STLINK;4xF1x2+F1x4+F1x6-HR2 CN2
 U 2 1 5F449E3D
 P 5400 4800
 F 0 "CN2" H 6100 4950 50  0000 R CNN
@@ -38,7 +38,7 @@ F 4 "ST Adapter Mating Connector" H 5600 4750 60  0001 L CNN "manf#"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:STLINK;4xF1x2+F1x4+F1x6 CN2
+L st_adapter-rescue:STLINK;4xF1x2+F1x4+F1x6-HR2 CN2
 U 3 1 5F44AC51
 P 5500 2350
 F 0 "CN2" H 6200 2500 50  0000 R CNN
@@ -50,7 +50,7 @@ F 4 "ST Adapter Mating Connector" H 5700 2300 60  0001 L CNN "manf#"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:STLINK;4xF1x2+F1x4+F1x6 CN2
+L st_adapter-rescue:STLINK;4xF1x2+F1x4+F1x6-HR2 CN2
 U 4 1 5F44B889
 P 5300 4200
 F 0 "CN2" H 6000 4350 50  0000 R CNN
@@ -62,7 +62,7 @@ F 4 "ST Adapter Mating Connector" H 5500 4150 60  0001 L CNN "manf#"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:STLINK;4xF1x2+F1x4+F1x6 CN2
+L st_adapter-rescue:STLINK;4xF1x2+F1x4+F1x6-HR2 CN2
 U 5 1 5F44CB2F
 P 5700 3200
 F 0 "CN2" H 6400 3350 50  0000 R CNN
@@ -74,7 +74,7 @@ F 4 "ST Adapter Mating Connector" H 5900 3150 60  0001 L CNN "manf#"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:STLINK;4xF1x2+F1x4+F1x6 CN2
+L st_adapter-rescue:STLINK;4xF1x2+F1x4+F1x6-HR2 CN2
 U 6 1 5F44DAB8
 P 5600 1750
 F 0 "CN2" H 6300 1900 50  0000 R CNN
@@ -86,7 +86,7 @@ F 4 "ST Adapter Mating Connector" H 5800 1700 60  0001 L CNN "manf#"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:STLINK;4xF1x2+F1x4+F1x6 CN2
+L st_adapter-rescue:STLINK;4xF1x2+F1x4+F1x6-HR2 CN2
 U 7 1 5F44E7B1
 P 5400 6000
 F 0 "CN2" H 6100 6150 50  0000 R CNN
