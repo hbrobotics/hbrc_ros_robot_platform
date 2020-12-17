@@ -588,7 +588,7 @@ def jlcpcb_regular_expressions_get() -> Dict[str, Tuple[str, str, str]]:
         "74LVC1G74;TSSOP8": ("", ".*", ".*"),
         "74x11G1;TSOP6": ("", ".*", ".*"),
         "ACS711;SOIC8": ("Current Sensors SOIC-8_150mil RoHS", ".*", "C10681$"),
-        "AH1806;SC59": ("Magnetic Sensors SOT-23(SOT-23-3) RoHS", ".*", ".*"),
+        "AH1806;SC59": (r"Magnetic Sensors SOT-23\(SOT-23-3\) RoHS", ".*", ".*"),
         "AP2114HA-3.3TRG1_1A;SOT223": (r"Low Dropout Regulators\(LDO\) SOT-223", ".*", "C166063$"),
         "BUTTON;6x3.5": ("", ".*", ".*"),
         "CAT24C32;SOIC8": (r"EEPROM EEPROM 32Kb \(4K x 8\) I2C SOIC-8_150mil RoHS", ".*", "C6654$"),
