@@ -147,11 +147,14 @@ def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
     print(f"{len(jlcpcb_bom)} matched JLCPCB parts")
 
     # Construct the *matches* list:
+    pcb_count: int = 5
     value_index: int = bom_indices["Value"]
     references_index: int = bom_indices["Ref"]
     # lcsc_index: int = match_indices["lcsc"]
     # manufacturer_part_index: int = match_indices["manufacturer_part"]
     # package_index: int = match_indices["package"]
+    extended_count: int = 0
+    total_cost: float = 0.0
     lines: List[str] = ['"Comment","Designator","Footprint","LCSC Part #","Mfg Part No."']
     row: Row
     sorted_rows: List[Row] = sorted(jlcpcb_bom.values())
@@ -164,6 +167,7 @@ def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
             matches_list: List[Match] = matches[value]
             match: Match = matches_list[0]
 
+            price_breaks: Any = None
             key_to_text: Dict[str, str] = {}
             key: str
             key_index: int
@@ -171,7 +175,15 @@ def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
                 text_any: Any = match[key_index]
                 if isinstance(text_any, str):
                     key_to_text[key] = text_any
+                elif isinstance(text_any, tuple):
+                    price_breaks = text_any
 
+            price: float = -999999.99
+            if isinstance(price_breaks, tuple):
+                price_break: PriceBreak = price_breaks[0]
+                price = price_break[1]
+
+            library_type: str = key_to_text["library_type"]
             manufacturer_part: str = key_to_text["manufacturer_part"]
             package: str = key_to_text["package"]
             if not package.startswith("LED"):
@@ -180,10 +192,17 @@ def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
                     package = package[:underscore_index]
             lcsc_part: str = key_to_text["lcsc"]
             references: str = row[references_index]
-            line: str = (f'"{trimmed_value}","{references}","{package}","{lcsc_part}"'
-                         f',"{manufacturer_part}"')
+            references_count: int = len(references.split(references))
+            part_cost: float = references_count * price
+            if library_type == "Extended":
+                extended_count += 1
+                part_cost += 3.00
+            total_cost += part_cost
+            line: str = (f'"{trimmed_value}","{references}","{package}","{lcsc_part}",'
+                         f'"{manufacturer_part}",${pcb_count*part_cost:.2f},{library_type}')
             lines.append(line)
-    lines.append("")
+    lines.append(f"Extended: {extended_count} x $3 => ${3*extended_count}")
+    lines.append(f"Total Cost:${pcb_count*total_cost:.2f}")
     text: str = "\n".join(lines)
     print("JLCPCB Data:")
     print(text)
