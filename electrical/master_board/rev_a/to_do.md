@@ -1,5 +1,13 @@
 # HR2 TO DO list
 
+## Misc. Links
+
+* libreoffice --headless --convert-to csv ./jlcpcb_smt_parts_library.xls --outdir /tmp/
+* https://eepower.com/resistor-guide/resistor-standards-and-codes/resistor-sizes-and-packages/#
+* https://support.jlcpcb.com/article/84-how-to-generate-the-bom-and-centroid-file-from-kicad
+* https://docs.google.com/spreadsheets/d/1bSM_Ko6OLz7rW6MCQbw4Zv_Z4hOHcI7w7O6sczi2h5w/edit#gid=0
+* https://store.hp.com/us/en/pdp/hp-laptop-17z-5nv50av-1
+
 ## Power Supply
 
 * Downsize the 3.3V regulator to a SOT23 Package.
@@ -39,7 +47,7 @@
   * Before C11 was 10pF not 10µF.
 * Resize 10K resistors to 1005 (i.e. 0402)?
 * (DONE) Is NSLEEP routed to NESTOP?
-* Route LED (R58, D3) to be off of ENSTOP.
+* Route LED (R58, D3) to be off of NESTOP.
 * Is LED current limit (R58) properly sized?
 
 ## ST_link
@@ -66,6 +74,9 @@
 ## Connectors
 
 * Make sure that 165's are 5V tolerant for sense connectors.
+  * Nexperia says yes (15V).
+  * TI has no comment.
+  * ON has no comment.
 * (DONE) Add Lidar id pins to lidar connector.
 * (DONE) Add pull-up resistors to LDR_ID0, LDR_ID1, LDR_ID2.
 * (DONE) Route LDR_ID0, LDR_ID1, LDR_ID2 to U7
@@ -80,6 +91,6 @@
 
 * Do a design review.
 
-## Lidar Adapater Board.
+## Lidar Adapter Board.
 
 * Bang one or two out?
