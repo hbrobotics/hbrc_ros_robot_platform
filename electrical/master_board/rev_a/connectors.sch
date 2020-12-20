@@ -923,6 +923,17 @@ Wire Wire Line
 	5500 6100 6950 6100
 Wire Wire Line
 	5500 6000 6350 6000
+$Comp
+L Transistor_FET:2N7002 Q25
+U 1 1 5FE994E8
+P 3200 3800
+F 0 "Q25" H 3050 3950 50  0000 L CNN
+F 1 "2N7002;SOT23" H 3350 3700 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3400 3725 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 3200 3800 50  0001 L CNN
+	1    3200 3800
+	1    0    0    -1  
+$EndComp
 Wire Bus Line
 	4100 5600 4100 6500
 Wire Bus Line
@@ -941,15 +952,4 @@ Wire Bus Line
 	8000 2800 8000 6700
 Wire Bus Line
 	6000 700  6000 6500
-$Comp
-L Transistor_FET:2N7002 Q25
-U 1 1 5FE994E8
-P 3200 3800
-F 0 "Q25" H 3050 3950 50  0000 L CNN
-F 1 "2N7002;SOT23" H 3350 3700 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 3400 3725 50  0001 L CIN
-F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 3200 3800 50  0001 L CNN
-	1    3200 3800
-	1    0    0    -1  
-$EndComp
 $EndSCHEMATC
