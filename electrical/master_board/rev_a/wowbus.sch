@@ -146,21 +146,6 @@ F 3 "~" H 2000 5750 50  0001 C CNN
 	1    2000 5750
 	1    0    0    -1  
 $EndComp
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5F9A0944
-P 3800 4200
-AR Path="/5F79BC00/5F9A0944" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5F9A0944" Ref="Q?"  Part="1" 
-AR Path="/5FAD82EE/5F9A0944" Ref="Q?"  Part="1" 
-AR Path="/5F8C2F57/5F9A0944" Ref="Q20"  Part="1" 
-F 0 "Q20" H 3700 4350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 3950 4050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 4000 4125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3800 4200 50  0001 L CNN
-	1    3800 4200
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	3900 2000 3900 4000
 Text HLabel 1200 2100 0    50   Input ~ 0
@@ -315,8 +300,6 @@ Wire Wire Line
 	5400 4800 5400 4300
 Wire Wire Line
 	5400 4300 5500 4300
-Wire Wire Line
-	4700 3600 4700 4400
 Connection ~ 4700 4400
 Wire Wire Line
 	4700 4400 5300 4400
@@ -345,21 +328,6 @@ Wire Wire Line
 	4700 6100 7000 6100
 Wire Wire Line
 	4700 4400 4700 4500
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5F86962A
-P 4600 4700
-AR Path="/5F79BC00/5F86962A" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5F86962A" Ref="Q?"  Part="1" 
-AR Path="/5FAD82EE/5F86962A" Ref="Q?"  Part="1" 
-AR Path="/5F8C2F57/5F86962A" Ref="Q22"  Part="1" 
-F 0 "Q22" H 4500 4850 50  0000 L CNN
-F 1 "2N7000;SOT23" H 4100 4500 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 4800 4625 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 4600 4700 50  0001 L CNN
-	1    4600 4700
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	4700 3200 6900 3200
 Connection ~ 4700 3200
@@ -489,7 +457,7 @@ Wire Wire Line
 Connection ~ 2200 4600
 Text Notes 3950 4000 0    50   ~ 0
 3.3 to 9V\nLevel Shift
-Text Notes 4750 5000 0    50   ~ 0
+Text Notes 4750 5050 0    50   ~ 0
 WOW Standby\nInverter
 Text Label 3900 2000 0    50   ~ 0
 ~NWOW_EN
@@ -812,7 +780,7 @@ L HR2_MISC:Q_PWR_PMOS_GSD Q21
 U 1 1 5FD48C48
 P 4500 1200
 F 0 "Q21" V 4400 1100 50  0000 C CNN
-F 1 "PFET_6A;SOT23" V 4751 1200 50  0000 C CNN
+F 1 "PFET_6A_GSD;SOT23" V 4751 1200 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23" H 4700 1300 50  0001 C CNN
 F 3 "~" H 4500 1200 50  0001 C CNN
 	1    4500 1200
@@ -1048,4 +1016,28 @@ Wire Wire Line
 	2400 4100 2400 3800
 Connection ~ 2200 4100
 Connection ~ 2400 3800
+$Comp
+L Transistor_FET:2N7002 Q20
+U 1 1 5FE8B140
+P 3800 4200
+F 0 "Q20" H 3650 4350 50  0000 L CNN
+F 1 "2N7002;SOT23" H 3950 4100 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 4000 4125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 3800 4200 50  0001 L CNN
+	1    3800 4200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4700 3600 4700 4400
+$Comp
+L Transistor_FET:2N7002 Q22
+U 1 1 5FE90DD1
+P 4600 4700
+F 0 "Q22" H 4450 4850 50  0000 L CNN
+F 1 "2N7002;SOT23" H 4750 4600 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 4800 4625 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 4600 4700 50  0001 L CNN
+	1    4600 4700
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

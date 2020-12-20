@@ -26,12 +26,39 @@ import csv
 from pathlib import Path
 import os
 import re
-from typing import Any, Dict, IO, List, Set, Tuple
+from typing import Dict, IO, List, Set, Tuple
+from collections import namedtuple as NamedTuple
 
+REPatterns = Tuple[str, str, str, str]
 Row = Tuple[str, ...]
 Rows = Tuple[Row, ...]
-PriceBreak = Tuple[int, float, int]
-Match = Tuple[str, Tuple[PriceBreak, ...], str, str, str, str, str, str]
+PriceBreak = NamedTuple("PriceBreak", ["min_quantity", "price", "max_quantity"])
+PriceBreaks = Tuple[PriceBreak, ...]
+Match = NamedTuple("Match", [
+    "library_type",
+    "price_breaks",
+    "name",
+    "description",
+    "package",
+    "lcsc",
+    "stock",
+    "manufacturer_part",
+])
+JlcpcbRow = NamedTuple("JlcpcbRow", [
+    "lcsc",
+    "first_category",
+    "second_category",
+    "manufacturer_part",
+    "package",
+    "solder_joints",
+    "manufacturer",
+    "library_type",
+    "description",
+    "datasheet",
+    "price",
+    "stock",
+])
+
 
 match_indices: Dict[str, int] = {
     "library_type": 0,
@@ -59,43 +86,48 @@ def main() -> int:
 
     # Only search the JLCPCB parts library once:
     matches: Dict[str, List[Match]]
-    jlcpcb_indices: Dict[str, int]
-    error, matches, jlcpcb_indices = jlcpcb_parts_search(hr2_dir)
+    error, matches = jlcpcb_parts_search(hr2_dir)
     print(f":Matches size:{len(matches)}")
     if error:
         errors += 1
     else:
         # Iterate over all of the *bom_paths*:
-        bom_paths: Tuple[Path, ...] = (
-            hr2_dir / "electrical" / "master_board" / "rev_a" / "master_board_kicad_bom.csv",
-            hr2_dir / "electrical" / "encoder" / "rev_a" / "encoder_kicad_bom.csv",
+        bom_paths: Tuple[Tuple[Path, str, int], ...] = (
+            (hr2_dir / "electrical" / "master_board" / "rev_a", "master_board", 5),
+            (hr2_dir / "electrical" / "encoder" / "rev_a", "encoder", 10),
         )
-        for bom_path in bom_paths:
-            print(f"{bom_path}:")
+        path: Path
+        prefix: str
+        pcb_count: int
+        for path, prefix, pcb_count in bom_paths:
+            print(f"{path}, {prefix}, {pcb_count}:")
             jlcpcb_bom: Dict[str, Row]
             other_bom: Dict[str, Row]
             bom_indices: Dict[str, int]
-            bom_indices, jlcpcb_bom, other_bom, error = bom_read(bom_path)
+            kicad_bom_path: Path = path / (prefix + "_kicad_bom.csv")
+            bom_indices, jlcpcb_bom, other_bom, error = bom_read(kicad_bom_path)
             if not error:
-                error = jlcpcb_parts_csv_generate(hr2_dir, bom_indices,
-                                                  jlcpcb_bom, matches, match_indices)
+                jlcpcb_bom_path: Path = path / (prefix + "_jlcpcb_bom.csv")
+                error = jlcpcb_parts_csv_generate(jlcpcb_bom_path, bom_indices,
+                                                  jlcpcb_bom, matches, match_indices, pcb_count)
             if error:
-                print(bom_path)
                 print(error)
                 errors += 1
+            print("----------------------------------------------------------------")
+            print("")
     return min(1, errors)
 
 
-def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
+def jlcpcb_parts_csv_generate(jlcpcb_bom_path: Path, bom_indices: Dict[str, int],
                               jlcpcb_bom: Dict[str, Row], matches: Dict[str, List[Match]],
-                              match_indices: Dict[str, int]) -> str:
+                              match_indices: Dict[str, int], pcb_count) -> str:
     """Generate the parts .csv for JLCPCB."""
     error: str = ""
     unmatched_values: List[str] = []
     duplicate_matches: List[str] = []
     unfound_values: List[str] = []
     value_matches: List[Match]
-    jlcpcb_regular_expressions: Dict[str, Tuple[str, str, str]] = jlcpcb_regular_expressions_get()
+    jlcpcb_regular_expressions: Dict[str, REPatterns] = jlcpcb_regular_expressions_get()
 
     match_index: int
     value: str
@@ -106,11 +138,24 @@ def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
             # Sort so that Basic comes before Extended, next get lowest price:
             value_matches.sort()
             if True or value_matches[0][0] != "Basic":
+                value_matches.sort()
                 print(f"Match[{match_index+1}]: {value} {len(value_matches)} matches:")
                 sub_match: Match
                 sub_match_index: int
-                for sub_match_index, sub_match in enumerate(value_matches[:3]):
-                    print(f"  SubMatch[{sub_match_index+1}]: {sub_match}")
+                for sub_match_index, sub_match in enumerate(value_matches[:22]):
+                    price_breaks: PriceBreaks = sub_match.price_breaks
+                    if price_breaks:
+                        print(f"  SubMatch[{sub_match_index+1}]: "
+                              f"{'B' if sub_match.library_type == 'Basic' else 'E'}",
+                              f"{sub_match.stock}, "
+                              f"{sub_match.lcsc}, "
+                              f"{sub_match.package}, "
+                              f"{sub_match.manufacturer_part}, ",
+                              f"{sub_match.description}, "
+                              f"${price_breaks[0].price:.2f}, ")
+                    if sub_match.lcsc == "C127509":
+                        print(f"---->${price_breaks[0].price:.2f} {price_breaks}")
+                print("")
             del value_matches[1:]
             assert len(value_matches) == 1
 
@@ -139,7 +184,7 @@ def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
             print(f"[{index+1}]:{value}")
         print("")
     elif unfound_values:
-        error = f"{len(unfound_values)} JLCPCB that were not found"
+        error = f"{len(unfound_values)} JLCPCB parts were not found"
         print(error)
         for index, value in enumerate(unfound_values):
             print(f"[{index+1}]:{value}")
@@ -147,14 +192,13 @@ def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
     print(f"{len(jlcpcb_bom)} matched JLCPCB parts")
 
     # Construct the *matches* list:
-    pcb_count: int = 5
     value_index: int = bom_indices["Value"]
     references_index: int = bom_indices["Ref"]
     # lcsc_index: int = match_indices["lcsc"]
     # manufacturer_part_index: int = match_indices["manufacturer_part"]
     # package_index: int = match_indices["package"]
     extended_count: int = 0
-    total_cost: float = 0.0
+    parts_cost: float = 0.0
     lines: List[str] = ['"Comment","Designator","Footprint","LCSC Part #","Mfg Part No."']
     row: Row
     sorted_rows: List[Row] = sorted(jlcpcb_bom.values())
@@ -163,63 +207,59 @@ def jlcpcb_parts_csv_generate(hr2_dir: Path, bom_indices: Dict[str, int],
         colon_index: int = value.find(";")
         trimmed_value: str = value[:colon_index] if False and colon_index > 0 else value
         if value in matches:
-            # We have some matches:
+            # Grab some values from the first *match* in *matches_list*:
             matches_list: List[Match] = matches[value]
-            match: Match = matches_list[0]
+            if not matches_list:
+                print(f"=====================>Matches list for '{value}' is empty")
+            else:
+                match: Match = matches_list[0]
+                price_break: PriceBreak = match.price_breaks[0]
+                library_type: str = str(match.library_type)
+                manufacturer_part: str = str(match.manufacturer_part)
+                package: str = str(match.package)
+                lcsc_part: str = str(match.lcsc)
 
-            price_breaks: Any = None
-            key_to_text: Dict[str, str] = {}
-            key: str
-            key_index: int
-            for key, key_index in match_indices.items():
-                text_any: Any = match[key_index]
-                if isinstance(text_any, str):
-                    key_to_text[key] = text_any
-                elif isinstance(text_any, tuple):
-                    price_breaks = text_any
+                # Except for LED's, strip everything after the '_" off the *package":
+                if not package.startswith("LED"):
+                    underscore_index: int = package.find('_')
+                    if underscore_index >= 0:
+                        package = package[:underscore_index]
 
-            price: float = -999999.99
-            if isinstance(price_breaks, tuple):
-                price_break: PriceBreak = price_breaks[0]
-                price = price_break[1]
+                price: float = float(price_break.price)
+                references: str = row[references_index]
+                references_count: int = len(references.split(references))
+                part_cost: float = references_count * price
+                if library_type == "Extended":
+                    extended_count += 1
+                parts_cost += part_cost
+                line: str = (f'"{trimmed_value}","{references}","{package}","{lcsc_part}",'
+                             f'"{manufacturer_part}",${pcb_count*part_cost:.2f},{library_type}')
+                lines.append(line)
+    # Write out `*_jlcpcb_bom.csv` file.
+    lines.append("")
+    jlcpcb_bom_file: IO[str]
+    with open(jlcpcb_bom_path, "w") as jlcpcb_bom_file:
+        bom_text: str = '\n'.join(lines)
+        jlcpcb_bom_file.write(bom_text)
 
-            library_type: str = key_to_text["library_type"]
-            manufacturer_part: str = key_to_text["manufacturer_part"]
-            package: str = key_to_text["package"]
-            if not package.startswith("LED"):
-                underscore_index: int = package.find('_')
-                if underscore_index >= 0:
-                    package = package[:underscore_index]
-            lcsc_part: str = key_to_text["lcsc"]
-            references: str = row[references_index]
-            references_count: int = len(references.split(references))
-            part_cost: float = references_count * price
-            if library_type == "Extended":
-                extended_count += 1
-                part_cost += 3.00
-            total_cost += part_cost
-            line: str = (f'"{trimmed_value}","{references}","{package}","{lcsc_part}",'
-                         f'"{manufacturer_part}",${pcb_count*part_cost:.2f},{library_type}')
-            lines.append(line)
-    lines.append(f"Extended: {extended_count} x $3 => ${3*extended_count}")
-    lines.append(f"Total Cost:${pcb_count*total_cost:.2f}")
-    text: str = "\n".join(lines)
-    print("JLCPCB Data:")
-    print(text)
+    # Write out summary information:
+    print(f"Per board part cost: ${parts_cost:.2f}")
+    setup_cost: float = extended_count * 3.00
+    print(f"Setup cost: {extended_count} x $3 = ${setup_cost:.2f}")
+    total_cost: float = pcb_count * parts_cost + setup_cost
+    print(f"Total Parts Cost: {pcb_count} * ${parts_cost:.2f} + "
+          f"{setup_cost:.2f} = {total_cost:.2f}")
+    average_cost: float = total_cost / float(pcb_count)
+    print(f"Average Board Parts cost: ${total_cost:.2f}/{pcb_count} = ${average_cost:.2f}")
 
     return error
 
 
-def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]], Dict[str, int]]:
+def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
     """Process the parts file."""
-    parts_path: Path = (hr2_dir /
-                        "electrical" / "orders" / "order1" / "jlcpcb_smt_parts_library.csv")
-
-    # print(f"{parts_path=}")
+    # Define some stuff:
     error: str = ""
-
-    # This is the desired header and only care about a few of the entries:
-    desired_header: Tuple[str, ...] = (
+    desired_jlcpcb_header: Tuple[str, ...] = (
         "LCSC Part",
         "First Category",
         "Second Category",
@@ -233,45 +273,73 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]], Dic
         "Price",
         "Stock",
     )
+    parts_path: Path = (hr2_dir /
+                        "electrical" / "orders" / "order1" / "jlcpcb_smt_parts_library.csv")
+    # print(f"{parts_path=}")
+
+    # Define a helper function to parts a part pricing string:
+    def price_breaks_parse(price_breaks_text: str) -> Tuple[PriceBreak, ...]:
+        """Parse a price string into a PriceBreak."""
+        # The format of a price break is "LOW_QUANTITY-HIGH_QUANTITY:PRICE".
+        # The last one is of the form "LOW_QUANTITY-:PRICE".
+        price_breaks: List[PriceBreak] = []
+        price_break_texts: List[str] = price_breaks_text.split(",")
+        price_break_text: str
+        for price_break_text in price_break_texts:
+            # print(f"{price_break_text=}")
+            if price_break_text:
+                hyphen_index: int = price_break_text.find('-')
+                colon_index: int = price_break_text.find(':')
+                low_quantity: int = int(price_break_text[:hyphen_index])
+                high_quantity_text: str = price_break_text[hyphen_index+1:colon_index]
+                high_quantity: int = 999999
+                if high_quantity_text.isdecimal():
+                    high_quantity = int(high_quantity_text)
+                    price: float = float(price_break_text[colon_index+1:])
+                    price_break: PriceBreak = PriceBreak(low_quantity,
+                                                         price, high_quantity)
+                    price_breaks.append(price_break)
+        # Always ensure that *price_breaks* is non-empty and has a min-quanitity of 1 value:
+        price_breaks.sort()
+        if not price_breaks or price_breaks[0].min_quantity > 10:
+            price_breaks.append(PriceBreak(1, 999999.0, 999999999))
+            price_breaks.sort()
+        assert price_breaks[0].min_quantity <= 10, price_breaks
+        return tuple(sorted(price_breaks))
 
     # Create JLCPCB indices:
     jlcpcb_indices: Dict[str, int] = {}
     index: int
     heading: str
-    for index, heading in enumerate(desired_header):
+    for index, heading in enumerate(desired_jlcpcb_header):
         jlcpcb_indices[heading] = index
 
-    package_index: int = desired_header.index("Package")
-    description_index: int = desired_header.index("Description")
-    lcsc_index: int = desired_header.index("LCSC Part")
-    library_type_index: int = desired_header.index("Library Type")
-    price_index: int = desired_header.index("Price")
-    stock_index: int = desired_header.index("Stock")
-    manufacturer_part_index: int = desired_header.index("MFR.Part")
-
     # Sweep through acceptable values to build up the various regular expressions:
-    jlcpcb_regular_expressions: Dict[str, Tuple[str, str, str]] = jlcpcb_regular_expressions_get()
+    jlcpcb_regular_expressions: Dict[str, REPatterns] = jlcpcb_regular_expressions_get()
     value_re_list: List[str] = []
-    package_re_list: List[str] = []
-    lcsc_re_list: List[str] = []
-    re_patterns: Dict[str, Tuple[re.Pattern, re.Pattern, re.Pattern]] = {}
+    # package_re_list: List[str] = []
+    # lcsc_re_list: List[str] = []
+    re_patterns_table: Dict[str, Tuple[re.Pattern, re.Pattern, re.Pattern, re.Pattern]] = {}
     name: str
-    description_package_triple: Tuple[str, str, str]
-    for name, description_package_triple in jlcpcb_regular_expressions.items():
+    re_patterns: REPatterns
+    for name, re_patterns in jlcpcb_regular_expressions.items():
         assert isinstance(name, str)
-        # Unpack the value and pattern RE's:
+        # Unpack the value and pattern Regular Expressions:
         description_re: str
         package_re: str
+        manufacturer_part_re: str
         lcsc_re: str
-        value_re, package_re, lcsc_re = description_package_triple
-        if value_re and package_re and lcsc_re:
+        value_re, package_re, manufacturer_part_re, lcsc_re = re_patterns
+        if value_re and package_re and lcsc_re and manufacturer_part_re:
             value_re_pattern: re.Pattern = re.compile(value_re)
             package_re_pattern: re.Pattern = re.compile(package_re)
             lcsc_re_pattern: re.Pattern = re.compile(lcsc_re)
-            re_patterns[name] = (value_re_pattern, package_re_pattern, lcsc_re_pattern)
+            manufacturer_part_re_pattern: re.Pattern = re.compile(manufacturer_part_re)
+            re_patterns_table[name] = (value_re_pattern, package_re_pattern,
+                                       manufacturer_part_re_pattern, lcsc_re_pattern)
             value_re_list.append(value_re)
-            package_re_list.append(package_re)
-            lcsc_re_list.append(lcsc_re)
+            # package_re_list.append(package_re)
+            # lcsc_re_list.append(lcsc_re)
 
     # Create an RE that matches all part patterns:
     all_values_pattern: str = '|'.join(value_re_list)
@@ -280,7 +348,7 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]], Dic
     matches: Dict[str, List[Match]] = {}
 
     # Choke if no regular expressions are set or the file does not exist:
-    if not re_patterns:
+    if not re_patterns_table:
         error = "No regular expression values are set"
     elif not parts_path.exists():
         error = f"'{parts_path}' does not exist"
@@ -300,68 +368,56 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]], Dic
                 if row_index == 0:
                     # Make sure the header matches:
                     header = tuple(row)
-                    if header != desired_header:
-                        error = f"Part headers is {header} not {desired_header}"
+                    if header != desired_jlcpcb_header:
+                        error = f"Part headers is {header} not {desired_jlcpcb_header}"
                         break
                 else:
-                    # Perform a coarse match first:
-                    description: str = row[description_index]
-                    package: str = row[package_index]
-                    lcsc: str = row[lcsc_index]
-                    manufacturer_part: str = row[manufacturer_part_index]
+                    # Convert *row* into *jlcpcb_row* and try to match *description*:
+                    jlcpcb_row: JlcpcbRow = JlcpcbRow(*row)
+                    description: str = str(jlcpcb_row.description)
                     if all_values_re.search(description):
                         # We have a match opportunity, now see if it matches across the board:
                         # print(f"[{row_index}]: '{description}' '{package}'")
-                        description_package_patterns: Tuple[re.Pattern, re.Pattern, re.Pattern]
-                        for name, description_package_patterns in re_patterns.items():
+                        compiled_re_patterns: Tuple[re.Pattern, re.Pattern, re.Pattern, re.Pattern]
+                        for name, compiled_re_patterns in re_patterns_table.items():
+                            # Unpack *description_package_patterns*:
                             description_pattern: re.Pattern
                             footprint_pattern: re.Pattern
                             lcsc_pattern: re.Pattern
-                            description_pattern, package_pattern, lcsc_pattern = (
-                                description_package_patterns)
+                            manufacturer_part_pattern: re.Pattern
+                            description_pattern, package_pattern, manufacturer_part_pattern, \
+                                lcsc_pattern = compiled_re_patterns
+
+                            # Determine if there is a solid match:
+                            package: str = str(jlcpcb_row.package)
+                            lcsc: str = str(jlcpcb_row.lcsc)
+                            manufacturer_part: str = jlcpcb_row.manufacturer_part
+
                             description_match: bool = bool(description_pattern.search(description))
                             package_match: bool = bool(package_pattern.search(package))
+                            manufacturer_part_match: bool = bool(
+                                manufacturer_part_pattern.search(manufacturer_part))
                             lcsc_match: bool = bool(lcsc_pattern.search(lcsc))
-                            if description_match and package_match and lcsc_match:
-                                # We have a solid match.  Save it into matches:
-                                # Parse the price_breaks:
-                                library_type: str = row[library_type_index]
-                                price_text: str = row[price_index]
-                                price_breaks: List[Tuple[int, float, int]] = []
-                                price_break_texts: List[str] = price_text.split(",")
-                                price_break_text: str
-                                for price_break_text in price_break_texts:
-                                    # print(f"{price_break_text=}")
-                                    if price_break_text:
-                                        hyphen_index: int = price_break_text.find('-')
-                                        colon_index: int = price_break_text.find(':')
-                                        low_quantity: int = int(price_break_text[:hyphen_index])
-                                        high_quantity_text: str = (
-                                            price_break_text[hyphen_index+1:colon_index])
-                                        high_quantity: int = 999999
-                                        if high_quantity_text.isdecimal():
-                                            high_quantity = int(high_quantity_text)
-                                            price: float = float(price_break_text[colon_index+1:])
-                                        price_break: PriceBreak = (
-                                            low_quantity, price, high_quantity)
-                                        price_breaks.append(price_break)
-                                # print(f"{price_breaks=}")
-                                stock: str = row[stock_index]
-                                match: Match = (
-                                    library_type,
-                                    tuple(sorted(price_breaks)),
+                            patterns_match: bool = (description_match and package_match and
+                                                    lcsc_match and manufacturer_part_match)
+                            if patterns_match:
+                                # We have a solid *match*. Save it into *matches*:
+                                match: Match = Match(
+                                    jlcpcb_row.library_type,
+                                    price_breaks_parse(jlcpcb_row.price),
                                     name,
                                     description,
                                     package,
                                     lcsc,
-                                    stock,
+                                    jlcpcb_row.stock,
                                     manufacturer_part)
                                 if name not in matches:
                                     matches[name] = []
-                                matches[name].append(match)
+                                if int(match.stock):
+                                    matches[name].append(match)
                                 # print(f"match[{row_index}]: {match}")
     print(f"Matches size:{len(matches)}")
-    return error, matches, jlcpcb_indices
+    return error, matches  # , jlcpcb_indices
 
 
 def bom_read(bom_path: Path) -> Tuple[Dict[str, int], Dict[str, Row], Dict[str, Row], str]:
@@ -428,7 +484,7 @@ def bom_read(bom_path: Path) -> Tuple[Dict[str, int], Dict[str, Row], Dict[str, 
 def bom_split(bom_indices: Dict[str, int],
               bom_rows: Rows) -> Tuple[str, Dict[str, Row], Dict[str, Row]]:
     """Split the BOM into a JLCPCB BOM and an other BOM."""
-    jlcpcb_regular_expressions: Dict[str, Tuple[str, str, str]] = jlcpcb_regular_expressions_get()
+    jlcpcb_regular_expressions: Dict[str, REPatterns] = jlcpcb_regular_expressions_get()
     other_values: Set[str] = other_values_get()
     value_index: int = bom_indices["Value"]
 
@@ -503,10 +559,12 @@ def jlcpcb_footprints_get() -> Set[str]:
     return {
         "Capacitor_SMD:C_0402_1005Metric",
         "Capacitor_SMD:C_0603_1608Metric",
-        "Crystal:Crystal_SMD_5032-2Pin_5.0x3.2mm",
+        "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm",
         "HR2:BUTTON_6x3.5",
         "HR2:TE1376164-1_COINHOLDER6.8",
         "LED_SMD:LED_0603_1608Metric",
+        "32.768kHz9pF;3.2x1.5",
+        "MCP2542;SOIC8",
         "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias",
         "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
         "Package_SO:SOP-4_3.8x4.1mm_P2.54mm",
@@ -557,7 +615,7 @@ def unrecognized_values_check(bom_rows: Rows, value_index: int) -> str:
     """Return an error string if unrecognized values are detected."""
     # Sweep through looking for acceptable vs unacceptable values:
     unrecognized_values: Set[str] = set()
-    jlcpcb_regular_expressions: Dict[str, Tuple[str, str, str]] = jlcpcb_regular_expressions_get()
+    jlcpcb_regular_expressions: Dict[str, REPatterns] = jlcpcb_regular_expressions_get()
     other_values: Set[str] = other_values_get()
     bom_index: int
     bom_row: Tuple[str, ...]
@@ -578,52 +636,51 @@ def unrecognized_values_check(bom_rows: Rows, value_index: int) -> str:
     return error
 
 
-def jlcpcb_regular_expressions_get() -> Dict[str, Tuple[str, str, str]]:
+def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
     """Return map from JLCPCB value regular expression pair."""
-    regular_expressions: Dict[str, Tuple[str, str, str]] = {
-        ".16Ω.25W;2012": (r"0\.16Ohm", "0805$", ".*"),
-        "0.01µF;1005": (" 10nF", "0402$", ".*"),
-        "0.1µF;1005": (" 100nF", "0402$", "C1525$"),
-        "0Ω;1608": (" 0Ohm", "0603$", ".*"),
-        "100Ω;1005": (" 100Ohms", "0402$", ".*"),
-        "100KΩ;1005": (" 100KOhms", "0402$", "C25741$"),
-        "100KΩ;1608": (" 100KOhms", "0603$", "C25803$"),
-        "10KΩ;1608": (" 10KOhms", "0603$", "C25804$"),
-        "10µF;1608": (" 10uF", "0603$", "C19702$"),
-        "120Ω.25W;1608": (" 120Ohms", "0603$", "C22787$"),
-        "16pF;1005": (" 16pF", "0402$", ".*"),  # Only in 0603
-        "1KΩ;1005": (" 1KOhms 1%", "0402$", "C11702$"),
-        "1KΩ;1608": (" 1KOhms 1%", "0603$", "C21190$"),
-        "2.2µF6.3V;1608": (" 2.2uF", "0603$", "C24630$"),
-        "2N7000;SOT23": ("", ".*", ".*"),
-        "3.9KΩ;1005": (r" 3\.9KOhms", "0402$", ".*"),
-        "32.768kHz9pF;3.2x1.5": ("32.768", ".*", ".*"),
-        "330Ω;1608": (" 330Ohms 1%", "0603$", ".*"),
-        "3A_PWR_NMOS_DSG;SOT23": ("", ".*", ".*"),
-        "4.7KΩ;1005": (r" 4\.7KOhms 1%", "0402$", ".*"),
-        "4.7µF;1608": (" 4.7uF", "0603$", "19666$"),
-        "470Ω.25W;1608": (" 470Ohms 1%", "0603$", ".*"),
-        "470Ω;1608": (" 470Ohms 1%", "0603$", ".*"),
-        "74LVC1G74;TSSOP8": ("", ".*", ".*"),
-        "74x11G1;TSOP6": ("", ".*", ".*"),
-        "ACS711;SOIC8": ("Current Sensors SOIC-8_150mil RoHS", ".*", "C10681$"),
-        "AH1806;SC59": (r"Magnetic Sensors SOT-23\(SOT-23-3\) RoHS", ".*", ".*"),
-        "AP2114HA-3.3TRG1_1A;SOT223": (r"Low Dropout Regulators\(LDO\) SOT-223", ".*", "C166063$"),
-        "BUTTON;6x3.5": ("", ".*", ".*"),
-        "CAT24C32;SOIC8": (r"EEPROM EEPROM 32Kb \(4K x 8\) I2C SOIC-8_150mil RoHS", ".*", "C6654$"),
-        "CD4504B;TTSOP16": ("Level Translators,  Shifters SOIC-16_150mil RoHS", ".*", "C151885$"),
-        "COIN_HOLDER6.8R;TE1376164-1": ("", ".*", ".*"),
-        "CPC1017N;SOP4W3.8L4.1": ("Solid State Relays SOP-4_P2.54 RoHS", ".*", "C261926$"),
-        "DRV8833PWPR;16HTSSOP": ("Motor Drivers HTSSOP-16 RoHS", "HTSSOP-16", "^C50506$"),
-        # "GRNLED;1608": ("LED.*Green", "LED_0603", ".*"),
-        "LEDGRN;1608": ("LED.*Green", "LED_0603", "C72043$"),
-        "LM5050-1;TSOT-23-6": ("PMIC - Power Distribution Switches SOT-23-6 RoHS", ".*", "C55266$"),
-        "MCP2542;SOIC8": ("CAN 1/1 8Mbps", "SOIC-8", "C124016"),
-        "MCP7940;SOIC8": ("Real-time Clocks Clock/Calendar I2C", "SOIC-8", "C7440$"),
-        "PFET_6A;SOT23": ("", ".*", ".*"),
-        "REDLED;1608": ("LED.*Red", "LED_0603", "C2286$"),
-        "SN74HC165;TTSOP16": ("74 Series Shift Register", ".*", "C5613$"),
-        "SN74HC595;TTSOP16": ("74 Series TSSOP-16 RoHS", ".*", "C5948$"),
+    regular_expressions: Dict[str, Tuple[str, str, str, str]] = {
+        ".16Ω.25W;2012": (r"0\.16Ohm", "0805$", ".*", ".*"),
+        "0.01µF;1005": (" 10nF", "0402$", ".*", ".*"),
+        "0.1µF;1005": (" 100nF", "0402$", ".*", "C1525$"),
+        "0Ω;1608": (" 0Ohm", "0603$", ".*", ".*"),
+        # "100Ω;1005": (" 100Ohms", "0402$", ".*", ".*"),
+        "100KΩ;1005": (" 100KOhms", "0402$", ".*", "C25741$"),
+        "100KΩ;1608": (" 100KOhms", "0603$", ".*", "C25803$"),
+        "10KΩ;1608": (" 10KOhms", "0603$", ".*", "C25804$"),
+        "10µF;1608": (" 10uF", "0603$", ".*", "C19702$"),
+        "120Ω.25W;1608": (" 120Ohms", "0603$", ".*", "C22787$"),
+        "16pF;1608": (" 16pF", "0603$", ".*", "C1646$"),  # Only in 0603
+        "1KΩ;1005": (" 1KOhms 1%", "0402$", ".*", "C11702$"),
+        "1KΩ;1608": (" 1KOhms 1%", "0603$", ".*", "C21190$"),
+        "2.2µF6.3V;1608": (" 2.2uF", "0603$", ".*", "C23630$"),
+        "2N7002;SOT23": ("MOSFET N Trench.*", ".*", "2N7002", "C8545$"),
+        "3.9KΩ;1005": (r" 3\.9KOhms", "0402$", ".*", ".*"),
+        "32.768kHz9pF;3.2x1.5": ("32.768", ".*", ".*", "C32346$"),
+        "330Ω;1608": (" 330Ohms 1%", "0603$", ".*", ".*"),
+        "4.7KΩ;1005": (r" 4\.7KOhms 1%", "0402$", ".*", ".*"),
+        "4.7µF;1608": (" 4.7uF", "0603$", ".*", "C19666$"),
+        "470Ω.25W;1608": (" 470Ohms 1%", "0603$", ".*", ".*"),
+        "470Ω;1608": (" 470Ohms 1%", "0603$", ".*", ".*"),
+        "ACS711;SOIC8": ("Current Sensors SOIC-8_150mil RoHS", ".*",  ".*", "C10681$"),
+        "AH1806;SC59": (r"Magnetic Sensors SOT-23", ".*", ".*", "C126664"),
+        "AP2114HA-3.3TRG1_1A;SOT223": (r"Low Dropout Regulators\(LDO\) SOT-223",
+                                       ".*",  ".*", "C166063$"),
+        "BUTTON;6x3.5": ("SPST.*Tactile Switches", "6.*x6", ".*", "C127509$"),
+        "CAT24C32;SOIC8": (r"EEPROM 32Kb", "SOIC-8", "CAT24C32", ".*"),
+        "CD4504B;TTSOP16": ("Level Translators,  Shifters SOIC-16_150mil RoHS",
+                            ".*", ".*", "C151885$"),
+        "CPC1017N;SOP4W3.8L4.1": ("Solid State Relays SOP-4_P2.54 RoHS", ".*", ".*", "C261926$"),
+        "DRV8833PWPR;16HTSSOP": ("Motor Drivers HTSSOP-16 RoHS", "HTSSOP-16", ".*", "^C50506$"),
+        "LEDGRN;1608": ("LED.*Green", "LED_0603", ".*", "C72043$"),
+        "LM5050-1;TSOT-23-6": ("PMIC - Power Distribution Switches SOT-23-6 RoHS",
+                               ".*", ".*", "C55266$"),
+        "MCP2542;SOIC8": ("CAN", ".*", "MCP2542", ".*"),
+        "MCP7940;SOIC8": ("Real-time Clocks Clock/Calendar I2C", "SOIC-8", ".*", "C7440$"),
+        "NFET_3A_GSD;SOT23": (r"MOSFET N Trench.*V [3-7]\.[0-9]A", "SOT-23-3", ".*", "C20917$"),
+        "PFET_6A_GSD;SOT23": (r"MOSFET P Trench.*V [6-7]\.[0-9]A", "SOT-23-3", ".*", "C141546$"),
+        "REDLED;1608": ("LED.*Red", "LED_0603", ".*", "C2286$"),
+        "SN74HC165;TTSOP16": ("74 Series Shift Register", ".*", ".*", "C5613$"),
+        "SN74HC595;TTSOP16": ("74 Series TSSOP-16 RoHS", ".*", ".*", "C5948$"),
     }
     return regular_expressions
 
@@ -638,7 +695,10 @@ def other_values_get() -> Set[str]:
         "3.3V",
         "470µF,25Vmin;D10P5H13max",
         "5V",
+        "74LVC1G74;TSSOP8",
+        "74x11G1;TSOP6",
         "9V",
+        "COIN_HOLDER6.8R;TE1376164-1",
         "EXT_ESTOP;M1x2",
         "GND",
         "LED_EN;M1x3",

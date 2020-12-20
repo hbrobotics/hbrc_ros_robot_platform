@@ -6,7 +6,10 @@
 * https://eepower.com/resistor-guide/resistor-standards-and-codes/resistor-sizes-and-packages/#
 * https://support.jlcpcb.com/article/84-how-to-generate-the-bom-and-centroid-file-from-kicad
 * https://docs.google.com/spreadsheets/d/1bSM_Ko6OLz7rW6MCQbw4Zv_Z4hOHcI7w7O6sczi2h5w/edit#gid=0
-* https://store.hp.com/us/en/pdp/hp-laptop-17z-5nv50av-1
+
+## Encoder:
+
+* DONE. 100Ω resistors should be 100KΩ.
 
 ## Power Supply
 
