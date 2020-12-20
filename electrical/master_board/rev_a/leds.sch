@@ -83,19 +83,6 @@ Wire Wire Line
 Wire Wire Line
 	10100 5900 10100 5000
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FAB2D6A
-P 10000 6100
-AR Path="/5F79BC00/5FAB2D6A" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FAB2D6A" Ref="Q19"  Part="1" 
-F 0 "Q19" H 9900 6250 50  0000 L CNN
-F 1 "2N7000;SOT23" H 9400 6050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 10200 6025 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 10000 6100 50  0001 L CNN
-	1    10000 6100
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:LED D?
 U 1 1 5FAB2D60
 P 10100 4850
@@ -127,19 +114,6 @@ Wire Wire Line
 	9300 4700 9300 4600
 Wire Wire Line
 	9300 5900 9300 5000
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FAB2D49
-P 9200 6100
-AR Path="/5F79BC00/5FAB2D49" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FAB2D49" Ref="Q17"  Part="1" 
-F 0 "Q17" H 9100 6250 50  0000 L CNN
-F 1 "2N7000;SOT23" H 8600 6050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 9400 6025 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 9200 6100 50  0001 L CNN
-	1    9200 6100
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:LED D?
 U 1 1 5FAB2D3F
@@ -173,19 +147,6 @@ Wire Wire Line
 Wire Wire Line
 	8500 5900 8500 5000
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FAB2D28
-P 8400 6100
-AR Path="/5F79BC00/5FAB2D28" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FAB2D28" Ref="Q15"  Part="1" 
-F 0 "Q15" H 8300 6250 50  0000 L CNN
-F 1 "2N7000;SOT23" H 7800 6050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 8600 6025 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 8400 6100 50  0001 L CNN
-	1    8400 6100
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:LED D?
 U 1 1 5FAB2D1E
 P 8500 4850
@@ -217,19 +178,6 @@ Wire Wire Line
 	7700 4700 7700 4600
 Wire Wire Line
 	7700 5900 7700 5000
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FAB2D07
-P 7600 6100
-AR Path="/5F79BC00/5FAB2D07" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FAB2D07" Ref="Q13"  Part="1" 
-F 0 "Q13" H 7500 6250 50  0000 L CNN
-F 1 "2N7000;SOT23" H 7000 6050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 7800 6025 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 7600 6100 50  0001 L CNN
-	1    7600 6100
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:LED D?
 U 1 1 5FAB2CFD
@@ -265,19 +213,6 @@ Wire Wire Line
 Wire Wire Line
 	6900 5900 6900 5000
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FA9CF5F
-P 6800 6100
-AR Path="/5F79BC00/5FA9CF5F" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FA9CF5F" Ref="Q11"  Part="1" 
-F 0 "Q11" H 6700 6250 50  0000 L CNN
-F 1 "2N7000;SOT23" H 6200 6050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 7000 6025 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 6800 6100 50  0001 L CNN
-	1    6800 6100
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:LED D?
 U 1 1 5FA9CF55
 P 6900 4850
@@ -311,19 +246,6 @@ Wire Wire Line
 	6100 6300 6100 6400
 Wire Wire Line
 	6100 5900 6100 5000
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FA9CF3D
-P 6000 6100
-AR Path="/5F79BC00/5FA9CF3D" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FA9CF3D" Ref="Q9"  Part="1" 
-F 0 "Q9" H 5900 6250 50  0000 L CNN
-F 1 "2N7000;SOT23" H 5400 6050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 6200 6025 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 6000 6100 50  0001 L CNN
-	1    6000 6100
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:LED D?
 U 1 1 5FA9CF33
@@ -359,19 +281,6 @@ Wire Wire Line
 Wire Wire Line
 	5300 5900 5300 5000
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FA992F0
-P 5200 6100
-AR Path="/5F79BC00/5FA992F0" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FA992F0" Ref="Q7"  Part="1" 
-F 0 "Q7" H 5100 6250 50  0000 L CNN
-F 1 "2N7000;SOT23" H 4600 6050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 5400 6025 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 5200 6100 50  0001 L CNN
-	1    5200 6100
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:LED D?
 U 1 1 5FA992E6
 P 5300 4850
@@ -405,19 +314,6 @@ Wire Wire Line
 	4500 6300 4500 6400
 Wire Wire Line
 	4500 5900 4500 5000
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FA5B7B4
-P 4400 6100
-AR Path="/5F79BC00/5FA5B7B4" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FA5B7B4" Ref="Q5"  Part="1" 
-F 0 "Q5" H 4300 6250 50  0000 L CNN
-F 1 "2N7000;SOT23" H 3800 6050 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 4600 6025 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 4400 6100 50  0001 L CNN
-	1    4400 6100
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:LED D?
 U 1 1 5FA5B7AD
@@ -536,19 +432,6 @@ Wire Wire Line
 Wire Wire Line
 	10100 3000 10100 2100
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FB18984
-P 10000 3200
-AR Path="/5F79BC00/5FB18984" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FB18984" Ref="Q18"  Part="1" 
-F 0 "Q18" H 9900 3350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 9400 3150 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 10200 3125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 10000 3200 50  0001 L CNN
-	1    10000 3200
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:LED D?
 U 1 1 5FB1898E
 P 10100 1950
@@ -580,19 +463,6 @@ Wire Wire Line
 	9300 1800 9300 1700
 Wire Wire Line
 	9300 3000 9300 2100
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FB189A5
-P 9200 3200
-AR Path="/5F79BC00/5FB189A5" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FB189A5" Ref="Q16"  Part="1" 
-F 0 "Q16" H 9100 3350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 8600 3150 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 9400 3125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 9200 3200 50  0001 L CNN
-	1    9200 3200
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:LED D?
 U 1 1 5FB189AF
@@ -626,19 +496,6 @@ Wire Wire Line
 Wire Wire Line
 	8500 3000 8500 2100
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FB189C6
-P 8400 3200
-AR Path="/5F79BC00/5FB189C6" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FB189C6" Ref="Q14"  Part="1" 
-F 0 "Q14" H 8300 3350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 7800 3150 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 8600 3125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 8400 3200 50  0001 L CNN
-	1    8400 3200
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:LED D?
 U 1 1 5FB189D0
 P 8500 1950
@@ -670,19 +527,6 @@ Wire Wire Line
 	7700 1800 7700 1700
 Wire Wire Line
 	7700 3000 7700 2100
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FB189E7
-P 7600 3200
-AR Path="/5F79BC00/5FB189E7" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FB189E7" Ref="Q12"  Part="1" 
-F 0 "Q12" H 7500 3350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 7000 3150 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 7800 3125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 7600 3200 50  0001 L CNN
-	1    7600 3200
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:LED D?
 U 1 1 5FB189F1
@@ -718,19 +562,6 @@ Wire Wire Line
 Wire Wire Line
 	6900 3000 6900 2100
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FB18A09
-P 6800 3200
-AR Path="/5F79BC00/5FB18A09" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FB18A09" Ref="Q10"  Part="1" 
-F 0 "Q10" H 6700 3350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 6200 3150 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 7000 3125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 6800 3200 50  0001 L CNN
-	1    6800 3200
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:LED D?
 U 1 1 5FB18A13
 P 6900 1950
@@ -764,19 +595,6 @@ Wire Wire Line
 	6100 3400 6100 3500
 Wire Wire Line
 	6100 3000 6100 2100
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FB18A2B
-P 6000 3200
-AR Path="/5F79BC00/5FB18A2B" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FB18A2B" Ref="Q8"  Part="1" 
-F 0 "Q8" H 5900 3350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 5400 3150 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 6200 3125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 6000 3200 50  0001 L CNN
-	1    6000 3200
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:LED D?
 U 1 1 5FB18A35
@@ -812,19 +630,6 @@ Wire Wire Line
 Wire Wire Line
 	5300 3000 5300 2100
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FB18A4D
-P 5200 3200
-AR Path="/5F79BC00/5FB18A4D" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FB18A4D" Ref="Q6"  Part="1" 
-F 0 "Q6" H 5100 3350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 4600 3150 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 5400 3125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 5200 3200 50  0001 L CNN
-	1    5200 3200
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:LED D?
 U 1 1 5FB18A57
 P 5300 1950
@@ -858,19 +663,6 @@ Wire Wire Line
 	4500 3400 4500 3500
 Wire Wire Line
 	4500 3000 4500 2100
-$Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FB18A6F
-P 4400 3200
-AR Path="/5F79BC00/5FB18A6F" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FB18A6F" Ref="Q4"  Part="1" 
-F 0 "Q4" H 4300 3350 50  0000 L CNN
-F 1 "2N7000;SOT23" H 3800 3150 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 4600 3125 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 4400 3200 50  0001 L CNN
-	1    4400 3200
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:LED D?
 U 1 1 5FB18A79
@@ -1237,6 +1029,182 @@ Wire Wire Line
 	3000 5900 4100 5900
 Wire Wire Line
 	3100 3700 3100 6000
+$Comp
+L Transistor_FET:2N7002 Q4
+U 1 1 5FE0AE08
+P 4400 3200
+F 0 "Q4" H 4300 3300 50  0000 C CNN
+F 1 "2N7002;SOT23" H 4100 3100 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 4600 3125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 4400 3200 50  0001 L CNN
+	1    4400 3200
+	1    0    0    -1  
+$EndComp
 Wire Bus Line
 	3500 1300 3500 7200
+$Comp
+L Transistor_FET:2N7002 Q6
+U 1 1 5FE54C05
+P 5200 3200
+F 0 "Q6" H 5100 3300 50  0000 C CNN
+F 1 "2N7002;SOT23" H 4900 3100 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 5400 3125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 5200 3200 50  0001 L CNN
+	1    5200 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q8
+U 1 1 5FE5E636
+P 6000 3200
+F 0 "Q8" H 5900 3300 50  0000 C CNN
+F 1 "2N7002;SOT23" H 5700 3100 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 6200 3125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 6000 3200 50  0001 L CNN
+	1    6000 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q10
+U 1 1 5FE6067A
+P 6800 3200
+F 0 "Q10" H 6700 3300 50  0000 C CNN
+F 1 "2N7002;SOT23" H 6500 3100 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 7000 3125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 6800 3200 50  0001 L CNN
+	1    6800 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q12
+U 1 1 5FE63979
+P 7600 3200
+F 0 "Q12" H 7500 3300 50  0000 C CNN
+F 1 "2N7002;SOT23" H 7300 3100 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 7800 3125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 7600 3200 50  0001 L CNN
+	1    7600 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q14
+U 1 1 5FE668A9
+P 8400 3200
+F 0 "Q14" H 8300 3300 50  0000 C CNN
+F 1 "2N7002;SOT23" H 8100 3100 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 8600 3125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 8400 3200 50  0001 L CNN
+	1    8400 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q16
+U 1 1 5FE69FC2
+P 9200 3200
+F 0 "Q16" H 9100 3300 50  0000 C CNN
+F 1 "2N7002;SOT23" H 8900 3100 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 9400 3125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 9200 3200 50  0001 L CNN
+	1    9200 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q18
+U 1 1 5FE6BFEC
+P 10000 3200
+F 0 "Q18" H 9900 3300 50  0000 C CNN
+F 1 "2N7002;SOT23" H 9700 3100 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 10200 3125 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 10000 3200 50  0001 L CNN
+	1    10000 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q5
+U 1 1 5FE6D46B
+P 4400 6100
+F 0 "Q5" H 4300 6200 50  0000 C CNN
+F 1 "2N7002;SOT23" H 4100 6000 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 4600 6025 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 4400 6100 50  0001 L CNN
+	1    4400 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q7
+U 1 1 5FE71944
+P 5200 6100
+F 0 "Q7" H 5100 6200 50  0000 C CNN
+F 1 "2N7002;SOT23" H 4900 6000 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 5400 6025 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 5200 6100 50  0001 L CNN
+	1    5200 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q9
+U 1 1 5FE73B8B
+P 6000 6100
+F 0 "Q9" H 5900 6200 50  0000 C CNN
+F 1 "2N7002;SOT23" H 5700 6000 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 6200 6025 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 6000 6100 50  0001 L CNN
+	1    6000 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q11
+U 1 1 5FE7629B
+P 6800 6100
+F 0 "Q11" H 6700 6200 50  0000 C CNN
+F 1 "2N7002;SOT23" H 6500 6000 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 7000 6025 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 6800 6100 50  0001 L CNN
+	1    6800 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q13
+U 1 1 5FE7830F
+P 7600 6100
+F 0 "Q13" H 7500 6200 50  0000 C CNN
+F 1 "2N7002;SOT23" H 7300 6000 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 7800 6025 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 7600 6100 50  0001 L CNN
+	1    7600 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q15
+U 1 1 5FE7B874
+P 8400 6100
+F 0 "Q15" H 8300 6200 50  0000 C CNN
+F 1 "2N7002;SOT23" H 8100 6000 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 8600 6025 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 8400 6100 50  0001 L CNN
+	1    8400 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q17
+U 1 1 5FE7E7F8
+P 9200 6100
+F 0 "Q17" H 9100 6200 50  0000 C CNN
+F 1 "2N7002;SOT23" H 8900 6000 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 9400 6025 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 9200 6100 50  0001 L CNN
+	1    9200 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:2N7002 Q19
+U 1 1 5FE81957
+P 10000 6100
+F 0 "Q19" H 9900 6200 50  0000 C CNN
+F 1 "2N7002;SOT23" H 9700 6000 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 10200 6025 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 10000 6100 50  0001 L CNN
+	1    10000 6100
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

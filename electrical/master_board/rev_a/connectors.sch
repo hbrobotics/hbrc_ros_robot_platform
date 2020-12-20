@@ -653,23 +653,6 @@ Wire Wire Line
 	8900 4900 8800 4900
 NoConn ~ 3700 6700
 $Comp
-L Transistor_FET:2N7000 Q?
-U 1 1 5FDEB033
-P 3200 3800
-AR Path="/5F79BC00/5FDEB033" Ref="Q?"  Part="1" 
-AR Path="/5FA4A874/5FDEB033" Ref="Q?"  Part="1" 
-AR Path="/5FAD82EE/5FDEB033" Ref="Q?"  Part="1" 
-AR Path="/5F8C2F57/5FDEB033" Ref="Q?"  Part="1" 
-AR Path="/5F3221A2/5FDEB033" Ref="Q?"  Part="1" 
-AR Path="/5F4CEE66/5FDEB033" Ref="Q25"  Part="1" 
-F 0 "Q25" H 3050 3950 50  0000 L CNN
-F 1 "2N7000;SOT23" H 3350 3650 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 3400 3725 50  0001 L CIN
-F 3 "https://www.fairchildsemi.com/datasheets/2N/2N7000.pdf" H 3200 3800 50  0001 L CNN
-	1    3200 3800
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:R_US R?
 U 1 1 5FDEB03A
 P 3300 3250
@@ -958,4 +941,15 @@ Wire Bus Line
 	8000 2800 8000 6700
 Wire Bus Line
 	6000 700  6000 6500
+$Comp
+L Transistor_FET:2N7002 Q25
+U 1 1 5FE994E8
+P 3200 3800
+F 0 "Q25" H 3050 3950 50  0000 L CNN
+F 1 "2N7002;SOT23" H 3350 3700 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3400 3725 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 3200 3800 50  0001 L CNN
+	1    3200 3800
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

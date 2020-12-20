@@ -14,18 +14,6 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L HR2:ENCODER;2xM1x3RA CN1
-U 1 1 5F409D86
-P 4150 4350
-F 0 "CN1" H 4450 4500 50  0000 C CNN
-F 1 "ENCODER;2xM1x3RA" H 4600 3500 50  0000 C CNN
-F 2 "HR2:ENCODER_2xM1x3RA" H 4350 4400 60  0001 L CNN
-F 3 "HR2 Encoder Connectors" H 4350 4200 60  0001 L CNN
-F 4 "HR2 Encoder Connectors" H 4350 4100 60  0001 L CNN "Field5"
-	1    4150 4350
-	1    0    0    1   
-$EndComp
-$Comp
 L Sensor_Magnetic:AH1806-W Q1
 U 1 1 5F40AB04
 P 7950 2650
@@ -52,40 +40,15 @@ F 5 "AH1806 Omnipolar Hall Effect Switch" H 8150 4000 60  0001 L CNN "Field5"
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	5050 3850 5500 3850
-Wire Wire Line
-	5500 3850 5500 3750
-Wire Wire Line
-	5500 3750 5050 3750
-Wire Wire Line
-	5050 3650 5600 3650
-Wire Wire Line
-	5600 3650 5600 3950
-Wire Wire Line
-	5600 3950 5050 3950
-Wire Wire Line
-	5050 4050 5900 4050
-Wire Wire Line
-	5900 4050 5900 2200
-Wire Wire Line
 	5900 2200 6400 2200
-Connection ~ 5900 4050
-Wire Wire Line
-	7200 4350 5050 4350
-Wire Wire Line
-	5050 4150 6200 4150
-Wire Wire Line
-	6200 4150 6200 3400
 Wire Wire Line
 	6200 3400 6600 3400
-Wire Wire Line
-	5050 4250 6400 4250
 $Comp
 L Device:R_US R1
 U 1 1 5F42263B
 P 6400 3750
 F 0 "R1" H 6300 3850 50  0000 L CNN
-F 1 "100Ω;1005" H 6400 3650 50  0000 L CNN
+F 1 "100KΩ;1005" H 6400 3650 50  0000 L CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" V 6440 3740 50  0001 C CNN
 F 3 "~" H 6400 3750 50  0001 C CNN
 	1    6400 3750
@@ -96,7 +59,7 @@ L Device:R_US R2
 U 1 1 5F422F39
 P 6600 2850
 F 0 "R2" H 6500 2950 50  0000 L CNN
-F 1 "100Ω;1005" H 6600 2750 50  0000 L CNN
+F 1 "100KΩ;1005" H 6600 2750 50  0000 L CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" V 6640 2840 50  0001 C CNN
 F 3 "~" H 6600 2850 50  0001 C CNN
 	1    6600 2850
@@ -105,7 +68,6 @@ $EndComp
 Wire Wire Line
 	6400 3600 6400 2200
 Connection ~ 6400 2200
-Connection ~ 6400 4250
 Wire Wire Line
 	6400 2200 6600 2200
 Wire Wire Line
@@ -113,22 +75,12 @@ Wire Wire Line
 Wire Wire Line
 	6600 3000 6600 3400
 Connection ~ 6600 2200
-Text Label 5150 4050 0    50   ~ 0
-VCC
-Text Label 5150 4150 0    50   ~ 0
-QUADB
 Text Label 5150 4250 0    50   ~ 0
 QUADA
 Text Label 5150 4350 0    50   ~ 0
 GND
-Text Label 5150 3650 0    50   ~ 0
-MOTOR+
-Text Label 5150 3750 0    50   ~ 0
-MOTOR-
 Wire Wire Line
-	6400 3900 6400 4250
-Wire Wire Line
-	6600 3400 7050 3400
+	6600 3400 7100 3400
 Connection ~ 6600 3400
 Text Notes 7350 3700 0    50   ~ 0
 The AH1806 is a Unipolar Hall Effect sensor.  The center of each\nSC59 package must be placed 4mm from the motor shaft center\n(i.e. on a 4mm radius circle centered on the motor shaft.)\nIn addition, the two sensors must be placed 90 degrees apart\non this 4mm radius circle.\n
@@ -145,15 +97,9 @@ Wire Wire Line
 Wire Wire Line
 	7950 3800 7950 3850
 Wire Wire Line
-	5900 4050 7500 4050
+	7100 2650 7650 2650
 Wire Wire Line
-	7050 2650 7650 2650
-Wire Wire Line
-	7050 2650 7050 3400
-Wire Wire Line
-	7500 3800 7500 4050
-Wire Wire Line
-	6400 4250 7650 4250
+	7100 2650 7100 3400
 Wire Wire Line
 	7200 4350 7200 4750
 Wire Wire Line
@@ -165,4 +111,58 @@ Wire Wire Line
 Wire Wire Line
 	7200 3100 7950 3100
 Connection ~ 7200 4350
+Wire Wire Line
+	6400 4250 7650 4250
+Wire Wire Line
+	6400 3900 6400 4250
+Connection ~ 6400 4250
+Wire Wire Line
+	6200 4150 6200 3400
+Text Label 5150 4150 0    50   ~ 0
+QUADB
+Text Label 5150 4050 0    50   ~ 0
+VCC
+Wire Wire Line
+	7500 3800 7500 4050
+Wire Wire Line
+	5900 4050 7500 4050
+Connection ~ 5900 4050
+Wire Wire Line
+	5900 4050 5900 2200
+Text Label 5150 3750 0    50   ~ 0
+MOTOR-
+Text Label 5150 3650 0    50   ~ 0
+MOTOR+
+Wire Wire Line
+	5500 3850 5500 3750
+Wire Wire Line
+	5600 3650 5600 3950
+Wire Wire Line
+	7200 4350 5050 4350
+Wire Wire Line
+	5050 4250 6400 4250
+Wire Wire Line
+	5050 4150 6200 4150
+Wire Wire Line
+	5050 4050 5900 4050
+Wire Wire Line
+	5600 3950 5050 3950
+Wire Wire Line
+	5050 3850 5500 3850
+Wire Wire Line
+	5500 3750 5050 3750
+Wire Wire Line
+	5050 3650 5600 3650
+$Comp
+L HR2:ENCODER;2xM1x3RA CN1
+U 1 1 5F409D86
+P 4150 4350
+F 0 "CN1" H 4450 4500 50  0000 C CNN
+F 1 "ENCODER;2xM1x3RA" H 4600 3500 50  0000 C CNN
+F 2 "HR2:ENCODER_2xM1x3RA" H 4350 4400 60  0001 L CNN
+F 3 "HR2 Encoder Connectors" H 4350 4200 60  0001 L CNN
+F 4 "HR2 Encoder Connectors" H 4350 4100 60  0001 L CNN "Field5"
+	1    4150 4350
+	1    0    0    1   
+$EndComp
 $EndSCHEMATC
