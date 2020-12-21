@@ -43,18 +43,6 @@ Text HLabel 1500 6100 0    50   Input ~ 0
 SER_IN
 Text HLabel 1500 4000 0    50   Input ~ 0
 DIO_SCK
-$Comp
-L HR2:SN74HCS595;TTSOP16 U5
-U 1 1 5FD710B8
-P 2600 5800
-F 0 "U5" H 2850 5950 50  0000 C CNN
-F 1 "SN74HC595;TTSOP16" H 3100 4650 50  0000 C CNN
-F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2800 5850 60  0001 L CNN
-F 3 "Tri-state 8-Bit Shift Register" H 2800 5650 60  0001 L CNN
-F 4 "Tri-State 8-Bit Shift Register" H 2800 5550 60  0001 L CNN "Field5"
-	1    2600 5800
-	1    0    0    -1  
-$EndComp
 Entry Wire Line
 	4100 5700 4000 5800
 Entry Wire Line
@@ -169,8 +157,6 @@ Wire Wire Line
 	9900 4500 10300 4500
 Wire Wire Line
 	9900 4800 10100 4800
-Wire Wire Line
-	9900 2300 10300 2300
 Text Label 10300 2600 2    50   ~ 0
 GND
 Text Label 10300 2300 2    50   ~ 0
@@ -611,20 +597,6 @@ SIG7
 Text Label 7300 4900 0    50   ~ 0
 SIG8
 NoConn ~ 3700 6600
-$Comp
-L HR2:SN74HCS165;TTSOP16 U7
-U 1 1 5FC4FA21
-P 8900 4100
-F 0 "U7" H 9150 4250 50  0000 C CNN
-F 1 "SN74HC165;TTSOP16" H 9400 2850 50  0000 C CNN
-F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 9100 4150 60  0001 L CNN
-F 3 "8-Bit Parallel In Serial Out Shift Register" H 9100 3950 60  0001 L CNN
-F 4 "8-Bit Parallel In Serial Out Shift Register" H 9100 3850 60  0001 L CNN "desc"
-	1    8900 4100
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9900 2600 10100 2600
 Wire Wire Line
 	7900 2600 8900 2600
 Wire Wire Line
@@ -637,18 +609,6 @@ Wire Wire Line
 Wire Wire Line
 	8800 5200 8800 5500
 NoConn ~ 9900 4700
-$Comp
-L HR2:SN74HCS165;TTSOP16 U6
-U 1 1 5FC4EDF6
-P 8900 1900
-F 0 "U6" H 9150 2050 50  0000 C CNN
-F 1 "SN74HC165;TTSOP16" H 9400 650 50  0000 C CNN
-F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 9100 1950 60  0001 L CNN
-F 3 "8-Bit Parallel In Serial Out Shift Register" H 9100 1750 60  0001 L CNN
-F 4 "8-Bit Parallel In Serial Out Shift Register" H 9100 1650 60  0001 L CNN "desc"
-	1    8900 1900
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	8900 4900 8800 4900
 NoConn ~ 3700 6700
@@ -911,8 +871,6 @@ Wire Wire Line
 Connection ~ 8800 5200
 Connection ~ 8800 4900
 Wire Wire Line
-	10000 2400 10000 3250
-Wire Wire Line
 	8100 3250 10000 3250
 Wire Wire Line
 	10100 2600 10100 3350
@@ -934,6 +892,24 @@ F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 3200 3800 50  0001 
 	1    3200 3800
 	1    0    0    -1  
 $EndComp
+$Comp
+L HR2:SN74HC595;HTSSOP16EP3.4x5 U5
+U 1 1 5FE359DB
+P 2600 5800
+F 0 "U5" H 2850 5950 50  0000 C CNN
+F 1 "SN74HC595;HTSSOP16EP3.4x5" H 3200 4650 50  0000 C CNN
+F 2 "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm" H 2800 5850 60  0001 L CNN
+F 3 "Tri-state 8-Bit Shift Register" H 2800 5650 60  0001 L CNN
+F 4 "Tri-State 8-Bit Shift Register" H 2800 5550 60  0001 L CNN "desc"
+	1    2600 5800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9900 2600 10100 2600
+Wire Wire Line
+	10000 2400 10000 3250
+Wire Wire Line
+	9900 2300 10300 2300
 Wire Bus Line
 	4100 5600 4100 6500
 Wire Bus Line
@@ -952,4 +928,28 @@ Wire Bus Line
 	8000 2800 8000 6700
 Wire Bus Line
 	6000 700  6000 6500
+$Comp
+L HR2:SN74HC165;HTSSOP16EP3.4x5 U6
+U 1 1 5FE18228
+P 8900 1900
+F 0 "U6" H 9150 2050 50  0000 C CNN
+F 1 "SN74HC165;HTSSOP16EP3.4x5" H 9400 650 50  0000 C CNN
+F 2 "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm" H 9100 1950 60  0001 L CNN
+F 3 "8-Bit Parallel In Serial Out Shift Register" H 9100 1750 60  0001 L CNN
+F 4 "8-Bit Parallel In Serial Out Shift Register" H 9100 1650 60  0001 L CNN "desc"
+	1    8900 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:SN74HC165;HTSSOP16EP3.4x5 U7
+U 1 1 5FE19F67
+P 8900 4100
+F 0 "U7" H 9150 4250 50  0000 C CNN
+F 1 "SN74HC165;HTSSOP16EP3.4x5" H 9400 2850 50  0000 C CNN
+F 2 "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm" H 9100 4150 60  0001 L CNN
+F 3 "8-Bit Parallel In Serial Out Shift Register" H 9100 3950 60  0001 L CNN
+F 4 "8-Bit Parallel In Serial Out Shift Register" H 9100 3850 60  0001 L CNN "desc"
+	1    8900 4100
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

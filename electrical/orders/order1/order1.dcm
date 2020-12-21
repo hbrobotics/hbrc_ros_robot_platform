@@ -72,6 +72,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP SN74HC165;HTSSOP16EP3.4x5
+D 8-Bit Parallel In Serial Out Shift Register
+K ~
+F 
+$ENDCMP
+#
 $CMP GROVE;20x20
 D Grove 20x20 Module
 K ~
@@ -102,7 +108,7 @@ K ~
 F 
 $ENDCMP
 #
-$CMP DRV8833PWPR;16HTSSOP
+$CMP DRV8833PWPR;HTSSOP16EP3.4x5
 D DualH-Bridge Motor Drive
 K ~
 F 
@@ -224,12 +230,6 @@ $ENDCMP
 #
 $CMP WOW_IN;M2x6S
 D WOW Input Connector
-K ~
-F 
-$ENDCMP
-#
-$CMP SN74HCS165;TTSOP16
-D 8-Bit Parallel In Serial Out Shift Register
 K ~
 F 
 $ENDCMP

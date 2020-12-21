@@ -1,4 +1,4 @@
-"SN74HCS165;TTSOP16", "U", "Package_SO:TSSOP-16_4.4x5mm_P0.65mm", "", "8-Bit Parallel In Serial Out Shift Register", "8-Bit Parallel In Serial Out Shift Register"
+"SN74HC165;HTSSOP16EP3.4x5", "U", "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm", "", "8-Bit Parallel In Serial Out Shift Register", "8-Bit Parallel In Serial Out Shift Register"
 "Pin", "Unit", "Type",     "Name", "Style", "Side"
 "11",  "A",    "input",    "D0",   "line",  "left"
 "12",  "A",    "input",    "D1",   "line",  "left"
@@ -8,7 +8,7 @@
 "4",   "A",    "input",    "D5",   "line",  "left"
 "5",   "A",    "input",    "D6",   "line",  "left"
 "6",   "A",    "input",    "D7",   "line",  "left"
-"10",  "A",    "input",    "DS",   "line",  "left"
+"10",  "A",    "input",    "DS" ,  "line",  "left"
 "1",   "A",    "input",    "~PL",  "line",  "left"
 "2",   "A",    "input",    "CP",   "line",  "left"
 "15",  "A",    "input",    "~CE",  "line",  "left"
@@ -16,4 +16,4 @@
 "9",   "A",    "output",   "Q7",   "line",  "right"
 "7",   "A",    "output",   "~Q7",  "line",  "right"
 "8",   "A",    "power_in", "GND",  "line",  "right"
-,,,,,,
+,,,,,

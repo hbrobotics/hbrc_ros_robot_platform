@@ -1,4 +1,4 @@
-"DRV8833PWPR;16HTSSOP", "U", "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias", "", "Dual H-Bridge Motor Drive", "DualH-Bridge Motor Drive"
+"DRV8833PWPR;HTSSOP16EP3.4x5", "U", "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias", "", "Dual H-Bridge Motor Drive", "DualH-Bridge Motor Drive"
 "Pin", "Unit", "Type",       "Name",    "Style",    "Side"
 "1",   "A",    "in",         "~NSLEEP", "inverted", "right"
 "2",   "A",    "passive",    "AOUT1",   "line",     "right"
