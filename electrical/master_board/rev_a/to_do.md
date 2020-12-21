@@ -9,7 +9,7 @@
 
 ## Encoder:
 
-* DONE. 100Ω resistors should be 100KΩ.
+* (DONE) 100Ω resistors should be 100KΩ.
 
 ## Power Supply
 
@@ -17,14 +17,13 @@
   * Find a SOT23 3.3V regulator that JLCPCB supports.
   * Move 3.3V regulator closer to users of 3.3V regulators?
   * Use 3.3V from Nucleo instead of regulator? Probably not.
-* (DONE?) Are LED resistors the right number of Ohms and wattage?
-* (DONE) Are Shunt resistor packages big enough? NO: Schematic says 1608. PCB uses 3216 
+* (Almost DONE?) Are LED resistors the right number of Ohms and wattage?  3.3V and SBC_ALIVE?
+* (DONE) Are Shunt resistor packages big enough?
 
 ## WOWBus
 
 * (DONE) Update WOWBus schematic.
-* (DONE) Resize 120Ω Resistors (requires .2W, prefer .25W)?:
-  Does 0603 support .25W? No, but 3216(1206) does.
+* (DONE) Resize 120Ω Resistors (requires .2W, prefer .25W)? 3216.
 * Are solid state relay current limit resistors (R61, R62) are currently 100KΩ;1608.
   * Are the right value for Ohms to limit current?
   * Are the sized right, or can theye be down-sized?
@@ -39,21 +38,16 @@
   One is 3.9KΩ and the other is 4.7KΩ.  They should probably be the same.
 * ? - Is the SBC Alive LED current limit resistor the right value?
   Currently it is 470Ω in a 1608 (0603) package.
-* Does JLCPCB support surface mount buttons?
-  If so, change to that part and package footprint.
-* Does JLCPCB have a 32.768kHz crystal?
-  If so, change to that part and package footprint.
+* (DONE) Does JLCPCB support surface mount buttons? 6x6mm
+* (Almost DONE) Does JLCPCB have a 32.768kHz crystal?  12.5pF load in schematic symbol.
 
 ## Motors_Encoders
 
 * (DONE) Does nSLEEP need a pull up/down?  No
-* (DONE) Does nFAULT need a pull up/down?  Yes, 10K pull-up present
+* (DONE) Does nFAULT need a pull up/down?  Yes, 100K pull-up present
 * (DONE) Are bypass capacitors C11 and C12, 10µF and 2.2µF (C11 and C12)? Yes.
-  * Before C11 was 10pF not 10µF.
-* ? - Resize 10K resistors to 1005 (i.e. 0402)?
+* (DONE) Resize 10K resistors to 1005 (i.e. 0402)?
 * (DONE) Is NSLEEP routed to NESTOP?
-
-## ST_link
 
 ## Nucleo144
 
@@ -84,14 +78,3 @@
 * (DONE) Route NWOW_ESTOP, NMOTOR_FAULT, and NBTN_ESTOP to U7
 * (DONE) The remaining bits are a PCB revision (00=>A, 01=>B, 10=>C, 11=>D).
 
-## Encoder Boards
-
-* Do a design Review.
-
-## STAdatper Board.
-
-* Do a design review.
-
-## Lidar Adapter Board.
-
-* Bang one or two out?
