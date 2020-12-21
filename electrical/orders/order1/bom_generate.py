@@ -109,12 +109,60 @@ def main() -> int:
                 jlcpcb_bom_path: Path = path / (prefix + "_jlcpcb_bom.csv")
                 error = jlcpcb_parts_csv_generate(jlcpcb_bom_path, bom_indices,
                                                   jlcpcb_bom, matches, match_indices, pcb_count)
+                if not error:
+                    kicad_pos_path: Path = path / (prefix + "-all-pos.csv")
+                    jlcpcb_pos_path: Path = path / (prefix + "_jlcpcb_pos.csv")
+
+                    error = jlcpcb_pos_csv_generate(kicad_pos_path, jlcpcb_pos_path)
             if error:
                 print(error)
                 errors += 1
             print("----------------------------------------------------------------")
             print("")
     return min(1, errors)
+
+
+PositionRow = NamedTuple("PositionRow",
+                         ["reference", "value", "package", "x", "y", "rotation", "side"])
+
+
+def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path) -> str:
+    """Generate the position .csv file for JLCPCB."""
+    error: str = ""
+    kicad_pos_csv_file: IO[str]
+    if not kicad_pos_path.exists():
+        print(f"**************** {kicad_pos_path} does not exist")
+    else:
+        with open(kicad_pos_path, encoding="utf8", errors="ignore") as kicad_pos_csv_file:
+            desired_header: List[str] = ["Ref", "Val", "Package", "PosX", "PosY", "Rot", "Side"]
+            pos_reader = csv.reader(kicad_pos_csv_file)
+            position_row: PositionRow
+            position_rows: List[PositionRow] = []
+            for row_index, row in enumerate(pos_reader):
+                if row_index == 0:
+                    if row != desired_header:
+                        error = f"Header mismatch actual {row} != desired {desired_header}"
+                        break
+                else:
+                    position_row = PositionRow(*row)
+                    position_rows.append(position_row)
+
+            lines: List[str] = ['"Designator","Mid X","Mid Y","Layer","Rotation"']
+            for position_row in position_rows:
+                side_text: str = "T" if position_row.side == "top" else "B"
+                lines.append(
+                    f'"{position_row.reference}",'
+                    f'"{position_row.x}mm",'
+                    f'"{position_row.y}mm",'
+                    f'"{side_text}",'
+                    f'"{int(float(position_row.rotation))}"'
+                )
+            lines.append("")
+            position_text: str = '\n'.join(lines)
+            jlcpcb_pos_csv_file: IO[str]
+            with open(jlcpcb_pos_path, "w") as jlcpcb_pos_csv_file:
+                jlcpcb_pos_csv_file.write(position_text)
+    return error
 
 
 def jlcpcb_parts_csv_generate(jlcpcb_bom_path: Path, bom_indices: Dict[str, int],
@@ -690,7 +738,7 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
         "PFET_6A_GSD;SOT23": (r"MOSFET P Trench.*V [6-7]\.[0-9]A", "SOT-23-3", ".*", "C141546$"),
         "REDLED;1608": ("LED.*Red", "LED_0603", ".*", "C2286$"),
         "SN74HC165;HTSSOP16EP3.4x5": ("74 Series Shift Register.*TSSOP-16",
-                                     "HTSSOP-16", "165", "C201716$"),
+                                      "HTSSOP-16", "165", "C201716$"),
         # "SN74HC595;TTSOP16": ("74 Series TSSOP-16 RoHS", ".*", "595", ".*"),  # "C5948$"),
         "SN74HC595;HTSSOP16EP3.4x5": ("74 Series.*TSSOP-16 RoHS", ".*", "595", "C5948$"),
     }
