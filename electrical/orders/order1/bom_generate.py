@@ -87,7 +87,6 @@ def main() -> int:
     # Only search the JLCPCB parts library once:
     matches: Dict[str, List[Match]]
     error, matches = jlcpcb_parts_search(hr2_dir)
-    print(f":Matches size:{len(matches)}")
     if error:
         errors += 1
     else:
@@ -172,19 +171,19 @@ def jlcpcb_parts_csv_generate(jlcpcb_bom_path: Path, bom_indices: Dict[str, int]
     # Generate any error messages:
     index: int
     if unmatched_values:
-        error = f"{len(unmatched_values)} Unmatched JLCPCB parts"
+        error = f"**************** {len(unmatched_values)} Unmatched JLCPCB parts"
         print(error)
         for index, value in enumerate(unmatched_values):
             print(f"[{index+1}]:{value}")
         print("")
     elif duplicate_matches:
-        error = f"{len(unmatched_values)} Duplicate JLCPCB parts"
+        error = f"**************** {len(unmatched_values)} Duplicate JLCPCB parts"
         print(error)
         for index, value in enumerate(unmatched_values):
             print(f"[{index+1}]:{value}")
         print("")
     elif unfound_values:
-        error = f"{len(unfound_values)} JLCPCB parts were not found"
+        error = f"**************** {len(unfound_values)} JLCPCB parts were not found"
         print(error)
         for index, value in enumerate(unfound_values):
             print(f"[{index+1}]:{value}")
@@ -416,7 +415,6 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
                                 if int(match.stock):
                                     matches[name].append(match)
                                 # print(f"match[{row_index}]: {match}")
-    print(f"Matches size:{len(matches)}")
     return error, matches  # , jlcpcb_indices
 
 
@@ -504,7 +502,7 @@ def bom_split(bom_indices: Dict[str, int],
             unmatched_values.append(bom_value)
 
     if unmatched_values:
-        error = f"{len(unmatched_values)} Unmatched values found"
+        error = f"**************** {len(unmatched_values)} Unmatched values found"
         print(error)
         unmatched_value: str
         index: int
@@ -560,12 +558,15 @@ def jlcpcb_footprints_get() -> Set[str]:
         "Capacitor_SMD:C_0402_1005Metric",
         "Capacitor_SMD:C_0603_1608Metric",
         "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm",
-        "HR2:BUTTON_6x3.5",
+        "HR2:BUTTON_6x6",
+        "Button_Switch_SMD:SW_Push_1P1T_NO_6x6mm_H9.5mm",
         "HR2:TE1376164-1_COINHOLDER6.8",
         "LED_SMD:LED_0603_1608Metric",
         "32.768kHz9pF;3.2x1.5",
-        "MCP2542;SOIC8",
+        "MCP2542;TDFN8EP3x2",
         "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias",
+        "Package_DFN_QFN:TDFN-8-1EP_3x2mm_P0.5mm_EP1.80x1.65mm",
+        "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm",
         "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
         "Package_SO:SOP-4_3.8x4.1mm_P2.54mm",
         "Package_SO:TSOP-6_1.65x3.05mm_P0.95mm",
@@ -643,16 +644,24 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
         "0.01µF;1005": (" 10nF", "0402$", ".*", ".*"),
         "0.1µF;1005": (" 100nF", "0402$", ".*", "C1525$"),
         "0Ω;1608": (" 0Ohm", "0603$", ".*", ".*"),
+        "0Ω;1005": (" 0Ohm", "0402$", ".*", ".*"),
+        "0Ω;3216": (" 0Ohm", "1206$", ".*", ".*"),
         # "100Ω;1005": (" 100Ohms", "0402$", ".*", ".*"),
         "100KΩ;1005": (" 100KOhms", "0402$", ".*", "C25741$"),
         "100KΩ;1608": (" 100KOhms", "0603$", ".*", "C25803$"),
         "10KΩ;1608": (" 10KOhms", "0603$", ".*", "C25804$"),
         "10µF;1608": (" 10uF", "0603$", ".*", "C19702$"),
-        "120Ω.25W;1608": (" 120Ohms", "0603$", ".*", "C22787$"),
-        "16pF;1608": (" 16pF", "0603$", ".*", "C1646$"),  # Only in 0603
+        "120Ω;1005": (" 120Ohms", "0402$", ".*", ".*"),
+        # "120Ω.25W;1608": (" 120Ohms", "0603$", ".*", "C22787$"),
+        "120Ω.25W;3216": (" 120Ohms", "1206$", ".*", "C17909$"),
+        # "16pF;1608": (" 16pF", "0603$", ".*", "C1646$"),  # Only in 0603
+        "15pF;1608": (" 15pF", ".*", ".*", "C1644$"),
+        "150Ω;1005": (" 150Ohms", "0402$", ".*", ".*"),
+        "220Ω;1005": (" 220Ohms", "0402$", ".*", ".*"),
         "1KΩ;1005": (" 1KOhms 1%", "0402$", ".*", "C11702$"),
         "1KΩ;1608": (" 1KOhms 1%", "0603$", ".*", "C21190$"),
         "2.2µF6.3V;1608": (" 2.2uF", "0603$", ".*", "C23630$"),
+        "270Ω;1608": (" 270Ohms", "0603$", ".*", ".*"),
         "2N7002;SOT23": ("MOSFET N Trench.*", ".*", "2N7002", "C8545$"),
         "3.9KΩ;1005": (r" 3\.9KOhms", "0402$", ".*", ".*"),
         "32.768kHz9pF;3.2x1.5": ("32.768", ".*", ".*", "C32346$"),
@@ -661,26 +670,29 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
         "4.7µF;1608": (" 4.7uF", "0603$", ".*", "C19666$"),
         "470Ω.25W;1608": (" 470Ohms 1%", "0603$", ".*", ".*"),
         "470Ω;1608": (" 470Ohms 1%", "0603$", ".*", ".*"),
+        "560Ω;1608": (" 560Ohms", "0603$", ".*", ".*"),
         "ACS711;SOIC8": ("Current Sensors SOIC-8_150mil RoHS", ".*",  ".*", "C10681$"),
         "AH1806;SC59": (r"Magnetic Sensors SOT-23", ".*", ".*", "C126664"),
         "AP2114HA-3.3TRG1_1A;SOT223": (r"Low Dropout Regulators\(LDO\) SOT-223",
                                        ".*",  ".*", "C166063$"),
-        "BUTTON;6x3.5": ("SPST.*Tactile Switches", "6.*x6", ".*", "C127509$"),
+        "BUTTON;6x6": ("SPST.*Tactile Switches", "6.*x6", ".*", "C127509$"),
         "CAT24C32;SOIC8": (r"EEPROM 32Kb", "SOIC-8", "CAT24C32", ".*"),
-        "CD4504B;TTSOP16": ("Level Translators,  Shifters SOIC-16_150mil RoHS",
-                            ".*", ".*", "C151885$"),
+        "CD4504B;TTSOP16": ("Level Translators", ".*", "4504", "C233582$"),
         "CPC1017N;SOP4W3.8L4.1": ("Solid State Relays SOP-4_P2.54 RoHS", ".*", ".*", "C261926$"),
-        "DRV8833PWPR;16HTSSOP": ("Motor Drivers HTSSOP-16 RoHS", "HTSSOP-16", ".*", "^C50506$"),
+        "DRV8833PWPR;HTSSOP16EP3.4x5": ("Motor Drivers HTSSOP-16 RoHS",
+                                        "HTSSOP-16", ".*", "^C50506$"),
         "LEDGRN;1608": ("LED.*Green", "LED_0603", ".*", "C72043$"),
         "LM5050-1;TSOT-23-6": ("PMIC - Power Distribution Switches SOT-23-6 RoHS",
                                ".*", ".*", "C55266$"),
-        "MCP2542;SOIC8": ("CAN", ".*", "MCP2542", ".*"),
+        "MCP2542;TDFN8EP3x2": ("CAN", ".*", "MCP2542", ".*"),
         "MCP7940;SOIC8": ("Real-time Clocks Clock/Calendar I2C", "SOIC-8", ".*", "C7440$"),
         "NFET_3A_GSD;SOT23": (r"MOSFET N Trench.*V [3-7]\.[0-9]A", "SOT-23-3", ".*", "C20917$"),
         "PFET_6A_GSD;SOT23": (r"MOSFET P Trench.*V [6-7]\.[0-9]A", "SOT-23-3", ".*", "C141546$"),
         "REDLED;1608": ("LED.*Red", "LED_0603", ".*", "C2286$"),
-        "SN74HC165;TTSOP16": ("74 Series Shift Register", ".*", ".*", "C5613$"),
-        "SN74HC595;TTSOP16": ("74 Series TSSOP-16 RoHS", ".*", ".*", "C5948$"),
+        "SN74HC165;HTSSOP16EP3.4x5": ("74 Series Shift Register.*TSSOP-16",
+                                     "HTSSOP-16", "165", "C201716$"),
+        # "SN74HC595;TTSOP16": ("74 Series TSSOP-16 RoHS", ".*", "595", ".*"),  # "C5948$"),
+        "SN74HC595;HTSSOP16EP3.4x5": ("74 Series.*TSSOP-16 RoHS", ".*", "595", "C5948$"),
     }
     return regular_expressions
 

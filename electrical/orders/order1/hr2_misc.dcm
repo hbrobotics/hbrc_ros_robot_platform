@@ -1,9 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP Q_PWR_PMOS_GSD
-D P-MOSFET transistor, gate/source/drain
-K transistor PMOS P-MOS P-MOSFET
-F ~
-$ENDCMP
-#
-#End Doc Library
