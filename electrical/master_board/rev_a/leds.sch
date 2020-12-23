@@ -1191,8 +1191,6 @@ F 4 "Tri-State 8-Bit Shift Register" H 2100 1950 60  0001 L CNN "desc"
 	1    1900 2200
 	1    0    0    -1  
 $EndComp
-Wire Bus Line
-	3500 1300 3500 7200
 $Comp
 L HR2:SN74HC595;HTSSOP16EP3.4x5 U?
 U 1 1 5FE48EC9
@@ -1207,4 +1205,6 @@ F 4 "Tri-State 8-Bit Shift Register" H 2100 4850 60  0001 L CNN "desc"
 	1    1900 5100
 	1    0    0    -1  
 $EndComp
+Wire Bus Line
+	3500 1300 3500 7200
 $EndSCHEMATC
