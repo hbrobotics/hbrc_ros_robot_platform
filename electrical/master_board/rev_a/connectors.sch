@@ -910,24 +910,6 @@ Wire Wire Line
 	10000 2400 10000 3250
 Wire Wire Line
 	9900 2300 10300 2300
-Wire Bus Line
-	4100 5600 4100 6500
-Wire Bus Line
-	4100 6500 4100 7100
-Wire Bus Line
-	2700 700  6000 700 
-Wire Bus Line
-	2700 700  2700 4100
-Wire Bus Line
-	2400 700  2400 1200
-Wire Bus Line
-	10400 700  10400 6500
-Wire Bus Line
-	2150 3800 2150 7300
-Wire Bus Line
-	8000 2800 8000 6700
-Wire Bus Line
-	6000 700  6000 6500
 $Comp
 L HR2:SN74HC165;HTSSOP16EP3.4x5 U6
 U 1 1 5FE18228
@@ -952,4 +934,22 @@ F 4 "8-Bit Parallel In Serial Out Shift Register" H 9100 3850 60  0001 L CNN "de
 	1    8900 4100
 	1    0    0    -1  
 $EndComp
+Wire Bus Line
+	4100 5600 4100 6500
+Wire Bus Line
+	4100 6500 4100 7100
+Wire Bus Line
+	2700 700  6000 700 
+Wire Bus Line
+	2700 700  2700 4100
+Wire Bus Line
+	2400 700  2400 1200
+Wire Bus Line
+	10400 700  10400 6500
+Wire Bus Line
+	2150 3800 2150 7300
+Wire Bus Line
+	8000 2800 8000 6700
+Wire Bus Line
+	6000 700  6000 6500
 $EndSCHEMATC
