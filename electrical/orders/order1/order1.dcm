@@ -36,12 +36,6 @@ K ~
 F https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF
 $ENDCMP
 #
-$CMP AP2114HA-3.3TRG1_1A;SOT223
-D 1A 3.3V LDO Voltage Linear Regulator
-K ~
-F 
-$ENDCMP
-#
 $CMP BRIDGE_NE_OUTER;3xM1x1+M1x5
 D NE Outer Bridge Connectors
 K ~
@@ -68,6 +62,12 @@ $ENDCMP
 #
 $CMP WOW_IN;M2x6S
 D WOW Input Connector
+K ~
+F 
+$ENDCMP
+#
+$CMP AMS1117-3.3V800mA_GOI;SOT223
+D 3.3V 800mA LDO Voltage Linear Regulator
 K ~
 F 
 $ENDCMP
