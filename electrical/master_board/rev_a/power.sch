@@ -36,18 +36,6 @@ $EndComp
 Wire Wire Line
 	7200 3400 7600 3400
 Connection ~ 7600 3400
-$Comp
-L HR2:AP2114HA-3.3TRG1_1A;SOT223 VR1
-U 1 1 5F4C5F9D
-P 6100 4500
-F 0 "VR1" H 6350 4650 50  0000 C CNN
-F 1 "AP2114HA-3.3TRG1_1A;SOT223" H 6650 4250 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-223-3_TabPin2" H 6300 4550 60  0001 L CNN
-F 3 "1A 3.3V LDO Voltage Linear Regulator" H 6300 4350 60  0001 L CNN
-F 4 "1A 3.3V LDO Voltage Linear Regulator" H 6300 4250 60  0001 L CNN "Field5"
-	1    6100 4500
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	7600 3000 7600 2900
 Wire Wire Line
@@ -61,23 +49,12 @@ Connection ~ 7600 3000
 Wire Wire Line
 	7600 3300 7600 3000
 $Comp
-L Device:C C2
-U 1 1 5F4D49AE
-P 5750 4550
-F 0 "C2" H 5800 4650 50  0000 L CNN
-F 1 "4.7µF;1608" H 5300 4450 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 4400 50  0001 C CNN
-F 3 "~" H 5750 4550 50  0001 C CNN
-	1    5750 4550
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:C C3
 U 1 1 5F4D53A8
 P 7400 5050
 F 0 "C3" H 7250 5150 50  0000 L CNN
-F 1 "4.7µF;1608" H 6950 4950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 7438 4900 50  0001 C CNN
+F 1 "Ta22µF6.3V;3216" H 6650 4950 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 7438 4900 50  0001 C CNN
 F 3 "~" H 7400 5050 50  0001 C CNN
 	1    7400 5050
 	1    0    0    -1  
@@ -88,13 +65,8 @@ Wire Wire Line
 	7400 5200 7400 5500
 Wire Wire Line
 	7400 5500 6000 5500
-Wire Wire Line
-	5750 4700 5750 5500
-Wire Wire Line
-	5750 5500 6000 5500
 Connection ~ 6000 5500
 Connection ~ 7400 5500
-Connection ~ 5750 5500
 Text Label 10000 5500 2    50   ~ 0
 GND
 $Comp
@@ -655,10 +627,6 @@ Wire Wire Line
 	6100 4500 6000 4500
 Wire Wire Line
 	6000 4500 6000 4100
-Wire Wire Line
-	6000 4100 5750 4100
-Wire Wire Line
-	5750 4100 5750 4400
 $Comp
 L HR2:SHUNT R22
 U 1 1 5FB51E58
@@ -729,7 +697,6 @@ Wire Wire Line
 	6000 4100 7400 4100
 Wire Wire Line
 	7400 3200 7400 4100
-Connection ~ 6000 4100
 $Comp
 L HR2:USB-C;USB-C CN2
 U 1 1 5FCFB047
@@ -1094,8 +1061,6 @@ Wire Wire Line
 Wire Wire Line
 	2400 2900 2400 5300
 Wire Wire Line
-	2400 5500 5750 5500
-Wire Wire Line
 	1800 3800 2800 3800
 Wire Wire Line
 	1600 3800 1800 3800
@@ -1185,4 +1150,26 @@ F 3 "~" H 4100 1000 50  0001 C CNN
 	1    4100 1000
 	0    -1   -1   0   
 $EndComp
+Text Notes 6350 5300 0    50   ~ 0
+Note: Ta => Tantalum
+Wire Wire Line
+	2400 5500 6000 5500
+$Comp
+L HR2:AMS1117-3.3V800mA_GOI;SOT223 VR1
+U 1 1 5FE703B1
+P 6100 4500
+F 0 "VR1" H 6350 4650 50  0000 C CNN
+F 1 "AMS1117-3.3V800mA_GOI;SOT223" H 6700 4250 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-223-3_TabPin2" H 6300 4550 60  0001 L CNN
+F 3 "3.3V 800mA LDO Voltage Linear Regulator" H 6300 4350 60  0001 L CNN
+F 4 "3.3V 800mA LDO Voltage Linear Regulator" H 6300 4250 60  0001 L CNN "desc"
+	1    6100 4500
+	1    0    0    -1  
+$EndComp
+Text Label 4100 1300 0    50   ~ 0
+GATE1
+Text Label 4100 2300 0    50   ~ 0
+GATE2
+Text Label 6100 1300 0    50   ~ 0
+GATE3
 $EndSCHEMATC

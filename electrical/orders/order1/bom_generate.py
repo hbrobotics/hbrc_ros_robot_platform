@@ -692,7 +692,7 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
         "0.01µF;1005": (" 10nF", "0402$", ".*", "C15195$"),
         "10µF;1608": (" 10uF", "0603$", ".*", "C19702$"),
         "2.2µF6.3V;1608": (" 2.2uF", "0603$", ".*", "C23630$"),
-        "4.7µF;1608": (" 4.7uF", "0603$", ".*", "C19666$"),
+        "Ta22µF6.3V;3216": ("Tantalum Capacitors 22uF 6.3V", ".*3216", ".*", "C135574$"),
         "15pF;1608": (" 15pF", ".*", ".*", "C1644$"),
         "0.1µF;1005": (" 100nF", "0402$", ".*", "C1525$"),
         "LEDGRN;1608": ("LED.*Green", "LED_0603", ".*", "C72043$"),
@@ -728,14 +728,17 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
         "SN74HC165;HTSSOP16EP3.4x5": (
             "74 Series Shift Register.*TSSOP-16", "HTSSOP-16", "165", "C201716$"),
         "CD4504B;TTSOP16": ("Level Translators", ".*", "4504", "C233582$"),
-        "AP2114HA-3.3TRG1_1A;SOT223": (
-            r"Low Dropout Regulators\(LDO\) SOT-223", ".*",  ".*", "C166063$"),
+        "AMS1117-3.3V800mA_GOI;SOT223": ("Positive Fixed.*3.3V", ".*",  ".*", "C6186$"),
         "32.768kHz9pF;3.2x1.5": ("32.768", ".*", ".*", "C32346$"),
 
         # Encoder board.
-        "AH1806;SC59": (r"Magnetic Sensors SOT-23", ".*", ".*", "C126664"),
+        "AH1806;SC59": (r"Magnetic Sensors SOT-23", "SOT-23", ".*", "C126664$"),
+
 
         # Old stuff:
+        # "AP2114HA-3.3TRG1_1A;SOT223": (
+        #     r"Low Dropout Regulators\(LDO\) SOT-223", ".*",  ".*", "C166063$"),
+        # "4.7µF;1608": (" 4.7uF", "0603$", ".*", "C19666$"),
         # "0Ω;1608": (" 0Ohm", "0603$", ".*", ".*"),
         # "0Ω;1005": (" 0Ohm", "0402$", ".*", ".*"),
         # "100Ω;1005": (" 100Ohms", "0402$", ".*", ".*"),
