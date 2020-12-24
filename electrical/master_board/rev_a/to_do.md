@@ -7,6 +7,11 @@
 * https://support.jlcpcb.com/article/84-how-to-generate-the-bom-and-centroid-file-from-kicad
 * https://docs.google.com/spreadsheets/d/1bSM_Ko6OLz7rW6MCQbw4Zv_Z4hOHcI7w7O6sczi2h5w/edit#gid=0
 
+## Misc.
+
+Add board name, revision, date, etc to artwork.
+
+
 ## Encoder:
 
 * (DONE) 100Ω resistors should be 100KΩ.
