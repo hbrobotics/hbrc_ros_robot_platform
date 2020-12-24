@@ -1,49 +1,7 @@
 EESchema-DOCLIB  Version 2.0
 #
-$CMP POWER_PFET_GSD
-D Power PFET (GSD pinout)
-K ~
-F 
-$ENDCMP
-#
-$CMP BRIDGE_NW_OUTER;M1x2+M2x5
-D NW Outer Bridge Connectors
-K ~
-F 
-$ENDCMP
-#
-$CMP SENSE;M1x3
-D Sense F1X3
-K ~
-F 
-$ENDCMP
-#
-$CMP BRIDGE_NW_INNER;M1x2+M2x5
-D NW Inner Bridge Connectors
-K ~
-F 
-$ENDCMP
-#
-$CMP HCSR04;F1X4
-D HC-SR04 Sonar (Normal Profile Receptacle)
-K ~
-F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
-$ENDCMP
-#
-$CMP USB_B_MICRO_POWER_MASTER
-D USB_Mini Power (Slave)
-K ~
-F 2.3FLANGE
-$ENDCMP
-#
-$CMP MCP2542;SOIC8
-D MCP2542
-K ~
-F 
-$ENDCMP
-#
-$CMP AP2114HA-3.3TRG1_1A;SOT223
-D 1A 3.3V LDO Voltage Linear Regulator
+$CMP 74LVC1G11;SOT363
+D 1 3-Input and Gate
 K ~
 F 
 $ENDCMP
@@ -54,20 +12,14 @@ K ~
 F 
 $ENDCMP
 #
-$CMP BRIDGE_SE_INNER;M1x8
-D SE Inner Bridge Connector
+$CMP STADAPTER;M2x4RA
+D ST Adapter Connector
 K ~
 F 
 $ENDCMP
 #
-$CMP HCSR04H;F1X4
-D HC-SR04 Sonar (High Profile Receptacle)
-K ~
-F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
-$ENDCMP
-#
-$CMP SERVO;F1x3
-D Servo F1X3
+$CMP SN74HC595;HTSSOP16EP3.4x5
+D Tri-State 8-Bit Shift Register
 K ~
 F 
 $ENDCMP
@@ -78,86 +30,14 @@ K ~
 F 
 $ENDCMP
 #
-$CMP GROVE;20x20
-D Grove 20x20 Module
-K ~
-F 
-$ENDCMP
-#
-$CMP BRIDGE_SW_INNER;M1x8
-D SW Inner Bridge Connector
-K ~
-F 
-$ENDCMP
-#
-$CMP HCSR04LP;F1X4
-D HC-SR04 Sonar (Low Profile Receptacle)
-K ~
-F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
-$ENDCMP
-#
-$CMP SERVO;M1x4
-D Servo M1X4
-K ~
-F 
-$ENDCMP
-#
-$CMP RASPI;F2X20
-D 
-K ~
-F 
-$ENDCMP
-#
-$CMP DRV8833PWPR;HTSSOP16EP3.4x5
-D DualH-Bridge Motor Drive
-K ~
-F 
-$ENDCMP
-#
 $CMP CAT24C32;SOIC8
 D 32Kb I2C EEPROM
 K ~
 F https://www.onsemi.com/pub/Collateral/CAT24C32-D.PDF
 $ENDCMP
 #
-$CMP USB_B_MICRO_POWER_SLAVE
-D USB_Mini Power (Slave)
-K ~
-F 2.3FLANGE
-$ENDCMP
-#
-$CMP SN74HCS595;TTSOP16
-D Tri-State 8-Bit Shift Register
-K ~
-F 
-$ENDCMP
-#
-$CMP CPC1017N;SOP4W3.8WL4.1
-D CPC1017 Solid State Relay
-K ~
-F 
-$ENDCMP
-#
-$CMP USB-C;USB-C
-D USB-C Connector
-K ~
-F http://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ117219.pdf
-$ENDCMP
-#
-$CMP U3V70xMATE;F1x4+F1x5
-D Pololu U3V70x Voltage Regulator Mating Connector
-K ~
-F 
-$ENDCMP
-#
-$CMP HOLE;M2.5
-D 
-K ~
-F M2.5 Mounting Hole
-$ENDCMP
-#
-$CMP 74LVC1G11;SOT363
-D 1 3-Input and Gate
+$CMP AP2114HA-3.3TRG1_1A;SOT223
+D 1A 3.3V LDO Voltage Linear Regulator
 K ~
 F 
 $ENDCMP
@@ -168,56 +48,32 @@ K ~
 F 
 $ENDCMP
 #
-$CMP SERVO;M1x3
-D Servo F1X3
+$CMP STADAPTER;F2x4
+D ST Adapter Mating Connector
 K ~
 F 
 $ENDCMP
 #
-$CMP ENCODER;2xF1x3
-D HR2 Encoder Connector
+$CMP POWER_PFET_GSD
+D Power PFET (GSD pinout)
 K ~
 F 
 $ENDCMP
 #
-$CMP USB-C;USB-C
-D USB-C Connector
-K ~
-F Connector_USB:1USB_C_Receptacle_JAE_DX07S024WJ1R350
-$ENDCMP
-#
-$CMP LIDAR_ADAPTER;2xF1x4_F1x3
-D Lidar Adapter Connectors
+$CMP DRV8833PWPR;HTSSOP16EP3.4x5
+D DualH-Bridge Motor Drive
 K ~
 F 
 $ENDCMP
 #
-$CMP HOLE;M3.0
-D 
-K ~
-F M3 Mounting Hole
-$ENDCMP
-#
-$CMP STADAPTER;M2x4RA
-D ST Adapter Connector
+$CMP WOW_IN;M2x6S
+D WOW Input Connector
 K ~
 F 
 $ENDCMP
 #
-$CMP 74LVC1G74;TSSOP8
-D D-type flip-flop edge-trigger/set/reset
-K ~
-F 
-$ENDCMP
-#
-$CMP CD450B;TTSOP16
-D Hex Level Shifter
-K ~
-F 
-$ENDCMP
-#
-$CMP GROVE;20x20R
-D Grove 20x20 Module Right
+$CMP U3V70xMATE;F1x4+F1x5
+D Pololu U3V70x Voltage Regulator Mating Connector
 K ~
 F 
 $ENDCMP
@@ -228,8 +84,32 @@ K Nucleo144 STM32F767ZI
 F https://www.st.com/resource/en/user_manual/dm00244518-stm32-nucleo144-boards-stmicroelectronics.pdf
 $ENDCMP
 #
-$CMP WOW_IN;M2x6S
-D WOW Input Connector
+$CMP USB-C;USB-C
+D USB-C Connector
+K ~
+F Connector_USB:1USB_C_Receptacle_JAE_DX07S024WJ1R350
+$ENDCMP
+#
+$CMP HCSR04;F1X4
+D HC-SR04 Sonar (Normal Profile Receptacle)
+K ~
+F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+$CMP LIDAR_ADAPTER;2xF1x4_F1x3
+D Lidar Adapter Connectors
+K ~
+F 
+$ENDCMP
+#
+$CMP BRIDGE_SW_INNER;M1x8
+D SW Inner Bridge Connector
+K ~
+F 
+$ENDCMP
+#
+$CMP CPC1017N;SOP4W3.8WL4.1
+D CPC1017 Solid State Relay
 K ~
 F 
 $ENDCMP
@@ -240,16 +120,16 @@ K ~
 F 
 $ENDCMP
 #
-$CMP BRIDGE_SW_OUTER;M1x8
-D SW Outer Bridge Connector
+$CMP MCP2542;SOIC8
+D MCP2542
 K ~
 F 
 $ENDCMP
 #
-$CMP LM5050-1;TSOT-23-6
-D Idealf Diode w/external NFET
+$CMP GROVE;20x20
+D Grove 20x20 Module
 K ~
-F https://www.ti.com/lit/ds/symlink/lm5050-1.pdf
+F 
 $ENDCMP
 #
 $CMP HOLE;M2
@@ -258,14 +138,20 @@ K ~
 F 
 $ENDCMP
 #
-$CMP SN74HCS166;TTSOP16
-D 8-Bit Parallel In Serial Out Shift Register
+$CMP HOLE;M2.5
+D 
 K ~
-F 
+F M2.5 Mounting Hole
 $ENDCMP
 #
-$CMP ENCODER;2xM1x3RA
-D HR2 Encoder Connectors
+$CMP LM5050-1;TSOT-23-6
+D Idealf Diode w/external NFET
+K ~
+F https://www.ti.com/lit/ds/symlink/lm5050-1.pdf
+$ENDCMP
+#
+$CMP 74LVC1G74;TSSOP8
+D D-type flip-flop edge-trigger/set/reset
 K ~
 F 
 $ENDCMP
@@ -276,8 +162,116 @@ K ~
 F 
 $ENDCMP
 #
-$CMP STADAPTER;F2x4
-D ST Adapter Mating Connector
+$CMP BRIDGE_SW_OUTER;M1x8
+D SW Outer Bridge Connector
+K ~
+F 
+$ENDCMP
+#
+$CMP USB_B_MICRO_POWER_MASTER
+D USB_Mini Power (Slave)
+K ~
+F 2.3FLANGE
+$ENDCMP
+#
+$CMP HOLE;M3.0
+D 
+K ~
+F M3 Mounting Hole
+$ENDCMP
+#
+$CMP SERVO;F1x3
+D Servo F1X3
+K ~
+F 
+$ENDCMP
+#
+$CMP SENSE;M1x3
+D Sense F1X3
+K ~
+F 
+$ENDCMP
+#
+$CMP USB-C;USB-C
+D USB-C Connector
+K ~
+F http://www.jae.com/z-en/pdf_download_exec.cfm?param=SJ117219.pdf
+$ENDCMP
+#
+$CMP BRIDGE_SE_INNER;M1x8
+D SE Inner Bridge Connector
+K ~
+F 
+$ENDCMP
+#
+$CMP BRIDGE_NW_INNER;M1x2+M2x5
+D NW Inner Bridge Connectors
+K ~
+F 
+$ENDCMP
+#
+$CMP HCSR04LP;F1X4
+D HC-SR04 Sonar (Low Profile Receptacle)
+K ~
+F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+$CMP RASPI;F2X20
+D 
+K ~
+F 
+$ENDCMP
+#
+$CMP GROVE;20x20R
+D Grove 20x20 Module Right
+K ~
+F 
+$ENDCMP
+#
+$CMP SERVO;M1x3
+D Servo F1X3
+K ~
+F 
+$ENDCMP
+#
+$CMP USB_B_MICRO_POWER_SLAVE
+D USB_Mini Power (Slave)
+K ~
+F 2.3FLANGE
+$ENDCMP
+#
+$CMP BRIDGE_NW_OUTER;M1x2+M2x5
+D NW Outer Bridge Connectors
+K ~
+F 
+$ENDCMP
+#
+$CMP CD450B;TTSOP16
+D Hex Level Shifter
+K ~
+F 
+$ENDCMP
+#
+$CMP ENCODER;2xF1x3
+D HR2 Encoder Connector
+K ~
+F 
+$ENDCMP
+#
+$CMP HCSR04H;F1X4
+D HC-SR04 Sonar (High Profile Receptacle)
+K ~
+F https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+$ENDCMP
+#
+$CMP SERVO;M1x4
+D Servo M1X4
+K ~
+F 
+$ENDCMP
+#
+$CMP ENCODER;2xM1x3RA
+D HR2 Encoder Connectors
 K ~
 F 
 $ENDCMP
