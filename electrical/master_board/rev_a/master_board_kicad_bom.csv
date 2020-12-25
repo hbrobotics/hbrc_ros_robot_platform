@@ -1,5 +1,5 @@
 "Source:","/home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/master_board/rev_a/master_board.sch"
-"Date:","Thu 24 Dec 2020 04:29:29 PM PST"
+"Date:","Thu 24 Dec 2020 07:17:24 PM PST"
 "Tool:","Eeschema 5.1.9-73d0e3b20d~88~ubuntu20.04.1"
 "Generator:","/usr/share/kicad/plugins/bom_csv_grouped_by_value_with_fp.py"
 "Component Count:","223"
@@ -82,4 +82,4 @@
 "U17, U18, ","2","CPC1017N;SOP4W3.8L4.1","CPC1017N;SOP4W3.8WL4.1","Package_SO:SOP-4_3.8x4.1mm_P2.54mm","CPC1017 Solid State Relay",""
 "U19, ","1","ACS711;SOIC8","ACS711;SOIC8","Package_SO:SOIC-8_3.9x4.9mm_P1.27mm","",""
 "VR1, ","1","AMS1117-3.3V800mA_GOI;SOT223","AMS1117-3.3V800mA_GOI;SOT223","Package_TO_SOT_SMD:SOT-223-3_TabPin2","3.3V 800mA LDO Voltage Linear Regulator",""
-"X1, ","1","32.768kHz9pF;3.2x1.5","Crystal","Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm","Two pin crystal",""
+"X1, ","1","32.768kHz12.5pF;3.2x1.5","Crystal","Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm","Two pin crystal",""

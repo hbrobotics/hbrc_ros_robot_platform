@@ -18,11 +18,11 @@ Add board name, revision, date, etc to artwork.
 
 ## Power Supply
 
-* Downsize the 3.3V regulator to a SOT23 Package.
-  * Find a SOT23 3.3V regulator that JLCPCB supports.
-  * Move 3.3V regulator closer to users of 3.3V regulators?
-  * Use 3.3V from Nucleo instead of regulator? Probably not.
-* (Almost DONE?) Are LED resistors the right number of Ohms and wattage?  3.3V and SBC_ALIVE?
+* (DONE) Downsize the 3.3V regulator to a SOT23 Package.
+  * Find a SOT23 3.3V regulator that JLCPCB supports. YES.
+  * Move 3.3V regulator closer to users of 3.3V regulators? YES.
+  * Use 3.3V from Nucleo instead of regulator? Probably not. NO.
+* (DONE) Are LED resistors the right number of Ohms and wattage?  3.3V and SBC_ALIVE?
 * (DONE) Are Shunt resistor packages big enough?
 
 ## WOWBus
@@ -32,19 +32,18 @@ Add board name, revision, date, etc to artwork.
 * Are solid state relay current limit resistors (R61, R62) are currently 100KΩ;1608.
   * Are the right value for Ohms to limit current?
   * Are the sized right, or can theye be down-sized?
-* Route LED (R58, D3) to be off of NESTOP.
+* (DONE) Route LED (R58, D3) to be off of NESTOP.
 * (DONE) Is LED current limit (R58) properly sized?
 
 ## SBC
 
-* Is NESTOP connected?
-  Unclear.
+* Is NESTOP connected to SBC?  Not Yet.
 * Are the I2C resistors the correct value?
   One is 3.9KΩ and the other is 4.7KΩ.  They should probably be the same.
-* ? - Is the SBC Alive LED current limit resistor the right value?
-  Currently it is 470Ω in a 1608 (0603) package.
+* (DONE) Is the SBC Alive LED current limit resistor the right value?
 * (DONE) Does JLCPCB support surface mount buttons? 6x6mm
-* (Almost DONE) Does JLCPCB have a 32.768kHz crystal?  12.5pF load in schematic symbol.
+* (DONE) Does JLCPCB have a 32.768kHz crystal?
+* (DONE) Update 12.5pF load in schematic symbol.
 
 ## Motors_Encoders
 
@@ -63,10 +62,9 @@ Add board name, revision, date, etc to artwork.
 
 * (DONE) Are current limit resistors the right size? Yes, 1005.
 * (DONE) Are transistors necessary? Yes.
-* Add a NeoPixel connector?
-  * Maybe add a private ground return for the LED's with a jumper to disable?
-    This could go on the outer rim of the Ground plane?  It is "Ground like"
-  * Alternatively, add a gate to disable the clock line to the shift registers.
+* (DONE) Add a private ground return for the LED's with a jumper to disable?
+  * (DONE)This could go on the outer rim of the Ground plane?  It is "Ground like".
+  * Add a NeoPixel connector?
 
 ## Servos and Sonars
 
