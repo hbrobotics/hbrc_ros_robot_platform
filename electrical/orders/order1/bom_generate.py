@@ -718,7 +718,6 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
         "BUTTON;6x6": ("SPST.*Tactile Switches", "6.*x6", ".*", "C127509$"),
         "LM5050-1;TSOT-23-6": (
             "PMIC - Power Distribution Switches SOT-23-6 RoHS", ".*", ".*", "C55266$"),
-        "MCP2542;TDFN8EP3x2": ("CAN", ".*", "MCP2542", "C114028$"),
         "CPC1017N;SOP4W3.8L4.1": ("Solid State Relays SOP-4_P2.54 RoHS", ".*", ".*", "C261926$"),
         "ACS711;SOIC8": ("Current Sensors SOIC-8_150mil RoHS", ".*",  ".*", "C10681$"),
         "MCP7940;SOIC8": ("Real-time Clocks Clock/Calendar I2C", "SOIC-8", ".*", "C7440$"),
@@ -730,13 +729,14 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
             "74 Series Shift Register.*TSSOP-16", "HTSSOP-16", "165", "C201716$"),
         "CD4504B;TTSOP16": ("Level Translators", ".*", "4504", "C233582$"),
         "AMS1117-3.3V800mA_GOI;SOT223": ("Positive Fixed.*3.3V", ".*",  ".*", "C6186$"),
-        "32.768kHz9pF;3.2x1.5": ("32.768", ".*", ".*", "C32346$"),
+        "32.768kHz12.5pF;3.2x1.5": ("32.768", ".*", ".*", "C32346$"),
 
         # Encoder board.
         "AH1806;SC59": (r"Magnetic Sensors SOT-23", "SOT-23", ".*", "C126664$"),
 
 
         # Old stuff:
+        # "MCP2542;TDFN8EP3x2": ("CAN", ".*", "MCP2542", "C114028$"),
         # "AP2114HA-3.3TRG1_1A;SOT223": (
         #     r"Low Dropout Regulators\(LDO\) SOT-223", ".*",  ".*", "C166063$"),
         # "4.7µF;1608": (" 4.7uF", "0603$", ".*", "C19666$"),
@@ -780,6 +780,7 @@ def other_values_get() -> Set[str]:
         "HCSR04LP;F1X4",
         "HOLE;M2.5",
         "GROVE;20x20",
+        "MCP2542;SOIC8",
         "NUCLEO-F767ZI;2xF2x35",
         "P5V",
         "POLOLU_U3V70F9;F1x4+F1x5",

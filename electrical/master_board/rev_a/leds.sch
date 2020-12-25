@@ -903,20 +903,11 @@ Text HLabel 1000 5600 0    50   Input ~ 0
 Text Notes 3250 3950 0    50   ~ 0
 Power\nBus
 Entry Wire Line
-	3600 3500 3500 3400
-Text Label 3600 3500 0    50   ~ 0
+	3600 3800 3500 3700
+Text Label 3600 3800 0    50   ~ 0
 GND
-Wire Wire Line
-	3600 3500 4500 3500
 Connection ~ 4500 3500
 Connection ~ 3100 6400
-Entry Wire Line
-	3600 6400 3500 6300
-Wire Wire Line
-	3600 6400 4500 6400
-Connection ~ 4500 6400
-Text Label 3600 6400 0    50   ~ 0
-GND
 Entry Wire Line
 	3500 1400 3400 1300
 Entry Wire Line
@@ -1205,6 +1196,36 @@ F 4 "Tri-State 8-Bit Shift Register" H 2100 4850 60  0001 L CNN "desc"
 	1    1900 5100
 	1    0    0    -1  
 $EndComp
+$Comp
+L Jumper:Jumper_3_Open JP?
+U 1 1 5FE987B1
+P 4150 3800
+AR Path="/5F4877FA/5FE987B1" Ref="JP?"  Part="1" 
+AR Path="/5FA4A874/5FE987B1" Ref="JP?"  Part="1" 
+F 0 "JP?" H 4250 3700 50  0000 C CNN
+F 1 "LED_EN;M1x3" H 4150 3950 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 4150 3800 50  0001 C CNN
+F 3 "~" H 4150 3800 50  0001 C CNN
+	1    4150 3800
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	3600 3800 3900 3800
+Text Label 4500 3500 0    50   ~ 0
+LEDS_GND
+Wire Wire Line
+	10100 6400 10600 6400
+Wire Wire Line
+	10600 6400 10600 3500
+Wire Wire Line
+	10600 3500 10100 3500
+Connection ~ 10100 6400
+Connection ~ 10100 3500
+Wire Wire Line
+	4500 3500 4150 3500
+Wire Wire Line
+	4150 3500 4150 3650
+NoConn ~ 4400 3800
 Wire Bus Line
 	3500 1300 3500 7200
 $EndSCHEMATC
