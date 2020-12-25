@@ -32,8 +32,9 @@
 ## SBC
 
 * (DONE) Is NESTOP connected to SBC?
-* Are the I2C resistors the correct value?
-  One is 3.9KΩ and the other is 4.7KΩ.  They should probably be the same.
+* (DONE)Are the I2C resistors the correct value?
+  The Raspberry Pi has builtin 1.8KΩ pull-ups.
+  Changed additional pullups to 100KΩ which can be adjusted if necessary.
 * (DONE) Is the SBC Alive LED current limit resistor the right value?
 * (DONE) Does JLCPCB support surface mount buttons? 6x6mm
 * (DONE) Does JLCPCB have a 32.768kHz crystal?
@@ -77,6 +78,7 @@
 ## Misc.
 
 * (DONE) Recenter the PCB center to (100, 100)
+* Move 9V Shut Jumper.
 * Verify HTSSOP vs TTSOP
 * The 2x6 shrouded connector is missing one side of shroud.
 * Clean up traces.
