@@ -611,6 +611,7 @@ def jlcpcb_footprints_get() -> Set[str]:
         "HR2:TE1376164-1_COINHOLDER6.8",
         "LED_SMD:LED_0603_1608Metric",
         "32.768kHz9pF;3.2x1.5",
+        "Capacitor_SMD:C_1206_3216Metric",
         "MCP2542;TDFN8EP3x2",
         "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias",
         "Package_DFN_QFN:TDFN-8-1EP_3x2mm_P0.5mm_EP1.80x1.65mm",

@@ -126,13 +126,11 @@ Wire Wire Line
 Wire Wire Line
 	6700 4300 6700 2200
 Connection ~ 6700 2200
-Wire Wire Line
-	6600 4500 7000 4500
 Connection ~ 6900 3200
 Wire Wire Line
 	6900 3200 6900 2300
 Wire Wire Line
-	7000 6100 7000 5500
+	7000 6100 7000 5600
 Connection ~ 7000 4500
 Connection ~ 4700 6100
 $Comp
@@ -170,18 +168,18 @@ $EndComp
 Wire Wire Line
 	9500 2200 9500 2900
 Wire Wire Line
-	6700 5200 6600 5200
+	6700 5300 6600 5300
 Wire Wire Line
-	6600 5500 7000 5500
-Connection ~ 7000 5500
+	6600 5600 7000 5600
+Connection ~ 7000 5600
 Wire Wire Line
-	7000 5500 7000 4500
+	7000 5600 7000 4500
 Text HLabel 1200 5500 0    50   Input ~ 0
 ESTOP_CLR
 Text HLabel 1200 5300 0    50   Input ~ 0
 ~NRST
 Wire Wire Line
-	5400 5300 5500 5300
+	5400 5400 5500 5400
 Text Notes 7300 5800 0    50   ~ 0
 Red ESTOP LED
 Text Notes 5350 1750 0    50   ~ 0
@@ -190,7 +188,7 @@ Text Notes 5650 3900 0    50   ~ 0
 ESTOP CANBus Transceiver
 Text Notes 3800 850  0    50   ~ 0
 WOW Power P-FET (6A)
-Text Notes 5500 5000 0    50   ~ 0
+Text Notes 5500 5900 0    50   ~ 0
 E-Stop x74 D Style Flip-Flop
 Text Notes 7050 1300 0    50   ~ 0
 Opto-isolator
@@ -270,7 +268,7 @@ Text Label 1200 5300 0    50   ~ 0
 ~NRST
 Text Label 1200 6100 0    50   ~ 0
 GND
-Text Label 5400 4800 0    50   ~ 0
+Text Label 5400 4900 0    50   ~ 0
 ~NHR2_ESTOP
 Text Label 4750 4400 0    50   ~ 0
 WOW_STDBY
@@ -285,7 +283,7 @@ Text Notes 800  7900 0    50   ~ 0
 WOWBus Notes:\n\n1. WOWBus is an an expansion bus.\n2. WOWBus stands for Wayne's Omnipotent Wonderful Bus (heavy sarcasm.)\n3. WOWBus uses 2x6 ribbon daisy chain cables for interconnect.\n4. WOWBus has a nominal 9V rail, but this can droop due to resistive losses down the daisy chain.\n5. The WOWBus connector is designed to mirror image power, ground, and signaling.\n6. If a WOWBus connector is accidently reversed on a daisy cable, nothing shorts out.\n7. However, an accidentally reversed cable, will basically make the bus non-fuctional until corrected.\n8. The WOWBus has two "CAN bus" (ISO-11898-2) physical differential pairs for siginalling.\n9. The first differential pair is used as a multi-drop bidirectional data transfer.\n10. The second differential pair is used to signal Emergency Stop.\n11. When the WOWBus is enabled, it powers up both the transceivers and the differential\n    pair termination resistors.\n12. The expansions boards are responsible for providing the bus terminator resistors for\n    for the other end of the differential pairs.\n13. The Bus powers up in the EStop conndition and must be explicitly cleared out.\n14. When ESTOP occurs, it latches up and must be explicitly cleared.\n
 Connection ~ 5300 4400
 Wire Wire Line
-	5400 4800 5400 4300
+	5400 4900 5400 4300
 Wire Wire Line
 	5400 4300 5500 4300
 Connection ~ 4700 4400
@@ -296,12 +294,12 @@ Text HLabel 1200 5200 0    50   Input ~ 0
 Text Label 1200 5200 0    50   ~ 0
 ~NMOTOR_FAULT
 Wire Wire Line
-	5400 4900 5400 5200
+	5400 5100 5400 5300
 Wire Wire Line
-	6700 4900 6700 5200
+	6700 5100 6700 5300
 Wire Wire Line
-	6700 4900 5400 4900
-Text Label 4200 5500 0    50   ~ 0
+	6700 5100 5400 5100
+Text Label 4100 5600 0    50   ~ 0
 ~NESTOP_SET
 Connection ~ 2800 5200
 Wire Wire Line
@@ -486,11 +484,11 @@ F 3 "~" H 9500 3150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6800 5400 6800 4800
+	6800 5500 6800 4900
 Wire Wire Line
-	6800 5400 6600 5400
+	6800 5500 6600 5500
 Wire Wire Line
-	6800 4800 5400 4800
+	6800 4900 5400 4900
 Wire Wire Line
 	8900 4200 8900 5500
 Wire Wire Line
@@ -569,18 +567,6 @@ Wire Wire Line
 	4700 4900 4700 6100
 Wire Wire Line
 	2200 6100 3900 6100
-$Comp
-L HR2:MCP2542;SOIC8 U15
-U 1 1 5F9AA16D
-P 5500 4100
-F 0 "U15" H 5750 4250 50  0000 C CNN
-F 1 "MCP2542;TDFN8EP3x2" H 6050 3550 50  0000 C CNN
-F 2 "Package_DFN_QFN:TDFN-8-1EP_3x2mm_P0.5mm_EP1.80x1.65mm" H 5700 4150 60  0001 L CNN
-F 3 "MCP2542 CAN Transceiver" H 5700 3950 60  0001 L CNN
-F 4 "MCP2542" H 5700 3850 60  0001 L CNN "Field5"
-	1    5500 4100
-	1    0    0    -1  
-$EndComp
 Text Notes 7150 750  0    50   ~ 0
 Selectable CAN Termination: https://www.ti.com/lit/ug/tiducf3/tiducf3.pdf
 $Comp
@@ -641,11 +627,11 @@ Connection ~ 3500 4200
 Wire Wire Line
 	3500 4200 3500 4700
 Wire Wire Line
-	6900 4400 6900 4900
+	6900 4400 6900 5100
 Wire Wire Line
-	6900 4900 6700 4900
+	6900 5100 6700 5100
 Connection ~ 6900 4400
-Connection ~ 6700 4900
+Connection ~ 6700 5100
 Text Notes 850  1400 0    50   ~ 0
 TO DO:\n1. Add Test Points.\n
 Wire Wire Line
@@ -674,8 +660,6 @@ $EndComp
 Wire Wire Line
 	5800 1100 5700 1100
 Connection ~ 5700 1100
-Wire Wire Line
-	6800 1100 9900 1100
 Connection ~ 6800 1100
 Wire Wire Line
 	9900 1100 9900 4400
@@ -799,20 +783,16 @@ F 3 "http://www.ti.com/lit/gpn/sn74LS11" H 1900 3800 50  0001 C CNN
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	5500 5200 5400 5200
-Connection ~ 5400 5200
+	5500 5300 5400 5300
+Connection ~ 5400 5300
 Wire Wire Line
-	5400 5200 5400 5300
+	5400 5300 5400 5400
 Wire Wire Line
 	3800 5300 4100 5300
 Wire Wire Line
-	4100 5300 4100 5500
+	4100 5300 4100 5600
 Wire Wire Line
 	3900 4400 3900 5900
-Wire Wire Line
-	1200 5500 4000 5500
-Wire Wire Line
-	4000 5500 4000 5400
 Wire Wire Line
 	2000 5600 2000 5100
 Wire Wire Line
@@ -835,32 +815,6 @@ F 3 "http://www.ti.com/lit/gpn/sn74LS11" H 2600 2800 50  0001 C CNN
 	1    2600 2800
 	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	5300 2300 5500 2300
-Wire Wire Line
-	6900 2300 6600 2300
-Wire Wire Line
-	2600 2200 5500 2200
-Wire Wire Line
-	6700 2200 6600 2200
-Wire Wire Line
-	7000 2400 6600 2400
-Wire Wire Line
-	5500 2100 1900 2100
-$Comp
-L HR2:MCP2542;SOIC8 U14
-U 1 1 5F9A7EB1
-P 5500 2000
-F 0 "U14" H 5750 2150 50  0000 C CNN
-F 1 "MCP2542;TDFN8EP3x2" H 6050 1450 50  0000 C CNN
-F 2 "Package_DFN_QFN:TDFN-8-1EP_3x2mm_P0.5mm_EP1.80x1.65mm" H 5700 2050 60  0001 L CNN
-F 3 "MCP2542 CAN Transceiver" H 5700 1850 60  0001 L CNN
-F 4 "MCP2542" H 5700 1750 60  0001 L CNN "Field5"
-	1    5500 2000
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6600 2000 7200 2000
 Connection ~ 7200 2000
 Wire Wire Line
 	7200 2000 7200 1800
@@ -868,8 +822,6 @@ Wire Wire Line
 	7400 2500 7100 2500
 Wire Wire Line
 	7100 2500 7100 2100
-Wire Wire Line
-	7100 2100 6600 2100
 Wire Wire Line
 	2000 5100 2500 5100
 Wire Wire Line
@@ -913,8 +865,8 @@ F 3 "http://www.ti.com/lit/gpn/sn74LS11" H 1900 3400 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	6800 4800 6800 2700
-Connection ~ 6800 4800
+	6800 4900 6800 2700
+Connection ~ 6800 4900
 Wire Wire Line
 	2900 2800 3000 2800
 Wire Wire Line
@@ -948,9 +900,7 @@ Text Label 1200 2800 0    50   ~ 0
 Text Notes 7750 1550 0    50   ~ 0
 Solid State Relay
 Wire Wire Line
-	4100 5500 5500 5500
-Wire Wire Line
-	4000 5400 5500 5400
+	4100 5600 5500 5600
 Wire Wire Line
 	4100 5300 4100 5200
 Connection ~ 4100 5300
@@ -982,7 +932,7 @@ Wire Wire Line
 	2200 2800 2300 2800
 Wire Wire Line
 	7200 4800 7200 5100
-NoConn ~ 6600 5300
+NoConn ~ 6600 5400
 Wire Wire Line
 	4400 2800 4400 2600
 Connection ~ 4400 2800
@@ -1031,13 +981,59 @@ $EndComp
 $Comp
 L HR2:74LVC1G74;TSSOP8 U16
 U 1 1 5F8C5AF5
-P 5500 5200
-F 0 "U16" H 5750 5350 50  0000 C CNN
-F 1 "74LVC1G74;TSSOP8" H 6050 4750 50  0000 C CNN
-F 2 "Package_SO:TSSOP-8_3x3mm_P0.65mm" H 5700 5250 60  0001 L CNN
-F 3 "D-type flip-flop edge-trigger/set/reset" H 5700 5050 60  0001 L CNN
-F 4 "D-type flip-flop edge-trigger/set/reset" H 5700 4950 60  0001 L CNN "Field5"
-	1    5500 5200
+P 5500 5300
+F 0 "U16" H 5750 5450 50  0000 C CNN
+F 1 "74LVC1G74;TSSOP8" H 6050 4850 50  0000 C CNN
+F 2 "Package_SO:TSSOP-8_3x3mm_P0.65mm" H 5700 5350 60  0001 L CNN
+F 3 "D-type flip-flop edge-trigger/set/reset" H 5700 5150 60  0001 L CNN
+F 4 "D-type flip-flop edge-trigger/set/reset" H 5700 5050 60  0001 L CNN "Field5"
+	1    5500 5300
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	1200 5500 5500 5500
+Wire Wire Line
+	6600 2000 7200 2000
+Wire Wire Line
+	7100 2100 6600 2100
+Wire Wire Line
+	6700 2200 6600 2200
+Wire Wire Line
+	6900 2300 6600 2300
+Wire Wire Line
+	5300 2300 5500 2300
+Wire Wire Line
+	2600 2200 5500 2200
+Wire Wire Line
+	5500 2100 1900 2100
+Wire Wire Line
+	6600 4500 7000 4500
+Wire Wire Line
+	6600 2400 7000 2400
+$Comp
+L HR2:MCP2542;SOIC8 U14
+U 1 1 5FE70F06
+P 5500 2000
+F 0 "U14" H 5800 2150 50  0000 C CNN
+F 1 "MCP2542;SOIC8" H 6050 1450 60  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 5700 2050 60  0001 L CNN
+F 3 "MCP2542 CAN Transceiver" H 5700 1850 60  0001 L CNN
+F 4 "MCP2542" H 5700 1750 60  0001 L CNN "desc"
+	1    5500 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:MCP2542;SOIC8 U15
+U 1 1 5FE72DF1
+P 5500 4100
+F 0 "U15" H 5800 4250 50  0000 C CNN
+F 1 "MCP2542;SOIC8" H 6050 3550 60  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 5700 4150 60  0001 L CNN
+F 3 "MCP2542 CAN Transceiver" H 5700 3950 60  0001 L CNN
+F 4 "MCP2542" H 5700 3850 60  0001 L CNN "desc"
+	1    5500 4100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6800 1100 9900 1100
 $EndSCHEMATC
