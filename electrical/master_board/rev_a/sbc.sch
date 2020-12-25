@@ -107,7 +107,7 @@ P 5500 2250
 AR Path="/5F4877FA/5F510131" Ref="R8"  Part="1" 
 AR Path="/5FA587FE/5F510131" Ref="R?"  Part="1" 
 F 0 "R8" H 5350 2350 50  0000 L CNN
-F 1 "3.9KΩ;1005" H 5550 2150 50  0000 L CNN
+F 1 "100KΩ;1005" H 5550 2150 50  0000 L CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" V 5540 2240 50  0001 C CNN
 F 3 "~" H 5500 2250 50  0001 C CNN
 	1    5500 2250
@@ -120,7 +120,7 @@ P 6100 2250
 AR Path="/5F4877FA/5F510F46" Ref="R10"  Part="1" 
 AR Path="/5FA587FE/5F510F46" Ref="R?"  Part="1" 
 F 0 "R10" H 5950 2350 50  0000 L CNN
-F 1 "3.9KΩ;1005" H 6150 2150 50  0000 L CNN
+F 1 "100KΩ;1005" H 6150 2150 50  0000 L CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" V 6140 2240 50  0001 C CNN
 F 3 "~" H 6100 2250 50  0001 C CNN
 	1    6100 2250
@@ -166,7 +166,7 @@ P 6900 4750
 AR Path="/5F4877FA/5F50DB19" Ref="R13"  Part="1" 
 AR Path="/5FA587FE/5F50DB19" Ref="R?"  Part="1" 
 F 0 "R13" H 6750 4850 50  0000 L CNN
-F 1 "4.7KΩ;1005" H 6950 4650 50  0000 L CNN
+F 1 "100KΩ;1005" H 6950 4650 50  0000 L CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" V 6940 4740 50  0001 C CNN
 F 3 "~" H 6900 4750 50  0001 C CNN
 	1    6900 4750
@@ -205,7 +205,7 @@ P 6300 4750
 AR Path="/5F4877FA/5F50FCF9" Ref="R12"  Part="1" 
 AR Path="/5FA587FE/5F50FCF9" Ref="R?"  Part="1" 
 F 0 "R12" H 6150 4850 50  0000 L CNN
-F 1 "4.7KΩ;1005" H 6350 4650 50  0000 L CNN
+F 1 "100KΩ;1005" H 6350 4650 50  0000 L CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" V 6340 4740 50  0001 C CNN
 F 3 "~" H 6300 4750 50  0001 C CNN
 	1    6300 4750
@@ -221,11 +221,9 @@ Wire Wire Line
 Wire Wire Line
 	8350 5100 6900 5100
 Wire Wire Line
-	6900 5100 6900 4900
-Wire Wire Line
 	8350 5200 6300 5200
 Wire Wire Line
-	6300 5200 6300 4900
+	6300 5200 6300 5000
 Wire Wire Line
 	8350 5300 8000 5300
 Wire Wire Line
@@ -244,16 +242,6 @@ Wire Wire Line
 	8000 5400 8000 5500
 Text Notes 8200 3950 0    50   ~ 0
 EEPROM Notes:\n1. As per Raspberry PI I2C ID specification, the EEPROM\n     address is 0x50 (i.e. A0=A1=A2=0=Ground.)\n2. To enable the storage into the EEPROM s, short jumper.\n
-Wire Wire Line
-	3900 4900 4200 4900
-Connection ~ 6300 5200
-Wire Wire Line
-	6900 5100 4300 5100
-Wire Wire Line
-	4300 5100 4300 5000
-Wire Wire Line
-	4300 5000 3900 5000
-Connection ~ 6900 5100
 Wire Wire Line
 	3900 2800 4000 2800
 Wire Wire Line
@@ -298,9 +286,7 @@ Wire Wire Line
 Connection ~ 4000 2400
 Text HLabel 8400 6600 2    50   Input ~ 0
 GND
-Wire Wire Line
-	4000 6100 4000 6600
-Text Label 4850 6100 0    50   ~ 0
+Text Label 4600 6400 0    50   ~ 0
 GND
 Wire Wire Line
 	3900 4700 4000 4700
@@ -378,17 +364,16 @@ SBC (Single Board Computer) Connector Notes:\n1. Any SBC that is compatible with
 $Comp
 L Device:R_US R6
 U 1 1 5F58D7BC
-P 4600 5650
+P 4600 5850
 AR Path="/5F4877FA/5F58D7BC" Ref="R6"  Part="1" 
 AR Path="/5FA587FE/5F58D7BC" Ref="R?"  Part="1" 
-F 0 "R6" H 4450 5750 50  0000 L CNN
-F 1 "100KΩ;1005" H 4650 5550 50  0000 L CNN
-F 2 "Resistor_SMD:R_0402_1005Metric" V 4640 5640 50  0001 C CNN
-F 3 "~" H 4600 5650 50  0001 C CNN
-	1    4600 5650
+F 0 "R6" H 4450 5950 50  0000 L CNN
+F 1 "100KΩ;1005" H 4650 5750 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 4640 5840 50  0001 C CNN
+F 3 "~" H 4600 5850 50  0001 C CNN
+	1    4600 5850
 	1    0    0    -1  
 $EndComp
-Connection ~ 4600 6100
 Text Label 8400 6600 2    50   ~ 0
 GND
 Text Label 4500 4000 0    50   ~ 0
@@ -466,7 +451,7 @@ F 5 "I2C Real Time Clock" H 7900 2950 60  0001 L CNN "Field5"
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	4600 5500 4600 4500
+	4600 5700 4600 4500
 Connection ~ 4600 4500
 $Comp
 L Switch:SW_Push SW?
@@ -508,55 +493,53 @@ Wire Wire Line
 $Comp
 L Device:R_US R9
 U 1 1 5FB254F3
-P 5500 5450
+P 5500 5700
 AR Path="/5F4877FA/5FB254F3" Ref="R9"  Part="1" 
 AR Path="/5FA587FE/5FB254F3" Ref="R?"  Part="1" 
-F 0 "R9" H 5350 5550 50  0000 L CNN
-F 1 "33Ω;1005" H 5550 5350 50  0000 L CNN
-F 2 "Resistor_SMD:R_0402_1005Metric" V 5540 5440 50  0001 C CNN
-F 3 "~" H 5500 5450 50  0001 C CNN
-	1    5500 5450
+F 0 "R9" H 5350 5800 50  0000 L CNN
+F 1 "33Ω;1005" H 5550 5600 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 5540 5690 50  0001 C CNN
+F 3 "~" H 5500 5700 50  0001 C CNN
+	1    5500 5700
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4500 4600 4500 4900
+	4700 4600 4700 5400
 Wire Wire Line
-	4500 4900 5300 4900
+	4700 5400 5300 5400
 Wire Wire Line
-	5500 4900 5500 5300
+	5500 5400 5500 5550
 Wire Wire Line
-	5500 6100 5300 6100
+	5500 6400 5300 6400
 Text Notes 4850 4300 0    50   ~ 0
 SBC Shutdown Request Button
-Text Notes 5600 5500 0    50   ~ 0
+Text Notes 5600 6000 0    50   ~ 0
 SBC Alive LED
 Wire Wire Line
-	3900 4600 4500 4600
+	3900 4600 4700 4600
 Wire Wire Line
-	4000 6100 4600 6100
-Wire Wire Line
-	4600 5800 4600 6100
+	4600 6000 4600 6100
 NoConn ~ 3900 3900
 Text Notes 3250 2100 0    50   ~ 0
 SBC Connector
 $Comp
 L Device:R_US R7
 U 1 1 5F917643
-P 5300 5450
+P 5300 5700
 AR Path="/5F4877FA/5F917643" Ref="R7"  Part="1" 
 AR Path="/5FA587FE/5F917643" Ref="R?"  Part="1" 
-F 0 "R7" H 5150 5550 50  0000 L CNN
-F 1 "100KΩ;1005" H 4800 5300 50  0000 L CNN
-F 2 "Resistor_SMD:R_0402_1005Metric" V 5340 5440 50  0001 C CNN
-F 3 "~" H 5300 5450 50  0001 C CNN
-	1    5300 5450
+F 0 "R7" H 5150 5800 50  0000 L CNN
+F 1 "100KΩ;1005" H 4800 5550 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 5340 5690 50  0001 C CNN
+F 3 "~" H 5300 5700 50  0001 C CNN
+	1    5300 5700
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5300 5300 5300 4900
-Connection ~ 5300 4900
+	5300 5550 5300 5400
+Connection ~ 5300 5400
 Wire Wire Line
-	5300 4900 5500 4900
+	5300 5400 5500 5400
 $Comp
 L Device:C C10
 U 1 1 5FA44A8F
@@ -609,7 +592,7 @@ Wire Wire Line
 Connection ~ 6700 2900
 Wire Wire Line
 	6700 2900 7000 2900
-Connection ~ 5500 4900
+Connection ~ 5500 5400
 Wire Wire Line
 	6300 4500 6300 4600
 Wire Wire Line
@@ -617,13 +600,13 @@ Wire Wire Line
 Connection ~ 6300 4500
 Wire Wire Line
 	7300 4400 7300 4500
-Connection ~ 5300 6100
+Connection ~ 5300 6400
 Wire Wire Line
-	5300 6100 4600 6100
+	5300 6400 4600 6400
 Text Notes 6700 5600 0    50   ~ 0
 EEPROM Program Enable Jumper
 Wire Wire Line
-	5300 5600 5300 6100
+	5300 5850 5300 6400
 Text Label 5100 4500 0    50   ~ 0
 SBC_REQ
 $Comp
@@ -705,10 +688,7 @@ Connection ~ 1700 4500
 Wire Wire Line
 	1700 4500 2500 4500
 Wire Wire Line
-	4000 6600 2500 6600
-Wire Wire Line
 	2500 6600 2500 4500
-Connection ~ 4000 6600
 Connection ~ 2500 4500
 Wire Wire Line
 	5500 2000 5500 1700
@@ -820,34 +800,10 @@ F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 1600 3700 50  0001 
 	1    1600 3700
 	1    0    0    -1  
 $EndComp
-Text HLabel 8400 6200 2    50   Input ~ 0
+Text HLabel 8400 6500 2    50   Input ~ 0
 ~NESTOP
 Wire Wire Line
-	5500 5700 5500 5600
-Wire Wire Line
-	5500 6000 5500 6100
-$Comp
-L Device:LED D?
-U 1 1 5FB21992
-P 5500 5850
-AR Path="/5F79BC00/5FB21992" Ref="D?"  Part="1" 
-AR Path="/5FA4A874/5FB21992" Ref="D?"  Part="1" 
-AR Path="/5F4877FA/5FB21992" Ref="D2"  Part="1" 
-F 0 "D2" V 5600 5950 50  0000 R CNN
-F 1 "LEDGRN;1608" V 5400 5750 50  0000 R CNN
-F 2 "LED_SMD:LED_0603_1608Metric" H 5500 5850 50  0001 C CNN
-F 3 "~" H 5500 5850 50  0001 C CNN
-	1    5500 5850
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	4200 5200 6300 5200
-Wire Wire Line
-	4200 4900 4200 5200
-Wire Wire Line
 	8000 5600 8000 6600
-Wire Wire Line
-	4000 6600 8000 6600
 Connection ~ 8000 6600
 Wire Wire Line
 	8000 6600 8400 6600
@@ -856,11 +812,68 @@ Wire Wire Line
 Wire Wire Line
 	8400 5900 6200 5900
 Wire Wire Line
-	6200 5900 6200 4900
+	6200 5900 6200 5400
 Wire Wire Line
-	5500 4900 6200 4900
-Wire Wire Line
-	3900 6200 8400 6200
-Text Label 8400 6200 2    50   ~ 0
+	5500 5400 6200 5400
+Text Label 8400 6500 2    50   ~ 0
 ~NESTOP
+Text Notes 2850 7050 0    50   ~ 0
+I2C Notes:\n1. The Raspberry Pi has 1.8KΩ resistors pre installed on the I2C bus.\n2. The external I2C resistors are 100KΩ, which should not affect anything.\n3. The 100KΩ resistors can be changed to a lower value in necessary.\n4. 1.8KΩ is already pretty low, so the 100KΩ are unlikely to ever need changing.
+Wire Wire Line
+	5500 5950 5500 5850
+Wire Wire Line
+	5500 6250 5500 6400
+$Comp
+L Device:LED D?
+U 1 1 5FB21992
+P 5500 6100
+AR Path="/5F79BC00/5FB21992" Ref="D?"  Part="1" 
+AR Path="/5FA4A874/5FB21992" Ref="D?"  Part="1" 
+AR Path="/5F4877FA/5FB21992" Ref="D2"  Part="1" 
+F 0 "D2" V 5600 6200 50  0000 R CNN
+F 1 "LEDGRN;1608" V 5400 6000 50  0000 R CNN
+F 2 "LED_SMD:LED_0603_1608Metric" H 5500 6100 50  0001 C CNN
+F 3 "~" H 5500 6100 50  0001 C CNN
+	1    5500 6100
+	0    -1   -1   0   
+$EndComp
+Text Label 4050 4600 0    50   ~ 0
+SBC_ALIVE
+Wire Wire Line
+	8400 6500 4100 6500
+Wire Wire Line
+	4100 6500 4100 6200
+Wire Wire Line
+	4100 6200 3900 6200
+Wire Wire Line
+	2500 6600 4600 6600
+Wire Wire Line
+	4000 6100 4600 6100
+Connection ~ 4600 6100
+Wire Wire Line
+	4600 6100 4600 6400
+Wire Wire Line
+	4600 6400 4600 6600
+Connection ~ 4600 6400
+Connection ~ 4600 6600
+Wire Wire Line
+	4600 6600 8000 6600
+Wire Wire Line
+	6900 5100 6100 5100
+Wire Wire Line
+	6100 5100 6100 5000
+Connection ~ 6900 5100
+Wire Wire Line
+	6100 5000 3900 5000
+Wire Wire Line
+	6900 4900 6900 5100
+Wire Wire Line
+	6300 5000 6200 5000
+Wire Wire Line
+	6200 5000 6200 4900
+Connection ~ 6300 5000
+Wire Wire Line
+	6300 5000 6300 4900
+Wire Wire Line
+	3900 4900 6200 4900
 $EndSCHEMATC
