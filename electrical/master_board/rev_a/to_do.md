@@ -7,11 +7,6 @@
 * https://support.jlcpcb.com/article/84-how-to-generate-the-bom-and-centroid-file-from-kicad
 * https://docs.google.com/spreadsheets/d/1bSM_Ko6OLz7rW6MCQbw4Zv_Z4hOHcI7w7O6sczi2h5w/edit#gid=0
 
-## Misc.
-
-Add board name, revision, date, etc to artwork.
-
-
 ## Encoder:
 
 * (DONE) 100Ω resistors should be 100KΩ.
@@ -29,9 +24,8 @@ Add board name, revision, date, etc to artwork.
 
 * (DONE) Update WOWBus schematic.
 * (DONE) Resize 120Ω Resistors (requires .2W, prefer .25W)? 3216.
-* Are solid state relay current limit resistors (R61, R62) are currently 100KΩ;1608.
-  * Are the right value for Ohms to limit current?
-  * Are the sized right, or can theye be down-sized?
+* (DONE) Are solid state relay current limit resistors (R61, R62) are currently 100KΩ;1608.
+  * Resized 300Ω;1608.
 * (DONE) Route LED (R58, D3) to be off of NESTOP.
 * (DONE) Is LED current limit (R58) properly sized?
 
@@ -64,7 +58,7 @@ Add board name, revision, date, etc to artwork.
 * (DONE) Are transistors necessary? Yes.
 * (DONE) Add a private ground return for the LED's with a jumper to disable?
   * (DONE)This could go on the outer rim of the Ground plane?  It is "Ground like".
-  * Add a NeoPixel connector?
+  * Add a NeoPixel connector? NO
 
 ## Servos and Sonars
 
@@ -81,3 +75,13 @@ Add board name, revision, date, etc to artwork.
 * (DONE) Route NWOW_ESTOP, NMOTOR_FAULT, and NBTN_ESTOP to U7
 * (DONE) The remaining bits are a PCB revision (00=>A, 01=>B, 10=>C, 11=>D).
 
+## Misc.
+
+* (DONE) Recenter the PCB center to (100, 100)
+* Verify HTSSOP vs TTSOP
+* The 2x6 shrouded connector is missing one side of shroud.
+* Clean up traces.
+* Finish ground stitching.
+* Verify that driver chip footprint is truly ground.
+* Reannote the PCB.
+* Add board name, revision, date, etc to artwork.
