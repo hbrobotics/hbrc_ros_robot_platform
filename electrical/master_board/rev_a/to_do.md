@@ -31,7 +31,7 @@
 
 ## SBC
 
-* Is NESTOP connected to SBC?  Not Yet.
+* (DONE) Is NESTOP connected to SBC?
 * Are the I2C resistors the correct value?
   One is 3.9KΩ and the other is 4.7KΩ.  They should probably be the same.
 * (DONE) Is the SBC Alive LED current limit resistor the right value?
@@ -41,8 +41,7 @@
 
 ## Motors_Encoders
 
-* (DONE) Does nSLEEP need a pull up/down?  No
-* (DONE) Does nFAULT need a pull up/down?  Yes, 100K pull-up present
+* (DONE) Does nSLEEP need a pull up/down?  Nod) Does nFAULT need a pull up/down?  Yes, 100K pull-up present
 * (DONE) Are bypass capacitors C11 and C12, 10µF and 2.2µF (C11 and C12)? Yes.
 * (DONE) Resize 10K resistors to 1005 (i.e. 0402)?
 * (DONE) Is NSLEEP routed to NESTOP?
