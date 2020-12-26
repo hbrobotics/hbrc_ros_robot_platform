@@ -78,11 +78,12 @@
 ## Misc.
 
 * (DONE) Recenter the PCB center to (100, 100)
-* Move 9V Shut Jumper.
-* Verify HTSSOP vs TTSOP
-* The 2x6 shrouded connector is missing one side of shroud.
+* (DONE) Move 9V Shut Jumper.
 * Clean up traces.
 * Finish ground stitching.
+* Verify HTSSOP vs TTSOP
+* The 2x6 shrouded connector is missing one side of shroud.
 * Verify that driver chip footprint is truly ground.
 * Reannote the PCB.
 * Add board name, revision, date, etc to artwork.
+* View Gerbers using gerbv.
