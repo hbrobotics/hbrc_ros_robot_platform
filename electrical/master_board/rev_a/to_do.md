@@ -79,8 +79,8 @@
 
 * (DONE) Recenter the PCB center to (100, 100)
 * (DONE) Move 9V Shut Jumper.
-* Clean up traces.
-* Finish ground stitching.
+* (DONE) Clean up traces.
+* (DONE) Finish ground stitching.
 * Verify HTSSOP vs TTSOP
 * The 2x6 shrouded connector is missing one side of shroud.
 * Verify that driver chip footprint is truly ground.
