@@ -113,7 +113,7 @@ def main() -> int:
                     kicad_pos_path: Path = path / (prefix + "-all-pos.csv")
                     jlcpcb_pos_path: Path = path / (prefix + "_jlcpcb_pos.csv")
 
-                    error = jlcpcb_pos_csv_generate(kicad_pos_path, jlcpcb_pos_path)
+                    error = jlcpcb_pos_csv_generate(kicad_pos_path, jlcpcb_pos_path, matches)
             if error:
                 print(error)
                 errors += 1
@@ -126,13 +126,15 @@ PositionRow = NamedTuple("PositionRow",
                          ["reference", "value", "package", "x", "y", "rotation", "side"])
 
 
-def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path) -> str:
+def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path,
+                            matches: Dict[str, List[Match]]) -> str:
     """Generate the position .csv file for JLCPCB."""
     error: str = ""
     kicad_pos_csv_file: IO[str]
     if not kicad_pos_path.exists():
         print(f"**************** {kicad_pos_path} does not exist")
     else:
+        jlcpcb_footprints: Set[str] = jlcpcb_footprints_get()
         with open(kicad_pos_path, encoding="utf8", errors="ignore") as kicad_pos_csv_file:
             desired_header: List[str] = ["Ref", "Val", "Package", "PosX", "PosY", "Rot", "Side"]
             pos_reader = csv.reader(kicad_pos_csv_file)
@@ -147,16 +149,23 @@ def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path) -> str:
                     position_row = PositionRow(*row)
                     position_rows.append(position_row)
 
-            lines: List[str] = ['"Designator","Mid X","Mid Y","Layer","Rotation"']
+            lines: List[str] = [
+                '"Designator", "Val","Package","Mid X", "Mid Y","Rotation","Layer","Install"']
             for position_row in position_rows:
-                side_text: str = "T" if position_row.side == "top" else "B"
+                
+                # side_text: str = "T" if position_row.side == "top" else "B"
+                value: str = position_row.value
+                install: str = "Yes" if value in matches else "No"
                 lines.append(
                     f'"{position_row.reference}",'
+                    f'"{value}",'
+                    f'"{position_row.package}",'
                     f'"{position_row.x}mm",'
                     f'"{position_row.y}mm",'
-                    f'"{side_text}",'
-                    f'"{int(float(position_row.rotation))}"'
-                )
+                    f'"{int(float(position_row.rotation))}",'
+                    f'"{position_row.side}",'
+                    f'"{install}"'
+                    )
             lines.append("")
             position_text: str = '\n'.join(lines)
             jlcpcb_pos_csv_file: IO[str]
@@ -608,7 +617,6 @@ def jlcpcb_footprints_get() -> Set[str]:
         "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm",
         "HR2:BUTTON_6x6",
         "Button_Switch_SMD:SW_Push_1P1T_NO_6x6mm_H9.5mm",
-        "HR2:TE1376164-1_COINHOLDER6.8",
         "LED_SMD:LED_0603_1608Metric",
         "32.768kHz9pF;3.2x1.5",
         "Capacitor_SMD:C_1206_3216Metric",
@@ -655,6 +663,7 @@ def other_footprints_get() -> Set[str]:
         "HR2:RASPI_F2X20",
         "HR2:SC59",
         "HR2:STADAPTER_F2x4",
+        "HR2:TE1376164-1_COINHOLDER6.8",
         "HR2:U3V70xMATE_F1x4+F1x5",
         "MountingHole:MountingHole_2.7mm_M2.5",
         "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm",
@@ -725,9 +734,8 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
         "CAT24C32;SOIC8": (r"EEPROM 32Kb", "SOIC-8", "CAT24C32", "C81193$"),
         "DRV8833PWPR;HTSSOP16EP3.4x5": (
             "Motor Drivers HTSSOP-16 RoHS", "HTSSOP-16", ".*", "^C50506$"),
-        "SN74HC595;HTSSOP16EP3.4x5": ("74 Series.*TSSOP-16 RoHS", ".*", "595", "C5948$"),
-        "SN74HC165;HTSSOP16EP3.4x5": (
-            "74 Series Shift Register.*TSSOP-16", "HTSSOP-16", "165", "C201716$"),
+        "SN74HC595;TSSOP16": ("74 Series.*TSSOP-16 RoHS", ".*", "595", "C5948$"),
+        "SN74HC165;TSSOP16": ("74 Series Shift Register", ".*", "165", "C201716$"),
         "CD4504B;TTSOP16": ("Level Translators", ".*", "4504", "C233582$"),
         "AMS1117-3.3V800mA_GOI;SOT223": ("Positive Fixed.*3.3V", ".*",  ".*", "C6186$"),
         "32.768kHz12.5pF;3.2x1.5": ("32.768", ".*", ".*", "C32346$"),

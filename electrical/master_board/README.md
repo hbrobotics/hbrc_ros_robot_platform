@@ -792,7 +792,7 @@ That is it.
 In general, Timer pin binding was every bit of a nightmare as expected.
 
 
-## Inerrupts
+## Interrupts
 
 It is a little strange because,
 there are 16 pin change interrupts and they can be mappped to pretty much any GPIO pin.

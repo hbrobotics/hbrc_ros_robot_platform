@@ -1169,34 +1169,6 @@ F 3 "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF" H 10000 6100 50  0001
 	1    0    0    -1  
 $EndComp
 $Comp
-L HR2:SN74HC595;HTSSOP16EP3.4x5 U?
-U 1 1 5FE3B49B
-P 1900 2200
-AR Path="/5F4CEE66/5FE3B49B" Ref="U?"  Part="1" 
-AR Path="/5FA4A874/5FE3B49B" Ref="U11"  Part="1" 
-F 0 "U11" H 2150 2350 50  0000 C CNN
-F 1 "SN74HC595;HTSSOP16EP3.4x5" H 2500 1050 50  0000 C CNN
-F 2 "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm" H 2100 2250 60  0001 L CNN
-F 3 "Tri-state 8-Bit Shift Register" H 2100 2050 60  0001 L CNN
-F 4 "Tri-State 8-Bit Shift Register" H 2100 1950 60  0001 L CNN "desc"
-	1    1900 2200
-	1    0    0    -1  
-$EndComp
-$Comp
-L HR2:SN74HC595;HTSSOP16EP3.4x5 U?
-U 1 1 5FE48EC9
-P 1900 5100
-AR Path="/5F4CEE66/5FE48EC9" Ref="U?"  Part="1" 
-AR Path="/5FA4A874/5FE48EC9" Ref="U12"  Part="1" 
-F 0 "U12" H 2150 5250 50  0000 C CNN
-F 1 "SN74HC595;HTSSOP16EP3.4x5" H 2500 3950 50  0000 C CNN
-F 2 "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm" H 2100 5150 60  0001 L CNN
-F 3 "Tri-state 8-Bit Shift Register" H 2100 4950 60  0001 L CNN
-F 4 "Tri-State 8-Bit Shift Register" H 2100 4850 60  0001 L CNN "desc"
-	1    1900 5100
-	1    0    0    -1  
-$EndComp
-$Comp
 L Jumper:Jumper_3_Open JP?
 U 1 1 5FE987B1
 P 4150 3800
@@ -1228,4 +1200,28 @@ Wire Wire Line
 NoConn ~ 4400 3800
 Wire Bus Line
 	3500 1300 3500 7200
+$Comp
+L HR2:SN74HC595;TSSOP16 U11
+U 1 1 5FE9595B
+P 1900 2200
+F 0 "U11" H 2150 2350 50  0000 C CNN
+F 1 "SN74HC595;TSSOP16" H 2450 1050 50  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2100 2250 60  0001 L CNN
+F 3 "Tri-state 8-Bit Shift Register" H 2100 2050 60  0001 L CNN
+F 4 "Tri-State 8-Bit Shift Register" H 2100 1950 60  0001 L CNN "desc"
+	1    1900 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L HR2:SN74HC595;TSSOP16 U12
+U 1 1 5FE967F6
+P 1900 5100
+F 0 "U12" H 2150 5250 50  0000 C CNN
+F 1 "SN74HC595;TSSOP16" H 2450 3950 50  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2100 5150 60  0001 L CNN
+F 3 "Tri-state 8-Bit Shift Register" H 2100 4950 60  0001 L CNN
+F 4 "Tri-State 8-Bit Shift Register" H 2100 4850 60  0001 L CNN "desc"
+	1    1900 5100
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

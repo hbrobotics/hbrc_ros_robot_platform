@@ -50,7 +50,7 @@ TRIG7_5V
 Text Notes 4600 2400 0    50   ~ 0
 3.3V to 5V Level Shifter
 Text Notes 6300 3800 0    50   ~ 0
-Notes:\n1. The Sonars are HC04's that operate off of 5V.\n2. The trigger signals are provided by a serial shift register.\n3. A level shifter is used to shift trigger signals from 3.3V to 5V.\n4. The microcontroller has 5V tolerant input pins.\n5. Most hobby servers operate off of approximately 5V - 6V.\n6. The P5V supply is a 5V supply that is used for servos and LED's.\n   This supply can be noisy due to changing current draw.\n7. The servo PWM signals are level shifted from 3.3V to 5V.\n8. The servos are manually labeled to support mechanical\n   automatic positioned derived from the mechanical model.\n9. The echo signals are fed to external interrupt pins on the Nucleo PCB.
+Notes:\n1. The Sonars are HC04's that operate off of 5V.\n2. The trigger signals are provided by a serial shift register.\n3. A level shifter is used to shift trigger signals from 3.3V to 5V.\n4. The microcontroller has 5V tolerant input pins.\n5. Most hobby servers operate off of approximately 5V - 6V.\n6. The P5V supply is a 5V supply that is used for servos and LED's.\n   This supply can be noisy due to changing current draw.\n7. The servo PWM signals are level shifted from 3.3V to 5V.\n8. Some of the servos have an extra 4th wire the provides a\n    voltage that indicates servo position between 0V-5V.\n9. The echo signals are fed to external interrupt pins on the Nucleo PCB.
 Wire Wire Line
 	2050 900  2050 800 
 Wire Wire Line
@@ -1017,18 +1017,6 @@ Entry Wire Line
 	9300 3100 9200 3000
 Text Label 9300 3100 0    50   ~ 0
 GND
-$Comp
-L HR2:SN74HC595;HTSSOP16EP3.4x5 U8
-U 1 1 5FE28106
-P 2400 2600
-F 0 "U8" H 2650 2750 50  0000 C CNN
-F 1 "SN74HC595;HTSSOP16EP3.4x5" H 2950 1450 50  0000 C CNN
-F 2 "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm" H 2600 2650 60  0001 L CNN
-F 3 "Tri-state 8-Bit Shift Register" H 2600 2450 60  0001 L CNN
-F 4 "Tri-State 8-Bit Shift Register" H 2600 2350 60  0001 L CNN "desc"
-	1    2400 2600
-	1    0    0    -1  
-$EndComp
 Wire Bus Line
 	4000 2000 4000 2250
 Wire Bus Line
@@ -1057,4 +1045,16 @@ Wire Bus Line
 	1500 2250 1500 5050
 Wire Bus Line
 	6200 1900 6200 4000
+$Comp
+L HR2:SN74HC595;TSSOP16 U8
+U 1 1 5FEA6955
+P 2400 2600
+F 0 "U8" H 2650 2750 60  0000 C CNN
+F 1 "SN74HC595;TSSOP16" H 2950 1450 50  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2600 2650 60  0001 L CNN
+F 3 "Tri-state 8-Bit Shift Register" H 2600 2450 60  0001 L CNN
+F 4 "Tri-State 8-Bit Shift Register" H 2600 2350 60  0001 L CNN "desc"
+	1    2400 2600
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

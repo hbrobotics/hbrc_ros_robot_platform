@@ -18,13 +18,13 @@ K ~
 F 
 $ENDCMP
 #
-$CMP SN74HC595;HTSSOP16EP3.4x5
+$CMP SN74HC595;TSSOP16
 D Tri-State 8-Bit Shift Register
 K ~
 F 
 $ENDCMP
 #
-$CMP SN74HC165;HTSSOP16EP3.4x5
+$CMP SN74HC165;TSSOP16
 D 8-Bit Parallel In Serial Out Shift Register
 K ~
 F 

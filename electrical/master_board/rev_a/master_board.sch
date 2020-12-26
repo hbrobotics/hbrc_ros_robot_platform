@@ -1182,8 +1182,6 @@ Entry Wire Line
 	3300 4300 3200 4400
 Entry Wire Line
 	3300 4200 3200 4300
-NoConn ~ 8600 1150
-NoConn ~ 8800 1100
 Connection ~ 3300 3600
 Wire Bus Line
 	3300 4800 4500 4800
