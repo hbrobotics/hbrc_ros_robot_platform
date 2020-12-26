@@ -58,8 +58,7 @@
 * (DONE) Are current limit resistors the right size? Yes, 1005.
 * (DONE) Are transistors necessary? Yes.
 * (DONE) Add a private ground return for the LED's with a jumper to disable?
-  * (DONE)This could go on the outer rim of the Ground plane?  It is "Ground like".
-  * Add a NeoPixel connector? NO
+* Add a NeoPixel connector? NO
 
 ## Servos and Sonars
 
@@ -83,15 +82,16 @@
 * (DONE) Move 9V Shunt Jumper.
 * (DONE) Clean up traces.
 * (DONE) Finish ground stitching.
-* (DONE) Verify HTSSOP vs TTSOP
-  * DRV8833: YES
-  * SN74HC165: NO
-  * SN74HC595: NO
-* The 2x6 shrouded connector is missing one side of shroud.
-* Verify that driver chip footprint is truly ground.
+* (DONE) Verify HTSSOP vs TSSOP
+  * DRV8833: HTSSOP-16
+  * SN74HC165: TSSOP-16
+  * SN74HC595: TSSOP-16
+* (DONE) The 2x6 shrouded connector is missing one side of the shroud.
+* (DONE) Verify that driver chip footprint is truly ground. Center solder mask correct too.
 * Reannote the PCB.
 * Add board name, revision, date, etc to artwork.
 * View Gerbers using gerbv.
-* Add 4th pin to all 4 servos.
+* Mark Pin 1's.
+* Label Test points.
 * (DONE) Fix ground power plane.
-* Encoders => 5V.
+* (DONE) Encoders => 5V.

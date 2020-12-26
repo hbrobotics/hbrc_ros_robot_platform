@@ -119,8 +119,6 @@ F 3 "~" H 6050 3700 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	3200 3900 6900 3900
-Text HLabel 8300 3300 2    50   Input ~ 0
-3.3V
 Text HLabel 8300 2900 2    50   Output ~ 0
 LQUAD_B
 Text HLabel 8300 3000 2    50   Output ~ 0
@@ -179,15 +177,15 @@ Wire Wire Line
 	6800 4900 6800 4400
 Wire Wire Line
 	6800 4400 6900 4400
-Text Label 7300 3300 2    50   ~ 0
-3.3V
+Text Label 8300 3300 2    50   ~ 0
+5V
 Text Label 8300 5000 2    50   ~ 0
 RQUAD_A
 Text Label 8300 4900 2    50   ~ 0
 RQUAD_B
-Text Label 7300 3000 2    50   ~ 0
+Text Label 8300 3000 2    50   ~ 0
 LQUAD_A
-Text Label 7300 2900 2    50   ~ 0
+Text Label 8300 2900 2    50   ~ 0
 LQUAD_B
 Text Label 3700 4600 0    50   ~ 0
 9V
@@ -302,4 +300,6 @@ F 4 "DualH-Bridge Motor Drive" H 2500 3250 60  0001 L CNN "desc"
 	1    2300 3500
 	1    0    0    -1  
 $EndComp
+Text HLabel 8300 3300 2    50   Input ~ 0
+5V
 $EndSCHEMATC
