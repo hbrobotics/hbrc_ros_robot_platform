@@ -7,11 +7,6 @@
 * https://support.jlcpcb.com/article/84-how-to-generate-the-bom-and-centroid-file-from-kicad
 * https://docs.google.com/spreadsheets/d/1bSM_Ko6OLz7rW6MCQbw4Zv_Z4hOHcI7w7O6sczi2h5w/edit#gid=0
 
-## Misc.
-
-Add board name, revision, date, etc to artwork.
-
-
 ## Encoder:
 
 * (DONE) 100Ω resistors should be 100KΩ.
@@ -29,17 +24,17 @@ Add board name, revision, date, etc to artwork.
 
 * (DONE) Update WOWBus schematic.
 * (DONE) Resize 120Ω Resistors (requires .2W, prefer .25W)? 3216.
-* Are solid state relay current limit resistors (R61, R62) are currently 100KΩ;1608.
-  * Are the right value for Ohms to limit current?
-  * Are the sized right, or can theye be down-sized?
+* (DONE) Are solid state relay current limit resistors (R61, R62) are currently 100KΩ;1608.
+  * Resized 300Ω;1608.
 * (DONE) Route LED (R58, D3) to be off of NESTOP.
 * (DONE) Is LED current limit (R58) properly sized?
 
 ## SBC
 
-* Is NESTOP connected to SBC?  Not Yet.
-* Are the I2C resistors the correct value?
-  One is 3.9KΩ and the other is 4.7KΩ.  They should probably be the same.
+* (DONE) Is NESTOP connected to SBC?
+* (DONE)Are the I2C resistors the correct value?
+  The Raspberry Pi has builtin 1.8KΩ pull-ups.
+  Changed additional pullups to 100KΩ which can be adjusted if necessary.
 * (DONE) Is the SBC Alive LED current limit resistor the right value?
 * (DONE) Does JLCPCB support surface mount buttons? 6x6mm
 * (DONE) Does JLCPCB have a 32.768kHz crystal?
@@ -47,8 +42,7 @@ Add board name, revision, date, etc to artwork.
 
 ## Motors_Encoders
 
-* (DONE) Does nSLEEP need a pull up/down?  No
-* (DONE) Does nFAULT need a pull up/down?  Yes, 100K pull-up present
+* (DONE) Does nSLEEP need a pull up/down?  Nod) Does nFAULT need a pull up/down?  Yes, 100K pull-up present
 * (DONE) Are bypass capacitors C11 and C12, 10µF and 2.2µF (C11 and C12)? Yes.
 * (DONE) Resize 10K resistors to 1005 (i.e. 0402)?
 * (DONE) Is NSLEEP routed to NESTOP?
@@ -64,7 +58,7 @@ Add board name, revision, date, etc to artwork.
 * (DONE) Are transistors necessary? Yes.
 * (DONE) Add a private ground return for the LED's with a jumper to disable?
   * (DONE)This could go on the outer rim of the Ground plane?  It is "Ground like".
-  * Add a NeoPixel connector?
+  * Add a NeoPixel connector? NO
 
 ## Servos and Sonars
 
@@ -81,3 +75,15 @@ Add board name, revision, date, etc to artwork.
 * (DONE) Route NWOW_ESTOP, NMOTOR_FAULT, and NBTN_ESTOP to U7
 * (DONE) The remaining bits are a PCB revision (00=>A, 01=>B, 10=>C, 11=>D).
 
+## Misc.
+
+* (DONE) Recenter the PCB center to (100, 100)
+* (DONE) Move 9V Shut Jumper.
+* (DONE) Clean up traces.
+* (DONE) Finish ground stitching.
+* Verify HTSSOP vs TTSOP
+* The 2x6 shrouded connector is missing one side of shroud.
+* Verify that driver chip footprint is truly ground.
+* Reannote the PCB.
+* Add board name, revision, date, etc to artwork.
+* View Gerbers using gerbv.

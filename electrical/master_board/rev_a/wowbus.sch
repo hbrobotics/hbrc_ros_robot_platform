@@ -154,17 +154,6 @@ Wire Wire Line
 	1200 2200 2600 2200
 Wire Wire Line
 	9500 1800 9500 1900
-$Comp
-L Device:R_US R61
-U 1 1 5F8EAE9D
-P 9500 2050
-F 0 "R61" H 9350 2150 50  0000 L CNN
-F 1 "100KΩ;1608" H 9000 1900 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 9540 2040 50  0001 C CNN
-F 3 "~" H 9500 2050 50  0001 C CNN
-	1    9500 2050
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	9500 2200 9500 2900
 Wire Wire Line
@@ -190,9 +179,7 @@ Text Notes 3800 850  0    50   ~ 0
 WOW Power P-FET (6A)
 Text Notes 5500 5900 0    50   ~ 0
 E-Stop x74 D Style Flip-Flop
-Text Notes 7050 1300 0    50   ~ 0
-Opto-isolator
-Text Notes 7750 3200 0    50   ~ 0
+Text Notes 7900 3250 0    50   ~ 0
 Solid State Relay
 Text Notes 9400 6300 0    50   ~ 0
 WOWBus Output Connector
@@ -477,7 +464,7 @@ L Device:R_US R62
 U 1 1 5F8E9E6C
 P 9500 3150
 F 0 "R62" H 9350 3250 50  0000 L CNN
-F 1 "100KΩ;1608" H 9000 3000 50  0000 L CNN
+F 1 "300Ω;1608" H 9050 3000 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 9540 3140 50  0001 C CNN
 F 3 "~" H 9500 3150 50  0001 C CNN
 	1    9500 3150
@@ -557,8 +544,6 @@ Wire Wire Line
 Connection ~ 9500 4900
 Wire Wire Line
 	9500 4800 9500 4400
-Wire Wire Line
-	9500 4400 9900 4400
 Connection ~ 9500 4800
 Connection ~ 9500 2900
 Wire Wire Line
@@ -567,7 +552,7 @@ Wire Wire Line
 	4700 4900 4700 6100
 Wire Wire Line
 	2200 6100 3900 6100
-Text Notes 7150 750  0    50   ~ 0
+Text Notes 6850 1400 0    50   ~ 0
 Selectable CAN Termination: https://www.ti.com/lit/ug/tiducf3/tiducf3.pdf
 $Comp
 L HR2:CPC1017N;SOP4W3.8WL4.1 U18
@@ -597,7 +582,7 @@ $Comp
 L HR2:CPC1017N;SOP4W3.8WL4.1 U17
 U 1 1 5F9ECFD5
 P 8600 1800
-F 0 "U17" H 8850 1950 50  0000 C CNN
+F 0 "U17" H 9450 1950 50  0000 C CNN
 F 1 "CPC1017N;SOP4W3.8L4.1" H 9150 1550 50  0000 C CNN
 F 2 "Package_SO:SOP-4_3.8x4.1mm_P2.54mm" H 8800 1850 60  0001 L CNN
 F 3 "CPC1017 Solid State Relay" H 8800 1650 60  0001 L CNN
@@ -661,8 +646,6 @@ Wire Wire Line
 	5800 1100 5700 1100
 Connection ~ 5700 1100
 Connection ~ 6800 1100
-Wire Wire Line
-	9900 1100 9900 4400
 $Comp
 L Jumper:Jumper_2_Open JP7
 U 1 1 5FB85177
@@ -897,7 +880,7 @@ Text Label 1200 5400 0    50   ~ 0
 ~NHBTN_ESTOP
 Text Label 1200 2800 0    50   ~ 0
 ~NESTOP
-Text Notes 7750 1550 0    50   ~ 0
+Text Notes 7900 1650 0    50   ~ 0
 Solid State Relay
 Wire Wire Line
 	4100 5600 5500 5600
@@ -1034,6 +1017,23 @@ F 4 "MCP2542" H 5700 3850 60  0001 L CNN "desc"
 	1    5500 4100
 	1    0    0    -1  
 $EndComp
+Text Notes 7550 1000 0    50   ~ 0
+Note:\n1. The CPV1017N recommended forward current (If) for LED on is 7.5mA.\n2. The LED voltage drop at 7.5mA is 1.2V (Fig. 14.1.3).\n3. The current limit resistor voltage drop when on is 3.3V - 1.2V = 2.2V.\n4. The current limit resistance is 2.2V / .0075A = 293Ω ≈ 300Ω.\n5. The power disappation is .0075A * .0075A * 300Ω = .017W.\n
+Wire Wire Line
+	9500 4400 9900 4400
 Wire Wire Line
 	6800 1100 9900 1100
+Wire Wire Line
+	9900 1100 9900 4400
+$Comp
+L Device:R_US R61
+U 1 1 5F8EAE9D
+P 9500 2050
+F 0 "R61" H 9350 2150 50  0000 L CNN
+F 1 "300Ω;1608" H 9050 1900 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9540 2040 50  0001 C CNN
+F 3 "~" H 9500 2050 50  0001 C CNN
+	1    9500 2050
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
