@@ -154,9 +154,7 @@ Wire Wire Line
 Wire Wire Line
 	8350 1200 8500 1200
 Wire Wire Line
-	9300 1700 9300 1200
-Wire Wire Line
-	9300 1200 9500 1200
+	9300 1100 9500 1100
 Wire Wire Line
 	3500 3000 4450 3000
 Text Label 6300 1000 0    50   ~ 0
@@ -192,17 +190,17 @@ Entry Wire Line
 Entry Wire Line
 	8200 900  8300 1000
 Wire Wire Line
-	9500 1000 9300 1000
+	9500 900  9300 900 
 Wire Wire Line
-	9500 1100 9300 1100
-Text Label 9300 1000 0    50   ~ 0
+	9500 1000 9300 1000
+Text Label 9300 900  0    50   ~ 0
 SGND
-Text Label 9300 1100 0    50   ~ 0
+Text Label 9300 1000 0    50   ~ 0
 P5V
 Entry Wire Line
-	9300 1100 9200 1000
+	9300 1000 9200 900 
 Entry Wire Line
-	9200 900  9300 1000
+	9200 800  9300 900 
 Wire Bus Line
 	9200 650  8200 650 
 Connection ~ 8200 650 
@@ -701,13 +699,13 @@ $EndComp
 $Comp
 L HR2:SERVO;M1x4 CN9
 U 1 1 5FC1E3A4
-P 10200 1000
-F 0 "CN9" H 10650 1150 50  0000 C CNN
-F 1 "SERVO;M1x4" H 10550 550 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 10400 1050 60  0001 L CNN
-F 3 "Servo M1X4" H 10400 850 60  0001 L CNN
-F 4 "Servo M1X4" H 10400 750 60  0001 L CNN "Field5"
-	1    10200 1000
+P 10200 900
+F 0 "CN9" H 10650 1050 50  0000 C CNN
+F 1 "SERVO;M1x4" H 10550 450 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 10400 950 60  0001 L CNN
+F 3 "Servo M1X4" H 10400 750 60  0001 L CNN
+F 4 "Servo M1X4" H 10400 650 60  0001 L CNN "Field5"
+	1    10200 900 
 	-1   0    0    -1  
 $EndComp
 $Comp
@@ -771,13 +769,9 @@ GND
 Text Label 9100 1800 2    50   ~ 0
 3.3V
 Wire Wire Line
-	9500 1300 9400 1300
+	9500 1200 9400 1200
 Wire Wire Line
-	9400 1300 9400 1700
-Wire Wire Line
-	9400 1700 10400 1700
-Wire Wire Line
-	10400 1700 10400 6050
+	9400 1200 9400 1500
 Wire Wire Line
 	10400 6050 1000 6050
 Wire Wire Line
@@ -1017,6 +1011,66 @@ Entry Wire Line
 	9300 3100 9200 3000
 Text Label 9300 3100 0    50   ~ 0
 GND
+$Comp
+L HR2:SN74HC595;TSSOP16 U8
+U 1 1 5FEA6955
+P 2400 2600
+F 0 "U8" H 2650 2750 60  0000 C CNN
+F 1 "SN74HC595;TSSOP16" H 2950 1450 50  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2600 2650 60  0001 L CNN
+F 3 "Tri-state 8-Bit Shift Register" H 2600 2450 60  0001 L CNN
+F 4 "Tri-State 8-Bit Shift Register" H 2600 2350 60  0001 L CNN "desc"
+	1    2400 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 5FEA8596
+P 10200 1750
+AR Path="/5F8C2F57/5FEA8596" Ref="R?"  Part="1" 
+AR Path="/5F48CAAD/5FEA8596" Ref="R24"  Part="1" 
+F 0 "R24" H 10050 1850 50  0000 L CNN
+F 1 "2.2KΩ;1005" H 9750 1600 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 10240 1740 50  0001 C CNN
+F 3 "~" H 10200 1750 50  0001 C CNN
+	1    10200 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 5FEA8A70
+P 10200 2250
+AR Path="/5F8C2F57/5FEA8A70" Ref="R?"  Part="1" 
+AR Path="/5F48CAAD/5FEA8A70" Ref="R25"  Part="1" 
+F 0 "R25" H 10050 2350 50  0000 L CNN
+F 1 "3.3KΩ;1005" H 9750 2100 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 10240 2240 50  0001 C CNN
+F 3 "~" H 10200 2250 50  0001 C CNN
+	1    10200 2250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9900 3100 10200 3100
+Wire Wire Line
+	10200 3100 10200 2400
+Connection ~ 9900 3100
+Wire Wire Line
+	10200 2100 10200 2000
+Wire Wire Line
+	9300 1100 9300 1700
+Wire Wire Line
+	10200 1600 10200 1500
+Wire Wire Line
+	10200 1500 9400 1500
+Wire Wire Line
+	10200 2000 10400 2000
+Connection ~ 10200 2000
+Wire Wire Line
+	10200 2000 10200 1900
+Wire Wire Line
+	10400 2000 10400 6050
+Text Notes 9500 2250 0    50   ~ 0
+5V=>3V\nVoltage\nDivider
 Wire Bus Line
 	4000 2000 4000 2250
 Wire Bus Line
@@ -1045,16 +1099,4 @@ Wire Bus Line
 	1500 2250 1500 5050
 Wire Bus Line
 	6200 1900 6200 4000
-$Comp
-L HR2:SN74HC595;TSSOP16 U8
-U 1 1 5FEA6955
-P 2400 2600
-F 0 "U8" H 2650 2750 60  0000 C CNN
-F 1 "SN74HC595;TSSOP16" H 2950 1450 50  0000 C CNN
-F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2600 2650 60  0001 L CNN
-F 3 "Tri-state 8-Bit Shift Register" H 2600 2450 60  0001 L CNN
-F 4 "Tri-State 8-Bit Shift Register" H 2600 2350 60  0001 L CNN "desc"
-	1    2400 2600
-	1    0    0    -1  
-$EndComp
 $EndSCHEMATC

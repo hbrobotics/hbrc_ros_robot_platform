@@ -1198,8 +1198,6 @@ Wire Wire Line
 Wire Wire Line
 	4150 3500 4150 3650
 NoConn ~ 4400 3800
-Wire Bus Line
-	3500 1300 3500 7200
 $Comp
 L HR2:SN74HC595;TSSOP16 U11
 U 1 1 5FE9595B
@@ -1224,4 +1222,6 @@ F 4 "Tri-State 8-Bit Shift Register" H 2100 4850 60  0001 L CNN "desc"
 	1    1900 5100
 	1    0    0    -1  
 $EndComp
+Wire Bus Line
+	3500 1300 3500 7200
 $EndSCHEMATC

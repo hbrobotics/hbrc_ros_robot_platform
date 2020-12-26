@@ -64,7 +64,7 @@
 
 * (DONE) Add the low pass filter to the current sense.
 * (DONE) Clean up schematic sheet to remove white space where voltage dividers were.
-* Add ADC to at least 2 more servos.
+* Add ADC to at least 2 more servos: NO. Out of of ADC pins.
 
 ## Connectors
 
@@ -88,10 +88,11 @@
   * SN74HC595: TSSOP-16
 * (DONE) The 2x6 shrouded connector is missing one side of the shroud.
 * (DONE) Verify that driver chip footprint is truly ground. Center solder mask correct too.
+* (DONE) Add 5V=>3V to voltage divider for SERVO1.
 * Reannote the PCB.
 * Add board name, revision, date, etc to artwork.
 * View Gerbers using gerbv.
-* Mark Pin 1's.
+* (DONE) Mark Pin 1's.
 * Label Test points.
 * (DONE) Fix ground power plane.
 * (DONE) Encoders => 5V.
