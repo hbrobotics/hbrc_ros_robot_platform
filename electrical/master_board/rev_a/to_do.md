@@ -90,7 +90,7 @@
 * (DONE) Verify that driver chip footprint is truly ground. Center solder mask correct too.
 * (DONE) Add 5V=>3V to voltage divider for SERVO1.
 * Reannote the PCB.
-* Add board name, revision, date, etc to artwork.
+* (DONE) Add board name, revision, date, etc to artwork.
 * View Gerbers using gerbv.
 * (DONE) Mark Pin 1's.
 * Label Test points.
