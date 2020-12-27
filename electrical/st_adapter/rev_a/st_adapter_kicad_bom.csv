@@ -1,0 +1,8 @@
+"Source:","/home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/st_adapter/rev_a/st_adapter.sch"
+"Date:","Sat 26 Dec 2020 08:28:37 PM PST"
+"Tool:","Eeschema 5.1.9-73d0e3b20d~88~ubuntu20.04.1"
+"Generator:","/usr/share/kicad/plugins/bom_csv_grouped_by_value_with_fp.py"
+"Component Count:","2"
+"Ref","Qnty","Value","Cmp name","Footprint","Description","Vendor"
+"CN1, ","1","STADAPTER;M2x4RA","STADAPTER;M2x4RA","HR2:STADAPTER_M2x4RA","ST Adapter Connector",""
+"CN2, ","1","STLINK;4xF1x2+F1x4+F1x6","STLINK;4xF1x2+F1x4+F1x6-HR2","HR2:STADAPTER_4xF1x2+F1x4+F1x6","",""

@@ -5,10 +5,10 @@ $Descr A 11000 8500
 encoding utf-8
 Sheet 1 1
 Title "Encoder"
-Date "2020-06-06"
+Date "2020-12-26"
 Rev "A"
 Comp "Homebrew Robotics Club"
-Comment1 ""
+Comment1 "License: MIT"
 Comment2 ""
 Comment3 ""
 Comment4 ""

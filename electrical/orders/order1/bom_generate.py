@@ -94,6 +94,7 @@ def main() -> int:
         bom_paths: Tuple[Tuple[Path, str, int], ...] = (
             (hr2_dir / "electrical" / "master_board" / "rev_a", "master_board", 5),
             (hr2_dir / "electrical" / "encoder" / "rev_a", "encoder", 10),
+            (hr2_dir / "electrical" / "st_adapter" / "rev_a", "st_adapter", 5),
         )
         path: Path
         prefix: str
@@ -114,6 +115,10 @@ def main() -> int:
                     jlcpcb_pos_path: Path = path / (prefix + "_jlcpcb_pos.csv")
 
                     error = jlcpcb_pos_csv_generate(kicad_pos_path, jlcpcb_pos_path, matches)
+                    if not error:
+                        digikey_bom_csv_path: Path = path / (prefix + "_digikey_bom.csv")
+                        error = digikey_bom_csv_generate(digikey_bom_csv_path, other_bom,
+                                                         bom_indices, pcb_count)
             if error:
                 print(error)
                 errors += 1
@@ -122,8 +127,64 @@ def main() -> int:
     return min(1, errors)
 
 
+DigikeyPart = NamedTuple("DigiKeyPart",
+                         ["digikey_number", "manufacturer", "manufacture_number",
+                          "numerator", "price_breaks"])
+DigikeyParts = Tuple[DigikeyPart, ...]
 PositionRow = NamedTuple("PositionRow",
                          ["reference", "value", "package", "x", "y", "rotation", "side"])
+
+
+def digikey_bom_csv_generate(digikey_bom_csv_path: Path, other_bom: Dict[str, Row],
+                             bom_indices: Dict[str, int], pcb_count: int) -> str:
+    """Generate the Digi-Key BOM .csv file."""
+    digikey_parts_table: Dict[str, DigikeyParts] = other_values_get()
+    digikey_parts_table = digikey_parts_table
+    row: Row
+    value: str
+    references_index: int = bom_indices["Ref"]
+    print("================================================================")
+    print("Digikey Parts:")
+    for value, row in other_bom.items():
+        references_text: str = row[references_index]
+        references: List[str] = references_text.split(", ")
+        references = references[:-1]
+        if value.endswith(";TP"):
+            # Skip test points.
+            pass
+        elif value in digikey_parts_table:
+            digikey_parts: DigikeyParts = digikey_parts_table[value]
+            digikey_part: DigikeyPart
+            for digikey_part in digikey_parts:
+                price_breaks: PriceBreaks = digikey_part.price_breaks
+                numerator: int = digikey_part.numerator
+                if price_breaks:
+                    references_count: int = len(references)
+                    total_count: int = pcb_count * numerator * references_count
+
+                    best_total_price: float = 1000000.0
+                    best_price: float = 1000000.0
+                    best_count: int = 0
+                    for price_break in price_breaks:
+                        minimum_quantity: int = price_break.min_quantity
+                        count: int = max(total_count, minimum_quantity)
+                        price: float = price_break.price
+                        total_price: float = count * price
+                        if total_price < best_total_price:
+                            best_count = count
+                            best_price = price
+                            best_total_price = total_price
+                        extra_text = ("" if best_count <= total_count
+                                      else f" (+ {best_count - total_count} extra)")
+                    print(f"{value} ({', '.join(references)}): "
+                          f"{best_count} x ${best_price:.2f} = {best_total_price:.2f}"
+                          f"{extra_text}")
+                else:
+                    print(f"No Digi-Key parts for {value}")
+        else:
+            print(f"No Match for '{value}'")
+        # print(f"{value}:{row}")
+    return ""
 
 
 def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path,
@@ -134,7 +195,6 @@ def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path,
     if not kicad_pos_path.exists():
         print(f"**************** {kicad_pos_path} does not exist")
     else:
-        jlcpcb_footprints: Set[str] = jlcpcb_footprints_get()
         with open(kicad_pos_path, encoding="utf8", errors="ignore") as kicad_pos_csv_file:
             desired_header: List[str] = ["Ref", "Val", "Package", "PosX", "PosY", "Rot", "Side"]
             pos_reader = csv.reader(kicad_pos_csv_file)
@@ -152,7 +212,6 @@ def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path,
             lines: List[str] = [
                 '"Designator", "Val","Package","Mid X", "Mid Y","Rotation","Layer","Install"']
             for position_row in position_rows:
-                
                 # side_text: str = "T" if position_row.side == "top" else "B"
                 value: str = position_row.value
                 install: str = "Yes" if value in matches else "No"
@@ -540,7 +599,7 @@ def bom_split(bom_indices: Dict[str, int],
               bom_rows: Rows) -> Tuple[str, Dict[str, Row], Dict[str, Row]]:
     """Split the BOM into a JLCPCB BOM and an other BOM."""
     jlcpcb_regular_expressions: Dict[str, REPatterns] = jlcpcb_regular_expressions_get()
-    other_values: Set[str] = other_values_get()
+    other_values: Dict[str, DigikeyParts] = other_values_get()
     value_index: int = bom_indices["Value"]
 
     error: str = ""
@@ -662,7 +721,9 @@ def other_footprints_get() -> Set[str]:
         "HR2:PinHeader_2x06_P2.54mm_Vertical_Shrouded",
         "HR2:RASPI_F2X20",
         "HR2:SC59",
+        "HR2:STADAPTER_4xF1x2+F1x4+F1x6",
         "HR2:STADAPTER_F2x4",
+        "HR2:STADAPTER_M2x4RA",
         "HR2:TE1376164-1_COINHOLDER6.8",
         "HR2:U3V70xMATE_F1x4+F1x5",
         "MountingHole:MountingHole_2.7mm_M2.5",
@@ -675,7 +736,7 @@ def unrecognized_values_check(bom_rows: Rows, value_index: int) -> str:
     # Sweep through looking for acceptable vs unacceptable values:
     unrecognized_values: Set[str] = set()
     jlcpcb_regular_expressions: Dict[str, REPatterns] = jlcpcb_regular_expressions_get()
-    other_values: Set[str] = other_values_get()
+    other_values: Dict[str, DigikeyParts] = other_values_get()
     bom_index: int
     bom_row: Tuple[str, ...]
     value: str
@@ -767,54 +828,78 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
     return regular_expressions
 
 
-def other_values_get() -> Set[str]:
+def other_values_get() -> Dict[str, DigikeyParts]:
     """Return a set of KiCAD values that will not work with JLCPCB.
 
     Currently all through hole parts are not suitable for JLCPCB.
     """
     return {
-        "1000µF@10Vmin;D10P5H13max",
-        "3.3V",
-        "470µF,25Vmin;D10P5H13max",
-        "5V",
-        "74LVC1G74;TSSOP8",
-        "74x11G1;TSOP6",
-        "9V",
-        "COIN_HOLDER6.8R;TE1376164-1",
-        "EXT_ESTOP;M1x2",
-        "GND",
-        "LED_EN;M1x3",
-        "LIDAR_ADAPTER;2xF1x4_F1x3",
-        "LED;GRNRA",
-        "HR2_ENCODER;2xF1x3",
-        "JUMPER;M1x2",
-        "HCSR04LP;F1X4",
-        "HOLE;M2.5",
-        "GROVE;20x20",
-        "MCP2542;SOIC8",
-        "NUCLEO-F767ZI;2xF2x35",
-        "P5V",
-        "POLOLU_U3V70F9;F1x4+F1x5",
-        "RASPI;F2X20",
-        "RPI_DISP_EN;M1x3",
-        "RPI_DSP_PWR;M1x2",
-        "SBC_RX;M1x2",
-        "SENSE;M1x3",
-        "SERVO;M1x3",
-        "SERVO;M1x4",
-        "SHUNT;M1x2",
-        "SPC_TX;M1x2",
-        "STADAPTER;F2x4",
-        "WOW_OUT;M2x6S",
-        "WOW_RX;M1x1",
-        "WOW_TX;M1x1",
-        "USB-C;USB-C",
-        "USB-C;USB-C,POGND",
-        "USB5V",
-        "~nESTOP_SET",
-        "~nWOW_ESTOP;M1x1",
+        "1000µF@10Vmin;D10P5H13max": (
+            DigikeyPart("493-15115-ND", "Nichicon", "UFW1A102MPD", 1,
+                        (PriceBreak(1, 0.42, 9), PriceBreak(10, .292, 49))),),
+        "470µF,25Vmin;D10P5H13max":  (
+            DigikeyPart("493-1304-ND", "Nichicon", "UVZ1E471MPD", 1,
+                        (PriceBreak(1, 0.43, 9), PriceBreak(10, 0.306, 49))),),
+        "74LVC1G74;TSSOP8": (
+            DigikeyPart("1727-5983-1-ND", "Nexperia", "74LVC1G74DP,125", 1,
+                        (PriceBreak(1, 0.39, 9), PriceBreak(10, 0.338, 49))),),
+        "74x11G1;TSOP6": (
+            DigikeyPart("1727-6963-1-ND", "Nexperia", "74LVC1G11GV,125", 1,
+                        (PriceBreak(1, 0.35, 9), PriceBreak(10, .286, 24))),),
+        "COIN_HOLDER6.8R;TE1376164-1": (
+            DigikeyPart("A108891CT-ND", "TE Connectivity", "1376164-1", 1,
+                        (PriceBreak(1, 3.35, 9), PriceBreak(10, 2.82, 49))),),
+        "LED;GRNRA": (
+            DigikeyPart("TLPG5600-ND", "Vishay", "TLPG5600", 1,
+                        (PriceBreak(1, 0.55, 9),
+                         PriceBreak(10, 0.337, 99), PriceBreak(100, 0.1939, 999))),),
+        "MCP2542;SOIC8": (
+            DigikeyPart("MCP2542FDT-E/SNCT-ND", "Microchip", "MCP2542FDT-E/SN", 1,
+                        (PriceBreak(1, 0.77, 24), PriceBreak(25, 0.64, 99))),),
+        "USB-C;USB-C": (
+            DigikeyPart("2073-USB3140-30-0230-1-CCT-ND", "GCT", "USB3140-30-0230-1-C", 1,
+                        (PriceBreak(1, 0.76, 9), PriceBreak(10, .671, 24))),),
+        "USB-C;USB-C,POGND": (
+            DigikeyPart("2073-USB3140-30-0230-1-CCT-ND", "GCT", "USB3140-30-0230-1-C", 1,
+                        (PriceBreak(1, 0.76, 9), PriceBreak(10, .671, 24))),),
+        "NUCLEO-F767ZI;2xF2x35": (
+            DigikeyPart("S2211EC-40-ND", "Sullins", "PRPC040DFAN-RC", 2,
+                        (PriceBreak(1, 1.51, 9), PriceBreak(10, 1.34, 99))),),
+
         # For encoder/rev_a:
-        "ENCODER;2xM1x3RA",
+        "POLOLU_U3V70F9;F1x4+F1x5": (DigikeyPart("?", "?", "?", 1, ()),),
+        "LIDAR_ADAPTER;2xF1x4_F1x3": (DigikeyPart("?", "?", "?", 1, ()),),
+        "HR2_ENCODER;2xF1x3": (DigikeyPart("?", "?", "?", 1, ()),),
+        "HCSR04LP;F1X4": (DigikeyPart("?", "?", "?", 1, ()),),
+        "RASPI;F2X20": (DigikeyPart("?", "?", "?", 1, ()),),
+        "SBC_TX;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "STADAPTER;F2x4": (DigikeyPart("?", "?", "?", 1, ()),),
+        "WOW_OUT;M2x6S": (DigikeyPart("?", "?", "?", 1, ()),),
+        "WOW_RX;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "WOW_TX;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "RPI_DISP_EN;M1x3": (DigikeyPart("?", "?", "?", 1, ()),),
+        "RPI_DSP_PWR;M1x2": (DigikeyPart("?", "?", "?", 1, ()),),
+        "SBC_RX;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "SENSE;M1x3": (DigikeyPart("?", "?", "?", 1, ()),),
+        "SERVO;M1x3": (DigikeyPart("?", "?", "?", 1, ()),),
+        "SERVO;M1x4": (DigikeyPart("?", "?", "?", 1, ()),),
+        "SHUNT;M1x2": (DigikeyPart("?", "?", "?", 1, ()),),
+        "STADAPTER;M2x4RA": (DigikeyPart("?", "?", "?", 1, ()),),
+        "STLINK;4xF1x2+F1x4+F1x6": (DigikeyPart("?", "?", "?", 1, ()),),
+        "P5V;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "GROVE;20x20": (DigikeyPart("?", "?", "?", 1, ()),),
+        "HOLE;M2.5": (DigikeyPart("?", "?", "?", 1, ()),),
+        "ENCODER;2xM1x3RA": (DigikeyPart("?", "?", "?", 1, ()),),
+        "EXT_ESTOP;M1x2": (DigikeyPart("?", "?", "?", 1, ()),),
+        "LED_EN;M1x3": (DigikeyPart("?", "?", "?", 1, ()),),
+        "JUMPER;M1x2": (DigikeyPart("?", "?", "?", 1, ()),),
+        "3.3V;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "5V;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "9V;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "GND;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "~NESTOP_SET~;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "~NWOW_ESTOP~;TP": (DigikeyPart("?", "?", "?", 1, ()),),
+        "USB5V;TP": (DigikeyPart("?", "?", "?", 1, ()),),
     }
 
 
