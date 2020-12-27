@@ -64,7 +64,7 @@
 
 * (DONE) Add the low pass filter to the current sense.
 * (DONE) Clean up schematic sheet to remove white space where voltage dividers were.
-* Add ADC to at least 2 more servos: NO. Out of of ADC pins.
+* (NO) Add ADC to at least 2 more servos: NO. Out of of ADC pins.
 
 ## Connectors
 
@@ -91,8 +91,8 @@
 * (DONE) Add 5V=>3V to voltage divider for SERVO1.
 * (DONE) Reannote the PCB.
 * (DONE) Add board name, revision, date, etc to artwork.
-* View Gerbers using gerbv.
 * (DONE) Mark Pin 1's.
-* Label Test points.
+* (DONE) Label Test points.
 * (DONE) Fix ground power plane.
 * (DONE) Encoders => 5V.
+* (DONE) View Gerbers using gerbv.
