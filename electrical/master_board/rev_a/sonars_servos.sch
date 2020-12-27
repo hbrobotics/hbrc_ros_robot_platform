@@ -14,10 +14,10 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L HR2:CD450B;TTSOP16 U10
+L HR2:CD450B;TTSOP16 U11
 U 1 1 5F56033D
 P 4450 2600
-F 0 "U10" H 4700 2750 50  0000 C CNN
+F 0 "U11" H 4700 2750 50  0000 C CNN
 F 1 "CD4504B;TTSOP16" H 5000 1750 50  0000 C CNN
 F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 4650 2650 60  0001 L CNN
 F 3 "Hex Level Shifter" H 4650 2450 60  0001 L CNN
@@ -50,7 +50,7 @@ TRIG7_5V
 Text Notes 4600 2400 0    50   ~ 0
 3.3V to 5V Level Shifter
 Text Notes 6300 3800 0    50   ~ 0
-Notes:\n1. The Sonars are HC04's that operate off of 5V.\n2. The trigger signals are provided by a serial shift register.\n3. A level shifter is used to shift trigger signals from 3.3V to 5V.\n4. The microcontroller has 5V tolerant input pins.\n5. Most hobby servers operate off of approximately 5V - 6V.\n6. The P5V supply is a 5V supply that is used for servos and LED's.\n   This supply can be noisy due to changing current draw.\n7. The servo PWM signals are level shifted from 3.3V to 5V.\n8. The servos are manually labeled to support mechanical\n   automatic positioned derived from the mechanical model.\n9. The echo signals are fed to external interrupt pins on the Nucleo PCB.
+Notes:\n1. The Sonars are HC04's that operate off of 5V.\n2. The trigger signals are provided by a serial shift register.\n3. A level shifter is used to shift trigger signals from 3.3V to 5V.\n4. The microcontroller has 5V tolerant input pins.\n5. Most hobby servers operate off of approximately 5V - 6V.\n6. The P5V supply is a 5V supply that is used for servos and LED's.\n   This supply can be noisy due to changing current draw.\n7. The servo PWM signals are level shifted from 3.3V to 5V.\n8. Some of the servos have an extra 4th wire the provides a\n    voltage that indicates servo position between 0V-5V.\n9. The echo signals are fed to external interrupt pins on the Nucleo PCB.
 Wire Wire Line
 	2050 900  2050 800 
 Wire Wire Line
@@ -64,10 +64,10 @@ Entry Wire Line
 Entry Wire Line
 	1600 1300 1500 1200
 $Comp
-L Device:C C18
+L Device:C C14
 U 1 1 5F8B3EAF
 P 2650 1050
-F 0 "C18" H 2450 1150 50  0000 L CNN
+F 0 "C14" H 2450 1150 50  0000 L CNN
 F 1 "0.1µF;1005" H 2700 950 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0402_1005Metric" H 2688 900 50  0001 C CNN
 F 3 "~" H 2650 1050 50  0001 C CNN
@@ -75,10 +75,10 @@ F 3 "~" H 2650 1050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C19
+L Device:C C15
 U 1 1 5F8B4468
 P 3250 1050
-F 0 "C19" H 3050 1150 50  0000 L CNN
+F 0 "C15" H 3050 1150 50  0000 L CNN
 F 1 "0.1µF;1005" H 3300 950 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0402_1005Metric" H 3288 900 50  0001 C CNN
 F 3 "~" H 3250 1050 50  0001 C CNN
@@ -154,9 +154,7 @@ Wire Wire Line
 Wire Wire Line
 	8350 1200 8500 1200
 Wire Wire Line
-	9300 1700 9300 1200
-Wire Wire Line
-	9300 1200 9500 1200
+	9300 1100 9500 1100
 Wire Wire Line
 	3500 3000 4450 3000
 Text Label 6300 1000 0    50   ~ 0
@@ -192,17 +190,17 @@ Entry Wire Line
 Entry Wire Line
 	8200 900  8300 1000
 Wire Wire Line
-	9500 1000 9300 1000
+	9500 900  9300 900 
 Wire Wire Line
-	9500 1100 9300 1100
-Text Label 9300 1000 0    50   ~ 0
+	9500 1000 9300 1000
+Text Label 9300 900  0    50   ~ 0
 SGND
-Text Label 9300 1100 0    50   ~ 0
+Text Label 9300 1000 0    50   ~ 0
 P5V
 Entry Wire Line
-	9300 1100 9200 1000
+	9300 1000 9200 900 
 Entry Wire Line
-	9200 900  9300 1000
+	9200 800  9300 900 
 Wire Bus Line
 	9200 650  8200 650 
 Connection ~ 8200 650 
@@ -236,10 +234,10 @@ Wire Wire Line
 Wire Wire Line
 	1000 1400 4450 1400
 $Comp
-L HR2:CD450B;TTSOP16 U9
+L HR2:CD450B;TTSOP16 U10
 U 1 1 5F67B87E
 P 4450 1300
-F 0 "U9" H 4700 1450 50  0000 C CNN
+F 0 "U10" H 4700 1450 50  0000 C CNN
 F 1 "CD4504B;TTSOP16" H 5000 450 50  0000 C CNN
 F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 4650 1350 60  0001 L CNN
 F 3 "Hex Level Shifter" H 4650 1150 60  0001 L CNN
@@ -393,8 +391,8 @@ L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7F066C
 P 3100 4400
 AR Path="/5F7F066C" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7F066C" Ref="CN81"  Part="1" 
-F 0 "CN81" H 3500 4550 50  0000 C CNN
+AR Path="/5F48CAAD/5F7F066C" Ref="CN9"  Part="1" 
+F 0 "CN9" H 3500 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 3550 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4H" H 3300 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3300 4250 60  0001 L CNN
@@ -408,8 +406,8 @@ L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7F06A3
 P 4300 4400
 AR Path="/5F7F06A3" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7F06A3" Ref="CN82"  Part="1" 
-F 0 "CN82" H 4700 4550 50  0000 C CNN
+AR Path="/5F48CAAD/5F7F06A3" Ref="CN10"  Part="1" 
+F 0 "CN10" H 4700 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 4750 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4H" H 4500 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4500 4250 60  0001 L CNN
@@ -463,8 +461,8 @@ L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7F06DA
 P 5500 4400
 AR Path="/5F7F06DA" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7F06DA" Ref="CN83"  Part="1" 
-F 0 "CN83" H 5900 4550 50  0000 C CNN
+AR Path="/5F48CAAD/5F7F06DA" Ref="CN11"  Part="1" 
+F 0 "CN11" H 5900 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 5950 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4" H 5700 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5700 4250 60  0001 L CNN
@@ -509,8 +507,8 @@ L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7E7561
 P 10300 4400
 AR Path="/5F7E7561" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7E7561" Ref="CN87"  Part="1" 
-F 0 "CN87" H 10700 4550 50  0000 C CNN
+AR Path="/5F48CAAD/5F7E7561" Ref="CN19"  Part="1" 
+F 0 "CN19" H 10700 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 10750 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4" H 10500 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 10500 4250 60  0001 L CNN
@@ -533,8 +531,8 @@ L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7E752A
 P 9100 4400
 AR Path="/5F7E752A" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7E752A" Ref="CN86"  Part="1" 
-F 0 "CN86" H 9500 4550 50  0000 C CNN
+AR Path="/5F48CAAD/5F7E752A" Ref="CN16"  Part="1" 
+F 0 "CN16" H 9500 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 9550 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4LP" H 9300 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 9300 4250 60  0001 L CNN
@@ -559,8 +557,8 @@ L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F7E2DBA
 P 7900 4400
 AR Path="/5F7E2DBA" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7E2DBA" Ref="CN85"  Part="1" 
-F 0 "CN85" H 8300 4550 50  0000 C CNN
+AR Path="/5F48CAAD/5F7E2DBA" Ref="CN14"  Part="1" 
+F 0 "CN14" H 8300 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 8350 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4LP" H 8100 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 8100 4250 60  0001 L CNN
@@ -591,8 +589,8 @@ L HR2:HCSR04LP;F1X4 CN?
 U 1 1 5F490633
 P 6700 4400
 AR Path="/5F490633" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F490633" Ref="CN84"  Part="1" 
-F 0 "CN84" H 7100 4550 50  0000 C CNN
+AR Path="/5F48CAAD/5F490633" Ref="CN12"  Part="1" 
+F 0 "CN12" H 7100 4550 50  0000 C CNN
 F 1 "HCSR04LP;F1X4" H 7150 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4LP" H 6900 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 6900 4250 60  0001 L CNN
@@ -675,10 +673,10 @@ ECHO4
 Text Label 1000 5450 0    50   ~ 0
 ECHO3
 $Comp
-L HR2:ACS711;SOIC8 U19
+L HR2:ACS711;SOIC8 U12
 U 1 1 5FC1C86E
 P 7600 2400
-F 0 "U19" H 7850 2550 50  0000 C CNN
+F 0 "U12" H 7850 2550 50  0000 C CNN
 F 1 "ACS711;SOIC8" H 8100 1950 50  0000 C CNN
 F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 7800 2450 60  0001 L CNN
 F 3 "Hall Effect Current Sensor" H 7800 2250 60  0001 L CNN
@@ -687,10 +685,10 @@ F 4 "Hall Effect Current Sensor" H 7800 2150 60  0001 L CNN "Field5"
 	1    0    0    -1  
 $EndComp
 $Comp
-L HR2:SERVO;M1x3 CN6
+L HR2:SERVO;M1x3 CN13
 U 1 1 5FC1D721
 P 7200 1000
-F 0 "CN6" H 7700 1150 50  0000 R CNN
+F 0 "CN13" H 7700 1150 50  0000 R CNN
 F 1 "SERVO;M1x3" H 7800 650 50  0000 R CNN
 F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 7400 1050 60  0001 L CNN
 F 3 "Servo M1X3" H 7400 850 60  0001 L CNN
@@ -699,22 +697,22 @@ F 4 "Servo F1X3" H 7400 750 60  0001 L CNN "Field5"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:SERVO;M1x4 CN9
+L HR2:SERVO;M1x4 CN18
 U 1 1 5FC1E3A4
-P 10200 1000
-F 0 "CN9" H 10650 1150 50  0000 C CNN
-F 1 "SERVO;M1x4" H 10550 550 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 10400 1050 60  0001 L CNN
-F 3 "Servo M1X4" H 10400 850 60  0001 L CNN
-F 4 "Servo M1X4" H 10400 750 60  0001 L CNN "Field5"
-	1    10200 1000
+P 10200 900
+F 0 "CN18" H 10650 1050 50  0000 C CNN
+F 1 "SERVO;M1x4" H 10550 450 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 10400 950 60  0001 L CNN
+F 3 "Servo M1X4" H 10400 750 60  0001 L CNN
+F 4 "Servo M1X4" H 10400 650 60  0001 L CNN "Field5"
+	1    10200 900 
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:SERVO;M1x3 CN7
+L HR2:SERVO;M1x3 CN15
 U 1 1 5FC20D64
 P 8200 1000
-F 0 "CN7" H 8700 1150 50  0000 R CNN
+F 0 "CN15" H 8700 1150 50  0000 R CNN
 F 1 "SERVO;M1x3" H 8800 650 50  0000 R CNN
 F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 8400 1050 60  0001 L CNN
 F 3 "Servo M1X3" H 8400 850 60  0001 L CNN
@@ -723,10 +721,10 @@ F 4 "Servo F1X3" H 8400 750 60  0001 L CNN "Field5"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L HR2:SERVO;M1x3 CN8
+L HR2:SERVO;M1x3 CN17
 U 1 1 5FC214E7
 P 9200 1000
-F 0 "CN8" H 9700 1150 50  0000 R CNN
+F 0 "CN17" H 9700 1150 50  0000 R CNN
 F 1 "SERVO;M1x3" H 9800 650 50  0000 R CNN
 F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 9400 1050 60  0001 L CNN
 F 3 "Servo M1X3" H 9400 850 60  0001 L CNN
@@ -771,13 +769,9 @@ GND
 Text Label 9100 1800 2    50   ~ 0
 3.3V
 Wire Wire Line
-	9500 1300 9400 1300
+	9500 1200 9400 1200
 Wire Wire Line
-	9400 1300 9400 1700
-Wire Wire Line
-	9400 1700 10400 1700
-Wire Wire Line
-	10400 1700 10400 6050
+	9400 1200 9400 1500
 Wire Wire Line
 	10400 6050 1000 6050
 Wire Wire Line
@@ -937,10 +931,10 @@ Wire Wire Line
 Wire Wire Line
 	7100 4700 7100 5050
 $Comp
-L Device:C C17
+L Device:C C13
 U 1 1 5F7FE24F
 P 2050 1050
-F 0 "C17" H 1850 1150 50  0000 L CNN
+F 0 "C13" H 1850 1150 50  0000 L CNN
 F 1 "0.1µF;1005" H 2100 950 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0402_1005Metric" H 2088 900 50  0001 C CNN
 F 3 "~" H 2050 1050 50  0001 C CNN
@@ -968,8 +962,8 @@ L Device:R_US R?
 U 1 1 5FE95610
 P 8800 2050
 AR Path="/5F8C2F57/5FE95610" Ref="R?"  Part="1" 
-AR Path="/5F48CAAD/5FE95610" Ref="R4"  Part="1" 
-F 0 "R4" H 8700 2150 50  0000 L CNN
+AR Path="/5F48CAAD/5FE95610" Ref="R43"  Part="1" 
+F 0 "R43" H 8700 2150 50  0000 L CNN
 F 1 "100KΩ;1005" H 8300 1900 50  0000 L CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" V 8840 2040 50  0001 C CNN
 F 3 "~" H 8800 2050 50  0001 C CNN
@@ -981,8 +975,8 @@ L Device:R_US R?
 U 1 1 5FEE50CC
 P 9500 2500
 AR Path="/5F8C2F57/5FEE50CC" Ref="R?"  Part="1" 
-AR Path="/5F48CAAD/5FEE50CC" Ref="R23"  Part="1" 
-F 0 "R23" V 9400 2400 50  0000 L CNN
+AR Path="/5F48CAAD/5FEE50CC" Ref="R44"  Part="1" 
+F 0 "R44" V 9400 2400 50  0000 L CNN
 F 1 "1KΩ;1005" V 9600 2350 50  0000 L CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" V 9540 2490 50  0001 C CNN
 F 3 "~" H 9500 2500 50  0001 C CNN
@@ -992,10 +986,10 @@ $EndComp
 Wire Wire Line
 	9650 2500 9900 2500
 $Comp
-L Device:C C1
+L Device:C C16
 U 1 1 5FEE702F
 P 9900 2850
-F 0 "C1" H 9700 2950 50  0000 L CNN
+F 0 "C16" H 9700 2950 50  0000 L CNN
 F 1 "0.01µF;1005" H 9350 2750 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0402_1005Metric" H 9938 2700 50  0001 C CNN
 F 3 "~" H 9900 2850 50  0001 C CNN
@@ -1018,17 +1012,65 @@ Entry Wire Line
 Text Label 9300 3100 0    50   ~ 0
 GND
 $Comp
-L HR2:SN74HC595;HTSSOP16EP3.4x5 U8
-U 1 1 5FE28106
+L HR2:SN74HC595;TSSOP16 U9
+U 1 1 5FEA6955
 P 2400 2600
-F 0 "U8" H 2650 2750 50  0000 C CNN
-F 1 "SN74HC595;HTSSOP16EP3.4x5" H 2950 1450 50  0000 C CNN
-F 2 "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm" H 2600 2650 60  0001 L CNN
+F 0 "U9" H 2650 2750 60  0000 C CNN
+F 1 "SN74HC595;TSSOP16" H 2950 1450 50  0000 C CNN
+F 2 "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" H 2600 2650 60  0001 L CNN
 F 3 "Tri-state 8-Bit Shift Register" H 2600 2450 60  0001 L CNN
 F 4 "Tri-State 8-Bit Shift Register" H 2600 2350 60  0001 L CNN "desc"
 	1    2400 2600
 	1    0    0    -1  
 $EndComp
+$Comp
+L Device:R_US R?
+U 1 1 5FEA8596
+P 10200 1750
+AR Path="/5F8C2F57/5FEA8596" Ref="R?"  Part="1" 
+AR Path="/5F48CAAD/5FEA8596" Ref="R45"  Part="1" 
+F 0 "R45" H 10050 1850 50  0000 L CNN
+F 1 "2.2KΩ;1005" H 9750 1600 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 10240 1740 50  0001 C CNN
+F 3 "~" H 10200 1750 50  0001 C CNN
+	1    10200 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 5FEA8A70
+P 10200 2250
+AR Path="/5F8C2F57/5FEA8A70" Ref="R?"  Part="1" 
+AR Path="/5F48CAAD/5FEA8A70" Ref="R46"  Part="1" 
+F 0 "R46" H 10050 2350 50  0000 L CNN
+F 1 "3.3KΩ;1005" H 9750 2100 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 10240 2240 50  0001 C CNN
+F 3 "~" H 10200 2250 50  0001 C CNN
+	1    10200 2250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9900 3100 10200 3100
+Wire Wire Line
+	10200 3100 10200 2400
+Connection ~ 9900 3100
+Wire Wire Line
+	10200 2100 10200 2000
+Wire Wire Line
+	9300 1100 9300 1700
+Wire Wire Line
+	10200 1600 10200 1500
+Wire Wire Line
+	10200 1500 9400 1500
+Wire Wire Line
+	10200 2000 10400 2000
+Connection ~ 10200 2000
+Wire Wire Line
+	10200 2000 10200 1900
+Wire Wire Line
+	10400 2000 10400 6050
+Text Notes 9500 2250 0    50   ~ 0
+5V=>3V\nVoltage\nDivider
 Wire Bus Line
 	4000 2000 4000 2250
 Wire Bus Line

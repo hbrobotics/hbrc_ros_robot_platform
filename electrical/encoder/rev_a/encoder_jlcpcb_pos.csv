@@ -1,3 +1,3 @@
-"Designator","Mid X","Mid Y","Layer","Rotation"
-"R1","94.900000mm","-108.500000mm","T","270"
-"R2","92.500000mm","-94.000000mm","T","270"
+"Designator", "Val","Package","Mid X", "Mid Y","Rotation","Layer","Install"
+"R1","100Ω;1005","R_0402_1005Metric","94.900000mm","-108.500000mm","270","top","No"
+"R2","100Ω;1005","R_0402_1005Metric","92.500000mm","-94.000000mm","270","top","No"

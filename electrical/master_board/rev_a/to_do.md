@@ -6,6 +6,7 @@
 * https://eepower.com/resistor-guide/resistor-standards-and-codes/resistor-sizes-and-packages/#
 * https://support.jlcpcb.com/article/84-how-to-generate-the-bom-and-centroid-file-from-kicad
 * https://docs.google.com/spreadsheets/d/1bSM_Ko6OLz7rW6MCQbw4Zv_Z4hOHcI7w7O6sczi2h5w/edit#gid=0
+* https://www.amazon.com/OSOYOO-Infrared-Obstacle-Avoidance-Arduino/dp/B01I57HIJ0/ref=sr_1_4
 
 ## Encoder:
 
@@ -32,7 +33,7 @@
 ## SBC
 
 * (DONE) Is NESTOP connected to SBC?
-* (DONE)Are the I2C resistors the correct value?
+* (DONE) Are the I2C resistors the correct value?
   The Raspberry Pi has builtin 1.8KΩ pull-ups.
   Changed additional pullups to 100KΩ which can be adjusted if necessary.
 * (DONE) Is the SBC Alive LED current limit resistor the right value?
@@ -57,13 +58,13 @@
 * (DONE) Are current limit resistors the right size? Yes, 1005.
 * (DONE) Are transistors necessary? Yes.
 * (DONE) Add a private ground return for the LED's with a jumper to disable?
-  * (DONE)This could go on the outer rim of the Ground plane?  It is "Ground like".
-  * Add a NeoPixel connector? NO
+* Add a NeoPixel connector? NO
 
 ## Servos and Sonars
 
 * (DONE) Add the low pass filter to the current sense.
 * (DONE) Clean up schematic sheet to remove white space where voltage dividers were.
+* (NO) Add ADC to at least 2 more servos: NO. Out of of ADC pins.
 
 ## Connectors
 
@@ -78,12 +79,20 @@
 ## Misc.
 
 * (DONE) Recenter the PCB center to (100, 100)
-* (DONE) Move 9V Shut Jumper.
+* (DONE) Move 9V Shunt Jumper.
 * (DONE) Clean up traces.
 * (DONE) Finish ground stitching.
-* Verify HTSSOP vs TTSOP
-* The 2x6 shrouded connector is missing one side of shroud.
-* Verify that driver chip footprint is truly ground.
-* Reannote the PCB.
-* Add board name, revision, date, etc to artwork.
-* View Gerbers using gerbv.
+* (DONE) Verify HTSSOP vs TSSOP
+  * DRV8833: HTSSOP-16
+  * SN74HC165: TSSOP-16
+  * SN74HC595: TSSOP-16
+* (DONE) The 2x6 shrouded connector is missing one side of the shroud.
+* (DONE) Verify that driver chip footprint is truly ground. Center solder mask correct too.
+* (DONE) Add 5V=>3V to voltage divider for SERVO1.
+* (DONE) Reannote the PCB.
+* (DONE) Add board name, revision, date, etc to artwork.
+* (DONE) Mark Pin 1's.
+* (DONE) Label Test points.
+* (DONE) Fix ground power plane.
+* (DONE) Encoders => 5V.
+* (DONE) View Gerbers using gerbv.

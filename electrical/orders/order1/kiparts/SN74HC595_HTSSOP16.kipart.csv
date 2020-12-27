@@ -1,4 +1,4 @@
-"SN74HC595;HTSSOP16EP3.4x5", "U", "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm", "", "Tri-state 8-Bit Shift Register", "Tri-State 8-Bit Shift Register"
+"SN74HC595;TSSOP16", "U", "Package_SO:TSSOP-16_4.4x5mm_P0.65mm", "", "Tri-state 8-Bit Shift Register", "Tri-State 8-Bit Shift Register"
 "Pin", "Unit", "Type",     "Name",   "Style",    "Side"
 "14",  "A",    "input",    "SER",    "line",     "left"
 "11",  "A",    "input",    "SRCLK",  "line",     "left"
