@@ -5,7 +5,7 @@ $Descr A 11000 8500
 encoding utf-8
 Sheet 3 10
 Title "HR2 Single Board Computer"
-Date "2020-11-22"
+Date "2020-12-26"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
@@ -614,7 +614,7 @@ L Connector:TestPoint TP12
 U 1 1 5FB4ED7C
 P 4800 2900
 F 0 "TP12" H 4850 3050 50  0000 L CNN
-F 1 "SPC_TX;M1x2" H 4858 2927 50  0000 L CNN
+F 1 "SBC_TX;TP" H 4858 2927 50  0000 L CNN
 F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 5000 2900 50  0001 C CNN
 F 3 "~" H 5000 2900 50  0001 C CNN
 	1    4800 2900
@@ -754,7 +754,7 @@ L Connector:TestPoint TP13
 U 1 1 5FC4D458
 P 4800 3300
 F 0 "TP13" H 4600 3500 50  0000 L CNN
-F 1 "SBC_RX;M1x2" H 4250 3350 50  0000 L CNN
+F 1 "SBC_RX;TP" H 4350 3400 50  0000 L CNN
 F 2 "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm" H 5000 3300 50  0001 C CNN
 F 3 "~" H 5000 3300 50  0001 C CNN
 	1    4800 3300

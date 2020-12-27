@@ -5,7 +5,7 @@ $Descr A 11000 8500
 encoding utf-8
 Sheet 4 10
 Title "HR2 Motors and Encoders"
-Date "2020-11-22"
+Date "2020-12-26"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "

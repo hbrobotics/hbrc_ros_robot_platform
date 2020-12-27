@@ -5,7 +5,7 @@ $Descr A 11000 8500
 encoding utf-8
 Sheet 9 10
 Title "HR2 Connectors"
-Date "2020-11-22"
+Date "2020-12-26"
 Rev "A"
 Comp "HomeBrew Robotics Club"
 Comment1 "Copyright © 2020 by HomeBrew Robotics Club "
@@ -902,24 +902,6 @@ Wire Wire Line
 	2250 4250 4200 4250
 Wire Wire Line
 	2250 3800 3900 3800
-Wire Bus Line
-	4100 5600 4100 6500
-Wire Bus Line
-	4100 6500 4100 7100
-Wire Bus Line
-	2700 700  6000 700 
-Wire Bus Line
-	2700 700  2700 3600
-Wire Bus Line
-	2400 700  2400 1200
-Wire Bus Line
-	10400 700  10400 6500
-Wire Bus Line
-	2150 3800 2150 7300
-Wire Bus Line
-	8000 2800 8000 6700
-Wire Bus Line
-	6000 700  6000 6500
 $Comp
 L HR2:SN74HC595;TSSOP16 U13
 U 1 1 5FEB2DB9
@@ -956,4 +938,22 @@ F 4 "8-Bit Parallel In Serial Out Shift Register" H 9100 3850 60  0001 L CNN "de
 	1    8900 4100
 	1    0    0    -1  
 $EndComp
+Wire Bus Line
+	4100 5600 4100 6500
+Wire Bus Line
+	4100 6500 4100 7100
+Wire Bus Line
+	2700 700  6000 700 
+Wire Bus Line
+	2700 700  2700 3600
+Wire Bus Line
+	2400 700  2400 1200
+Wire Bus Line
+	10400 700  10400 6500
+Wire Bus Line
+	2150 3800 2150 7300
+Wire Bus Line
+	8000 2800 8000 6700
+Wire Bus Line
+	6000 700  6000 6500
 $EndSCHEMATC
