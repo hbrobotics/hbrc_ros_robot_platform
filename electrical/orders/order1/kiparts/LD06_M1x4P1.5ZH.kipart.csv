@@ -1,0 +1,7 @@
+"LD06_CONN;M1x4P1.5ZH","CN","Connector_Wuerth:Wuerth_WR-WTB_64800411622_1x04_P1.50mm_Vertical","https://www.inno-maker.com/wp-content/uploads/2020/11/LDROBOT_LD06_Datasheet.pdf","LD06 Lidar Connector","LD06 Lidar COnnector"
+"Pin", "Name", "Type",     "Side", "Unit", "Style", "Hidden"
+"1",   "TX",   "output",   "left", "A",    "",      ""
+"2",   "PWM",  "input",    "left", "A",    "",      ""
+"3",   "GND",  "power_in", "left", "A",    "",      ""
+"4",   "P5V",  "power_in", "left", "A",    "",      ""
+,,,,,,
