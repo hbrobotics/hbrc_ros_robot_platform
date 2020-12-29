@@ -386,36 +386,6 @@ Entry Wire Line
 	6700 4000 6800 4100
 Entry Wire Line
 	9100 4000 9200 4100
-$Comp
-L HR2:HCSR04LP;F1X4 CN?
-U 1 1 5F7F066C
-P 3100 4400
-AR Path="/5F7F066C" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7F066C" Ref="CN9"  Part="1" 
-F 0 "CN9" H 3500 4550 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 3550 3950 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4H" H 3300 4450 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3300 4250 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3300 4350 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 3300 4150 60  0001 L CNN "Field5"
-	1    3100 4400
-	-1   0    0    -1  
-$EndComp
-$Comp
-L HR2:HCSR04LP;F1X4 CN?
-U 1 1 5F7F06A3
-P 4300 4400
-AR Path="/5F7F06A3" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7F06A3" Ref="CN10"  Part="1" 
-F 0 "CN10" H 4700 4550 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 4750 3950 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4H" H 4500 4450 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4500 4250 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4500 4350 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 4500 4150 60  0001 L CNN "Field5"
-	1    4300 4400
-	-1   0    0    -1  
-$EndComp
 Text Notes 5900 4100 0    50   ~ 0
 Sonar Connectors
 Connection ~ 2300 4200
@@ -456,21 +426,6 @@ Wire Wire Line
 	4800 4400 4700 4400
 Wire Wire Line
 	4800 4700 4700 4700
-$Comp
-L HR2:HCSR04LP;F1X4 CN?
-U 1 1 5F7F06DA
-P 5500 4400
-AR Path="/5F7F06DA" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7F06DA" Ref="CN11"  Part="1" 
-F 0 "CN11" H 5900 4550 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 5950 3950 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4" H 5700 4450 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5700 4250 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5700 4350 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 5700 4150 60  0001 L CNN "Field5"
-	1    5500 4400
-	-1   0    0    -1  
-$EndComp
 Wire Wire Line
 	2300 4200 3500 4200
 Wire Wire Line
@@ -502,21 +457,6 @@ Wire Wire Line
 	9600 4400 9500 4400
 Wire Wire Line
 	9600 4700 9500 4700
-$Comp
-L HR2:HCSR04LP;F1X4 CN?
-U 1 1 5F7E7561
-P 10300 4400
-AR Path="/5F7E7561" Ref="CN?"  Part="1" 
-AR Path="/5F48CAAD/5F7E7561" Ref="CN19"  Part="1" 
-F 0 "CN19" H 10700 4550 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 10750 3950 50  0000 C CNN
-F 2 "HR2:HCSR04_F1x4" H 10500 4450 60  0001 L CNN
-F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 10500 4250 60  0001 L CNN
-F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 10500 4350 60  0001 L CNN "manf#"
-F 5 "HC-SR04 Sonar (Low Profile Receptacle)" H 10500 4150 60  0001 L CNN "Field5"
-	1    10300 4400
-	-1   0    0    -1  
-$EndComp
 Wire Wire Line
 	8400 4500 8000 4500
 Connection ~ 8300 4200
@@ -533,7 +473,7 @@ P 9100 4400
 AR Path="/5F7E752A" Ref="CN?"  Part="1" 
 AR Path="/5F48CAAD/5F7E752A" Ref="CN16"  Part="1" 
 F 0 "CN16" H 9500 4550 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 9550 3950 50  0000 C CNN
+F 1 "HCSR04LP;F1X4LP" H 9550 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4LP" H 9300 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 9300 4250 60  0001 L CNN
 F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 9300 4350 60  0001 L CNN "manf#"
@@ -559,7 +499,7 @@ P 7900 4400
 AR Path="/5F7E2DBA" Ref="CN?"  Part="1" 
 AR Path="/5F48CAAD/5F7E2DBA" Ref="CN14"  Part="1" 
 F 0 "CN14" H 8300 4550 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 8350 3950 50  0000 C CNN
+F 1 "HCSR04LP;F1X4LP" H 8350 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4LP" H 8100 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 8100 4250 60  0001 L CNN
 F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 8100 4350 60  0001 L CNN "manf#"
@@ -591,7 +531,7 @@ P 6700 4400
 AR Path="/5F490633" Ref="CN?"  Part="1" 
 AR Path="/5F48CAAD/5F490633" Ref="CN12"  Part="1" 
 F 0 "CN12" H 7100 4550 50  0000 C CNN
-F 1 "HCSR04LP;F1X4" H 7150 3950 50  0000 C CNN
+F 1 "HCSR04LP;F1X4LP" H 7150 3950 50  0000 C CNN
 F 2 "HR2:HCSR04_F1x4LP" H 6900 4450 60  0001 L CNN
 F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 6900 4250 60  0001 L CNN
 F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 6900 4350 60  0001 L CNN "manf#"
@@ -1071,6 +1011,72 @@ Wire Wire Line
 	10400 2000 10400 6050
 Text Notes 9500 2250 0    50   ~ 0
 5V=>3V\nVoltage\nDivider
+Text Notes 7200 5000 0    50   ~ 0
+Front-Center
+Text Notes 3750 5000 0    50   ~ 0
+Right Rear
+Text Notes 2600 5000 0    50   ~ 0
+Left Rear
+Text Notes 4850 5000 0    50   ~ 0
+Front Right Top
+Text Notes 6000 5000 0    50   ~ 0
+Front Right Bottom
+Text Notes 8400 5000 0    50   ~ 0
+Front Left Bottom
+Text Notes 9650 5000 0    50   ~ 0
+Front Left Top
+$Comp
+L HR2:HCSR04;F1X4 CN11
+U 1 1 5FED420F
+P 5500 4400
+F 0 "CN11" H 5750 4550 50  0000 C CNN
+F 1 "HCSR04;F1X4" H 5850 3950 50  0000 C CNN
+F 2 "HR2:HCSR04_F1x4" H 5700 4450 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5700 4250 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 5700 4350 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (Normal Profile Receptacle)" H 5700 4150 60  0001 L CNN "desc"
+	1    5500 4400
+	-1   0    0    -1  
+$EndComp
+$Comp
+L HR2:HCSR04;F1X4 CN19
+U 1 1 5FEEDEB9
+P 10300 4400
+F 0 "CN19" H 10550 4550 50  0000 C CNN
+F 1 "HCSR04;F1X4" H 10650 3950 50  0000 C CNN
+F 2 "HR2:HCSR04_F1x4" H 10500 4450 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 10500 4250 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 10500 4350 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (Normal Profile Receptacle)" H 10500 4150 60  0001 L CNN "desc"
+	1    10300 4400
+	-1   0    0    -1  
+$EndComp
+$Comp
+L HR2:HCSR04H;F1X4 CN9
+U 1 1 5FEEECA2
+P 3100 4400
+F 0 "CN9" H 3600 4550 50  0000 R CNN
+F 1 "HCSR04H;F1X4H" H 3750 3950 50  0000 R CNN
+F 2 "HR2:HCSR04_F1x4H" H 3300 4450 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3300 4250 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 3300 4350 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (High Profile Receptacle)" H 3300 4150 60  0001 L CNN "desc"
+	1    3100 4400
+	-1   0    0    -1  
+$EndComp
+$Comp
+L HR2:HCSR04H;F1X4 CN10
+U 1 1 5FEEF8CC
+P 4300 4400
+F 0 "CN10" H 4800 4550 50  0000 R CNN
+F 1 "HCSR04H;F1X4" H 4950 3950 50  0000 R CNN
+F 2 "HR2:HCSR04_F1x4H" H 4500 4450 60  0001 L CNN
+F 3 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4500 4250 60  0001 L CNN
+F 4 "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" H 4500 4350 60  0001 L CNN "manf#"
+F 5 "HC-SR04 Sonar (High Profile Receptacle)" H 4500 4150 60  0001 L CNN "desc"
+	1    4300 4400
+	-1   0    0    -1  
+$EndComp
 Wire Bus Line
 	4000 2000 4000 2250
 Wire Bus Line
