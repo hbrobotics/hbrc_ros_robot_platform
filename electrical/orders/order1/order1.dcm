@@ -24,6 +24,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP LD06_CONN;M1x4P1.5ZH
+D LD06 Lidar COnnector
+K ~
+F https://www.inno-maker.com/wp-content/uploads/2020/11/LDROBOT_LD06_Datasheet.pdf
+$ENDCMP
+#
 $CMP SN74HC165;TSSOP16
 D 8-Bit Parallel In Serial Out Shift Register
 K ~
@@ -266,6 +272,12 @@ $ENDCMP
 #
 $CMP SERVO;M1x4
 D Servo M1X4
+K ~
+F 
+$ENDCMP
+#
+$CMP LIDAR_ADAPTER;2xM1x4+M1x3
+D Lidar Adapter Connectors
 K ~
 F 
 $ENDCMP

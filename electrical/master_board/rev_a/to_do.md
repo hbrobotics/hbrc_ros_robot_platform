@@ -96,3 +96,18 @@
 * (DONE) Fix ground power plane.
 * (DONE) Encoders => 5V.
 * (DONE) View Gerbers using gerbv.
+
+<!--
+* F1x4:
+  *  CN10 (Right Rear), CN11 (Front Right Top), CN19 (Front Left Top),
+  * CN21 (Lidar 2xF1x4), CN3 (Pololu F1x4), CN9 (Left Rear)  (7 Total)
+* F1x5:
+  * CN3 (Pololu F1x5)
+* F1x3:
+  * CN21 (Lidar_Adapter) CN6 (Left Encoder 2 F1x3) CN7 (Right Encoder 2 F1x3)  
+* F2x20:  CN5
+* F2x4: CN8 (ST Adapter)
+* F1x64: CN12, CN14, CN16 (Other sonars)  5 * 3 * 4 = 5 * 12 + 60 < 64   (+1 to each one)
+* M2x40: CN20
+* M2x6S: CN30 (WOW Bus)
+-->
