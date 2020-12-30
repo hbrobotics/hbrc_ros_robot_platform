@@ -1,0 +1,8 @@
+"Source:","/home/wayne/public_html/projects/hbrc_ros_robot_platform/electrical/ld06_adapter/rev_a/ld06_adapter.sch"
+"Date:","Tue 29 Dec 2020 03:59:15 PM PST"
+"Tool:","Eeschema 5.1.9-73d0e3b20d~88~ubuntu20.04.1"
+"Generator:","/usr/share/kicad/plugins/bom_csv_grouped_by_value_with_fp.py"
+"Component Count:","2"
+"Ref","Qnty","Value","Cmp name","Footprint","Description","Vendor"
+"CN1, ","1","LIDAR_ADAPTER;2xM1x4+M1x3","LIDAR_ADAPTER;2xM1x4+M1x3","HR2:LIDAR_ADAPTER_2xF1x4+F1x3","Lidar Adapter Connectors",""
+"CN2, ","1","LD06_CONN;M1x4P1.5ZH","LD06_CONN;M1x4P1.5ZH","Connector_Wuerth:Wuerth_WR-WTB_64800411622_1x04_P1.50mm_Vertical","LD06 Lidar COnnector",""
