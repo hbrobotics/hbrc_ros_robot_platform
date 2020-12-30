@@ -7,3 +7,6 @@ kiparts/master_board.csv
 master_board-cache.lib
 master_board-rescue.lib
 old/
+*.zip
+*.xml
+

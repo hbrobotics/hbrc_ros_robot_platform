@@ -22,15 +22,17 @@
 # <--------------------------------------- 100 characters ---------------------------------------> #
 """BOM generator for JLCPCB and Digi-Key."""
 
+from collections import namedtuple as NamedTuple
 import csv
+import glob
+from math import ceil
 from pathlib import Path
 import os
 import re
+import subprocess
 from typing import Dict, IO, List, Set, Tuple
-from collections import namedtuple as NamedTuple
-from math import ceil
 
-REPatterns = Tuple[str, str, str, str]
+REPatterns = Tuple[str, str, str, str, int]
 Row = Tuple[str, ...]
 Rows = Tuple[Row, ...]
 PriceBreak = NamedTuple("PriceBreak", ["min_quantity", "price", "max_quantity"])
@@ -44,6 +46,7 @@ Match = NamedTuple("Match", [
     "lcsc",
     "stock",
     "manufacturer_part",
+    "rotate",
 ])
 JlcpcbRow = NamedTuple("JlcpcbRow", [
     "lcsc",
@@ -77,6 +80,8 @@ def main() -> int:
     """Generate files for a JLCPCB PCB order."""
     error: str = ""
     errors: int = 0
+    BomInfo = NamedTuple("BomINfo", ["directory", "prefix", "pcb_count", "label"])
+    BomInfos = Tuple[BomInfo, ...]
 
     # Compute the root *hr2_dir*:
     hr2_env_var: str = "HR2_DIRECTORY"
@@ -92,21 +97,27 @@ def main() -> int:
         errors += 1
     else:
         # Iterate over all of the *bom_paths*:
-        bom_paths: Tuple[Tuple[Path, str, int], ...] = (
-            (hr2_dir / "electrical" / "master_board" / "rev_a", "master_board", 5),
-            (hr2_dir / "electrical" / "encoder" / "rev_a", "encoder", 10),
-            (hr2_dir / "electrical" / "st_adapter" / "rev_a", "st_adapter", 5),
+        bom_infos: BomInfos = (
+            BomInfo(hr2_dir / "electrical" / "master_board" / "rev_a", "master_board", 5, 'm'),
+            BomInfo(hr2_dir / "electrical" / "encoder" / "rev_a", "encoder", 10, 'e'),
+            BomInfo(hr2_dir / "electrical" / "st_adapter" / "rev_a", "st_adapter", 5, 's'),
+            BomInfo(hr2_dir / "electrical" / "ld06_adapter" / "rev_a", "ld06_adapter", 5, 'l'),
         )
+        order_path: Path = hr2_dir / "electrical" / "orders" / "order1"
+
+        final_digikey: DigiKey = DigiKey(order_path, "digikey", 0, "")
         path: Path
         prefix: str
         pcb_count: int
-        for path, prefix, pcb_count in bom_paths:
-            print(f"{path}, {prefix}, {pcb_count}:")
+        label: str
+        for path, prefix, pcb_count, label in bom_infos:
+            print(f"{path}, '{prefix}', {pcb_count}, '{label}':")
             jlcpcb_bom: Dict[str, Row]
             other_bom: Dict[str, Row]
             bom_indices: Dict[str, int]
+            zip_file_generate(path, prefix)
             kicad_bom_path: Path = path / (prefix + "_kicad_bom.csv")
-            bom_indices, jlcpcb_bom, other_bom, error = bom_read(kicad_bom_path)
+            bom_indices, jlcpcb_bom, other_bom, error = bom_read(kicad_bom_path, final_digikey)
             if not error:
                 jlcpcb_bom_path: Path = path / (prefix + "_jlcpcb_bom.csv")
                 error = jlcpcb_parts_csv_generate(jlcpcb_bom_path, bom_indices,
@@ -117,119 +128,401 @@ def main() -> int:
 
                     error = jlcpcb_pos_csv_generate(kicad_pos_path, jlcpcb_pos_path, matches)
                     if not error:
-                        digikey_bom_csv_path: Path = path / (prefix + "_digikey_bom.csv")
-                        error = digikey_bom_csv_generate(digikey_bom_csv_path, other_bom,
-                                                         bom_indices, pcb_count)
-            if error:
-                print(error)
-                errors += 1
-            print("----------------------------------------------------------------")
-            print("")
+                        digikey: DigiKey = DigiKey(path, prefix, pcb_count, label)
+                        digikey.bom_process(other_bom, bom_indices)
+                        final_digikey.merge(digikey, label)
+
+    if error:
+        print(error)
+        errors += 1
+    else:
+        print("Final Digikey order:")
+        final_digikey.bom_csv_generate()
+        pass
+    print("----------------------------------------------------------------")
+    print("")
     return min(1, errors)
 
 
-DigikeyPart = NamedTuple("DigiKeyPart",
-                         ["digikey_number", "manufacturer", "manufacturer_number",
-                          "denominator", "description", "price_breaks"])
-DigikeyParts = Tuple[DigikeyPart, ...]
+def zip_file_generate(path: Path, prefix: str):
+    """Convert gerbers into a .zip file."""
+
+    def glob_paths_get(path: Path, file_pattern: str) -> List[Path]:
+        """Return a list of Path that match a file pattern."""
+        # print(f"{path=} {file_pattern=}")
+        file_name: str
+        pattern: Path = path / Path(file_pattern)
+        # print(f"{pattern=}")
+        paths: List[Path] = []
+        for file_name in glob.glob(str(pattern)):
+            paths.append(Path(file_name))
+        return paths
+
+    def earliest_date(paths: List[Path]) -> float:
+        """Return the latest date from a list of paths."""
+        time: float = float(1 << 60)  # Big number
+        path: Path
+        for path in paths:
+            time = min(time, path.stat().st_mtime)
+        return time
+
+    def latest_date(paths: List[Path]) -> float:
+        """Return the latest date of from a list of paths."""
+        time: float = -1.0
+        path: Path
+        for path in paths:
+            time = max(time, path.stat().st_mtime)
+        return time
+
+    pro_files: List[Path] = glob_paths_get(path, f"{prefix}.pro")
+    sch_files: List[Path] = glob_paths_get(path, "*.sch")
+    gerber_files: List[Path] = glob_paths_get(path, f"{prefix}-*gbr")
+    drill_files: List[Path] = glob_paths_get(path, f"{prefix}.drl")
+    zip_files: List[Path] = glob_paths_get(path, f"{prefix}.zip")
+
+    assert len(pro_files) == 1, f"Missing `.pro` file in {path} {pro_files}"
+    assert gerber_files, f"Missing `.gbr` files in {path}"
+    assert len(drill_files) == 1, f"Missing `.drl` file in {path}"
+    assert sch_files, f"Missing `.sch` files in {path}"
+    assert len(zip_files) <= 1, f"Too many `.zip` files in {path}"
+
+    design_files_date: float = latest_date(pro_files + sch_files)
+    # print(f"{latest_date(pro_files)=}")
+    # print(f"{latest_date(sch_files)=}")
+    # print(f"{design_files_date=}")
+
+    gerber_files_date: float = earliest_date(gerber_files + drill_files)
+    # print(f"{latest_date(gerber_files)=}")
+    # print(f"{latest_date(drill_files)=}")
+    # print(f"{gerber_files_date=}")
+
+    zip_files_date: float = latest_date(zip_files)
+    # print(f"{zip_files_date=} {gerber_files_date=}")
+    assert design_files_date < gerber_files_date, f"Gerber files for {path} are out of date"
+
+    if zip_files_date <= gerber_files_date:
+        # Zip file is out of date, update it:
+        zip_file: Path = path / f"{prefix}.zip"
+        print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Generating `{zip_file}`")
+        full_path: Path
+        arguments: List[str] = [str(full_path.name)
+                                for full_path in [zip_file] + drill_files + gerber_files]
+        command: List[str] = ["zip", "--quiet"] + arguments
+        # print(f"{command=}")
+        subprocess.run(command, cwd=path)
+
+
 PositionRow = NamedTuple("PositionRow",
                          ["reference", "value", "package", "x", "y", "rotation", "side"])
 
+# DigiKey Types:
+DigiKeyPart = NamedTuple("DigiKeyPart",
+                         ["name", "manufacturer", "manufacturer_number", "denominator",
+                          "rotate", "description", "price_breaks"])
+DigiKeyParts = Tuple[DigiKeyPart, ...]
 
-def digikey_bom_csv_generate(digikey_bom_csv_path: Path, other_bom: Dict[str, Row],
-                             bom_indices: Dict[str, int], pcb_count: int) -> str:
-    """Generate the Digi-Key BOM .csv file."""
-    values_to_digikey_parts: Dict[str, Tuple[Tuple[int, str], ...]] = values_to_digikey_parts_get()
-    digikey_parts: Dict[str, DigikeyPart] = digikey_parts_get()
 
-    row: Row
-    value: str
-    references_set: Set[str]  # Variable used later
-    references_index: int = bom_indices["Ref"]
-    print("================================================================")
-    print("Digikey Parts:")
-    total: float = 0.0
-    order: Dict[str, Tuple[int, Set[str]]] = {}
-    for value, row in other_bom.items():
-        trace: bool = value in ("493-1304-ND")
-        if trace:
-            print(f"{value=}: {pcb_count=}")
-        # Extract *references* (dispose of last empty reference at end.):
-        references_text: str = row[references_index]
-        references: List[str] = references_text.split(", ")
-        references = references[:-1]
-        references_count: int = len(references)
-        # print(f"{value}: {','.join(references)}")
+class DigiKey:
+    """Represents a Digi-Key order."""
 
-        # The *order* is just a dictionary of Digi-Key part names and a count:
-        digikey_part_name: str
-        count: int
+    # Define some local types:
 
-        # Ignore Test points:
-        if value.endswith(";TP") or value.startswith("HOLE") or value.startswith("GROVE"):
-            # Skip test points uninteresting values.
-            pass
-        elif value in values_to_digikey_parts:
-            digikey_tuples: Tuple[Tuple[int, str], ...] = values_to_digikey_parts[value]
-            digikey_tuple: Tuple[int, str]
-            if not digikey_tuples:
-                print(f"**************** {value} not registered with Digi-Key yet.")
-            for digikey_tuple in digikey_tuples:
-                if trace:
-                    print(f"{digikey_tuple=}")
+    def __init__(self, directory: Path, prefix: str, pcb_count: int, label: str) -> None:
+        """Initialize a DigiKeyOrder."""
+        bom_path: Path = directory / (prefix + "_digikey_bom.csv")
 
-                # Update the count and references:
-                count, digikey_part_name = digikey_tuple
-                previous_count: int
-                if digikey_part_name not in order:
-                    order[digikey_part_name] = (0, set())
-                previous_count, references_set = order[digikey_part_name]
-                next_count: int = previous_count + pcb_count * count * references_count
-                assert digikey_part_name, f"Empty digikey part name {value=}"
-                order[digikey_part_name] = (next_count, references_set)
-                if trace:
-                    print(f"{digikey_part_name}: {next_count} {references_set}")
-                for reference in references:
-                    references_set.add(reference)
-        else:
-            print(f"**************** Unrecognized Digi-Key Part: {value}")
+        self.directory: Path = directory
+        self.prefix: str = prefix
+        self.bom_path: Path = bom_path
+        self.pcb_count: int = pcb_count
+        self.label: str = label
+        self.order: Dict[str, Tuple[int, Set[str]]] = {}
 
-    # Sweep through the order figuring out the the price breaks and final quantity ordered:
-    count_references: Tuple[int, Set[str]]
-    for digikey_part_name, count_references in order.items():
-        minimum_count: int
-        minimum_count, references_set = count_references
+    def bom_process(self, bom: Dict[str, Row], bom_indices: Dict[str, int]):
+        """Process the BOM for a Digi-Key order."""
+        digikey: DigiKey = self
+        references_index: int = bom_indices["Ref"]
+        values_to_digikey_parts: Dict[str, Tuple[Tuple[int, str], ...]] = (
+            digikey.values_to_digikey_parts_get())
+        pcb_count: int = digikey.pcb_count
 
-        if digikey_part_name not in digikey_parts:
-            print(f"**************** Can not find '{digikey_part_name}'")
-        digikey_part: DigikeyPart = digikey_parts[digikey_part_name]
-        price_breaks: PriceBreaks = digikey_part.price_breaks
-        denominator: float = float(digikey_part.denominator)
-        if price_breaks:
-            best_total_price: float = 1000000.0
-            best_price: float = 1000000.0
-            best_count: int = 0
-            for price_break in price_breaks:
-                minimum_quantity: int = price_break.min_quantity
-                count = ceil(float(max(minimum_count, minimum_quantity)) / denominator)
-                price: float = price_break.price
-                total_price: float = count * price
-                if total_price < best_total_price:
-                    best_count = count
-                    best_price = price
-                    best_total_price = total_price
-                    extra_text = ("" if best_count <= minimum_count
-                                  else f" (+ {best_count - minimum_count} extra)")
-            price_text: str = f"{best_count:3d} x ${best_price:.2f} = ${best_total_price:.2f} "
-            print(f"{price_text:24}"
-                  f"{digikey_part_name} ({digikey_part.description})"
-                  f"{extra_text} {','.join(sorted(list(references_set)))}")
-            total += best_total_price
-        else:
-            print(f"**************** No price breaks for {digikey_part_name}")
-    print(f"Price for {pcb_count} boards ${total:.2f}")
-    print(f"Price/board boards ${total/pcb_count:.2f}")
-    return ""
+        # The *order* is just a dictionary of Digi-Key part names with a count and a references set:
+        order: Dict[str, Tuple[int, Set[str]]] = {}
+        self.order = order
+
+        value: str
+        row: Row
+        for value, row in bom.items():
+            trace: bool = value in ("493-1304-ND")
+            if trace:
+                print(f"{value=}")
+            # Extract *references* (dispose of last empty reference at end.):
+            references_text: str = row[references_index]
+            references: List[str] = references_text.split(", ")
+            references = references[:-1]
+            references_count: int = len(references)
+            # print(f"{value}: {','.join(references)}")
+
+            digikey_part_name: str
+            count: int
+
+            # Ignore Test points:
+            if value.endswith(";TP") or value.startswith("HOLE") or value.startswith("GROVE"):
+                # Skip test points uninteresting values.
+                pass
+            elif value in values_to_digikey_parts:
+                digikey_tuples: Tuple[Tuple[int, str], ...] = values_to_digikey_parts[value]
+                digikey_tuple: Tuple[int, str]
+                if not digikey_tuples:
+                    print(f"**************** {value} not registered with Digi-Key yet.")
+                for digikey_tuple in digikey_tuples:
+                    if trace:
+                        print(f"{digikey_tuple=}")
+
+                    # Update the count and references:
+                    count, digikey_part_name = digikey_tuple
+                    previous_count: int
+                    if digikey_part_name not in order:
+                        order[digikey_part_name] = (0, set())
+                    previous_count, references_set = order[digikey_part_name]
+                    next_count: int = previous_count + pcb_count * count * references_count
+                    assert digikey_part_name, f"Empty digikey part name {value=}"
+                    order[digikey_part_name] = (next_count, references_set)
+                    if trace:
+                        print(f"{digikey_part_name}: {next_count} {references_set}")
+                    for reference in references:
+                        references_set.add(reference)
+            else:
+                print(f"**************** Unrecognized Digi-Key Part: {value}")
+
+    def merge(self, merge_digikey: "DigiKey", label: str) -> None:
+        """Merge in a Digi-Key order."""
+        digikey: DigiKey = self
+        order: Dict[str, Tuple[int, Set[str]]] = digikey.order
+        merge_order: Dict[str, Tuple[int, Set[str]]] = merge_digikey.order
+        merge_label: str = merge_digikey.label
+
+        part_name: str
+        merge_part_name: str
+        merge_count_references: Tuple[int, Set[str]]
+        for merge_part_name, merge_count_references in merge_order.items():
+            # Unpack *merge_count_references*:
+            merge_count: int
+            merge_references: Set
+            merge_count, merge_references = merge_count_references
+
+            # Make sure that there is a *count_references* entry for *merge_part_name*:
+            if merge_part_name not in order:
+                order[merge_part_name] = (0, set())
+            count_references: Tuple[int, Set[str]] = order[merge_part_name]
+
+            # Unpack *count_references*:
+            count: int
+            references: Set[str]
+            count, references = count_references
+
+            # Create *labeled_references* with *merge_label* prepended to each *merge_reference*.
+            merge_reference: str
+            labeled_references: Set[str] = {merge_label + merge_reference
+                                            for merge_reference in merge_references}
+
+            # Update the entry in *order* for *merge_part_name*:
+            count_references = (count + merge_count, references.union(labeled_references))
+            order[merge_part_name] = count_references
+
+    def bom_csv_generate(self) -> str:
+        """Generate the a Digi-Key order `.csv` file."""
+        digikey: DigiKey = self
+        digikey_parts: Dict[str, DigiKeyPart] = digikey.parts_get()
+        print("=>Digikey.bom_csv_generate()")
+
+        row: Row
+        value: str
+        references_set: Set[str]  # Variable used later
+        # references_index: int = bom_indices["Ref"]
+        print("================================================================")
+        print("Digikey Parts:")
+        total: float = 0.0
+        order: Dict[str, Tuple[int, Set[str]]] = digikey.order
+        # Sweep through the order figuring out the the price breaks and final quantity ordered:
+        count_references: Tuple[int, Set[str]]
+        for digikey_part_name, count_references in order.items():
+            minimum_count: int
+            minimum_count, references_set = count_references
+
+            if digikey_part_name not in digikey_parts:
+                print(f"**************** Can not find '{digikey_part_name}'")
+            digikey_part: DigiKeyPart = digikey_parts[digikey_part_name]
+            price_breaks: PriceBreaks = digikey_part.price_breaks
+            denominator: float = float(digikey_part.denominator)
+            if price_breaks:
+                best_total_price: float = 1000000.0
+                best_price: float = 1000000.0
+                best_count: int = 0
+                for price_break in price_breaks:
+                    minimum_quantity: int = price_break.min_quantity
+                    count = ceil(float(max(minimum_count, minimum_quantity)) / denominator)
+                    price: float = price_break.price
+                    total_price: float = count * price
+                    if total_price < best_total_price:
+                        best_count = count
+                        best_price = price
+                        best_total_price = total_price
+                        extra_text = ("" if best_count <= minimum_count
+                                      else f" (+ {best_count - minimum_count} extra)")
+                price_text: str = f"{best_count:3d} x ${best_price:.2f} = ${best_total_price:.2f} "
+                print(f"{price_text:24}"
+                      f"{digikey_part_name} ({digikey_part.description})"
+                      f"{extra_text} {','.join(sorted(list(references_set)))}")
+                total += best_total_price
+            else:
+                print(f"**************** No price breaks for {digikey_part_name}")
+        print(f"Total: ${total:.2f} Per Robot: ${total/5:.2f}")
+        return ""
+
+    def parts_get(self) -> Dict[str, DigiKeyPart]:
+        """Return dictionary of Digi-Key parts."""
+        digikey_parts: Tuple[DigiKeyPart, ...] = (
+            DigiKeyPart("493-15115-ND", "Nichicon", "UFW1A102MPD", 1, 0,
+                        "CAP ALUM 1000UF 20% 10V RADIAL",
+                        (PriceBreak(1, 0.42, 9), PriceBreak(10, .292, 49))),
+            DigiKeyPart("493-1304-ND", "Nichicon", "UVZ1E471MPD", 1, 0,
+                        "CAP ALUM 470UF 20% 25V RADIAL",
+                        (PriceBreak(1, 0.43, 9), PriceBreak(10, 0.306, 49))),
+            DigiKeyPart("1727-5983-1-ND", "Nexperia", "74LVC1G74DP,125", 1, 0,
+                        "IC FF D-TYPE SNGL 1BIT 8TSSOP",
+                        (PriceBreak(1, 0.39, 9), PriceBreak(10, 0.338, 49))),
+            DigiKeyPart("1727-6963-1-ND", "Nexperia", "74LVC1G11GV,125", 1, 0,
+                        "IC GATE AND 1CH 3-INP 6TSOP",
+                        (PriceBreak(1, 0.35, 9), PriceBreak(10, .286, 24))),
+            DigiKeyPart("A108891CT-ND", "TE Connectivity", "1376164-1", 1, 0,
+                        "BATTERY HOLDER COIN 6.8MM SMD",
+                        (PriceBreak(1, 3.35, 9), PriceBreak(10, 2.82, 49))),
+            DigiKeyPart("TLPG5600-ND", "Vishay", "TLPG5600", 1, 0,
+                        "LED GREEN DIFF SIDE LED T/H R/A",
+                        (PriceBreak(1, 0.55, 9),
+                         PriceBreak(10, 0.337, 99), PriceBreak(100, 0.1939, 999))),
+            DigiKeyPart("MCP2542FDT-E/SNCT-ND", "Microchip", "MCP2542FDT-E/SN", 1, 0,
+                        "IC TRANSCEIVER 1/1 8SOIC",
+                        (PriceBreak(1, 0.77, 24), PriceBreak(25, 0.64, 99))),
+            DigiKeyPart("670-2950-1-ND", "JAE", "DX07S024WJ3R400", 1, 0,
+                        "CONN RCPT USB3.1 TYPEC 24POS SMD [USB-C]]",
+                        (PriceBreak(1, 0.76, 9), PriceBreak(10, .671, 24))),
+            DigiKeyPart("S2211EC-40-ND", "Sullins", "PRPC040DFAN-RC", 1, 0,
+                        "CONN HEADER VERT 80POS 2.54MM [M2x40]",
+                        (PriceBreak(1, 2.11, 9), PriceBreak(10, 1.911, 24))),
+            DigiKeyPart("S1011EC-40-ND", "Sullins", "S1011EC-40-ND", 40, 0,
+                        "CONN HEADER VERT 40POS 2.54MM [M1x40]",
+                        (PriceBreak(1, 0.66, 9), PriceBreak(10, 0.582, 99))),
+            DigiKeyPart("S9200-ND", "Sullins", "SFH11-PBPC-D20-ST-BK", 1, 0,
+                        "CONN HDR 40POS 0.1 GOLD PCB [F2x20]",
+                        (PriceBreak(1, 1.94, 9), PriceBreak(10, 1.757, 99))),
+            DigiKeyPart("1212-1125-ND", "Preci-Dip", "315-87-164-41-003101", 64, 0,
+                        "CONN SOCKET 64POS 0.1 GOLD PCB [HCS404LP;F1x4]",
+                        (PriceBreak(1, 4.01, 9), PriceBreak(10, 3.848, 99))),
+            DigiKeyPart("S7000-ND", "Sullins", "PPPC021LFBN-RC", 1, 0,
+                        "CONN HDR 2POS 0.1 GOLD PCB [F1x2]",
+                        (PriceBreak(1, 0.32, 9), PriceBreak(10, 0.306, 99))),
+            DigiKeyPart("S7036-ND", "Sullins", "PPPC031LFBN-RC", 1, 0,
+                        "CONN HDR 3POS 0.1 GOLD PCB [F1x3]",
+                        (PriceBreak(1, 0.37, 9), PriceBreak(10, 0.351, 99))),
+            DigiKeyPart("S7037-ND", "Sullins", "PPPC041LFBN-RC", 1, 0,
+                        "CONN HDR 4POS 0.1 GOLD PCB [F1x4]",
+                        (PriceBreak(1, 0.47, 9), PriceBreak(10, 0.437, 99))),
+            DigiKeyPart("S7038-ND", "Sullins", "PPPC051LFBN-RC", 1, 0,
+                        "CONN HDR 5POS 0.1 GOLD PCB [F1x5]",
+                        (PriceBreak(1, 0.49, 9), PriceBreak(10, 0.459, 99))),
+            DigiKeyPart("S7039-ND", "Sullins", "PPPC051LFBN-RC", 1, 0,
+                        "CONN HDR 6POS 0.1 GOLD PCB [F1x6]",
+                        (PriceBreak(1, 0.53, 9), PriceBreak(10, 0.50, 99))),
+            DigiKeyPart("S7072-ND", "Sullins", "PPTC042LFBN-RC", 1, 0,
+                        "CONN HDR 8POS 0.1 TIN PCB [F2x4]",
+                        (PriceBreak(1, 0.67, 9), PriceBreak(10, 0.588, 99))),
+            DigiKeyPart("2057-BHR-12-VUA-ND", "Adam Tech", "BHR-12-VUA", 1, 0,
+                        "CONN HEADER VERT 12POS 2.54MM [M2x5S]",
+                        (PriceBreak(1, 0.31, 9), PriceBreak(10, 0.291, 99))),
+            DigiKeyPart("S1111EC-40-ND", "Sullins", "PRPC040SBAN-M71RC", 40, 0,
+                        "CONN HEADER R/A 40POS 2.54MM [M1x40RA]",
+                        (PriceBreak(1, 0.83, 9), PriceBreak(10, 0.739, 99))),
+            DigiKeyPart("S2112EC-40-ND", "Sullins", "PREC040DBAN-M71RC", 80, 0,
+                        "CONN HEADER R/A 80POS 2.54MM [M2X80RA]",
+                        (PriceBreak(1, 1.78, 9), PriceBreak(10, 1.59, 99))),
+            DigiKeyPart("455-1659-ND", "JST", "455-1659-ND", 1, 0,
+                        "CONN HEADER VERT 4POS 1.5MM [LD06_CONN;M1x4P1.5ZH]",
+                        (PriceBreak(1, 0.22, 9), PriceBreak(10, 02.02, 99))),
+            DigiKeyPart("AH1806-W-7DICT-ND", "Diodes Inc.", "AH1806-W-7", 1, 0,
+                        "MAGNETIC SWITCH OMNIPOLAR SC59",
+                        (PriceBreak(1, 0.45, 4), PriceBreak(5, 0.426, 9),
+                         PriceBreak(10, 0.37, 24), PriceBreak(25, 0.3252, 49))),
+            DigiKeyPart("541-3966-1-ND", "Vishay", "CRCW040247K0FKEDC", 1, 0,
+                        "RES 47K OHM 1% 1/16W 0402",
+                        (PriceBreak(1, 0.10, 9), PriceBreak(10, 0.029, 99))),
+        )
+
+        # Convert *digikey_parts* into a dictionary keyd off the part name:
+        digikey_part: DigiKeyPart
+        digikey_parts_table: Dict[str, DigiKeyPart] = {
+            digikey_part.name: digikey_part for digikey_part in digikey_parts}
+        return digikey_parts_table
+
+    def values_to_digikey_parts_get(self) -> Dict[str, Tuple[Tuple[int, str], ...]]:
+        """Return a set of KiCAD values that will not work with JLCPCB.
+
+        Currently all through hole parts are not suitable for JLCPCB.
+        """
+        return {
+            "1000µF@10Vmin;D10P5H13max": ((1, "493-15115-ND"),),
+            "470µF,25Vmin;D10P5H13max":  ((1, "493-1304-ND"),),
+            "47KΩ;1005": ((1, "541-3966-1-ND"),),
+            "74LVC1G74;TSSOP8": ((1, "1727-5983-1-ND"),),
+            "74x11G1;TSOP6": ((1, "1727-6963-1-ND"),),
+            "AH1806;SC59": ((1, "AH1806-W-7DICT-ND"),),
+            "COIN_HOLDER6.8R;TE1376164-1": ((1, "A108891CT-ND"),),
+            "ENCODER;2xM1x3RA": ((2 * 3, "S1111EC-40-ND"),),
+            "EXT_ESTOP;M1x2": ((2, "S1011EC-40-ND"),),
+            "HCSR04LP;F1X4LP": ((4 + 1, "1212-1125-ND"),),  # Break away header + 1 for wastage
+            "HCSR04H;F1X4H": ((1, "S7037-ND"),),  # Note the H Version is currently the same as F1X4
+            "HCSR04;F1X4": ((1, "S7037-ND"),),
+            "HR2_ENCODER;2xF1x3": ((2, "S7036-ND"),),
+            "JUMPER;M1x2": ((2, "S1011EC-40-ND"),),
+            "LD06_CONN;M1x4P1.5ZH": ((1, "455-1659-ND"),),
+            "LED;GRNRA": ((1, "TLPG5600-ND"),),
+            "LED_EN;M1x3": ((3, "S1011EC-40-ND"),),
+            "LIDAR_ADAPTER;2xF1x4_F1x3": ((2, "S7037-ND"), (1, "S7036-ND")),
+            "LIDAR_ADAPTER;2xM1x4+M1x3": ((4, "S1011EC-40-ND"), (4, "S1011EC-40-ND"),
+                                          (3, "S1011EC-40-ND")),
+            "MCP2542;SOIC8": ((1, "MCP2542FDT-E/SNCT-ND"),),
+            "NUCLEO-F767ZI;2xF2x35": ((2, "S2211EC-40-ND"),),
+            "POLOLU_U3V70F9;F1x4+F1x5": ((1, "S7037-ND"), (1, "S7038-ND")),
+            "RASPI;F2X20": ((1, "S9200-ND"),),
+            "RPI_DISP_EN;M1x3": ((3, "S1011EC-40-ND"),),
+            "RPI_DSP_PWR;M1x2": ((2, "S1011EC-40-ND"),),
+            "SENSE;M1x3": ((3, "S1011EC-40-ND"),),
+            "SERVO;M1x3": ((3, "S1011EC-40-ND"),),
+            "SERVO;M1x4": ((4, "S1011EC-40-ND"),),
+            "SHUNT;M1x2": ((2, "S1011EC-40-ND"),),
+            "STADAPTER;F2x4": ((1, "S7072-ND"),),
+            "STADAPTER;M2x4RA": ((8, "S2112EC-40-ND"),),
+            "STLINK;4xF1x2+F1x4+F1x6": ((4, "S7000-ND"), (1, "S7037-ND"), (1, "S7039-ND")),
+            "USB-C;USB-C": ((1, "670-2950-1-ND"),),        # Note; Same part,
+            "USB-C;USB-C,POGND": ((1, "670-2950-1-ND"),),  # w/diff schem. symbols
+            "WOW_OUT;M2x6S": ((1, "2057-BHR-12-VUA-ND"),),
+            # Empty parts here:
+            "3.3V;TP": (),
+            "5V;TP": (),
+            "9V;TP": (),
+            "GROVE;20x20": (),
+            "GND;TP": (),
+            "HOLE;M2.5": (),
+            "~NESTOP_SET~;TP": (),
+            "~NWOW_ESTOP~;TP": (),
+            "P5V;TP": (),
+            "SBC_RX;TP": (),
+            "SBC_TX;TP": (),
+            "WOW_RX;TP": (),
+            "WOW_TX;TP": (),
+            "USB5V;TP": (),
+        }
 
 
 def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path,
@@ -255,20 +548,25 @@ def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path,
                     position_rows.append(position_row)
 
             lines: List[str] = [
-                '"Designator", "Val","Package","Mid X","Mid Y","Rotation","Layer"']
+                '"Designator","Mid X","Mid Y","Layer","Rotation"']
             for position_row in position_rows:
-                # side_text: str = "T" if position_row.side == "top" else "B"
+                side_text: str = "T" if position_row.side == "top" else "B"
                 value: str = position_row.value
                 # install: str = "Yes" if value in matches else "No"
+                extra_rotate: int = 0
+                if value in matches:
+                    match_list: List[Match] = matches[value]
+                    if len(match_list) == 1:
+                        extra_rotate = match_list[0].rotate
+                rotate: int = (int(float(position_row.rotation)) + extra_rotate) % 360
                 lines.append(
-                    f'"{position_row.reference}",'
-                    f'"{value}",'
-                    f'"{position_row.package}",'
-                    f'"{position_row.x}",'
-                    f'"{position_row.y}",'
-                    f'"{int(float(position_row.rotation))}",'
-                    f'"{position_row.side}",'
-                    )
+                    f'"{position_row.reference}"'
+                    f',"{position_row.x}mm"'
+                    f',"{position_row.y}mm"'
+                    f',"{side_text}"'
+                    f',"{rotate}"'
+                    # f',"{extra_rotate}"'
+                )
             lines.append("")
             position_text: str = '\n'.join(lines)
             jlcpcb_pos_csv_file: IO[str]
@@ -358,7 +656,7 @@ def jlcpcb_parts_csv_generate(jlcpcb_bom_path: Path, bom_indices: Dict[str, int]
     # package_index: int = match_indices["package"]
     extended_count: int = 0
     parts_cost: float = 0.0
-    lines: List[str] = ['"Comment","Designator","Footprint","LCSC Part #","Mfg Part No."']
+    lines: List[str] = ['"Comment","Designator","Footprint","LCSC Part #"']
     row: Row
     sorted_rows: List[Row] = sorted(jlcpcb_bom.values())
     for row in sorted_rows:
@@ -374,7 +672,7 @@ def jlcpcb_parts_csv_generate(jlcpcb_bom_path: Path, bom_indices: Dict[str, int]
                 match: Match = matches_list[0]
                 price_break: PriceBreak = match.price_breaks[0]
                 library_type: str = str(match.library_type)
-                manufacturer_part: str = str(match.manufacturer_part)
+                # manufacturer_part: str = str(match.manufacturer_part)
                 package: str = str(match.package)
                 lcsc_part: str = str(match.lcsc)
 
@@ -394,8 +692,7 @@ def jlcpcb_parts_csv_generate(jlcpcb_bom_path: Path, bom_indices: Dict[str, int]
                 line: str = (f'"{unicode_fixup(trimmed_value)}",'
                              f'"{references}",'
                              f'"{package}",'
-                             f'"{lcsc_part}",'
-                             f'"{manufacturer_part}"')
+                             f'"{lcsc_part}",')
                 # ,${pcb_count*part_cost:.2f},{library_type}')
                 lines.append(line)
     # Write out `*_jlcpcb_bom.csv` file.
@@ -482,7 +779,7 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
     value_re_list: List[str] = []
     # package_re_list: List[str] = []
     # lcsc_re_list: List[str] = []
-    re_patterns_table: Dict[str, Tuple[re.Pattern, re.Pattern, re.Pattern, re.Pattern]] = {}
+    re_patterns_table: Dict[str, Tuple[re.Pattern, re.Pattern, re.Pattern, re.Pattern, int]] = {}
     name: str
     re_patterns: REPatterns
     for name, re_patterns in jlcpcb_regular_expressions.items():
@@ -492,14 +789,15 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
         package_re: str
         manufacturer_part_re: str
         lcsc_re: str
-        value_re, package_re, manufacturer_part_re, lcsc_re = re_patterns
+        rotate: int
+        value_re, package_re, manufacturer_part_re, lcsc_re, rotate = re_patterns
         if value_re and package_re and lcsc_re and manufacturer_part_re:
             value_re_pattern: re.Pattern = re.compile(value_re)
             package_re_pattern: re.Pattern = re.compile(package_re)
             lcsc_re_pattern: re.Pattern = re.compile(lcsc_re)
             manufacturer_part_re_pattern: re.Pattern = re.compile(manufacturer_part_re)
             re_patterns_table[name] = (value_re_pattern, package_re_pattern,
-                                       manufacturer_part_re_pattern, lcsc_re_pattern)
+                                       manufacturer_part_re_pattern, lcsc_re_pattern, rotate)
             value_re_list.append(value_re)
             # package_re_list.append(package_re)
             # lcsc_re_list.append(lcsc_re)
@@ -541,7 +839,8 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
                     if all_values_re.search(description):
                         # We have a match opportunity, now see if it matches across the board:
                         # print(f"[{row_index}]: '{description}' '{package}'")
-                        compiled_re_patterns: Tuple[re.Pattern, re.Pattern, re.Pattern, re.Pattern]
+                        compiled_re_patterns: Tuple[re.Pattern, re.Pattern,
+                                                    re.Pattern, re.Pattern, int]
                         for name, compiled_re_patterns in re_patterns_table.items():
                             # Unpack *description_package_patterns*:
                             description_pattern: re.Pattern
@@ -549,7 +848,7 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
                             lcsc_pattern: re.Pattern
                             manufacturer_part_pattern: re.Pattern
                             description_pattern, package_pattern, manufacturer_part_pattern, \
-                                lcsc_pattern = compiled_re_patterns
+                                lcsc_pattern, rotate = compiled_re_patterns
 
                             # Determine if there is a solid match:
                             package: str = str(jlcpcb_row.package)
@@ -573,7 +872,8 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
                                     package,
                                     lcsc,
                                     jlcpcb_row.stock,
-                                    manufacturer_part)
+                                    manufacturer_part,
+                                    rotate)
                                 if name not in matches:
                                     matches[name] = []
                                 if int(match.stock):
@@ -582,7 +882,8 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
     return error, matches  # , jlcpcb_indices
 
 
-def bom_read(bom_path: Path) -> Tuple[Dict[str, int], Dict[str, Row], Dict[str, Row], str]:
+def bom_read(bom_path: Path,
+             digikey: DigiKey) -> Tuple[Dict[str, int], Dict[str, Row], Dict[str, Row], str]:
     """Read in the BOM and perform santity checks."""
     bom_indices: Dict[str, int] = {}
     jlcpcb_bom: Dict[str, Row] = {}
@@ -636,18 +937,19 @@ def bom_read(bom_path: Path) -> Tuple[Dict[str, int], Dict[str, Row], Dict[str, 
                     error = (f"{header=} != {desired_header=}!"
                              " Use '{desired_generator}' KiCad BOM generator.")
                 elif not error:
-                    error, jlcpcb_bom, other_bom = bom_split(bom_indices, bom_rows)
+                    error, jlcpcb_bom, other_bom = bom_split(bom_indices, bom_rows, digikey)
                     if not error:
-                        error = bom_process(bom_indices, bom_rows)
+                        error = bom_process(bom_indices, bom_rows, digikey)
 
     return bom_indices, jlcpcb_bom, other_bom, error
 
 
 def bom_split(bom_indices: Dict[str, int],
-              bom_rows: Rows) -> Tuple[str, Dict[str, Row], Dict[str, Row]]:
+              bom_rows: Rows, digikey: DigiKey) -> Tuple[str, Dict[str, Row], Dict[str, Row]]:
     """Split the BOM into a JLCPCB BOM and an other BOM."""
     jlcpcb_regular_expressions: Dict[str, REPatterns] = jlcpcb_regular_expressions_get()
-    values_to_digikey_parts: Dict[str, Tuple[Tuple[int, str], ...]] = values_to_digikey_parts_get()
+    values_to_digikey_parts: Dict[str, Tuple[Tuple[int, str], ...]] = (
+        digikey.values_to_digikey_parts_get())
     value_index: int = bom_indices["Value"]
 
     error: str = ""
@@ -676,7 +978,7 @@ def bom_split(bom_indices: Dict[str, int],
     return error, jlcpcb_bom, other_bom
 
 
-def bom_process(column_indices: Dict[str, int], bom_rows: Rows) -> str:
+def bom_process(column_indices: Dict[str, int], bom_rows: Rows, digikey: DigiKey) -> str:
     """Process the BOM."""
     error: str = ""
     # Do some sanity checks:
@@ -689,7 +991,7 @@ def bom_process(column_indices: Dict[str, int], bom_rows: Rows) -> str:
 
     error = unrecognized_footprints_check(bom_rows, footprint_index)
     if not error:
-        error = unrecognized_values_check(bom_rows, value_index)
+        error = unrecognized_values_check(bom_rows, value_index, digikey)
     return error
 
 
@@ -719,17 +1021,19 @@ def unrecognized_footprints_check(bom_rows: Rows, footprint_index: int) -> str:
 def jlcpcb_footprints_get() -> Set[str]:
     """Return a set of acceptable footprints for JLCPCB."""
     return {
+        "Button_Switch_SMD:SW_Push_1P1T_NO_6x6mm_H9.5mm",
         "Capacitor_SMD:C_0402_1005Metric",
         "Capacitor_SMD:C_0603_1608Metric",
+        "Capacitor_SMD:C_1206_3216Metric",
+        "Connector_Wuerth:Wuerth_WR-WTB_64800411622_1x04_P1.50mm_Vertical",
         "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm",
         "HR2:BUTTON_6x6",
-        "Button_Switch_SMD:SW_Push_1P1T_NO_6x6mm_H9.5mm",
+        "HR2:LIDAR_ADAPTER_2xF1x4+F1x3",
         "LED_SMD:LED_0603_1608Metric",
-        "32.768kHz9pF;3.2x1.5",
-        "Capacitor_SMD:C_1206_3216Metric",
+        # "32.768kHz9pF;3.2x1.5",
         "MCP2542;TDFN8EP3x2",
+        # "Package_DFN_QFN:TDFN-8-1EP_3x2mm_P0.5mm_EP1.80x1.65mm",
         "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias",
-        "Package_DFN_QFN:TDFN-8-1EP_3x2mm_P0.5mm_EP1.80x1.65mm",
         "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm",
         "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
         "Package_SO:SOP-4_3.8x4.1mm_P2.54mm",
@@ -779,12 +1083,13 @@ def other_footprints_get() -> Set[str]:
     }
 
 
-def unrecognized_values_check(bom_rows: Rows, value_index: int) -> str:
+def unrecognized_values_check(bom_rows: Rows, value_index: int, digikey: DigiKey) -> str:
     """Return an error string if unrecognized values are detected."""
     # Sweep through looking for acceptable vs unacceptable values:
     unrecognized_values: Set[str] = set()
     jlcpcb_regular_expressions: Dict[str, REPatterns] = jlcpcb_regular_expressions_get()
-    values_to_digikey_parts: Dict[str, Tuple[Tuple[int, str], ...]] = values_to_digikey_parts_get()
+    values_to_digikey_parts: Dict[str, Tuple[Tuple[int, str], ...]] = (
+        digikey.values_to_digikey_parts_get())
     bom_index: int
     bom_row: Tuple[str, ...]
     value: str
@@ -806,53 +1111,55 @@ def unrecognized_values_check(bom_rows: Rows, value_index: int) -> str:
 
 def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
     """Return map from JLCPCB value regular expression pair."""
-    regular_expressions: Dict[str, Tuple[str, str, str, str]] = {
+    regular_expressions: Dict[str, Tuple[str, str, str, str, int]] = {
         # HR2 Master Board.
-        "0.01µF;1005": (" 10nF", "0402$", ".*", "C15195$"),
-        "10µF;1608": (" 10uF", "0603$", ".*", "C19702$"),
-        "2.2µF6.3V;1608": (" 2.2uF", "0603$", ".*", "C23630$"),
-        "Ta22µF6.3V;3216": ("Tantalum Capacitors 22uF 6.3V", ".*3216", ".*", "C135574$"),
-        "15pF;1608": (" 15pF", ".*", ".*", "C1644$"),
-        "0.1µF;1005": (" 100nF", "0402$", ".*", "C1525$"),
-        "LEDGRN;1608": ("LED.*Green", "LED_0603", ".*", "C72043$"),
-        "REDLED;1608": ("LED.*Red", "LED_0603", ".*", "C2286$"),
-        "NFET_3A_GSD;SOT23": (r"MOSFET N Trench.*V [3-7]\.[0-9]A", "SOT-23-3", ".*", "C20917$"),
-        "PFET_6A_GSD;SOT23": (r"MOSFET P Trench.*V [6-7]\.[0-9]A", "SOT-23-3", ".*", "C141546$"),
-        "2N7002;SOT23": ("MOSFET N Trench.*", ".*", "2N7002", "C8545$"),
-        "100KΩ;1005": (" 100KOhms", "0402$", ".*", "C25741$"),
-        "1KΩ;1005": (" 1KOhms 1%", "0402$", ".*", "C11702$"),
-        "4.7KΩ;1005": (r" 4\.7KOhms 1%", "0402$", ".*", "C25900$"),
-        "220Ω;1005": (" 220Ohms", "0402$", ".*", "C25091$"),
-        "560Ω;1608": (" 560Ohms", "0603$", ".*", "C23204$"),
-        ".16Ω.25W;2012": (r"0\.16Ohm", "0805$", ".*", "C34388$"),
-        "0Ω;3216": (" 0Ohm", "1206$", ".*", "C17888$"),
-        "2.2KΩ;1005": (" 2.2KOhms", "0402$", ".*", "C25879$"),
-        "3.3KΩ;1005": (" 3.3KOhms", "0402$", ".*", "C25890$"),
-        "270Ω;1608": (" 270Ohms", "0603$", ".*", "C22966$"),
-        "33Ω;1005": (" 33Ohms", "0402$", ".*", "C25105$"),
-        "120Ω;1005": (" 120Ohms", "0402$", ".*", "C25079$"),
-        "120Ω.25W;3216": (" 120Ohms", "1206$", ".*", "C17909$"),
-        "300Ω;1608": (" 300Ohms", "0603$", ".*", "C23025$"),
-        "100KΩ;1608": (" 100KOhms", "0603$", ".*", "C25803$"),
-        "10KΩ;1005": (" 10KOhms", "0402$", ".*", "C25744$"),
-        "3.9KΩ;1005": (r" 3\.9KOhms", "0402$", ".*", "C51721$"),
-        "BUTTON;6x6": ("SPST.*Tactile Switches", "6.*x6", ".*", "C127509$"),
+        "0.01µF;1005": (" 10nF", "0402$", ".*", "C15195$", 0),
+        "10µF;1608": (" 10uF", "0603$", ".*", "C19702$", 0),
+        "2.2µF6.3V;1608": (" 2.2uF", "0603$", ".*", "C23630$", 0),
+        "Ta22µF6.3V;3216": ("Tantalum Capacitors 22uF 6.3V", ".*3216", ".*", "C135574$", 180),
+        "15pF;1608": (" 15pF", ".*", ".*", "C1644$", 0),
+        "0.1µF;1005": (" 100nF", "0402$", ".*", "C1525$", 0),
+        "LEDGRN;1608": ("LED.*Green", "LED_0603", ".*", "C72043$", 0),
+        "REDLED;1608": ("LED.*Red", "LED_0603", ".*", "C2286$", 0),
+        "NFET_3A_GSD;SOT23": (
+            r"MOSFET N Trench.*V [3-7]\.[0-9]A", "SOT-23-3", ".*", "C20917$", 180),
+        "PFET_6A_GSD;SOT23": (
+            r"MOSFET P Trench.*V [6-7]\.[0-9]A", "SOT-23-3", ".*", "C141546$", 180),
+        "2N7002;SOT23": ("MOSFET N Trench.*", ".*", "2N7002", "C8545$", 180),
+        "100KΩ;1005": (" 100KOhms", "0402$", ".*", "C25741$", 0),
+        "1KΩ;1005": (" 1KOhms 1%", "0402$", ".*", "C11702$", 0),
+        "4.7KΩ;1005": (r" 4\.7KOhms 1%", "0402$", ".*", "C25900$", 0),
+        "220Ω;1005": (" 220Ohms", "0402$", ".*", "C25091$", 0),
+        "560Ω;1608": (" 560Ohms", "0603$", ".*", "C23204$", 0),
+        ".16Ω.25W;2012": (r"0\.16Ohm", "0805$", ".*", "C34388$", 0),
+        "0Ω;3216": (" 0Ohm", "1206$", ".*", "C17888$", 0),
+        "2.2KΩ;1005": (" 2.2KOhms", "0402$", ".*", "C25879$", 0),
+        "3.3KΩ;1005": (" 3.3KOhms", "0402$", ".*", "C25890$", 0),
+        "270Ω;1608": (" 270Ohms", "0603$", ".*", "C22966$", 0),
+        "33Ω;1005": (" 33Ohms", "0402$", ".*", "C25105$", 0),
+        "120Ω;1005": (" 120Ohms", "0402$", ".*", "C25079$", 0),
+        "120Ω.25W;3216": (" 120Ohms", "1206$", ".*", "C17909$", 0),
+        "300Ω;1608": (" 300Ohms", "0603$", ".*", "C23025$", 0),
+        "100KΩ;1608": (" 100KOhms", "0603$", ".*", "C25803$", 0),
+        "10KΩ;1005": (" 10KOhms", "0402$", ".*", "C25744$", 0),
+        "3.9KΩ;1005": (r" 3\.9KOhms", "0402$", ".*", "C51721$", 0),
+        "BUTTON;6x6": ("SPST.*Tactile Switches", "6.*x6", ".*", "C127509$", 0),
         "LM5050-1;TSOT-23-6": (
-            "PMIC - Power Distribution Switches SOT-23-6 RoHS", ".*", ".*", "C55266$"),
-        "CPC1017N;SOP4W3.8L4.1": ("Solid State Relays SOP-4_P2.54 RoHS", ".*", ".*", "C261926$"),
-        "ACS711;SOIC8": ("Current Sensors SOIC-8_150mil RoHS", ".*",  ".*", "C10681$"),
-        "MCP7940;SOIC8": ("Real-time Clocks Clock/Calendar I2C", "SOIC-8", ".*", "C7440$"),
-        "CAT24C32;SOIC8": (r"EEPROM 32Kb", "SOIC-8", "CAT24C32", "C81193$"),
+            "PMIC - Power Distribution Switches SOT-23-6 RoHS", ".*", ".*", "C55266$", 180),
+        "CPC1017N;SOP4W3.8L4.1": ("Solid State Relays SOP-4_P2.54 RoHS", ".*", ".*", "C261926$", 0),
+        "ACS711;SOIC8": ("Current Sensors SOIC-8_150mil RoHS", ".*",  ".*", "C10681$", 270),
+        "MCP7940;SOIC8": ("Real-time Clocks Clock/Calendar I2C", "SOIC-8", ".*", "C7440$", 270),
+        "CAT24C32;SOIC8": (r"EEPROM 32Kb", "SOIC-8", "CAT24C32", "C81193$", 270),
         "DRV8833PWPR;HTSSOP16EP3.4x5": (
-            "Motor Drivers HTSSOP-16 RoHS", "HTSSOP-16", ".*", "^C50506$"),
-        "SN74HC595;TSSOP16": ("74 Series.*TSSOP-16 RoHS", ".*", "595", "C5948$"),
-        "SN74HC165;TSSOP16": ("74 Series Shift Register", ".*", "165", "C201716$"),
-        "CD4504B;TTSOP16": ("Level Translators", ".*", "4504", "C233582$"),
-        "AMS1117-3.3V800mA_GOI;SOT223": ("Positive Fixed.*3.3V", ".*",  ".*", "C6186$"),
-        "32.768kHz12.5pF;3.2x1.5": ("32.768", ".*", ".*", "C32346$"),
+            "Motor Drivers HTSSOP-16 RoHS", "HTSSOP-16", ".*", "^C50506$", 270),
+        "SN74HC595;TSSOP16": ("74 Series.*TSSOP-16 RoHS", ".*", "595", "C5948$", 270),
+        "SN74HC165;TSSOP16": ("74 Series Shift Register", ".*", "165", "C201716$", 270),
+        "CD4504B;TTSOP16": ("Level Translators", ".*", "4504", "C233582$", 270),
+        "AMS1117-3.3V800mA_GOI;SOT223": ("Positive Fixed.*3.3V", ".*",  ".*", "C6186$", 180),
+        "32.768kHz12.5pF;3.2x1.5": ("32.768", ".*", ".*", "C32346$", 0),
 
         # Encoder board.
-        "AH1806;SC59": (r"Magnetic Sensors SOT-23", "SOT-23", ".*", "C126664$"),
+        # "AH1806;SC59": (r"Magnetic Sensors SOT-23", "SOT-23", ".*", "C126664$"),
 
 
         # Old stuff:
@@ -874,152 +1181,6 @@ def jlcpcb_regular_expressions_get() -> Dict[str, REPatterns]:
         # "SN74HC595;TTSOP16": ("74 Series TSSOP-16 RoHS", ".*", "595", ".*"),  # "C5948$"),
     }
     return regular_expressions
-
-
-def digikey_parts_get() -> Dict[str, DigikeyPart]:
-    """Return dictionary of Digi-Key parts."""
-    digikey_parts: Dict[str, DigikeyPart] = {
-        "493-15115-ND": DigikeyPart(
-            "493-15115-ND", "Nichicon", "UFW1A102MPD", 1,
-            "CAP ALUM 1000UF 20% 10V RADIAL",
-            (PriceBreak(1, 0.42, 9), PriceBreak(10, .292, 49))),
-        "493-1304-ND": DigikeyPart(
-            "493-1304-ND", "Nichicon", "UVZ1E471MPD", 1,
-            "CAP ALUM 470UF 20% 25V RADIAL",
-            (PriceBreak(1, 0.43, 9), PriceBreak(10, 0.306, 49))),
-        "1727-5983-1-ND": DigikeyPart(
-            "1727-5983-1-ND", "Nexperia", "74LVC1G74DP,125", 1,
-            "IC FF D-TYPE SNGL 1BIT 8TSSOP",
-            (PriceBreak(1, 0.39, 9), PriceBreak(10, 0.338, 49))),
-        "1727-6963-1-ND": DigikeyPart(
-            "1727-6963-1-ND", "Nexperia", "74LVC1G11GV,125", 1,
-            "IC GATE AND 1CH 3-INP 6TSOP",
-            (PriceBreak(1, 0.35, 9), PriceBreak(10, .286, 24))),
-        "A108891CT-ND": DigikeyPart(
-            "A108891CT-ND", "TE Connectivity", "1376164-1", 1,
-            "BATTERY HOLDER COIN 6.8MM SMD",
-            (PriceBreak(1, 3.35, 9), PriceBreak(10, 2.82, 49))),
-        "TLPG5600-ND": DigikeyPart(
-            "TLPG5600-ND", "Vishay", "TLPG5600", 1,
-            "LED GREEN DIFF SIDE LED T/H R/A",
-            (PriceBreak(1, 0.55, 9), PriceBreak(10, 0.337, 99), PriceBreak(100, 0.1939, 999))),
-        "MCP2542FDT-E/SNCT-ND": DigikeyPart(
-            "MCP2542FDT-E/SNCT-ND", "Microchip", "MCP2542FDT-E/SN", 1,
-            "IC TRANSCEIVER 1/1 8SOIC",
-            (PriceBreak(1, 0.77, 24), PriceBreak(25, 0.64, 99))),
-        "2073-USB3140-30-0230-1-CCT-ND": DigikeyPart(
-            "670-2950-1-ND", "JAE", "DX07S024WJ3R400", 1,
-            "CONN RCPT USB3.1 TYPEC 24POS SMD [USB-C]]",
-            (PriceBreak(1, 0.76, 9), PriceBreak(10, .671, 24))),
-        "S2211EC-40-ND": DigikeyPart(
-            "S2211EC-40-ND", "Sullins", "PRPC040DFAN-RC", 1,
-            "CONN HEADER VERT 80POS 2.54MM [M2x40]",
-            (PriceBreak(1, 2.11, 9), PriceBreak(10, 1.911, 24))),
-        "S1011EC-40-ND": DigikeyPart(
-            "S1011EC-40-ND", "Sullins", "S1011EC-40-ND", 40,
-            "CONN HEADER VERT 40POS 2.54MM [M1x40]",
-            (PriceBreak(1, 0.66, 9), PriceBreak(10, 0.582, 99))),
-        "S9200-ND": DigikeyPart(  # F2x20
-            "S9200-ND", "Sullins", "SFH11-PBPC-D20-ST-BK", 1,
-            "CONN HDR 40POS 0.1 GOLD PCB [F2x20]",
-            (PriceBreak(1, 1.94, 9), PriceBreak(10, 1.757, 99))),
-        "1212-1125-ND": DigikeyPart(  # HCSR04LP;F1x4
-            "1212-1125-ND", "Preci-Dip", "315-87-164-41-003101", 64,
-            "CONN SOCKET 64POS 0.1 GOLD PCB [HCS404LP;F1x4]",
-            (PriceBreak(1, 4.01, 9), PriceBreak(10, 3.848, 99))),
-        "S7000-ND": DigikeyPart(  # F1x2
-            "S7000-ND", "Sullins", "PPPC021LFBN-RC", 1,
-            "CONN HDR 2POS 0.1 GOLD PCB [F1x2]",
-            (PriceBreak(1, 0.32, 9), PriceBreak(10, 0.306, 99))),
-        "S7036-ND": DigikeyPart(  # F1x3
-            "S7036-ND", "Sullins", "PPPC031LFBN-RC", 1,
-            "CONN HDR 3POS 0.1 GOLD PCB [F1x3]",
-            (PriceBreak(1, 0.37, 9), PriceBreak(10, 0.351, 99))),
-        "S7037-ND": DigikeyPart(  # F1x4
-            "S7037-ND", "Sullins", "PPPC041LFBN-RC", 1,
-            "CONN HDR 4POS 0.1 GOLD PCB [F1x4]",
-            (PriceBreak(1, 0.47, 9), PriceBreak(10, 0.437, 99))),
-        "S7038-ND": DigikeyPart(  # F1x5
-            "S7038-ND", "Sullins", "PPPC051LFBN-RC", 1,
-            "CONN HDR 5POS 0.1 GOLD PCB [F1x5]",
-            (PriceBreak(1, 0.49, 9), PriceBreak(10, 0.459, 99))),
-        "S7039-ND": DigikeyPart(  # F1x6
-            "S7039-ND", "Sullins", "PPPC051LFBN-RC", 1,
-            "CONN HDR 6POS 0.1 GOLD PCB [F1x6]",
-            (PriceBreak(1, 0.53, 9), PriceBreak(10, 0.50, 99))),
-        "S7072-ND": DigikeyPart(  # F2x4
-            "S7072-ND", "Sullins", "PPTC042LFBN-RC", 1,
-            "CONN HDR 8POS 0.1 TIN PCB [F2x4]",
-            (PriceBreak(1, 0.67, 9), PriceBreak(10, 0.588, 99))),
-        "2057-BHR-12-VUA-ND": DigikeyPart(  # M2x5S
-            "2057-BHR-12-VUA-ND", "Adam Tech", "BHR-12-VUA", 1,
-            "CONN HEADER VERT 12POS 2.54MM [M2x5S]",
-            (PriceBreak(1, 0.31, 9), PriceBreak(10, 0.291, 99))),
-        "S1111EC-40-ND": DigikeyPart(  # M1x40RA
-            "S1111EC-40-ND", "Sullins", "PRPC040SBAN-M71RC", 40,
-            "CONN HEADER R/A 40POS 2.54MM [M1x40RA]",
-            (PriceBreak(1, 0.83, 9), PriceBreak(10, 0.739, 99))),
-        "S2112EC-40-ND": DigikeyPart(  # M2x80RA
-            "S2112EC-40-ND", "Sullins", "PREC040DBAN-M71RC", 80,
-            "CONN HEADER R/A 80POS 2.54MM [M2X80RA]",
-            (PriceBreak(1, 1.78, 9), PriceBreak(10, 1.59, 99))),
-
-    }
-    return digikey_parts
-
-
-def values_to_digikey_parts_get() -> Dict[str, Tuple[Tuple[int, str], ...]]:
-    """Return a set of KiCAD values that will not work with JLCPCB.
-
-    Currently all through hole parts are not suitable for JLCPCB.
-    """
-    return {
-        "1000µF@10Vmin;D10P5H13max": ((1, "493-15115-ND"),),
-        "470µF,25Vmin;D10P5H13max":  ((1, "493-1304-ND"),),
-        "74LVC1G74;TSSOP8": ((1, "1727-5983-1-ND"),),
-        "74x11G1;TSOP6": ((1, "1727-6963-1-ND"),),
-        "COIN_HOLDER6.8R;TE1376164-1": ((1, "A108891CT-ND"),),
-        "LED;GRNRA": ((1, "TLPG5600-ND"),),
-        "MCP2542;SOIC8": ((1, "MCP2542FDT-E/SNCT-ND"),),
-        "USB-C;USB-C": ((1, "2073-USB3140-30-0230-1-CCT-ND"),),        # Note; Same part,
-        "USB-C;USB-C,POGND": ((1, "2073-USB3140-30-0230-1-CCT-ND"),),  # w/diff schem. symbols
-        "NUCLEO-F767ZI;2xF2x35": ((2, "S2211EC-40-ND"),),
-        "RPI_DISP_EN;M1x3": ((3, "S1011EC-40-ND"),),
-        "RPI_DSP_PWR;M1x2": ((2, "S1011EC-40-ND"),),
-        "RASPI;F2X20": ((1, "S9200-ND"),),
-        "SENSE;M1x3": ((3, "S1011EC-40-ND"),),
-        "SERVO;M1x3": ((3, "S1011EC-40-ND"),),
-        "SERVO;M1x4": ((4, "S1011EC-40-ND"),),
-        "SHUNT;M1x2": ((2, "S1011EC-40-ND"),),
-        "EXT_ESTOP;M1x2": ((2, "S1011EC-40-ND"),),
-        "LED_EN;M1x3": ((3, "S1011EC-40-ND"),),
-        "JUMPER;M1x2": ((2, "S1011EC-40-ND"),),
-        "HCSR04LP;F1X4": ((4 + 1, "1212-1125-ND"),),  # Break away header + 1 for wastage
-        "HCSR04H;F1X4": ((1, "S7037-ND"),),  # Note the H Version is currently the same as F1X4
-        "HCSR04;F1X4": ((1, "S7037-ND"),),
-        "POLOLU_U3V70F9;F1x4+F1x5": ((1, "S7037-ND"), (1, "S7038-ND")),
-        "HR2_ENCODER;2xF1x3": ((2, "S7036-ND"),),
-        "LIDAR_ADAPTER;2xF1x4_F1x3": ((2, "S7037-ND"), (1, "S7036-ND")),
-        "WOW_OUT;M2x6S": ((1, "2057-BHR-12-VUA-ND"),),
-        "STADAPTER;F2x4": ((1, "S7072-ND"),),
-        "STLINK;4xF1x2+F1x4+F1x6": ((4, "S7000-ND"), (1, "S7037-ND"), (1, "S7039-ND")),
-        "ENCODER;2xM1x3RA": ((2 * 3, "S1111EC-40-ND"),),
-        "STADAPTER;M2x4RA": ((8, "S2112EC-40-ND"),),
-        "GROVE;20x20": (),
-        "HOLE;M2.5": (),
-        "SBC_RX;TP": (),
-        "SBC_TX;TP": (),
-        "P5V;TP": (),
-        "WOW_RX;TP": (),
-        "WOW_TX;TP": (),
-        "3.3V;TP": (),
-        "5V;TP": (),
-        "9V;TP": (),
-        "GND;TP": (),
-        "~NESTOP_SET~;TP": (),
-        "~NWOW_ESTOP~;TP": (),
-        "USB5V;TP": (),
-    }
 
 
 def unicode_fixup(text: str) -> str:
