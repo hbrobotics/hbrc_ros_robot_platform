@@ -334,10 +334,10 @@ class DigiKey:
         """Generate the a Digi-Key order `.csv` file."""
         digikey: DigiKey = self
         digikey_parts: Dict[str, DigiKeyPart] = digikey.parts_get()
+        digikey_part_to_value: Dict[str, str] = digikey.digikey_part_to_value_get()
         print("=>Digikey.bom_csv_generate()")
 
         row: Row
-        value: str
         references_set: Set[str]  # Variable used later
         # references_index: int = bom_indices["Ref"]
         print("================================================================")
@@ -346,6 +346,18 @@ class DigiKey:
         order: Dict[str, Tuple[int, Set[str]]] = digikey.order
         # Sweep through the order figuring out the the price breaks and final quantity ordered:
         count_references: Tuple[int, Set[str]]
+        bom_lines: List[str] = []
+        bom_lines.append(
+            '"Qty"'
+            ',"Digi-Key PN"'
+            ',"Description"'
+            ',"Customer Note"'
+            ',"Price"'
+            ',"Ext. Price"'
+            ',"Mfg."'
+            ',"Mfg. PN"'
+            ',"Ref. Designator"'
+        )
         for digikey_part_name, count_references in order.items():
             minimum_count: int
             minimum_count, references_set = count_references
@@ -371,13 +383,32 @@ class DigiKey:
                         extra_text = ("" if best_count <= minimum_count
                                       else f" (+ {best_count - minimum_count} extra)")
                 price_text: str = f"{best_count:3d} x ${best_price:.2f} = ${best_total_price:.2f} "
+                references_text: str = ','.join(sorted(list(references_set)))
                 print(f"{price_text:24}"
                       f"{digikey_part_name} ({digikey_part.description})"
-                      f"{extra_text} {','.join(sorted(list(references_set)))}")
+                      f"{references_text} {extra_text}")
+                value: str = digikey_part_to_value[digikey_part_name]
+                bom_lines.append(
+                    f'"{best_count}"'
+                    f',"{digikey_part_name}"'
+                    f',"{digikey_part.description}"'
+                    f',"{value}"'
+                    f',"${best_price:.2f}"'
+                    f',"${best_total_price:.2f}"'
+                    f',"{digikey_part.manufacturer}"'
+                    f',"{digikey_part.manufacturer_number}"'
+                    f',"{references_text}"'
+                )
                 total += best_total_price
             else:
                 print(f"**************** No price breaks for {digikey_part_name}")
         print(f"Total: ${total:.2f} Per Robot: ${total/5:.2f}")
+
+        bom_lines.append("")
+        digikey_bom_file: IO[str]
+        with open("digikey_bom.csv", "w") as digikey_bom_file:
+            bom_text: str = '\n'.join(bom_lines)
+            digikey_bom_file.write(bom_text)
         return ""
 
     def parts_get(self) -> Dict[str, DigiKeyPart]:
@@ -439,7 +470,7 @@ class DigiKey:
                         "CONN HDR 8POS 0.1 TIN PCB [F2x4]",
                         (PriceBreak(1, 0.67, 9), PriceBreak(10, 0.588, 99))),
             DigiKeyPart("2057-BHR-12-VUA-ND", "Adam Tech", "BHR-12-VUA", 1, 0,
-                        "CONN HEADER VERT 12POS 2.54MM [M2x5S]",
+                        "CONN HEADER VERT 12POS 2.54MM [M2x6S]",
                         (PriceBreak(1, 0.31, 9), PriceBreak(10, 0.291, 99))),
             DigiKeyPart("S1111EC-40-ND", "Sullins", "PRPC040SBAN-M71RC", 40, 0,
                         "CONN HEADER R/A 40POS 2.54MM [M1x40RA]",
@@ -464,6 +495,63 @@ class DigiKey:
         digikey_parts_table: Dict[str, DigiKeyPart] = {
             digikey_part.name: digikey_part for digikey_part in digikey_parts}
         return digikey_parts_table
+
+    def digikey_part_to_value_get(self) -> Dict[str, str]:
+        """Return the value associated with a Digi-Key part number."""
+        digikey: DigiKey = self
+        values_to_digikey_parts: Dict[str, Tuple[Tuple[int, str], ...]] = (
+            digikey.values_to_digikey_parts_get())
+
+        # Pass 1: Find all values that use a particulatar Digi-Key Part number:
+        digikey_part_to_values: Dict[str, List[str]] = {}
+        digikey_part_name: str
+        value: str
+        digikey_part: DigiKeyPart
+        count_digikey_part_names: Tuple[Tuple[int, str], ...]
+        for value, count_digikey_part_names in values_to_digikey_parts.items():
+            count_digikey_part_name: Tuple[int, str]
+            for count_digikey_part_name in count_digikey_part_names:
+                count: int
+                count, digikey_part_name = count_digikey_part_name
+                if digikey_part_name not in digikey_part_to_values:
+                    digikey_part_to_values[digikey_part_name] = []
+                digikey_part_to_values[digikey_part_name].append(value)
+
+        # Pass 2: Shorten entries with multiple values into a single value:
+        digikey_part_to_value: Dict[str, str] = {}
+        values: List[str]
+        manual_substitutes: Dict[str, str] = {
+            "S1011EC-40-ND": "M1x2/3/4",
+            "S7000-ND": "F1x2",
+            "S7036-ND": "F1x3",
+            "S7037-ND": "F1x4",
+            "S7038-ND": "F1x5",
+            "S7039-ND": "F1x6",
+            "S7072-ND": "F2x4",
+            "S9200-ND": "F2x20",
+            "670-2950-1-ND": "USB-C",
+            "S1111EC-40-ND": "M1x?RA",
+            "S2112EC-40-ND": "M2x?RA",
+            "S2211EC-40-ND": "F2x40",
+        }
+        for digikey_part_name, values in digikey_part_to_values.items():
+            single_value: str = values[0]
+            if digikey_part_name in manual_substitutes:
+                single_value = manual_substitutes[digikey_part_name]
+            elif len(values) > 1:
+                shortened_values_set: Set[str] = set()
+                shortened_value: str
+                for value in values:
+                    semicolon_index: int = value.index(';')
+                    assert semicolon_index >= 0
+                    shortened_value = value[semicolon_index+1:]
+                    shortened_values_set.add(shortened_value)
+                shortened_values: List[str] = list(shortened_values_set)
+                single_value = shortened_values[0]
+                if len(shortened_values) > 1:
+                    print(f"{digikey_part_name} has multiple values {shortened_values}")
+            digikey_part_to_value[digikey_part_name] = single_value
+        return digikey_part_to_value
 
     def values_to_digikey_parts_get(self) -> Dict[str, Tuple[Tuple[int, str], ...]]:
         """Return a set of KiCAD values that will not work with JLCPCB.
