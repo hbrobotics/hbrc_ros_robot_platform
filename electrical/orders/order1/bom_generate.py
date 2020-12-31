@@ -22,17 +22,28 @@
 # <--------------------------------------- 100 characters ---------------------------------------> #
 """BOM generator for JLCPCB and Digi-Key."""
 
-from collections import namedtuple as NamedTuple
+# TODO: Refactor the JLCPCB code into a JLCPCB class.
+# TODO: Refactor the BOM rows into DigiKeyBomRow and JlcpcbBomRow and use NamedTuple instead.
+# TODO: Convert NamedTuples into @dataclass
+#       # See: https://stackoverflow.com/questions/34269772/type-hints-in-namedtuple
+#       @dataclass
+#       class Point:
+#           x: int
+#           y: int = 1
+#       Point(3) => Point(x=3, y=1)
+
 import csv
 import glob
-from math import ceil
-from pathlib import Path
 import os
 import re
 import subprocess
+from collections import namedtuple as NamedTuple
+from math import ceil
+from pathlib import Path
 from typing import Dict, IO, List, Set, Tuple
 
-REPatterns = Tuple[str, str, str, str, int]
+# TODO refactor REPatterns into a NamedTuple:
+REPatterns = Tuple[str, str, str, str, int]  # The last int is a rotation adjust
 Row = Tuple[str, ...]
 Rows = Tuple[Row, ...]
 PriceBreak = NamedTuple("PriceBreak", ["min_quantity", "price", "max_quantity"])
@@ -98,10 +109,10 @@ def main() -> int:
     else:
         # Iterate over all of the *bom_paths*:
         bom_infos: BomInfos = (
-            BomInfo(hr2_dir / "electrical" / "master_board" / "rev_a", "master_board", 5, 'm'),
-            BomInfo(hr2_dir / "electrical" / "encoder" / "rev_a", "encoder", 10, 'e'),
-            BomInfo(hr2_dir / "electrical" / "st_adapter" / "rev_a", "st_adapter", 5, 's'),
-            BomInfo(hr2_dir / "electrical" / "ld06_adapter" / "rev_a", "ld06_adapter", 5, 'l'),
+            BomInfo(hr2_dir / "electrical" / "master_board" / "rev_a", "master_board", 5, "m"),
+            BomInfo(hr2_dir / "electrical" / "encoder" / "rev_a", "encoder", 10, "e"),
+            BomInfo(hr2_dir / "electrical" / "st_adapter" / "rev_a", "st_adapter", 5, "s"),
+            BomInfo(hr2_dir / "electrical" / "ld06_adapter" / "rev_a", "ld06_adapter", 5, "l"),
         )
         order_path: Path = hr2_dir / "electrical" / "orders" / "order1"
 
@@ -131,16 +142,25 @@ def main() -> int:
                         digikey: DigiKey = DigiKey(path, prefix, pcb_count, label)
                         digikey.bom_process(other_bom, bom_indices)
                         final_digikey.merge(digikey, label)
+            print("")
 
     if error:
         print(error)
         errors += 1
     else:
-        print("Final Digikey order:")
+        # Adjust *final_digikey* order:
+        final_digikey.order_update("1690-RASPBERRYPI4B/4GB-ND", 2, {"MISC1"})  # RPi4's
+        final_digikey.order_update("1597-110991327-ND", 5, {"MISC2"})  # Heat sinks
+        final_digikey.order_update("497-16525-ND", 1, {"MISC3"})  # Nucleo 767zi
+        final_digikey.order_update("455-1281-1-ND", 5 * 2 * 4 + 20, {"MISC4"})  # ZH Crimp pins
+        final_digikey.order_update("455-1202-ND", 2 * 5 + 2, {"MISC5"})  # ZH Housing
+        final_digikey.order_update("541-3966-1-ND", 10, {"MISC6"})  # Some extra 47K resistors
+        final_digikey.order_update("1690-1011-ND", 3, {"MISC7"})  # Some RasPi cameras.
+        final_digikey.order_update("2057-FCS-12-SG-ND", 10, {"MISC8"})  # Some F2x6 IDC connectors
         final_digikey.bom_csv_generate()
         pass
-    print("----------------------------------------------------------------")
-    print("")
+    # print("----------------------------------------------------------------")
+    # print("")
     return min(1, errors)
 
 
@@ -229,27 +249,22 @@ class DigiKey:
 
     def __init__(self, directory: Path, prefix: str, pcb_count: int, label: str) -> None:
         """Initialize a DigiKeyOrder."""
-        bom_path: Path = directory / (prefix + "_digikey_bom.csv")
-
         self.directory: Path = directory
         self.prefix: str = prefix
-        self.bom_path: Path = bom_path
+        self.bom_path: Path = directory / (prefix + "_digikey_bom.csv")
         self.pcb_count: int = pcb_count
         self.label: str = label
         self.order: Dict[str, Tuple[int, Set[str]]] = {}
 
     def bom_process(self, bom: Dict[str, Row], bom_indices: Dict[str, int]):
         """Process the BOM for a Digi-Key order."""
+        # Unpack some values from *digikey* (i.e. *self*):
         digikey: DigiKey = self
-        references_index: int = bom_indices["Ref"]
+        pcb_count: int = digikey.pcb_count
         values_to_digikey_parts: Dict[str, Tuple[Tuple[int, str], ...]] = (
             digikey.values_to_digikey_parts_get())
-        pcb_count: int = digikey.pcb_count
 
-        # The *order* is just a dictionary of Digi-Key part names with a count and a references set:
-        order: Dict[str, Tuple[int, Set[str]]] = {}
-        self.order = order
-
+        references_index: int = bom_indices["Ref"]
         value: str
         row: Row
         for value, row in bom.items():
@@ -261,6 +276,7 @@ class DigiKey:
             references: List[str] = references_text.split(", ")
             references = references[:-1]
             references_count: int = len(references)
+            references_set: Set[str] = set(references)
             # print(f"{value}: {','.join(references)}")
 
             digikey_part_name: str
@@ -281,19 +297,32 @@ class DigiKey:
 
                     # Update the count and references:
                     count, digikey_part_name = digikey_tuple
-                    previous_count: int
-                    if digikey_part_name not in order:
-                        order[digikey_part_name] = (0, set())
-                    previous_count, references_set = order[digikey_part_name]
-                    next_count: int = previous_count + pcb_count * count * references_count
                     assert digikey_part_name, f"Empty digikey part name {value=}"
-                    order[digikey_part_name] = (next_count, references_set)
-                    if trace:
-                        print(f"{digikey_part_name}: {next_count} {references_set}")
-                    for reference in references:
-                        references_set.add(reference)
+                    digikey.order_update(digikey_part_name,
+                                         pcb_count * count * references_count, references_set)
             else:
                 print(f"**************** Unrecognized Digi-Key Part: {value}")
+
+    def order_update(self, digikey_part_name: str, count: int, references: Set[str]) -> None:
+        """Add increase the order for a particular digikey part name."""
+        digikey: DigiKey = self
+        order: Dict[str, Tuple[int, Set[str]]] = digikey.order
+
+        # Make sure that *digikey_part_name* is in *order*:
+        if digikey_part_name not in order:
+            order[digikey_part_name] = (0, set())
+
+        # Grab the previous values:
+        previous_count: int
+        previous_references_set: Set[str]
+        previous_count, previous_references_set = order[digikey_part_name]
+
+        # Compute the next values:
+        next_count: int = previous_count + count
+        next_references_set: Set[str] = previous_references_set.union(references)
+
+        # Stuff the updated value back into *order*
+        order[digikey_part_name] = (next_count, next_references_set)
 
     def merge(self, merge_digikey: "DigiKey", label: str) -> None:
         """Merge in a Digi-Key order."""
@@ -335,7 +364,7 @@ class DigiKey:
         digikey: DigiKey = self
         digikey_parts: Dict[str, DigiKeyPart] = digikey.parts_get()
         digikey_part_to_value: Dict[str, str] = digikey.digikey_part_to_value_get()
-        print("=>Digikey.bom_csv_generate()")
+        # print("=>Digikey.bom_csv_generate()")
 
         row: Row
         references_set: Set[str]  # Variable used later
@@ -371,6 +400,7 @@ class DigiKey:
                 best_total_price: float = 1000000.0
                 best_price: float = 1000000.0
                 best_count: int = 0
+                # extra_text: str = ""
                 for price_break in price_breaks:
                     minimum_quantity: int = price_break.min_quantity
                     count = ceil(float(max(minimum_count, minimum_quantity)) / denominator)
@@ -380,14 +410,17 @@ class DigiKey:
                         best_count = count
                         best_price = price
                         best_total_price = total_price
-                        extra_text = ("" if best_count <= minimum_count
-                                      else f" (+ {best_count - minimum_count} extra)")
-                price_text: str = f"{best_count:3d} x ${best_price:.2f} = ${best_total_price:.2f} "
-                references_text: str = ','.join(sorted(list(references_set)))
-                print(f"{price_text:24}"
-                      f"{digikey_part_name} ({digikey_part.description})"
-                      f"{references_text} {extra_text}")
-                value: str = digikey_part_to_value[digikey_part_name]
+                        # if best_count <= minimum_count:
+                        #     extra_text = f" (+ {best_count - minimum_count} extra)"
+                # price_text: str = (f"{best_count:3d} x ${best_price:.2f} = "
+                #                   f"${best_total_price:.2f} ")
+                references_text: str = ",".join(list(references_set))
+                # print(f"{price_text:24}"
+                #       f"{digikey_part_name} ({digikey_part.description}) "
+                #       f"{references_text} {extra_text}")
+                # value: str = f"NO VALUE ({digikey_part_name})"
+                if digikey_part_name in digikey_part_to_value:
+                    value = digikey_part_to_value[digikey_part_name]
                 bom_lines.append(
                     f'"{best_count}"'
                     f',"{digikey_part_name}"'
@@ -402,12 +435,12 @@ class DigiKey:
                 total += best_total_price
             else:
                 print(f"**************** No price breaks for {digikey_part_name}")
-        print(f"Total: ${total:.2f} Per Robot: ${total/5:.2f}")
+        print(f"Total: ${total:.2f} per robot: ${total/5:.2f}")
 
         bom_lines.append("")
         digikey_bom_file: IO[str]
         with open("digikey_bom.csv", "w") as digikey_bom_file:
-            bom_text: str = '\n'.join(bom_lines)
+            bom_text: str = "\n".join(bom_lines)
             digikey_bom_file.write(bom_text)
         return ""
 
@@ -488,6 +521,30 @@ class DigiKey:
             DigiKeyPart("541-3966-1-ND", "Vishay", "CRCW040247K0FKEDC", 1, 0,
                         "RES 47K OHM 1% 1/16W 0402",
                         (PriceBreak(1, 0.10, 9), PriceBreak(10, 0.029, 99))),
+            # Extra parts for HR2 build out:
+            DigiKeyPart("1690-RASPBERRYPI4B/4GB-ND", "RasPi", "RPI4-MODBP-4GB", 1, 0,
+                        "RASPBERRY PI 4 MODEL B 4GB SDRAM",
+                        (PriceBreak(1, 55.00, 999999),)),
+            DigiKeyPart("1597-110991327-ND", "SeeedStudio", "110991327", 1, 0,
+                        "HEAT SINK KIT FOR RASPBERRY PI 4",
+                        (PriceBreak(1, 0.99, 999999),)),
+            DigiKeyPart("497-16525-ND", "STM", "NUCLEO-F767ZI", 1, 0,
+                        "NUCLEO-144 STM32F767 DEV EVAL BD",
+                        (PriceBreak(1, 24.47, 999999),)),
+            DigiKeyPart("455-1281-1-ND", "JST", "SZH-003T-P0.5", 1, 0,
+                        "CONN SOCKET 28-32AWG CRIMP TIN",
+                        (PriceBreak(1, 0.10, 9), PriceBreak(10, .031, 24),
+                         PriceBreak(25, 0.0292, 49), PriceBreak(50, 0.0218, 99))),
+            DigiKeyPart("455-1202-ND", "JST", "ZHR-4", 1, 0,
+                        "CONN HOUSING ZH 4POS 1.5MM WHT",
+                        (PriceBreak(1, 0.10, 9), PriceBreak(10, 0.085, 24),
+                         PriceBreak(25, 0.0636, 49), PriceBreak(50, 0.0544, 249))),
+            DigiKeyPart("1690-1011-ND", "RasPi", "913-2664", 1, 0,
+                        "RASPBERRY PI CAMERA MODULE V2",
+                        (PriceBreak(1, 25.00, 999999),)),
+            DigiKeyPart("2057-FCS-12-SG-ND", "Adam", "FCS-12-SG", 1, 0,
+                        "SOCKET FLAT CABLE IDC 12P 2.54MM",
+                        (PriceBreak(1, 0.47, 9), PriceBreak(10, 0.44, 24)),),
         )
 
         # Convert *digikey_parts* into a dictionary keyd off the part name:
@@ -518,7 +575,15 @@ class DigiKey:
                 digikey_part_to_values[digikey_part_name].append(value)
 
         # Pass 2: Shorten entries with multiple values into a single value:
-        digikey_part_to_value: Dict[str, str] = {}
+        digikey_part_to_value: Dict[str, str] = {
+            "1690-RASPBERRYPI4B/4GB-ND": "RASPI4",
+            "1690-1011-ND": "RPI_CAM_V2",
+            "1597-110991327-ND": "RP4_HEAT_SINKS",
+            "497-16525-ND": "NUCLEO_767ZI",
+            "455-1281-1-ND": "ZH_CRIMP_PIN",
+            "455-1202-ND": "ZH_HOUSING",
+            "2057-FCS-12-SG-ND": "F2x6;IDC",
+        }
         values: List[str]
         manual_substitutes: Dict[str, str] = {
             "S1011EC-40-ND": "M1x2/3/4",
@@ -542,7 +607,7 @@ class DigiKey:
                 shortened_values_set: Set[str] = set()
                 shortened_value: str
                 for value in values:
-                    semicolon_index: int = value.index(';')
+                    semicolon_index: int = value.index(";")
                     assert semicolon_index >= 0
                     shortened_value = value[semicolon_index+1:]
                     shortened_values_set.add(shortened_value)
@@ -656,7 +721,7 @@ def jlcpcb_pos_csv_generate(kicad_pos_path: Path, jlcpcb_pos_path,
                     # f',"{extra_rotate}"'
                 )
             lines.append("")
-            position_text: str = '\n'.join(lines)
+            position_text: str = "\n".join(lines)
             jlcpcb_pos_csv_file: IO[str]
             with open(jlcpcb_pos_path, "w") as jlcpcb_pos_csv_file:
                 jlcpcb_pos_csv_file.write(position_text)
@@ -766,7 +831,7 @@ def jlcpcb_parts_csv_generate(jlcpcb_bom_path: Path, bom_indices: Dict[str, int]
 
                 # Except for LED's, strip everything after the '_" off the *package":
                 if not package.startswith("LED"):
-                    underscore_index: int = package.find('_')
+                    underscore_index: int = package.find("_")
                     if underscore_index >= 0:
                         package = package[:underscore_index]
 
@@ -787,7 +852,7 @@ def jlcpcb_parts_csv_generate(jlcpcb_bom_path: Path, bom_indices: Dict[str, int]
     lines.append("")
     jlcpcb_bom_file: IO[str]
     with open(jlcpcb_bom_path, "w") as jlcpcb_bom_file:
-        bom_text: str = '\n'.join(lines)
+        bom_text: str = "\n".join(lines)
         jlcpcb_bom_file.write(bom_text)
 
     # Write out summary information:
@@ -836,8 +901,8 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
         for price_break_text in price_break_texts:
             # print(f"{price_break_text=}")
             if price_break_text:
-                hyphen_index: int = price_break_text.find('-')
-                colon_index: int = price_break_text.find(':')
+                hyphen_index: int = price_break_text.find("-")
+                colon_index: int = price_break_text.find(":")
                 low_quantity: int = int(price_break_text[:hyphen_index])
                 high_quantity_text: str = price_break_text[hyphen_index+1:colon_index]
                 high_quantity: int = 999999
@@ -891,7 +956,7 @@ def jlcpcb_parts_search(hr2_dir: Path) -> Tuple[str, Dict[str, List[Match]]]:
             # lcsc_re_list.append(lcsc_re)
 
     # Create an RE that matches all part patterns:
-    all_values_pattern: str = '|'.join(value_re_list)
+    all_values_pattern: str = "|".join(value_re_list)
     all_values_re: re.Pattern = re.compile(all_values_pattern)
     # print(f"{all_values_pattern=}")
     matches: Dict[str, List[Match]] = {}
