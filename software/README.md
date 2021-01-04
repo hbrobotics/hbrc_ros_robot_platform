@@ -1,5 +1,6 @@
 # HBRC ROS Robot Software
 
+
 ## Current Status: Working through Embedded Geek Videos:
 
 I'm currently about half way through the first video:
@@ -190,17 +191,121 @@ Be sure to make it match the actual version that was downloaded, since they are 
 
 ## Verify Environment
 
-If everything has gone right, the following program should be in your path:
+If everything has gone right, the following programs should be in your path:
 
      gcc-arm-none-eabi-gdb --version
      openocd --version
      codium --version
      stm32cubemx
 
+## Construct an `stm32cubemx` project.
 
-## OpenOCD Configuration Notes
+Perform the following steps:
 
-     flash: all
-          openocd -f interface/stlink-v2-1.cfg -f target/stm32f7x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+1. Create a "workspace" directory.  For now, this is in `$HR2_DIR/software/non_ide`
 
+     mkdir -p $HR2_DIRTORY/software/non_ide
+
+2. Run `stm33cubemx`.
+
+       `stm32cubemx`
+
+3. If you have already created a "project", you may skip this step.
+   Othersise,
+
+   1. Under the `New Project` heading, find `Start My project from ST Board`.
+      (It may necessary to make the `stm32cubmx` full screen in order to see this text
+      in its entirety.)
+      Click on the `[Access To Board Selector]` button.
+      A window shows up with multiple tabs.
+.      The selected tab should be `[Board Selector]`.
+  
+   2. (Optional) There is a text entry box called `Commercial Part Number`
+      into which you may type a partial part number.
+      For example, if you type `767` in this constrain all everthing to parts that contain `767`.
+
+   3. Select the `MCU/MPU Series`.
+      For the `767` part, this is the `[x] STM32F7`.
+
+   4. There will be a `Boards List` that lists the boards that match.
+      In this case, we want `Nucleo-F767ZI`, so please click on it.
+
+   5. Next, click on `[ ]--> Start Project`
+
+   6. A Popup that says `? Initialize all perifpherals with their default Mode? [Yes] [No]`
+      shows up.  Click on `[Yes]`.
+
+   7. A window with 4 tabs shows up.
+      The 4 tabs are:
+
+      * `[Pinout & Configuration]`:
+         This one shows the outline of the integrated circuit with various pins highlighted.
+         This is the initally selected tab.
+         For now, this tab is ignored.
+
+      * `[Clock Configuration]`:
+         This one shows the clock configuration diagram, which can be quite complicated.
+         For now, leave this one alone.
+
+      * `[Project Manager]`:
+         This one is used for setting up the project.
+         There are numerous things on this tab.
+          The ones of interest are:
+
+       * `[Tools]`:
+         This is some advanced tools that are ignored for now.
+
+    8. Select the `[Project Manager]` tab and fill in the following fields:
+
+       * `Project Name`:
+          Give the project a name.
+          It is recommended that the name include at some fraction of the processor.
+           For example, `blinky-f767zi`.
+
+       * `Project Location`:
+         This can be thought of as a workspace directory into which multiple projects
+         can be inserted.
+        
+       * `Toolchain / IDE`:
+         This is a selection box that is normally set to `[EWARM]`.
+         Please change this to `[Makefile]`
+
+    9. Select the `[Pinout & Configuration]` tab:
+
+       * Select the `Connectivity >` drop down menu and select `ETH`.
+
+       * A `Mode` side window shows up.
+         It probably is showing a `Mode` of `RMII`.
+	 Scroll up to the first entry of the drop down menu and select `Disable`.
+	 This will disable the intialization of the Ethernet device.
+
+    10. In the upper right hand corner there is a button labeled `[Generate Code]`.
+        Please click this button. 
+	After a few moments a popup window says
+	`The Code is successfully generated under :`
+	followed by the directory of the form `/...WORKSPACE/PROJECT`.
+        Whole bunch of files have been created in this projectect directory.
+	The most interesting ones are
+
+	* `PROJECT.ioc`:
+	   This file is the I/O configuration file.
+	* `Makefile`:
+	   This file is used to build the project using the `make` program.
+	* `Core/Src/main.c`:
+	   This is the main C program that initializes the microcontroller.
+
+        Both the `Makefile` and the `main.c` file need to be edited.
+
+    11. Edit the `Makefile` to have the following target immediately after the 
+	
+             flash: all
+	             openocd -f interface/stlink-v2-1.cfg -f target/stm32f7x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+
+    12. Add the blinky code to `main.c`.
+
+    13. Plugin in Nucleo.
+
+    14. Verify that it shows up in `lsusb`.
+
+    15. Type `make flash`.  This should download and install the blinky code.
 
