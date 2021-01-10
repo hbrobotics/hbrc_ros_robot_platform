@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "STM32 F7",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "USE_HAL_DRIVER",
+                "STM32F767xx"
+            ],
+            "compilerArgs": [
+                "-mcpu-cortex-m7",
+                "-mthumb",
+                "-mfpu=fpv6-d16",
+                "-mfloat-abi=hard"
+            ],
+            "compilerPath": "${env:GCC_ARM_DIR}/arm-none-eabi-gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "gcc-arm"
+        }
+    ],
+    "version": 4
+}
