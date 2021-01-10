@@ -1,0 +1,29 @@
+!SESSION 2021-01-04 17:19:23.205 -----------------------------------------------
+eclipse.buildId=Version 1.5.0
+java.version=1.8.0_272
+java.vendor=AdoptOpenJDK
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2021-01-04 17:20:05.188
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2021-01-04 17:20:05.242
+!MESSAGE Log4j initialized with config file /home/wayne/public_html/projects/hbrc_ros_robot_platform/software/codium/f767zi_blinky/.metadata/.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 4 4 2021-01-04 17:20:07.209
+!MESSAGE com.st.stm32cube.ide.mcu.ide/META-INF/version/build_ref file not found, build reference will not be reported into properties
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2021-01-04 17:20:07.419
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.core.jobs 4 2 2021-01-04 17:20:28.109
+!MESSAGE An internal error occurred during: "Update Job".
+!STACK 0
+java.lang.NullPointerException
+	at org.eclipse.equinox.internal.p2.ui.sdk.scheduler.migration.MigrationSupport.getLastMigration(MigrationSupport.java:260)
+	at org.eclipse.equinox.internal.p2.ui.sdk.scheduler.migration.MigrationSupport.isFirstTimeRunningThisSharedInstance(MigrationSupport.java:151)
+	at org.eclipse.equinox.internal.p2.ui.sdk.scheduler.migration.MigrationSupport.performMigration(MigrationSupport.java:62)
+	at org.eclipse.equinox.internal.p2.ui.sdk.scheduler.AutomaticUpdateScheduler.lambda$0(AutomaticUpdateScheduler.java:68)
+	at org.eclipse.core.runtime.jobs.Job$2.run(Job.java:185)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
