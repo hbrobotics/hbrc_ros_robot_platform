@@ -1,17 +1,17 @@
-# HR2 Robot Software
+x# HR2 Robot Software
 
 <!-- ==================================== 100 Characters ======================================= -->
 
 This document discusses how to download, install, and develop software for the HR2 platform.
 This document is broken into the following sections:
 
-* (Introduction)[#introduction]:
+* [Introduction](#introduction):
   The introduction to the whole software development process.
 
-* (Software Download and Install)[#software-download-and-install].
+* [Software Download and Install](#software-download-and-install):
   How to download and install the needed software.
 
-* (Firmware Development)[#firmware-development].
+* [Firmware Development](#firmware-development):
   The workflow for developing microcontroller firmware.
 
 ## Introduction
@@ -56,16 +56,16 @@ This is broken into the following sections:
 
 * [Development Computer Download and Install](#development-computer-download-and-install)
 
-* [Robot Computer Download and Install](#robot_compute_download-and-install)
+* [Robot Computer Download and Install](#robot_computer-download-and-install)
 
 ### Development Computer Download and Install:
   
-There are broad steps for installing development computer software..
+There are broad steps for installing development computer software.
 
-1. [Development Computer Ubuntu 20.04 Install](#development-computer-ubuntu-20.04-install):
+1. [Development Computer Ubuntu 20.04 Install](#development-computer-ubuntu-2004-install):
    Get the Ubuntu 20.04 Linux distribution running on your development computer
 
-2. [Development Computer ROS2 Install](#development-computer-ros-install):
+2. [Development Computer ROS2 Install](#development-computer-ros2-install):
    Install ROS2 (Foxy) on your development computer.
 
 3. [Development Computer STM32CubeIDE Install](#development-computer-stm32cubeide-install):
@@ -211,7 +211,7 @@ That concludes software installation for the
 
 Installing software on the Robot Computer (i.e. Raspberry Pi 4) involves the following steps:
 
-* [Robot Computer Ubuntu 20.04 Installation](#robot-computer-ubuntu-20.04-installation)
+* [Robot Computer Ubuntu 20.04 Install](#robot-computer-ros2-install)
 
 * [Robot Computer ROS2 Install](#robot-computer-ros2-install)
 
@@ -812,6 +812,8 @@ Now run `stm33cubemx`:
     If it does not, please carefully check M
 
 This completes all of the steps needed to run the Blinky program.
+
+<!--
 
 ## VSCodium
 
