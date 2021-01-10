@@ -285,27 +285,49 @@ Please follow these instructions.
 ## Firmware Development
 
 Firmware development is a big topic.
-Document only gets you to the point where you can download and existing program
+This document only gets you to the point where you can download and existing program
 and execute it on your microcontroller board (i.e. the NUCLEO-F7676ZI).
 The program is called `blinky` and it blinks the LED on the Nucleo board.
-A small number of things are done with 
+A trivial change is done to the main program and the returned back to is initial state.
 
+The `STM32CubeIDE` (Integrated Development Environment) uses the concepts of workspace and project:
 
+* Workspace:
+  A workspace is a directory where the IDE stores miscellaneous files needed by the IDE.
+  In particular, this is the place where the IDE keeps track of your projects.
+  Your workspace directory is generally not keep under revision control.
+  The workspace directory defaults to `~/STME32CubeIDE/workspace/workspace_1.X.Y/`.
+  It is recommended that you use this default workspace location.
 
-The `blinky` project is added to your workspace, gratuitously modified
-After that you can make a gratuitous change to `blinky` (i.e. change the blink rate).
-Finally, we re
+* Project:
+  A project is a directory that is self contained piece of software that can be downloaded
+  to a microcontroller.
+  The project directory *can* be stored as a sub-directory in the workspace.
+  However, for this project that is not recommended.
+  Instead, projects are store in a different location (the HR2 `git` Repository).
+  None-the-less, the workspace can work with these projects in various different directories.
+  Projects can easily be added and removed from a workspace.
+
+The terms workspace and project are heavily used,
+so it is useful to have an idea of what they are beforehand.
+
+Now, please follow the following steps:
 
 1. Start `stm32cubeide`:
 
    This starts everything rolling.
+   `stm32cubeide` should be in your path.
+   So, typing `stm32cubeide` in a console window should work.
 
 2. Select a workspace directory:
 
    `STM32CubeIDE` really wants a workspace.
-   So the first thing you will see is a pop-up window entitled `Select a directory as workspace`.
+   So the first thing you will see is a pop-up is window entitled `Select a directory as workspace`.
    The default workspace directory is `/home/USER/STM32CubeIDE/workspace_1.X.Y`.
-   You have the opportunity to click on `[ ] Use this as the default and do not ask again`.
+
+   You can check `[x] Use this as the default and do not ask again`
+   if you do no want see this pop-up again.
+
    Please click on the `[Launch]` button.
    
 3. Main Screen.
@@ -323,7 +345,7 @@ Finally, we re
    * Tab Window:
      There is a tab window has the `[Information Center]` tab showing.
      It humorous to note that this tab is rather non-informative at first.
-     Additional tabs will be showing up shortly.
+     Additional tabs are forthcoming.
 
    * Vertical Icon Bar:
      There is a vertical bar on left that has some inscrutable icons in it.
@@ -360,7 +382,8 @@ Finally, we re
 
    A list of predefined HR2 projects should show up.
    Please click `[Deselect All]` followed by checking off on the one named `[x] blinky`.
-   When you click on `[Finish]`, this will import the `blinky` project to your workspace.
+   When you click on the `[Finish]` button, this will import the `blinky` project to your workspace.
+   You should now have one project in your workspace.
 
 8. Find `main.c`:
 
@@ -373,13 +396,13 @@ Finally, we re
 
     The `main.c` tab should show up.
     Scroll through it until you see the `int main(void)` function (approximately line 70.)
-    This the main program that will be downloaded.
+    This is the first function called by the program.
 
     Scroll down until you find the `Infinite loop` (approximately line 100.)
     You should see 3 `HAL_GPIO_TogglePin()` function calls
     followed by a `HAL_Delay()`.
     
-    Eventually, you will edit the `HAL_Delay()` function, but that is a little further below.
+    Eventually, you will edit the `HAL_Delay()` function call, but that is a little further below.
 
 
 10. Plug in Nucleo Board:
@@ -392,8 +415,8 @@ Finally, we re
     Plug into the ST-Link module.
     A big red LED on ST-Link module should light up when you plug into it.
     In addition much smaller green power LED on the "main" board will light up.
-    The big red LED will flash back and for between red and green when the
-    `STM32CubeIDE` is downloading code into the microcontroller.
+    The big red LED is actually a bi-color LED that can switch between read and green.
+    It changes colors as various things go on.
     
 11. Verify Nucleo Board Found:
 
@@ -417,10 +440,10 @@ Finally, we re
        The ST-Link LED which is normally red, turns green.
 
     3. While program is being downloaded,
-       the ST-Link LED switches between red and green
+       the ST-Link LED flashes between red and green
 
     4. The program starts running
-       and flashing its green, blue, and red LED'son the main Nucleo board.
+       and flashing its green, blue, and red LED's on the main Nucleo board.
 
     5. The ST-Link LED returns to red it indicate that it is no longer connected.
 
@@ -438,7 +461,7 @@ Finally, we re
 
     Now watch the light show.
     If you missed it the first time around, you can do it again.
-    Smile. You just ran `blinky`.
+    Smile!!! You just ran `blinky`.
     
 13. Change Blink Rate.
 
@@ -446,7 +469,7 @@ Finally, we re
     Edit it from `1500` to `50`.
     The delay is in millseconds, so the LED's will flash much more quickly.
 
-    Do the same process as the previous step, but `[Save and Launc]` pop up will show up.
+    Do the same process as the previous step, but `[Save and Launch]` pop up window will show up.
     Click on `[OK]` and the new program will download with the slower blinking LED's.
 
 14. Change Blink Rate Back.
@@ -472,25 +495,6 @@ Developing firmware is done using `STM32CubeIDE`.
 It is unlear what `Cube` stands for, it was probably cooked up by the marketing department.
 `IDE` stands for `Integrated Development Environment`.
 The program is named `stm32cubeide` and should be in your execution path.
-
-The next thing to understand is that this IDE (Integrated Development Environment)
-uses the concepts of workspace and project:
-
-* Workspace:
-  A workspace is a directory where the IDE stores miscellaneous files needed by the IDE.
-  In particular, this is the place where the IDE keeps track of your projects.
-  Your workspace directory is generally not keep under revision control.
-  The workspace directory defaults to `~/STME32CubeIDE/workspace/workspace_1.X.Y/`.
-  It is recommended that you use this default workspace location.
-
-* Project:
-  A project is a directory that is self contained piece of software that can be downloaded
-  to a microcontroller.
-  The project directory *can* be stored as a sub-directory in the workspace.
-  However, for this project that is not recommended.
-  Instead, projects are store in a different location (the HR2 `git` Repository).
-  None-the-less, the workspace can work with these projects in various different directories.
-  Projects can easily be added and removed from a workspace.
 
 The Project directory has some additional structure that is discussed further below.
 
