@@ -1,9 +1,9 @@
-x# HR2 Robot Software
+# HR2 Robot Software
 
 <!-- ==================================== 100 Characters ======================================= -->
 
 This document discusses how to download, install, and develop software for the HR2 platform.
-This document is broken into the following sections:
+This document is currently broken into the following sections:
 
 * [Introduction](#introduction):
   The introduction to the whole software development process.
@@ -16,11 +16,12 @@ This document is broken into the following sections:
 
 ## Introduction
 
-There are three processors of interest:
+For the HR2 there are three computers/microcontrollers of interest:
 
 * Development Computer:
   The development computer is used for all software development.
-  Nominally it is a 64-bit x86 architecture processor that runs the Ubuntu 20.04 Linux distribution.
+  It is a 64-bit x86 architecture processor that runs the Ubuntu 20.04 Linux distribution
+  (possibly in under an emulator.)
   The development computer runs both [ROS2](https://index.ros.org/doc/ros2/) and
   the microcontroller development software  (discussed shortly below.)
   The development computer needs to be able to access a local WiFi network
@@ -29,7 +30,7 @@ There are three processors of interest:
 * Robot Computer:
   The robot computer is either a 4GB or 8GB  Raspberry Pi 4
   and runs ROS2 under the Ubuntu 20.04  Linux distribution.
-  (By the way, 4G is more than adequate.)
+  (By the way, 4GB of memory is more than adequate for the Raspberry Pi 4.)
   The robot computer acts as the intermediary between the Development computer
   and the Robot Microcontroller (see immediately below.)
   The Robot Computer communicates with the development computer via the local Wifi network.
@@ -38,13 +39,13 @@ There are three processors of interest:
   The robot microcontroller is an STM (ST Microelectronics) 32-bit microcontroller
   that resides on the HR2 robot that handles lower level functions (motors, sensors, etc.)
   Currently, it is an STM32F767ZI, but that could change later on.
-  All microcontroller firmware is developed on the development computer
+  All microcontroller firmware is written and debugged on the development computer
   using a cross platform firmware development environment.
   The developed firmware is downloaded to the microcontroller
-  using either a cable or over WiFi, whichever is most convenient.
+  using either a physical cable or over WiFi, whichever is most convenient.
 
 The ultimate goal is to be able to develop all software on the development computer and
-download/execute/debug the developed software to the appropriate processor.
+download/execute/debug the developed software to the appropriate computer.
 
 ## Software Download and Install
 
@@ -53,14 +54,6 @@ Please use hardwired network connections for all initial software installs.
 Setting up Wifi properly is a discussed much further below.
 
 This is broken into the following sections:
-
-* [Development Computer Download and Install](#development-computer-download-and-install)
-
-* [Robot Computer Download and Install](#robot_computer-download-and-install)
-
-### Development Computer Download and Install:
-  
-There are broad steps for installing development computer software.
 
 1. [Development Computer Ubuntu 20.04 Install](#development-computer-ubuntu-2004-install):
    Get the Ubuntu 20.04 Linux distribution running on your development computer
@@ -71,7 +64,11 @@ There are broad steps for installing development computer software.
 3. [Development Computer STM32CubeIDE Install](#development-computer-stm32cubeide-install):
    Install the STM32CubeIDE microcontroller software on development computer.
 
-#### Development Computer Ubuntu 20.04 Install
+4. [Robot Computer Ubuntu 20.04 Install](#robot-computer-ros2-install)
+
+5. [Robot Computer ROS2 Install](#robot-computer-ros2-install)
+
+### Development Computer Ubuntu 20.04 Install
 
 The development computer is assumed to be running Ubuntu 20.04.
 It is beyond the scope of this document explain how to download Ubuntu 20.04.
@@ -80,142 +77,196 @@ You may do one of the following:
 
 * Purchase a laptop with Ubuntu preinstalled.
 
-* Install Ubuntu 20.04 onto an 64-bit x86 processor.
+* Install Ubuntu 20.04 onto an 64-bit x86 processor yourself.
 
 * Install Ubuntu 20.04 to run under a virtualization environment
   like (VirtualBox)[https://www.virtualbox.org/].)
+  If you use VirtualBox, be sure to configure the Ethernet adapter to be in "bridged mode".
+  Other than that, just follow the lengthy installation instructions.
 
-#### Development Computer ROS2 Install
+### Development Computer ROS2 Install
 
 Once you have Ubuntu 20.04 installed, please install the ROS2 version named
 [Foxy](https://index.ros.org/doc/ros2/Installation/Foxy/) which configured for Ubuntu 20.04.
+Do a full desktop install.
 
-#### Development Computer STM32CubeIDE Install
+### Development Computer STM32CubeIDE Install
 
-Downloading the STM32CubeIDE is pretty involved.
-In the instructions below, the following notation in all capital letters shows up:
+There are multiple cross platform IDE's (Integrated Development Environment) out there.
+The `STM32CubeIDE` IDE is selected because it is directly supported by microcontroller vendor
+(i.e ST Microelectronics.)
+There are others (e.g. `vscode`, `Keil`, etc.) that could work as well,
+but they are not directly supported by STM.
 
-* HOME: This is the name of your home directory (e.g. `/home/alice`).
-* PASSWORD: This is your login password.
-* X: The major version of the `STM32CubeIDE`.
-* Y: The major version of the `STM32CubeIDE`.
-* D: Decimal digits that change from release to release.
+Please doe the following:
 
-Visit the [STMe2CubeIDE download page.](https://www.st.com/en/development-tools/stm32cubeide.html).
+1. Uninstall Notes:
 
-Basically, you must create an account with ST before you can get the software.
-Just click on the [Get Software] button on the web mentioned immediately above to start the process.
-Fill in the forms and wait for the account to happen.
-(In the past, it took a while, but perhaps account setup is bit faster now.)
-ST will offer the you the wonderful opportunity to let them send you lots of marketing information,
-but they also give you the opportunity to decline this generous offer.
+   Note that `STM32CubeIDE` is a big complicated program
+   that feels obligated to create a bunch of sub-directories in your home directory.
+   At this point in time, the following sub directories are created:
+ 
+   * `.stm32cubeide/`:
+     It seems to just contain `favorites.mcus.txt`.
 
-You need to be logged into you ST account before they will graciously allow you
-to download the wonderful STM32CubeMX install and setup program.
-Eventually, you will get your hands on a `.zip` file with a long ugly name
-that looks vaguely like this:
+   * `.stm32cubemx/`:
+     Some `plugins/` and `thirdparty/` software.
 
-     en.en-st-stm32cubeide_1-X-Y_DDDD_DDDDDDDD_DDDD_amd64_sh.zip
+   * `.stmcube/`:
+     Empty!
 
-Obviously, the version numbers change over time, so an exact match with the
-file name immediately above is extremely unlikely.
-You need to remember the major and version numbers (e.g. X and Y)
-for one step in the installation process below.
-Please store the `.zip` file someplace, just in case you need to reinstall in the future.
+   * `.stmcufinder/`:
+     Some `plugins/`.
 
-Now, unzip the file:
+   * `st/`:
+     This s a sub-directory that contains the actual unpacked IDE files
+     from the download `.zip` file (see below.)
+
+   * `STM32Cube/`:
+     This is a huge sub-directory contains many gigabytes of files.
+     It sometimes downloads new updates that essentially duplicated the contents
+     of the `st/` directory.
+
+   * `STM32CubeIDE`:
+     This is the default sub-directory for your workspace (see further below.)
+
+   If you ever need to clean `STM32CubeIDE` off your computer, delete all of these sub-directories.
+   With the exception of the `st/` sub-directory,
+   all of the other directories are created the first time you run `STM32CubeIDE`
+
+2. Notation:
+
+   Downloading the `STM32CubeIDE` is pretty involved.
+   In the instructions below, the following notation in all capital letters shows up:
+
+   * USER:
+     This is your user name (e.g. `alice` for `/home/alice`).
+
+   * PASSWORD:
+     This is your login password.  It is needed for the `sudo` program.
+
+   * X:
+     The major version of the `STM32CubeIDE`.
+
+   * Y:
+     The minor version of the `STM32CubeIDE`.
+
+   * D:
+     Decimal digits that changes from release to release.
+
+3. Enable `sudo` command:
+
+   Run the `groups` command and verify that you are in the `sudo` group.
+   If `sudo` is not present, you are not `sudo` enabled.
+   Please visit
+   [How to Add User to Sudoers](https://phoenixnap.com/kb/how-to-create-sudo-user-on-ubuntu).
+   You can probably skip step 1, since you probably already have a user account.
+
+4. Create STM Account:
+
+   Visit the
+   [STMe2CubeIDE download page.](https://www.st.com/en/development-tools/stm32cubeide.html).
+
+   Basically, you ***MUST*** create an account with ST before you can get the software.
+   Create your account now, if you do not already have one.
+   Fill in the forms and wait for the account to happen.
+   STM will offer the you the wonderful opportunity to let them send you lots of marketing,
+   but they also give you the opportunity to decline this generous offer.
+
+5. Download and Save `.zip` File:
+
+   Now that you have the STM account, STM will let you download the software.
+   Revisit,
+   [STMe2CubeIDE download page.](https://www.st.com/en/development-tools/stm32cubeide.html),
+   and click on the `[Get Software]` button for the `STM32CubeIDE-Lnx` Generic Linux installer.
+   The instructions below are for the Generic Linux installer, **NOT** the Debian installer.
+
+   Eventually, you will get your hands on a `.zip` file with a long ugly name
+   that looks basically like this:
+
+     en.st-stm32cubeide_1-X-Y_DDDD_DDDDDDDD_DDDD_amd64_sh.zip
+
+   Please store the `.zip` file someplace, just in case you need to reinstall in the future.
+
+6. Unzip the Downloaded `.zip` file:
+
+   Now, unzip the file using the command immediately below:
 
      unzip -x en.en-st-stm32cubeide_1-X-Y_DDDD_DDDDDDDD_DDDD_amd64_sh.zip
 
-This should result in a `.sh` (shell) file that looks kind of like:
+   This should result in a `.sh` (shell) file that looks kind of like:
 
      st-stm32cubeide_1.X.Y_DDDD_DDDDDDDD_DDDD_amd64.sh
 
-(Again, the version information is always changing.)
+   The version information is always changing, so the X, Y, and D values change regularly.
+   This is the unzipped installer file.
 
-This is the installer file.
-It is going to make you agree to a whole bunch of license agreements, install stuff in places, etc.
-There are also a few steps that need to be done in super user mode.
+7. Execute the Installer script file: 
 
-Run the `groups` command and verify that you are in the `sudo` group.
-If not, search the web and find a web page that explains how to become a member of the `sudo` group.
+   It is going to ask you agree to a whole bunch of license agreements,
+   install stuff in places, etc.
+   There are also a few steps that need to be done in super user mode.
 
-Before running the installation shell script,
-the installation directory needs some discussion.
-The installer want to install the software in the `/home/HOME/st/stm32cubide_1.X.Y` directory.
-For a relatively obscure reason having to do with generated `.launch` files
-and subsequent interactions with the `git` version control system,
-it is better if you install the software in a more global location.
-The preferred global installation location is `/opt/st/stm32cubeide_1.X.Y`.
-
-Now run the file:
+   Now execute the install script file:
 
      sh st-stm32cubeide_1.X.Y_DDDD_DDDDDDDD_DDDD_amd64.sh
 
-When running the exact file above, the following prompts occurred:
+   Roughly speaking the following output occurs.
+   It will change over time, so do not be concerned if it looks a little different.
+   You input response are marked with `<== ...`:
 
-* `Verifying archive integrity... All good.`
-* `Uncompressing STM32CubeIDE 1.X.Y installer  100%`
-* `STMicroelectronics Software License Agreement`
-* *Big long license agreement*
-* `I ACCEPT (y) / I DO NOT ACCEPT (N) [N/y] y`
-* `License accepted.`
-* `Do you want to install STLinkServer and Udev rules for STLink and Jlink?`
-* `Without these packages, you will not be able to use debugging feature.`
-* `Install them? (you need sudo permission to do that) [Y/n]Y`
+        Verifying archive integrity... All good.
+        Uncompressing STM32CubeIDE 1.X.Y installer  100%
+        STMicroelectronics Software License Agreement
+        ...   <== Big long license agreement.  Type [Space] to scroll through it.
+        I ACCEPT (y) / I DO NOT ACCEPT (N) [N/y]                        <== Type 'y'
+        License accepted.
+        Do you want to install STLinkServer and Udev rules for STLink and Jlink?
+        Without these packages, you will not be able to use debugging feature.
+        Install them? (you need sudo permission to do that) [Y/n]       <== Type 'Y'
+        STM32CubeIDE install dir? [/home/HOME/st/stm32cubeide_1.X.Y/]   <== Type [Enter]
+        Installing STM32CubeIDE into ...
+        Java cacerts symlinked to /etc/ssl/certs/java/cacerts
+        [sudo] password for USER:                                       <== Type your PASSWORD
+        Creating directory root
+        Verifying archive integrity... All good.
+        Uncompressing STM udev rules installer  100%
+        STMicroelectronics Software License Agreement
+        ...   <= Big long license agreement.  Type [Space] to scroll through it
+        I ACCEPT (y) / I DO NOT ACCEPT (N) [N/y]                        <== Type 'y'
+        STMicroelectronics Software License Agreement
+        ...   <== Another long license agreement.  Type [Space] to scroll through it
+        I ACCEPT (y) / I DO NOT ACCEPT (N) [N/y]                        <== Type 'y'
+        License accepted.
+        stlink-server v2.Z.Z (ZZZZ-ZZ-ZZ-ZZ:ZZ) installation started.
+        ...  <== More text that can be ignored.
+        Do you want to install Segger J-Link udev rules? [Y/n]          <== Type 'n'
+        STM32CubeIDE installed successfully
 
-The next prompt is the install directory mentioned above.
-Please use the global installation location described above.
-This the place where you type in type in more global installation location:
+8. Put `stm32cubeide` in your PATH:
 
-* `STM32CubeIDE install dir? [/home/HOME/st/stm32cubeide_1.X.Y/] /opt/st/stm32cubeide_1.X.Y`
-* `Installing STM32CubeIDE into /opt/st/stm32cubeid_1.X.Y ...
-* Java cacerts symlinked to /etc/ssl/certs/java/cacerts
-* `[sudo] password for HOME: PASSWORD`
-* `Creating directory root`
-* `Verifying archive integrity... All good.`
-* `Uncompressing STM udev rules installer  100%`
-* `STMicroelectronics Software License Agreement`
-* *Big long license agreement*
-* `I ACCEPT (y) / I DO NOT ACCEPT (N) [N/y] y`
-* `STMicroelectronics Software License Agreement`
-* Another ginormous license agreement here.
-* `I ACCEPT (y) / I DO NOT ACCEPT (N) [N/y] y`
-* `License accepted.`
-* `stlink-server v2.Z.Z (ZZZZ-ZZ-ZZ-ZZ:ZZ) installation started.
-* More stuff.
-* `Do you want to install Segger J-Link udev rules? [Y/n] n`
-* `STM32CubeIDE installed successfully`
+   Using your favorite text editor (e.g. `nano`),
+   add the following to your `~/.bashrc` file near the bottom of the file:
 
-The final step of installing STM32CubeIDE is to put the executable in your path.
-Using your favorite text editor, add the following to your `~/.bashrc` file:
+     export PATH=$PATH:$HOME/st/stm32cubeide_1.X.Y/stm32cubeide
 
-     export PATH=$PATH:/opt/st/stm32cubeide_1.X.Y/stm32cubeide
+   Remember to use the correct values for X and Y.
+   Now `source` the `~/.bashrc` file as follows:
 
-If you do not have a favorite text editor for ubuntu, you can start with `nano`.
+       source ~/.bashrc
 
-Now `source` the `~/.bashrc` file as follows:
+   The command:
 
-     source ~/.bashrc
+        which stm32cubeide
 
-The command
+   should return `/home/USER/st/stm32cubeide_1.X.Y/stm32cubeide`.
+   If it does, you have successfully installed stm32cubeide.
 
-     which stm32cubeide
+It program is run for the first time further below in the
+[Firmware Development](#firmware-development) section.
+That concludes `STM32CubeIDE` software installation.
 
-should return `/opt/st/stm32cubeide_1.X.Y/stm32cubeide`.
-If it does, you have successfully installed stm32cubeide.
-
-That concludes software installation for the 
-
-### Robot Computer Download and Install:
-
-Installing software on the Robot Computer (i.e. Raspberry Pi 4) involves the following steps:
-
-* [Robot Computer Ubuntu 20.04 Install](#robot-computer-ros2-install)
-
-* [Robot Computer ROS2 Install](#robot-computer-ros2-install)
-
-#### Robot Computer Ubuntu 20.04 Installation
+### Robot Computer Ubuntu 20.04 Installation
 
 Download and install
 (Ubuntu 20.04)[https://ubuntu.com/tutorials/how-to-install-ubuntu-desktop-on-raspberry-pi-4]
@@ -223,7 +274,7 @@ on the Raspberry Pi 4.
 Alas, this page designed to be read in full screen mode.
 (When will web page designers ever learn that requiring a full screen is a bad idea?)
 
-#### Robot Computer ROS2 Install
+### Robot Computer ROS2 Install
 
 There is a short [ROS2 Install Video](https://www.youtube.com/watch?v=AmuLiA840fA)
 that walks you through the
@@ -231,36 +282,196 @@ that walks you through the
 web page instructions.
 Please follow these instructions.
 
-### Software Download and Install Complete
-
-The software download and install should now be complete
-
 ## Firmware Development
+
+Firmware development is a big topic.
+Document only gets you to the point where you can download and existing program
+and execute it on your microcontroller board (i.e. the NUCLEO-F7676ZI).
+The program is called `blinky` and it blinks the LED on the Nucleo board.
+A small number of things are done with 
+
+
+
+The `blinky` project is added to your workspace, gratuitously modified
+After that you can make a gratuitous change to `blinky` (i.e. change the blink rate).
+Finally, we re
+
+1. Start `stm32cubeide`:
+
+   This starts everything rolling.
+
+2. Select a workspace directory:
+
+   `STM32CubeIDE` really wants a workspace.
+   So the first thing you will see is a pop-up window entitled `Select a directory as workspace`.
+   The default workspace directory is `/home/USER/STM32CubeIDE/workspace_1.X.Y`.
+   You have the opportunity to click on `[ ] Use this as the default and do not ask again`.
+   Please click on the `[Launch]` button.
+   
+3. Main Screen.
+
+   The main screen that pops up is pretty spartan at first.
+   It has:
+
+   * Title Bar:
+     The standard title is on top.
+     The current workspace (not selected yet!) is typically displayed in the title bar.
+
+   * Command Bar:
+     There is the standard bar of text commands `File`, `Edit`, ... , `Help`.
+   
+   * Tab Window:
+     There is a tab window has the `[Information Center]` tab showing.
+     It humorous to note that this tab is rather non-informative at first.
+     Additional tabs will be showing up shortly.
+
+   * Vertical Icon Bar:
+     There is a vertical bar on left that has some inscrutable icons in it.
+     You can hover your mouse over the icons to get slightly more descriptive names.
+
+4. Open Project Explorer:
+
+   Find the `[Restore]` icon in the vertical icon bar and click on it.
+
+   Now the `[Project Explorer]` tab should be open.
+   
+   Click on `[Import projects...]`   
+
+5. Project Import:
+
+   The `[Import]` pop-up shows up.
+   It wants you to `Select an import wizard:`.
+   Please click just to the left of `[General]`,
+   and some additional options should show up.
+   
+   Select on `[Existing Projects into Workspace]` and click on the `[Next>]` button.
+   
+
+6. Import Projects:
+
+   The `[Import Projects]` window pops up.
+
+   Now you get to `(x) Select  root directory` and  click on the `[Browse...]` button.
+   Using a file chooser, select the directory `$HR2_DIRECTORY/software`,
+   where `$HR2_DIRECTORY` is the directory that contains the local copy of the HR2 `git` repository.
+
+
+7. Import `blinky`:
+
+   A list of predefined HR2 projects should show up.
+   Please click `[Deselect All]` followed by checking off on the one named `[x] blinky`.
+   When you click on `[Finish]`, this will import the `blinky` project to your workspace.
+
+8. Find `main.c`:
+
+   The project explorer should show a `blinky` in it.
+   This is a tree explorer.
+   Open `blinky1` => `Core` => `Src` until `main.c` is showing.
+   Double click on `main.c` to open up the `main.c` file.
+
+9. `main.c` Tab:
+
+    The `main.c` tab should show up.
+    Scroll through it until you see the `int main(void)` function (approximately line 70.)
+    This the main program that will be downloaded.
+
+    Scroll down until you find the `Infinite loop` (approximately line 100.)
+    You should see 3 `HAL_GPIO_TogglePin()` function calls
+    followed by a `HAL_Delay()`.
+    
+    Eventually, you will edit the `HAL_Delay()` function, but that is a little further below.
+
+
+10. Plug in Nucleo Board:
+
+    Now is a good time to plug the Nucleo-767ZI board into your development computer
+    using a USB cable with male USB mini connector on it.
+    There are two female USB connectors on the Nucleo-767ZI board.
+    There is one next to the large RJ45 connector
+    and there is one on the opposite end that is for the ST-Link module.
+    Plug into the ST-Link module.
+    A big red LED on ST-Link module should light up when you plug into it.
+    In addition much smaller green power LED on the "main" board will light up.
+    The big red LED will flash back and for between red and green when the
+    `STM32CubeIDE` is downloading code into the microcontroller.
+    
+11. Verify Nucleo Board Found:
+
+     When you run `lssub` in a console window, you should see a line that contains
+    `STMicroelectronics ST-LINK/V2.1` or something quite similar to it.
+    This means that your development computer sees the ST-Link board and
+    it should be ready to use.
+    
+    If not, you have problems and need to figure what went wrong.
+
+12. Download and Run Blinky:
+
+    Now you are going to run the `blinky` program.
+
+    Everything happens pretty fast once you do the steps below.
+    The following things happen one after another:
+
+    1. The code is going to be compiled into an downloadable executable.
+
+    2. `STM32CubeIDE` opens a connection to the Nucleo board.
+       The ST-Link LED which is normally red, turns green.
+
+    3. While program is being downloaded,
+       the ST-Link LED switches between red and green
+
+    4. The program starts running
+       and flashing its green, blue, and red LED'son the main Nucleo board.
+
+    5. The ST-Link LED returns to red it indicate that it is no longer connected.
+
+    There is an icon bar across the top.
+    One of the icons looks like a green bug.
+    The boring one to the right is the `[Run]` icon
+    Without clicking, hover over the `[Run]` button, to see if it shows `[Run main.c]`
+
+    To the right of the button is black pull hierarchical menu triangle.
+    The menu item you need to select is two levels deep.
+    Everything happens when you release the mouse button.
+    Select the following:
+
+       "[Run main.c]` => `[Run As]` => `[STM32/Cortex M C/C++ Application]`.
+
+    Now watch the light show.
+    If you missed it the first time around, you can do it again.
+    Smile. You just ran `blinky`.
+    
+13. Change Blink Rate.
+
+    Got back to the `[main.c]` tab and find the `HAL_Delay()` function at approximately line 100.
+    Edit it from `1500` to `50`.
+    The delay is in millseconds, so the LED's will flash much more quickly.
+
+    Do the same process as the previous step, but `[Save and Launc]` pop up will show up.
+    Click on `[OK]` and the new program will download with the slower blinking LED's.
+
+14. Change Blink Rate Back.
+    
+    Change the `50` back to `1500` and download again.
+
+15. Exit `STM32CubeIDE`.
+
+    Using the `[File]` menu in the upper left, select `[Exit]`.
+    The `STM32CubeIDE` should shut down.
+    You may also unplug your Nucleo-767ZI board.
+
+That is it for now.
+
+<!--
+
+###################################################################################################
+
+This is all old text that will eventually be deleted.
 
 Developing firmware is done using `STM32CubeIDE`.
 `STM` stands for `ST Microsystems` (where `ST` stands for `SGS-Thomson`).
 It is unlear what `Cube` stands for, it was probably cooked up by the marketing department.
 `IDE` stands for `Integrated Development Environment`.
 The program is named `stm32cubeide` and should be in your execution path.
-
-Before you run the `stm32cubeide` it is worth mentioning that this program
-likes to fill your home directory with a bunch of sub-directories.
-Currently, there are 4 "dot" directories:
-
-* `.stm32cubeide`
-* `.stm32cubemx`
-* `.stmcube`
-* `.stmcufinder`
-
-In addition there are two non "dot" directories.
-
-* `STM32Cube`:
-   This is a huge directory contains my gigabytes of files.
-* `STM32CubeIDE`:
-  This is the default location of your workspace which is discussed further below.
-
-If you ever need to clean `stm32cube` off your computer,
-delete these 6 directories *AND* the `/opt/st` directory.
 
 The next thing to understand is that this IDE (Integrated Development Environment)
 uses the concepts of workspace and project:
@@ -388,7 +599,6 @@ Now it is time run `stm32cubeide`:
     Up in the icon bar at the top, there is a bug with six legs.
     This is the debugger icon and to the right of this icon is a pull down menu.
     Click on the pull down menu and it will give some options.
-    Click on the `Debug As` pull right menu and verify that it says
     `STM32/Cortex M C/C++ Application`.
     It may put up a `[Choose launch configuration to debug]` window.
     Please select on `[blinky Debug]` and click `[OK]`.
@@ -420,10 +630,6 @@ Now it is time run `stm32cubeide`:
 30. Now this temporary project can be deleted by going to the `[Project Explorer]` tab.
     Right click on the `[blinky]` project, and select `[X Delete]`, and click on `[OK]`.
     Now the temporary project is gone from the workspace.
-
-<!--
-
-###################################################################################################
 
 More Notes:
 
