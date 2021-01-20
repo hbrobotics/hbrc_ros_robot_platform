@@ -384,3 +384,5 @@ There a a bunch of miscellaneous files in the `mechanical` directory:
 
 * [romi_base.html](romi_base.html): This contains the same content as the `romi_base.csv`
   file, but in HTML table format.  It is easier to read in a web browser.
+
+<!-- https://github.com/CadQuery/cadquery -->

@@ -208,7 +208,7 @@ test: all
 # The `.pyl` suffix is used to remember that the linting has occured:
 %.pyl: %.py
 	mypy                         $<
-	flake8 --max-line-length=100 $<
+	flake8 --max-line-length=100 --ignore=Q000 $<
 	pydocstyle                   $<
 	touch $@
 

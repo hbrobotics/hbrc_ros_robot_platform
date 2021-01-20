@@ -56,11 +56,11 @@ The basic class tree is:
 """
 
 # Import stuff from other libraries:
-from math import acos, atan2, ceil, cos, degrees, pi, sin, sqrt
-from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple
-from pathlib import Path
 import os
 import stat
+from math import acos, atan2, ceil, cos, degrees, pi, sin, sqrt
+from pathlib import Path
+from typing import Any, Callable, Dict, IO, List, Optional, Set, Tuple
 
 
 # P3D:
@@ -185,8 +185,7 @@ class P2D:
         """Add two two P2D's together."""
         # Use *p2d1* instead of *self*:
         p2d1: P2D = self
-        sum: P2D = P2D(p2d1.x + p2d2.x, p2d1.y + p2d2.y)
-        return sum
+        return P2D(p2d1.x + p2d2.x, p2d1.y + p2d2.y)
 
     # P2D.__mul__():
     def __mul__(self, scale: float) -> "P2D":
@@ -602,11 +601,8 @@ class Scad:
         headings_text: str = "Index,Type,Name,X,Y,DX,DY,Angle,Corner Radius,Corner Count"
         headings: List[str] = headings_text.split(',')
         heading: str
-        heading_row_text: str = (
-            "   <TR>\n" +
-            '\n'.join([f'    <TH align="left">{heading}</TH>' for heading in headings]) +
-            "\n   </TR>\n"
-        )
+        th_tags: List[str] = [f'    <TH align="left">{heading}</TH>' for heading in headings]
+        heading_row_text: str = "   <TR>\n" + '\n'.join(th_tags) + "\n   </TR>\n"
         # Now output all of the keys:
         float_format: Callable[[float], str] = Scad.float_format
         key: Tuple[Any, ...]
@@ -653,7 +649,7 @@ class Scad:
         name: str = scad.name
 
         # Store the contents of *scad* as a bunch of *scad_lines*:
-        scad_lines: List[str] = list()
+        scad_lines: List[str] = []
         scad_lines.append(f"// '{name}' File")
         scad.scad_lines_append(scad_lines, "")
 
@@ -748,7 +744,7 @@ class ScadProgram:
         trimmed_name: str = Scad.name_trim(name)
         if trimmed_name not in module3d_table:
             raise ValueError(f"Module name ('{name}' => '{trimmed_name}')"
-                             f" is not one of {sorted(list(module3d_table.keys()))}")
+                             f" is not one of {sorted(module3d_table.keys())}")
         module3d: Module3D = module3d_table[trimmed_name]
         return module3d
 
@@ -807,7 +803,7 @@ class ScadProgram:
             "    FOO=\"name=$DQ$1$DQ\" # $1 == the value to set name to",
             "    openscad \"$HR2_DIRECTORY/mechanical/hr2_models.scad\" -D $FOO",
             "}",
-            ]
+        ]
 
         # Construct and sort *all_named_descriptions* from *if2d* and *if3d*:
         all_named_descriptions: List[Tuple[str, ...]] = (
@@ -824,7 +820,7 @@ class ScadProgram:
                 f"    \"{name}\")",            # "NAME")
                 f"\tscad \"{name}\"",              # scad "NAME"
                 "\t;;",                            # ;;
-                ])
+            ])
 
         # Now output the help message:
         scad_show_lines.append("    *)")
@@ -987,12 +983,12 @@ class Scad2D(Scad):
                 # Extract the *slice* of points from *points*:
                 slice_begin_index = slice_index * points_slice_size
                 slice_end_index = min(slice_begin_index + points_slice_size, simple_polygon_size)
-                slice: List[P2D] = list(points[slice_begin_index:slice_end_index])
+                slice_points: List[P2D] = list(points[slice_begin_index:slice_end_index])
 
                 # Figure out all of the text to output for the *slice*:
                 point: P2D
                 points_text: str = ", ".join([f"[{float_format(point.x)}, {float_format(point.y)}]"
-                                              for point in slice])
+                                              for point in slice_points])
                 end_text: str = ("" if last_simple_polygon and slice_index == slice_last_index
                                  else ",")
 
