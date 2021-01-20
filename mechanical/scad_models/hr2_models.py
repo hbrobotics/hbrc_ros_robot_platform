@@ -28,15 +28,17 @@
 # Random useful URL:
 # https://mechanicalc.com/reference/fastener-size-tables
 
-from scad_models.scad import (
-    Circle, Color, CornerCube, Cube, Cylinder, If2D, Difference2D, LinearExtrude,
-    Module2D, Module3D, P2D, P3D, Polygon, Rotate3D, Scad2D, Scad3D, SimplePolygon, ScadProgram,
-    Square, Translate3D, UseModule3D, Union3D)
 import os
 import time
+from math import asin, atan2, cos, degrees, nan, pi, radians, sin, sqrt
 from pathlib import Path
 from typing import Any, Dict, IO, List, Optional, Set, Tuple
-from math import asin, atan2, cos, degrees, nan, pi, radians, sin, sqrt
+
+from scad_models.scad import (
+    Circle, Color, CornerCube, Cube, Cylinder, Difference2D, If2D, LinearExtrude, Module2D,
+    Module3D, P2D, P3D, Polygon, Rotate3D, Scad2D, Scad3D, ScadProgram, SimplePolygon, Square,
+    Translate3D, Union3D, UseModule3D
+)
 
 # Can not do this at the top level since it forms a circular import dependency loop:
 # from scad_models.kicad import Footprint, KicadPCB
@@ -238,7 +240,7 @@ class Connectors:
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
         # Nucleo144 CN10 Zio Connector:
-        f2x17_long:  RectangularConnector = RectangularConnector(
+        f2x17_long: RectangularConnector = RectangularConnector(
             "F2x17_Long", scad_program, 2, 17,
             female_insulation_height, female_insulation_height,
             insulation_color="SlateBlue", cut_out=True,
@@ -279,7 +281,7 @@ class Connectors:
         self.f2x10_long: RectangularConnector = f2x10_long
         self.f2x8_long: RectangularConnector = f2x8_long
         self.f2x15_long: RectangularConnector = f2x15_long
-        self.f2x17_long:  RectangularConnector = f2x17_long
+        self.f2x17_long: RectangularConnector = f2x17_long
 
         # print("<=Connectors.__init__()")
 
@@ -966,7 +968,7 @@ class LED:
         # Create the LED *optic*:
         optic_dx: float = 4.0  # mm
         optic_diameter: float = 2.0 * 1.75  # mm
-        optic_start: P3D = P3D(base_dx / 2.0,           0.0, base_dz / 2.0)
+        optic_start: P3D = P3D(base_dx / 2.0, 0.0, base_dz / 2.0)
         optic_end: P3D = P3D(-base_dx / 2.0 + optic_dx, 0.0, base_dz / 2.0)
         optic: Scad3D = Cylinder("LED Optic", optic_diameter, optic_start, optic_end, 16)
 
@@ -1514,14 +1516,14 @@ class PCBChunk:
                 first_line: str = previous_footprint_lines[0]
                 tedit_index: int = first_line.find("(tedit ")
                 if tedit_index >= 0:
-                    edit_timestamp_text: str = first_line[tedit_index+7:tedit_index+7+8]
+                    edit_timestamp_text: str = first_line[tedit_index + 7:tedit_index + 7 + 8]
                     try:
                         edit_timestamp = int(edit_timestamp_text, 16)
                     except ValueError:
                         assert False, f"Edit '{edit_timestamp_text}' from '{first_line}'"
                 tstamp_index: int = first_line.find("(tstamp ")
                 if tstamp_index >= 0:
-                    create_timestamp_text: str = first_line[tstamp_index+8:tstamp_index+8+8]
+                    create_timestamp_text: str = first_line[tstamp_index + 8:tstamp_index + 8 + 8]
                     try:
                         create_timestamp = int(create_timestamp_text, 16)
                     except ValueError:
@@ -2086,7 +2088,7 @@ class PCBModule:
                     reference_name = pcb_line[reference_start_index:reference_end_index]
                 elif path_index >= 0:
                     # We found "...(path /XXXXXXXX/....)"
-                    path_id = pcb_line[path_index+len(path_pattern):-1]
+                    path_id = pcb_line[path_index + len(path_pattern):-1]
                 elif pcb_line == module_end:
                     # We found the end of the module:
                     assert reference_name != "", "No reference in module"
@@ -2115,14 +2117,14 @@ class PCBModule:
                     assert not in_module, "Nested module?"
                     tedit_index: int = pcb_line.find("(tedit ")
                     if tedit_index >= 0:
-                        edit_timestamp_text: str = pcb_line[tedit_index+7:tedit_index+7+8]
+                        edit_timestamp_text: str = pcb_line[tedit_index + 7:tedit_index + 7 + 8]
                         try:
                             edit_timestamp = int(edit_timestamp_text, 16)
                         except ValueError:
                             assert False, f"'{edit_timestamp_text}' from '{pcb_line}' is not hex"
                     tstamp_index: int = pcb_line.find("(tstamp ")
                     if tstamp_index >= 0:
-                        create_timestamp_text: str = pcb_line[tstamp_index+8:tstamp_index+8+8]
+                        create_timestamp_text: str = pcb_line[tstamp_index + 8:tstamp_index + 8 + 8]
                         try:
                             create_timestamp = int(create_timestamp_text, 16)
                         except ValueError:
@@ -2300,7 +2302,7 @@ class PCBModule:
                         assert False, f"Unable to convert '{number_text} to a number"
 
                     # Now extract the *net_name*:
-                    net_name: str = tail_text[space_index+1:-1]
+                    net_name: str = tail_text[space_index + 1:-1]
                     if net_name.startswith('"') and net_name.endswith('"'):
                         net_name = net_name[1:-1]
                     elif net_name.startswith('/'):
@@ -2310,7 +2312,7 @@ class PCBModule:
                     else:
                         line: str
                         line_number: int
-                        for line_number, line in enumerate(preceding_lines[:offset+1]):
+                        for line_number, line in enumerate(preceding_lines[:offset + 1]):
                             print(f"{line_number}: {line}")
                         assert False, f"Strange Net name format '{net_name}'"
 
@@ -2405,8 +2407,9 @@ class PCBModule:
 
                             # Organize the the values in groups of 5:
                             zones_quints: List[List[str]] = [
-                                culled_zone_xys[index:index+5]
-                                for index in range(0, culled_zone_xys_size, 5)]
+                                culled_zone_xys[index:index + 5]
+                                for index in range(0, culled_zone_xys_size, 5)
+                            ]
                             if tracing:
                                 print(f"{tracing}zone_size={zone_size}")
                                 print(f"{tracing}zones_quints={zones_quints}")
@@ -2816,8 +2819,8 @@ class Grove:
         # Write out the 3 footprints:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
-        hr2_pretty_directory: Path = (hr2_directory /
-                                      "electrical" / "master_board" / "rev_a" / "pretty")
+        hr2_pretty_directory: Path = (
+            hr2_directory / "electrical" / "master_board" / "rev_a" / "pretty")
         grove_pcb_chunk.footprint_generate("HR2", hr2_pretty_directory)
         grove_left_pcb_chunk.footprint_generate("HR2", hr2_pretty_directory)
         grove_right_pcb_chunk.footprint_generate("HR2", hr2_pretty_directory)
@@ -2913,8 +2916,8 @@ class HCSR04:
         # Generate the 3 female mate connector footprints:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
-        hr2_pretty_directory: Path = (hr2_directory /
-                                      "electrical" / "master_board" / "rev_a" / "pretty")
+        hr2_pretty_directory: Path = \
+            hr2_directory / "electrical" / "master_board" / "rev_a" / "pretty"
         f1x4_mate.footprint_generate("HR2", hr2_pretty_directory)
         f1x4h_mate.footprint_generate("HR2", hr2_pretty_directory)
         f1x4lp_mate.footprint_generate("HR2", hr2_pretty_directory)
@@ -2952,10 +2955,10 @@ class HCSR04:
         # The right-angle connector is installed on the back side so we swap sides
         # without swapping pad numbering:
         m1x4ra_connector: RectangularConnector = connectors.m1x4ra
-        m1x4ra_offset: float = (
-             m1x4ra_connector.pcb_pin_height
-             - m1x4ra_connector.pin_dx_dy / 2.0
-             + m1x4ra_connector.insulation_height)
+        m1x4ra_offset: float = \
+            m1x4ra_connector.pcb_pin_height \
+            - m1x4ra_connector.pin_dx_dy / 2.0 \
+            + m1x4ra_connector.insulation_height
         m1x4ra_pcb_chunk: PCBChunk = m1x4ra_connector.pcb_chunk
         origin2d = P2D(0.0, 0.0)
         degrees180: float = pi
@@ -3245,6 +3248,11 @@ class HR2BaseAssembly:
         base_pi_height: float = pi_board_z - base_top_z
         battery_master_height: float = master_board_z - base_top_z + battery_dz
         battery_pi_height: float = pi_board_z - base_battery_top_z
+        print(f"base_master_height={base_master_height:.2f}mm={base_master_height/25.4:.3f}in")
+        print(f"base_pi_height={base_pi_height:.2f}mm={base_pi_height/25.4:.3f}in")
+        print(f"battery_master_height={battery_master_height:.2f}mm="
+              f"{battery_master_height/25.4:.3f}in")
+        print(f"battery_pi_height={battery_pi_height:.2f}mm={battery_pi_height/25.4:.3f}in")
 
         # Create the 4 different *Spacer*s:
         base_master_spacer: Spacer = Spacer(
@@ -3420,8 +3428,8 @@ class HR2NucleoAssembly:
                                                         rotated_nucleo144, nucleo_translate)
 
         hr2_nucleo_assembly: Module3D = Module3D("HR2 Nucleo Assembly", [
-             hr2_wheel_assembly.module.use_module_get(),
-             translated_nucleo144,
+            hr2_wheel_assembly.module.use_module_get(),
+            translated_nucleo144,
         ])
         scad_program.append(hr2_nucleo_assembly)
         self.module = hr2_nucleo_assembly
@@ -3859,12 +3867,12 @@ class Nucleo144:
         cn10_zio_center_y: float = cn10_zio_pin1_y - float(cn10_zio_y_pins - 1) * mil(100) / 2.0
         cn11_morpho_pin1_y: float = pcb_pseudo_origin_y + mil(1998)
         cn11_morpho_y_pins: int = 35
-        cn11_morpho_center_y: float = (cn11_morpho_pin1_y -
-                                       float(cn11_morpho_y_pins - 1) * mil(100) / 2.0)
+        cn11_morpho_center_y: float = \
+            cn11_morpho_pin1_y - float(cn11_morpho_y_pins - 1) * mil(100) / 2.0
         cn12_morpho_pin1_y: float = pcb_pseudo_origin_y + mil(1998)
         cn12_morpho_y_pins: int = 35
-        cn12_morpho_center_y: float = (cn12_morpho_pin1_y -
-                                       float(cn12_morpho_y_pins - 1) * mil(100) / 2.0)
+        cn12_morpho_center_y: float = \
+            cn12_morpho_pin1_y - float(cn12_morpho_y_pins - 1) * mil(100) / 2.0
         # Miscellaneous Y coordinates:
         ethernet_south_y: float = pcb_south_y - 2.50   # Calipers
         ethernet_north_y: float = pcb_south_y + 13.00  # Calipers
@@ -4752,36 +4760,36 @@ class MasterBoard:
             return sqrt(h * h - s * s)
 
         # Well start with the central board locations A-Z:
-        A: P2D = P2D(wheel_well_dx/2.0, wheel_well_dy/2.0)  # On center board edge, not a corner
-        B: P2D = P2D(wheel_well_dx/2.0, center_pcb_north)
-        C: P2D = P2D(connector_well_dx/2.0, center_pcb_north)
-        D: P2D = P2D(connector_well_dx/2.0, connector_well_south)
-        E: P2D = P2D(-connector_well_dx/2.0, connector_well_south)
-        F: P2D = P2D(-connector_well_dx/2.0, center_pcb_north)
-        G: P2D = P2D(-wheel_well_dx/2.0, center_pcb_north)
-        H: P2D = P2D(-wheel_well_dx/2.0, wheel_well_dy/2.0)  # On center board edge, not a corner
-        I: P2D = P2D(-wheel_well_dx/2.0, motor_well_dy/2.0)
-        J: P2D = P2D(-motor_well_dx/2.0, motor_well_dy/2.0)
-        K: P2D = P2D(-motor_well_dx/2.0, -motor_well_dy/2.0)
-        L: P2D = P2D(-wheel_well_dx/2.0, -motor_well_dy/2.0)
-        M: P2D = P2D(-wheel_well_dx/2.0, -wheel_well_dy/2.0)  # On center board edge, not a corner
-        N: P2D = P2D(-wheel_well_dx/2.0, -pythagorean(inner_radius, -wheel_well_dx/2.0))
+        A: P2D = P2D(wheel_well_dx / 2.0, wheel_well_dy / 2.0)  # On center board edge, not corner
+        B: P2D = P2D(wheel_well_dx / 2.0, center_pcb_north)
+        C: P2D = P2D(connector_well_dx / 2.0, center_pcb_north)
+        D: P2D = P2D(connector_well_dx / 2.0, connector_well_south)
+        E: P2D = P2D(-connector_well_dx / 2.0, connector_well_south)
+        F: P2D = P2D(-connector_well_dx / 2.0, center_pcb_north)
+        G: P2D = P2D(-wheel_well_dx / 2.0, center_pcb_north)
+        H: P2D = P2D(-wheel_well_dx / 2.0, wheel_well_dy / 2.0)  # On center board edge, not corner
+        I: P2D = P2D(-wheel_well_dx / 2.0, motor_well_dy / 2.0)
+        J: P2D = P2D(-motor_well_dx / 2.0, motor_well_dy / 2.0)
+        K: P2D = P2D(-motor_well_dx / 2.0, -motor_well_dy / 2.0)
+        L: P2D = P2D(-wheel_well_dx / 2.0, -motor_well_dy / 2.0)
+        M: P2D = P2D(-wheel_well_dx / 2.0, -wheel_well_dy / 2.0)  # On center board edge, not corner
+        N: P2D = P2D(-wheel_well_dx / 2.0, -pythagorean(inner_radius, -wheel_well_dx / 2.0))
         O: P2D = P2D(-pythagorean(inner_radius, center_pcb_south), center_pcb_south)
-        P: P2D = P2D(-arm_well_dx/2.0, center_pcb_south)
-        Q: P2D = P2D(-arm_well_dx/2.0, arm_well_north)
-        R: P2D = P2D(arm_well_dx/2.0, arm_well_north)
-        S: P2D = P2D(arm_well_dx/2.0, center_pcb_south)
+        P: P2D = P2D(-arm_well_dx / 2.0, center_pcb_south)
+        Q: P2D = P2D(-arm_well_dx / 2.0, arm_well_north)
+        R: P2D = P2D(arm_well_dx / 2.0, arm_well_north)
+        S: P2D = P2D(arm_well_dx / 2.0, center_pcb_south)
         T: P2D = P2D(pythagorean(inner_radius, center_pcb_south), center_pcb_south)
-        U: P2D = P2D(wheel_well_dx/2.0, -pythagorean(inner_radius, wheel_well_dx/2.0))
-        V: P2D = P2D(wheel_well_dx/2.0, -wheel_well_dy/2.0)  # On center board edge, not a corner
-        W: P2D = P2D(wheel_well_dx/2.0, -motor_well_dy/2.0)
-        X: P2D = P2D(motor_well_dx/2.0, -motor_well_dy/2.0)
-        Y: P2D = P2D(motor_well_dx/2.0, motor_well_dy/2.0)
-        Z: P2D = P2D(wheel_well_dx/2.0, motor_well_dy/2.0)
+        U: P2D = P2D(wheel_well_dx / 2.0, -pythagorean(inner_radius, wheel_well_dx / 2.0))
+        V: P2D = P2D(wheel_well_dx / 2.0, -wheel_well_dy / 2.0)  # On center board edge, not corner
+        W: P2D = P2D(wheel_well_dx / 2.0, -motor_well_dy / 2.0)
+        X: P2D = P2D(motor_well_dx / 2.0, -motor_well_dy / 2.0)
+        Y: P2D = P2D(motor_well_dx / 2.0, motor_well_dy / 2.0)
+        Z: P2D = P2D(wheel_well_dx / 2.0, motor_well_dy / 2.0)
 
         # Now compute the points of the NE board:
-        a: P2D = P2D(pythagorean(radius, wheel_well_dy/2.0), wheel_well_dy/2.0)
-        c: P2D = P2D(connector_well_dx/2.0, pythagorean(radius, connector_well_dx/2.0))
+        a: P2D = P2D(pythagorean(radius, wheel_well_dy / 2.0), wheel_well_dy / 2.0)
+        c: P2D = P2D(connector_well_dx / 2.0, pythagorean(radius, connector_well_dx / 2.0))
         a_angle: float = a.atan2()
         # a_angle = a_angle
         c_angle: float = c.atan2()
@@ -4790,8 +4798,8 @@ class MasterBoard:
         # print(f"c_angle:{c_angle * 180.0 / pi}")
 
         # Now compute the arc points of the NW board:
-        f: P2D = P2D(-connector_well_dx/2.0, pythagorean(radius, -connector_well_dx/2.0))
-        h: P2D = P2D(-pythagorean(radius, wheel_well_dy/2.0), wheel_well_dy/2.0)
+        f: P2D = P2D(-connector_well_dx / 2.0, pythagorean(radius, -connector_well_dx / 2.0))
+        h: P2D = P2D(-pythagorean(radius, wheel_well_dy / 2.0), wheel_well_dy / 2.0)
         f_angle: float = f.atan2()
         # f_angle = f_angle
         h_angle: float = h.atan2()
@@ -4800,8 +4808,8 @@ class MasterBoard:
         # print(f"h_angle:{h_angle * 180.0 / pi}")
 
         # Now compute the arc points of the SW board:
-        m: P2D = P2D(-pythagorean(radius, -wheel_well_dy/2.0), -wheel_well_dy/2.0)
-        p: P2D = P2D(-arm_well_dx/2.0, -pythagorean(radius, -arm_well_dx/2.0))
+        m: P2D = P2D(-pythagorean(radius, -wheel_well_dy / 2.0), -wheel_well_dy / 2.0)
+        p: P2D = P2D(-arm_well_dx / 2.0, -pythagorean(radius, -arm_well_dx / 2.0))
         m_angle: float = m.atan2()
         # m_angle = m_angle
         N_angle: float = N.atan2()
@@ -4812,8 +4820,8 @@ class MasterBoard:
         # p_angle = p_angle
 
         # Now compute the arc points of the SE board:
-        s: P2D = P2D(arm_well_dx/2.0, -pythagorean(radius, arm_well_dx/2.0))
-        v: P2D = P2D(pythagorean(radius, -wheel_well_dy/2.0), -wheel_well_dy/2.0)
+        s: P2D = P2D(arm_well_dx / 2.0, -pythagorean(radius, arm_well_dx / 2.0))
+        v: P2D = P2D(pythagorean(radius, -wheel_well_dy / 2.0), -wheel_well_dy / 2.0)
         s_angle: float = s.atan2()
         # s_angle = s_angle
         T_angle: float = T.atan2()
@@ -5237,13 +5245,13 @@ class MasterBoard:
         z_axis: P3D = P3D(0.0, 0.0, 1.0)
         z_rotated_hcsr04: Rotate3D = Rotate3D("Z-Axis Rotated HC-SR04",
                                               hcsr04_vertical_use_module, degrees180, z_axis)
-        low_dy: float = (hcsr04_pcb_dy / 2.0     # Move PCB bottom edge to origin
-                         + f1x4lp_top_z)         # Move PCB to top of F1x4LP (LP=>Low Profile)
-        medium_dy: float = (hcsr04_pcb_dy / 2.0  # Move PCB bottom edge to origin
-                            + 6.00)              # Move PBB to top of F1x4 (M=>Medium Profile)
-        high_dy: float = (hcsr04_pcb_dy / 2.0    # Move PCB bottom edge to origin
-                          + 8.00)                # Move PCB to top of F1x4H (H=>High Connector)
-        recenter_dz: float = 1.27                # Move from PCB bottom to center of pins
+        # Move PCB bottom edge to origin, then move PCB to top of F1x4LP (LP=>Low Profile):
+        low_dy: float = hcsr04_pcb_dy / 2.0 + f1x4lp_top_z
+        # Move PCB bottom edge to origin, then move PBB to top of F1x4 (M=>Medium Profile):
+        medium_dy: float = hcsr04_pcb_dy / 2.0 + 6.00
+        # Move PCB bottom edge to origin, then move PCB to top of F1x4H (H=>High Connector):
+        high_dy: float = hcsr04_pcb_dy / 2.0 + 8.00
+        recenter_dz: float = 1.27  # Move from PCB bottom to center of pins
 
         # There are three different sonar heights -- low, medium and high:
         # * *low*: Use low profile (and more expensive) connector to keep Sonar close to PCB.
@@ -5445,8 +5453,8 @@ class MasterBoard:
 
         center_references_pcb_chunk: PCBChunk = PCBChunk("Center References", [], [],
                                                          references=center_references)
-        center_sonar_pcb_chunk: PCBChunk = PCBChunk.join("", center_pcb_chunks +
-                                                         [center_references_pcb_chunk])
+        center_sonar_pcb_chunk: PCBChunk = PCBChunk.join(
+            "", center_pcb_chunks + [center_references_pcb_chunk])
 
         if tracing:
             print(f"{tracing}f1x4h_mate_pcb_chunk.pads[0]={f1x4h_mate_pcb_chunk.pads[0]}")
@@ -6027,8 +6035,8 @@ class RaspberryPi4:
         processor_ne2d: P2D = P2D(36.75, 40.1)
         processor_sw2d: P2D = P2D(21.75, 24.9)
         processor_center2d: P2D = (processor_sw2d + processor_ne2d) / 2.0
-        processor_center3d: P3D = (P3D(processor_center2d.x, processor_center2d.y, 0.0) -
-                                   holes_center3d)
+        processor_center3d: P3D = \
+            P3D(processor_center2d.x, processor_center2d.y, 0.0) - holes_center3d
         sdram_ne2d: P2D = P2D(50.65, 40.1)
         sdram_sw2d: P2D = P2D(38.95, 24.9)
         sdram_center2d: P2D = (sdram_sw2d + sdram_ne2d) / 2.0
@@ -6236,7 +6244,7 @@ class RaspberryPi4:
         master_board_pretty_directory: Path = master_board_directory / "pretty"
         raspi4b_mate_pcb_chunk.footprint_generate("HR2", master_board_pretty_directory)
         raspi4b_mate_module: Module3D = raspi4b_mate_pcb_chunk.pcb_update(
-             scad_program, pcb_origin, 1.6, raspi4b_exterior, "Green", None, [])
+            scad_program, pcb_origin, 1.6, raspi4b_exterior, "Green", None, [])
         raspi4b_mate_module = raspi4b_mate_module
 
         # Stuff some values into into *raspi4b* (i.e. *self*):
@@ -6602,11 +6610,11 @@ class RectangularConnector:
                         [P2D(pin_x, min(y1, y2) - footprint_pad_diameter / 2.0),
                          P2D(pin_x, y_center + dy / 2.0)])
                     front_artworks.append(line)
-                circle = Circle("{name} Pin 1 Circle",  0.2, 8,
+                circle = Circle("{name} Pin 1 Circle", 0.2, 8,
                                 P2D(x1 - 0.75 * columns_pitch, max(y1, y2) - 0.50 * rows_pitch))
             else:
                 # Draw the pin1 circle:
-                circle = Circle("{name} Pin 1 Circle",  0.2, 8,
+                circle = Circle("{name} Pin 1 Circle", 0.2, 8,
                                 P2D(x1 - 0.50 * columns_pitch, max(y1, y2) + 0.75 * rows_pitch))
             front_artworks.append(circle)
 
@@ -6931,8 +6939,8 @@ class RomiBase:
         mirrorable_polygon: SimplePolygon
         mirrored_polygons: List[SimplePolygon] = [mirrorable_polygon.y_mirror("RIGHT:", "LEFT:")
                                                   for mirrorable_polygon in mirrorable_polygons]
-        all_internal_polygons: List[SimplePolygon] = (battery_polygons + mirrorable_polygons +
-                                                      mirrored_polygons + center_rectangles_holes)
+        all_internal_polygons: List[SimplePolygon] = \
+            battery_polygons + mirrorable_polygons + mirrored_polygons + center_rectangles_holes
         all_polygons: List[SimplePolygon] = ([base_outline_polygon] + all_internal_polygons)
 
         internal_polygon: SimplePolygon
@@ -7107,7 +7115,7 @@ class RomiBase:
             "*-**O**-*",  # Row with reference hole in the middle (at the 'O' location)
             "*-*****-*",  # Row below reference hole
             "*-*****-*")  # Two rows below referene hole
-        simple_polygons: List[SimplePolygon] = list()
+        simple_polygons: List[SimplePolygon] = []
         reference_hole_center_y: float = reference_hole.center.y
         hole_dx_pitch: float = 10
         column0_x: float = -4.0 * hole_dx_pitch
@@ -7151,7 +7159,7 @@ class RomiBase:
                     slot_dx: float = abs(slot_east_x - slot_west_x)
                     upper_hole = Square(f"BATTERY: Upper Slot ({x_index}, {y_index})",
                                         slot_dx, slot_dy, center=upper_hole_center,
-                                        corner_radius=slot_dy/2.0, corner_count=2)
+                                        corner_radius=slot_dy / 2.0, corner_count=2)
                 else:
                     upper_hole = reference_hole.copy(("BATTERY: Upper Hole "
                                                       f"({x_index}, {y_index})"),
@@ -7366,8 +7374,8 @@ class RomiBase:
             print("upper_left_origin_y={upper_left_origin_y}")
 
         # The return values are *simple_polygons* and *locations*:
-        simple_polygons: List[SimplePolygon] = list()
-        locations: Dict[str, P2D] = dict()
+        simple_polygons: List[SimplePolygon] = []
+        locations: Dict[str, P2D] = {}
 
         # *pattern_rows* contain the end-point locations for the hex pattern.
         # We iterate across *pattern_rows* in Y first and X second.
@@ -7470,7 +7478,7 @@ class RomiBase:
         # Now using *s_center* and *q_center* we compute a "unit" vector along the line.
         # We enter holes that do not over lap with the larger holes.  We wind up skipping
         # one hole in 3:
-        line_hole_polygons: List[SimplePolygon] = list()
+        line_hole_polygons: List[SimplePolygon] = []
         s_center: P2D = lower_hex_table["S"]
         q_center: P2D = lower_hex_table["Q"]
         hole_vector: P2D = q_center - s_center
@@ -8215,16 +8223,15 @@ class RomiExpansionPlate:
 
         # Fill in *simple_polygons* starting with *expansion_outer* and the all of the
         # other holes, rectangles and slots:
-        simple_polygons: List[SimplePolygon] = (
-            [expansion_outer] +
-            romi_expansion_plate.large_holes_get() +
-            romi_expansion_plate.small_holes_get() +
-            romi_expansion_plate.hex_holes_slots_get() +
-            romi_expansion_plate.standoff_holes_get() +
-            romi_expansion_plate.top_slots_get() +
-            romi_expansion_plate.arc_holes_get() +
+        simple_polygons: List[SimplePolygon] = \
+            [expansion_outer] + \
+            romi_expansion_plate.large_holes_get() + \
+            romi_expansion_plate.small_holes_get() + \
+            romi_expansion_plate.hex_holes_slots_get() + \
+            romi_expansion_plate.standoff_holes_get() + \
+            romi_expansion_plate.top_slots_get() + \
+            romi_expansion_plate.arc_holes_get() + \
             romi_expansion_plate.miscellaneous_polygons_get()
-        )
 
         # Create and return *expansion_polygon* in an unlocked state:
         expansion_polygon: Polygon = Polygon("Expansion", simple_polygons, lock=True)
@@ -8291,7 +8298,7 @@ class RomiExpansionPlate:
         board_name: str
         for spacer_name, key_name, reference_name, board_name in spacer_tuples:
             assert key_name in positions_table, (f"Can not find '{key_name}' in positions table: "
-                                                 f"{sorted(list(positions_table.keys()))}")
+                                                 f"{sorted(positions_table.keys())}")
             position = positions_table[key_name]
             position_tuple: Tuple[P2D, str, str] = (
                 position, reference_name, board_name)
@@ -8516,7 +8523,7 @@ class RomiMagnet:
         # Extrude, rotate and translate *magnet_polygon* into *translated_magnet*:
         flat_magnet: LinearExtrude = LinearExtrude("Flat Magnet", magnet_polygon, magnet_thickness)
         vertical_magnet: Rotate3D = Rotate3D("Vertical Magnet", flat_magnet,
-                                             -pi/2.0, P3D(0.0, 1.0, 0.0))
+                                             -pi / 2.0, P3D(0.0, 1.0, 0.0))
         translated_magnet: Translate3D = Translate3D("Translated Magnet", vertical_magnet,
                                                      P3D(motor_shaft_east_x, 0.0, motor_shaft_z))
         colored_magnet: Color = Color("Colored Magnet", translated_magnet, "SaddleBrown")
@@ -8610,27 +8617,27 @@ class RomiMotor:
         # The polygon needs to be layed out in the X/Y plane, where as the final orientation
         # is in the Y/Z plane.  So we substitute Z values for X values in the *P2D* below.
         # We lay this polygon out with the wheel axis pointing upward from the origin:
-        gearbox_case_polygon.point_append(P2D(gearbox_casing_top_z, gearbox_casing_dy/2.0))
+        gearbox_case_polygon.point_append(P2D(gearbox_casing_top_z, gearbox_casing_dy / 2.0))
         gearbox_case_polygon.arc_append(center=P2D(0.0, 0.0),  # Wheel axis is at (0.0, 0.0)
-                                        radius=gearbox_casing_dy/2.0,
-                                        start_angle=pi/2.0, end_angle=3.0*pi/2.0)
-        gearbox_case_polygon.point_append(P2D(gearbox_casing_top_z, -gearbox_casing_dy/2.0))
+                                        radius=gearbox_casing_dy / 2.0,
+                                        start_angle=pi / 2.0, end_angle=3.0 * pi / 2.0)
+        gearbox_case_polygon.point_append(P2D(gearbox_casing_top_z, -gearbox_casing_dy / 2.0))
         gearbox_case_polygon.lock()
         extruded_gearbox_case: LinearExtrude = LinearExtrude("Gearbox Casing Linear Extrude",
                                                              gearbox_case_polygon,
                                                              gearbox_casing_dx)
         upright_gearbox: Rotate3D = Rotate3D("Upright Gearbox", extruded_gearbox_case,
-                                             -pi/2.0, P3D(0.0, 1.0, 0.0))
+                                             -pi / 2.0, P3D(0.0, 1.0, 0.0))
         gearbox_casing: Translate3D = Translate3D("Geabox Casing", upright_gearbox,
                                                   P3D(gearbox_motor_casing_x, 0.0, 0.0))
 
         # Construct everything else out of cubes of material:
         motor_casing: CornerCube = CornerCube("Motor Casing",
                                               P3D(gearbox_motor_casing_x,
-                                                  -motor_casing_dy/2.0,
+                                                  -motor_casing_dy / 2.0,
                                                   motor_casing_top_z),
                                               P3D(motor_casing_west_x,
-                                                  motor_casing_dy/2.0,
+                                                  motor_casing_dy / 2.0,
                                                   motor_casing_bottom_z))
         motor_shaft: Cylinder = Cylinder("Motor Shaft", motor_shaft_diameter,
                                          P3D(motor_shaft_west_x, 0.0, motor_shaft_z),
@@ -8642,18 +8649,18 @@ class RomiMotor:
                                          16)
         electrical_north: CornerCube = CornerCube("Electrical North",
                                                   P3D(electrical_west_x,
-                                                      electrical_north_y - electrical_dy/2.0,
-                                                      electrical_z - electrical_dz/2.0),
+                                                      electrical_north_y - electrical_dy / 2.0,
+                                                      electrical_z - electrical_dz / 2.0),
                                                   P3D(electrical_east_x,
-                                                      electrical_north_y + electrical_dy/2.0,
-                                                      electrical_z + electrical_dz/2.0))
+                                                      electrical_north_y + electrical_dy / 2.0,
+                                                      electrical_z + electrical_dz / 2.0))
         electrical_south: CornerCube = CornerCube("Electrical South",
                                                   P3D(electrical_west_x,
-                                                      electrical_south_y - electrical_dy/2.0,
-                                                      electrical_z - electrical_dz/2.0),
+                                                      electrical_south_y - electrical_dy / 2.0,
+                                                      electrical_z - electrical_dz / 2.0),
                                                   P3D(electrical_east_x,
-                                                      electrical_south_y + electrical_dy/2.0,
-                                                      electrical_z + electrical_dz/2.0))
+                                                      electrical_south_y + electrical_dy / 2.0,
+                                                      electrical_z + electrical_dz / 2.0))
 
         # Create a *union* to store all of the parts into:
         union: Union3D = Union3D("Romi Motor Union 3D",
@@ -8718,9 +8725,9 @@ class RomiMotorHolder:
         # Start with the two east most "lips":
         base_clip: CornerCube = CornerCube("Base Clip",
                                            P3D(base_clip_west_x,
-                                               -base_clip_dy/2.0, battery_base_top_z),
+                                               -base_clip_dy / 2.0, battery_base_top_z),
                                            P3D(base_clip_east_x,
-                                               base_clip_dy/2.0, base_clip_top_z))
+                                               base_clip_dy / 2.0, base_clip_top_z))
         east_side: CornerCube = CornerCube("East Side",
                                            P3D(motor_gearbox_east_x,
                                                holder_south_y, base_bottom_z),
@@ -8777,15 +8784,15 @@ class RomiMotorHolder:
         west_side_polygon.point_append(P2D(base_bottom_z, holder_north_y))
         west_side_polygon.point_append(P2D(base_bottom_z, holder_south_y))
         west_side_polygon.point_append(P2D(0.0, holder_south_y))
-        west_side_polygon.arc_append(center=P2D(0.0, 0.0), radius=motor_gearbox_dy/2.0,
-                                     start_angle=3.0*pi/2.0, end_angle=pi/2.0)
+        west_side_polygon.arc_append(center=P2D(0.0, 0.0), radius=motor_gearbox_dy / 2.0,
+                                     start_angle=3.0 * pi / 2.0, end_angle=pi / 2.0)
         west_side_polygon.lock()
 
         # Now convert *west_side_polygon* into *west_side*:
         extruded_west_side: LinearExtrude = LinearExtrude("Extruded West Side",
                                                           west_side_polygon, west_tab_dx)
         rotated_west_side: Rotate3D = Rotate3D("Rotated West Side", extruded_west_side,
-                                               -pi/2.0, P3D(0.0, 1.0, 0.0))
+                                               -pi / 2.0, P3D(0.0, 1.0, 0.0))
         west_side: Translate3D = Translate3D("West Side", rotated_west_side,
                                              P3D(motor_gearbox_west_x + west_tab_dx, 0.0, 0.0))
         # west_side: CornerCube = CornerCube("West Side",
@@ -9130,8 +9137,8 @@ class STLink:
         st_link_temporary_cuts_pcb_chunk: PCBChunk = PCBChunk(
             "ST Link Temporary Cuts", [], [], cuts=[
                 # Power Cut is not needed, but it is still useful for visualization.
-                Square("Power Cut", 2*2.54, 6*2.56, P2D(power_connector_center.x, 4.0)),
-                Square("Signal Cut", 4*2.54, 6*2.56, P2D(signal_connector_center.x, 4.0)),
+                Square("Power Cut", 2 * 2.54, 6 * 2.56, P2D(power_connector_center.x, 4.0)),
+                Square("Signal Cut", 4 * 2.54, 6 * 2.56, P2D(signal_connector_center.x, 4.0)),
             ])
 
         # Create the *st_link_scads_pcb_chunk* needed for *st_link_pcb_chunk*:
@@ -9304,8 +9311,8 @@ class SRF02:
         transducer_dz: float = 12.00  # Pure guess, not in spec. sheet
         transducer_start_z: float = pcb_dz
         transducer_end_z: float = transducer_start_z + transducer_dz
-        transducer_start: P3D = P3D(0.0, pcb_dy/2, transducer_start_z)
-        transducer_end: P3D = P3D(0.0, pcb_dy/2, transducer_end_z)
+        transducer_start: P3D = P3D(0.0, pcb_dy / 2, transducer_start_z)
+        transducer_end: P3D = P3D(0.0, pcb_dy / 2, transducer_end_z)
         transducer: Cylinder = Cylinder("Left Sonar Transducer",
                                         transducer_diameter, transducer_start, transducer_end, 16)
         colored_transducer: Color = Color("Colored Sonar Transducer", transducer, "Gray")
@@ -9578,9 +9585,8 @@ class Footprint:
         # print(f"len(previoius_header):{len(previous_header)}")
         # print(f"last characters match:{header[-1:] == previous_header[-1:]}")
         # print(f"front characters match:{header[:-9] == previous_header[:-9]}")
-        match: bool = (len(header) == len(previous_header) and
-                       header[-1:] == previous_header[-1:] and
-                       header[:-9] == previous_header[:-9])
+        match: bool = len(header) == len(previous_header) and \
+            header[-1:] == previous_header[-1:] and header[:-9] == previous_header[:-9]
         # print(f"match:{match}")
         return match
 
@@ -10122,8 +10128,9 @@ class KicadPCB:
         has_open_parenthesis: bool = "(" in text
         has_close_parenthesis: bool = ")" in text
         is_empty: bool = len(text) == 0
-        needs_quotes: bool = (has_space or has_double_quote or has_single_quote or
-                              has_open_parenthesis or has_close_parenthesis) or is_empty
+        needs_quotes: bool = \
+            has_space or has_double_quote or has_single_quote or \
+            has_open_parenthesis or has_close_parenthesis or is_empty
         result_text: str = f'"{text}"' if needs_quotes else text
         # print(f"KicadPCB.string('{text}') => '{result_text}'")
         return result_text
