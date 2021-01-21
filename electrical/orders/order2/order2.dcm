@@ -1,5 +1,11 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP STADAPTER;M2x4RA
+D ST Adapter Connector
+K ~
+F 
+$ENDCMP
+#
 $CMP ENCODER;2xM1x3RA
 D HR2 Encoder Connectors
 K ~
