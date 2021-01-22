@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name HR2)(type Legacy)(uri ${KIPRJMOD}/HR2.lib)(options "")(descr ""))
+  (lib (name st_adapter-rescue)(type Legacy)(uri ${KIPRJMOD}/st_adapter-rescue.lib)(options "")(descr ""))
+)
