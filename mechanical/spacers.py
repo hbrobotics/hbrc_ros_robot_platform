@@ -26,6 +26,21 @@ class Stack:
 
 
 Stacks = Tuple[Stack, ...]
+
+
+@dataclass
+class StackRequest:
+    """Record of information about a Stack request."""
+
+    name: str  # The name of the stack.
+    desired_height: float  # The desired stack height in millimeters.
+    count: int  # Number required per robot.
+    selected_index: int  # The index of the selected stack.
+    selected_stack: Stack  # The selected stack (initialized to empty and filled in later).
+
+
+StackRequests = Tuple[StackRequest, ...]
+
 StackKey = Tuple[str, ...]
 Selector = Tuple[str, Callable[[str], Immutable]]
 Selectors = Tuple[Selector, ...]
@@ -128,19 +143,21 @@ def main() -> None:
             spacers_list.append(spacer)
     spacers: Spacers = tuple(sorted(spacers_list))
 
-    hr2_heights: Dict[str, float] = {
-        "base_pi_height": 15.80,  # mm
-        "base_master_height": 26.05,  # mm
-        "battery_pi_height": 5.80,  # mm
-        "battery_master_height": 45.55,  # mm
-        "master_nucleo_height": 13.00,  # mm (from class Nucleo144)
-        "master_arm_height": 28.40,  # mm (printed arm_spacer_dz)
-    }
+    empty_stack: Stack = Stack(-1.0, -1.0, -1.0, -1.0, ())
+    stack_requests: StackRequests = (
+        StackRequest("base_pi_height", 15.80, 2, 0, empty_stack),
+        StackRequest("base_master_height", 26.05, 2, 0, empty_stack),
+        StackRequest("battery_pi_height", 5.80, 2, 0, empty_stack),
+        StackRequest("battery_master_height", 45.55, 2, 0, empty_stack),
+        StackRequest("master_nucleo_height", 13.00, 4, 1, empty_stack),  # (from class Nucleo144)
+        StackRequest("master_arm_height", 28.40, 4, 2, empty_stack),  # mm arm_spacer_dz
+    )
 
-    stack_name: str
-    desired_height: float
-    for stack_name, desired_height in hr2_heights.items():
-        distance: float
+    # Fill in the *stack_requests*:
+    stack_index: int
+    stack_request: StackRequest
+    for stack_request in stack_requests:
+        desired_height: float = stack_request.desired_height
         stacks_list: List[Stack] = \
             stacks_search(desired_height, (washers,)) + \
             stacks_search(desired_height, (standoffs,)) + \
@@ -152,14 +169,40 @@ def main() -> None:
         #  stacks_search(desired_height, (washers, spacers)) + \
         # stacks_search(desired_height, (washers, standoffs, spacers)) + \
 
-        print(f"{stack_name}: {desired_height:.2f}mm")
+        print(f"{stack_request.name}: {desired_height:.2f}mm")
         stacks: Stacks = tuple(sorted(stacks_list))
         match_index: int
         for stack_index, stack in enumerate(stacks[:3]):
-            print(f"  {stack_name}[{stack.error:.3f}, "
+            print(f"  {stack_request.name}[{stack.error:.3f}, "
                   f"{stack.unit_price:.2f}, {stack.error_offset:.2f}]:")
             for index, spacer in enumerate(stack.spacers):
-                print(f"    {stack_name}[{stack_index}, {index}]: {spacer}")
+                print(f"    {stack_request.name}[{stack_index}, {index}]: {spacer}")
+
+    # Popluate *digikey_parts* table which maps each Digi-Key part to a list of *StackRequest*'s
+    # that use the part:
+    digikey_part: str
+    digikey_spacers: Dict[str, Spacer] = {}
+    digikey_parts: Dict[str, StackRequests] = {}
+    for stack_index, stack_request in enumerate(stack_requests):
+        print(f"Stack['{stack_request.name}']:")
+        for spacer in stack_request.selected_stack.spacers:
+            digikey_part = str(spacer[-2])
+            assert isinstance(digikey_part, str)
+            if digikey_part not in digikey_parts:
+                digikey_parts[digikey_part] = ()
+            digikey_parts[digikey_part] += (stack_request,)
+            digikey_spacers[digikey_part] = spacer
+
+    for digikey_part, stack_requests in digikey_parts.items():
+        total_count = 0
+        stack_references: List[Tuple[str, int]] = []
+        for stack_request in stack_requests:
+            count: int = stack_request.count
+            total_count += count
+            stack_references.append((stack_request.name, count))
+        print(f"{digikey_part}: {total_count}")
+        print(f"  {stack_references}")
+        print(f"  {digikey_spacers[digikey_part]}")
 
 
 def csv_read(csv_file_name: str, headings: Tuple[str, ...], selectors: Selectors) -> Spacers:
