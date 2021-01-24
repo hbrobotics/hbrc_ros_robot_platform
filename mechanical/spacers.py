@@ -165,9 +165,9 @@ def main() -> None:
             stacks_search(desired_height, (standoffs, spacers)) + \
             stacks_search(desired_height, (standoffs, standoffs, spacers)) + \
             stacks_search(desired_height, (washers, standoffs)) + \
+            stacks_search(desired_height, (washers, spacers)) + \
+            stacks_search(desired_height, (washers, standoffs, spacers)) + \
             stacks_search(desired_height, (washers, standoffs, standoffs, spacers))
-        #  stacks_search(desired_height, (washers, spacers)) + \
-        # stacks_search(desired_height, (washers, standoffs, spacers)) + \
 
         print(f"{stack_request.name}: {desired_height:.2f}mm")
         stacks: Stacks = tuple(sorted(stacks_list))
