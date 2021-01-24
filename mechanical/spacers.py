@@ -116,12 +116,12 @@ def main() -> None:
     spacers: Spacers = tuple(sorted(spacers_list))
 
     hr2_heights: Dict[str, float] = {
-        "master_arm_height": 28.40,  # mm (printed arm_spacer_dz)
-        "master_nucleo_height": 13.00,  # mm (from class Nucleo144)
-        "base_master_height": 26.05,  # mm
-        "battery_master_height": 45.55,  # mm
         "base_pi_height": 15.80,  # mm
+        "base_master_height": 26.05,  # mm
         "battery_pi_height": 5.80,  # mm
+        "battery_master_height": 45.55,  # mm
+        "master_nucleo_height": 13.00,  # mm (from class Nucleo144)
+        "master_arm_height": 28.40,  # mm (printed arm_spacer_dz)
     }
 
     stack_name: str
