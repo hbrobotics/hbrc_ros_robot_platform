@@ -6,12 +6,25 @@
 import csv
 import itertools
 from typing import Callable, Dict, IO, List, Tuple, Union
+from dataclasses import dataclass
 
 Immutable = Union[float, str, int]
-
 Spacer = Tuple[Immutable, ...]
 Spacers = Tuple[Spacer, ...]
-Stack = Tuple[float, float, float, Spacers]
+
+
+@dataclass(order=True)
+class Stack:
+    """A class that represents a stack of washers, standoffs, and spacers."""
+
+    # Order matters.  Minimize error first, error_offset, unit_price.
+    error: float  # The absolute value of the actual height vs the desired height
+    unit_price: float  # The sum of the spacer unit prices
+    error_offset: float  # Signed error (negative means below desired and positive means above.)
+    desired_height: float  # Desired stack height
+    spacers: Spacers  # The spacers that make up th stack
+
+
 Stacks = Tuple[Stack, ...]
 StackKey = Tuple[str, ...]
 Selector = Tuple[str, Callable[[str], Immutable]]
@@ -142,10 +155,11 @@ def main() -> None:
         print(f"{stack_name}: {desired_height:.2f}mm")
         stacks: Stacks = tuple(sorted(stacks_list))
         match_index: int
-        for match_index, match in enumerate(stacks[:3]):
-            print(f"  {stack_name}[{match[0]:.3f}, {match[2]:.2f}, {match[1]:.2f}]:")
-            for index, spacer in enumerate(match[-1]):
-                print(f"    {stack_name}[{match_index}, {index}]: {spacer}")
+        for stack_index, stack in enumerate(stacks[:3]):
+            print(f"  {stack_name}[{stack.error:.3f}, "
+                  f"{stack.unit_price:.2f}, {stack.error_offset:.2f}]:")
+            for index, spacer in enumerate(stack.spacers):
+                print(f"    {stack_name}[{stack_index}, {index}]: {spacer}")
 
 
 def csv_read(csv_file_name: str, headings: Tuple[str, ...], selectors: Selectors) -> Spacers:
@@ -207,7 +221,8 @@ def stacks_search(desired_height: float, search_spacers: Tuple[Spacers, ...]) ->
             assert isinstance(part, str), spacer
             parts += str(part)
         height_offset: float = desired_height - spacers_height
-        stack: Stack = (abs(height_offset), height_offset, prices_total, spacers)
+        stack: Stack = Stack(abs(height_offset), prices_total, height_offset,
+                             desired_height, spacers)
         stack_key: StackKey = tuple(sorted(parts))
         stacks_table[stack_key] = stack
     return list(stacks_table.values())
