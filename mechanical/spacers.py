@@ -5,14 +5,42 @@
 
 import csv
 import itertools
+from dataclasses import dataclass
 from typing import Callable, Dict, IO, List, Tuple, Union
 
 Immutable = Union[float, str, int]
-
 Spacer = Tuple[Immutable, ...]
 Spacers = Tuple[Spacer, ...]
-Stack = Tuple[float, float, float, Spacers]
+
+
+@dataclass(order=True)
+class Stack:
+    """A class that represents a stack of washers, standoffs, and spacers."""
+
+    # Order matters.  Minimize error first, error_offset, unit_price.
+    error: float  # The absolute value of the actual height vs the desired height
+    unit_price: float  # The sum of the spacer unit prices
+    error_offset: float  # Signed error (negative means below desired and positive means above.)
+    desired_height: float  # Desired stack height
+    spacers: Spacers  # The spacers that make up th stack
+
+
 Stacks = Tuple[Stack, ...]
+
+
+@dataclass
+class StackRequest:
+    """Record of information about a Stack request."""
+
+    name: str  # The name of the stack.
+    desired_height: float  # The desired stack height in millimeters.
+    count: int  # Number required per robot.
+    selected_index: int  # The index of the selected stack.
+    selected_stack: Stack  # The selected stack (initialized to empty and filled in later).
+
+
+StackRequests = Tuple[StackRequest, ...]
+
 StackKey = Tuple[str, ...]
 Selector = Tuple[str, Callable[[str], Immutable]]
 Selectors = Tuple[Selector, ...]
@@ -45,6 +73,7 @@ def main() -> None:
         "Material",
     )
 
+    robots_count: int = 5
     washer_selectors: Selectors = (
         ("Thickness", mm_height_select),  # [0]
         ("Type", string_select),  # [1]
@@ -61,7 +90,7 @@ def main() -> None:
     washers = tuple(washers_list)
 
     # Extract *spacers_standoffs* from the associated `.csv` file:
-    spacer_headings = (
+    spacer_standoff_headings = (
         "Datasheet",
         "Image",
         "DK Part #",
@@ -89,7 +118,7 @@ def main() -> None:
         "Plating",
         "Color",
     )
-    spacer_selectors: Selectors = (
+    spacer_standoff_selectors: Selectors = (
         ("Between Board Height", mm_height_select),  # [0]
         ("Type", string_select),  # [1]
         ("Threaded/Unthreaded", string_select),  # [2]
@@ -97,37 +126,31 @@ def main() -> None:
         ("DK Part #", string_select),  # [4] [-2]
         ("Price", float_select),  # [5] [-1]
     )
-    spacers_standoffs: Spacers = csv_read(
-        "spacers_standoffs_#2.csv", spacer_headings, spacer_selectors)
+    spacers: Spacers = csv_read(
+        "spacers_#2.csv", spacer_standoff_headings, spacer_standoff_selectors)
+    standoffs: Spacers = csv_read(
+        "standoffs_#2.csv", spacer_standoff_headings, spacer_standoff_selectors)
 
-    # Extract *spacers* and *standoffs*:
-    standoff: Spacer
-    standoffs_list: List[Spacer] = []
-    for standoff in spacers_standoffs:
-        if standoff[3] == "Male, Female" and standoff[2] == "Threaded":
-            standoffs_list.append(standoff)
-    standoffs: Spacers = tuple(sorted(standoffs_list))
+    # Cull duplicate prices:
+    washers = spacers_cull(washers, "Washers")
+    spacers = spacers_cull(spacers, "Spacers")
+    standoffs = spacers_cull(standoffs, "Standoffs")
 
-    spacer: Spacer
-    spacers_list: List[Spacer] = []
-    for spacer in spacers_standoffs:
-        if spacer[3] == "Female, Female" and spacer[2] == "Threaded":
-            spacers_list.append(spacer)
-    spacers: Spacers = tuple(sorted(spacers_list))
+    empty_stack: Stack = Stack(-1.0, -1.0, -1.0, -1.0, ())
+    stack_requests: StackRequests = (
+        StackRequest("base_pi_height", 15.80, 2, 0, empty_stack),
+        StackRequest("base_master_height", 26.05, 2, 0, empty_stack),
+        StackRequest("battery_pi_height", 5.80, 2, 0, empty_stack),
+        StackRequest("battery_master_height", 45.55, 2, 0, empty_stack),
+        StackRequest("master_nucleo_height", 13.00, 4, 0, empty_stack),  # (from class Nucleo144)
+        StackRequest("master_arm_height", 28.40, 4, 0, empty_stack),  # mm arm_spacer_dz
+    )
 
-    hr2_heights: Dict[str, float] = {
-        "master_arm_height": 28.40,  # mm (printed arm_spacer_dz)
-        "master_nucleo_height": 13.00,  # mm (from class Nucleo144)
-        "base_master_height": 26.05,  # mm
-        "battery_master_height": 45.55,  # mm
-        "base_pi_height": 15.80,  # mm
-        "battery_pi_height": 5.80,  # mm
-    }
-
-    stack_name: str
-    desired_height: float
-    for stack_name, desired_height in hr2_heights.items():
-        distance: float
+    # Fill in the *stack_requests*:
+    stack_index: int
+    stack_request: StackRequest
+    for stack_request in stack_requests:
+        desired_height: float = stack_request.desired_height
         stacks_list: List[Stack] = \
             stacks_search(desired_height, (washers,)) + \
             stacks_search(desired_height, (standoffs,)) + \
@@ -135,17 +158,85 @@ def main() -> None:
             stacks_search(desired_height, (standoffs, spacers)) + \
             stacks_search(desired_height, (standoffs, standoffs, spacers)) + \
             stacks_search(desired_height, (washers, standoffs)) + \
+            stacks_search(desired_height, (washers, spacers)) + \
+            stacks_search(desired_height, (washers, standoffs, spacers)) + \
             stacks_search(desired_height, (washers, standoffs, standoffs, spacers))
-        #  stacks_search(desired_height, (washers, spacers)) + \
-        # stacks_search(desired_height, (washers, standoffs, spacers)) + \
 
-        print(f"{stack_name}: {desired_height:.2f}mm")
-        stacks: Stacks = tuple(sorted(stacks_list))
-        match_index: int
-        for match_index, match in enumerate(stacks[:3]):
-            print(f"  {stack_name}[{match[0]:.3f}, {match[2]:.2f}, {match[1]:.2f}]:")
-            for index, spacer in enumerate(match[-1]):
-                print(f"    {stack_name}[{match_index}, {index}]: {spacer}")
+        print("")
+        print(f"{stack_request.name}: {desired_height:.2f}mm")
+        stacks: Stacks = stacks_cull(tuple(stacks_list))
+        selected_index: int = stack_request.selected_index
+        for stack_index, stack in enumerate(stacks[:8]):
+            flag: str = "*" if stack_index == selected_index else " "
+            print(f"{flag} {stack_request.name}[{stack.error:.2f}, "
+                  f"{stack.unit_price:.2f}, {stack.error_offset:.2f}]:")
+            for index, spacer in enumerate(stack.spacers):
+                print(f"    {stack_request.name}[{stack_index}, {index}]: {spacer}")
+        print("")
+
+        # Select the requested stack:
+        if selected_index >= 0:
+            stack_request.selected_stack = stacks[selected_index]
+
+    # Popluate *digikey_parts* table which maps each Digi-Key part to a list of *StackRequest*'s
+    # that use the part:
+    references_count: int = 0
+    digikey_part: str
+    digikey_spacers: Dict[str, Spacer] = {}
+    digikey_parts: Dict[str, StackRequests] = {}
+    for stack_index, stack_request in enumerate(stack_requests):
+        for spacer in stack_request.selected_stack.spacers:
+            references_count += 1
+            digikey_part = str(spacer[-2])
+            assert isinstance(digikey_part, str)
+            if digikey_part not in digikey_parts:
+                digikey_parts[digikey_part] = ()
+            digikey_parts[digikey_part] += (stack_request,)
+            digikey_spacers[digikey_part] = spacer
+    print(f"References Count:{references_count}")
+
+    total_unit_cost: float = 0.0
+    for digikey_part, stack_requests in digikey_parts.items():
+        total_count = 0
+        stack_references: List[Tuple[str, int]] = []
+        for stack_request in stack_requests:
+            count: int = stack_request.count
+            total_count += count
+            stack_references.append((stack_request.name, count))
+        spacer = digikey_spacers[digikey_part]
+        spacer_unit_price: Immutable = spacer[-1]
+        assert isinstance(spacer_unit_price, float)
+        total_unit_cost += total_count * spacer_unit_price
+        print(f"{digikey_part}: {total_count * robots_count}")
+        print(f"  {stack_references}")
+        print(f"  {spacer}")
+    print(f"Total_unit_cost: 1 Robot: ${total_unit_cost:.2f}")
+    print(f"Total_unit_cost: {robots_count} Robots: ${total_unit_cost*robots_count:.2f}")
+
+
+def spacers_cull(spacers: Spacers, label: str) -> Spacers:
+    """Only use the least expensive spacer of the same height."""
+    spacers_table: Dict[float, Spacer] = {}
+    spacer: Spacer
+    culled: int = 0
+    for spacer in spacers:
+        current_height: Immutable = float(spacer[0])  # Height
+        assert isinstance(current_height, float)
+        current_price: Immutable = spacer[-1]  # Price
+        assert isinstance(current_price, float)
+        if current_height in spacers_table:
+            previous_spacer: Spacer = spacers_table[current_height]
+            previous_price: Immutable = previous_spacer[-1]
+            assert isinstance(previous_price, float)
+            if current_price < previous_price:
+                spacers_table[current_price] = spacer
+            else:
+                culled += 1
+        else:
+            spacers_table[current_price] = spacer
+    culled_spacers: Spacers = tuple(spacers_table.values())
+    print(f"{label}: {len(spacers)} culled down to {len(culled_spacers)}")
+    return culled_spacers
 
 
 def csv_read(csv_file_name: str, headings: Tuple[str, ...], selectors: Selectors) -> Spacers:
@@ -180,8 +271,11 @@ def csv_read(csv_file_name: str, headings: Tuple[str, ...], selectors: Selectors
                     heading, select = selector
                     immutable: Immutable = select(row[indices_table[heading]])
                     immutables.append(immutable)
-                spacer: Spacer = tuple(immutables)
-                spacers_list.append(spacer)
+                height: Immutable = immutables[0]
+                assert isinstance(height, float)
+                if height > 0:
+                    spacer: Spacer = tuple(immutables)
+                    spacers_list.append(spacer)
     return tuple(spacers_list)
 
 
@@ -207,10 +301,42 @@ def stacks_search(desired_height: float, search_spacers: Tuple[Spacers, ...]) ->
             assert isinstance(part, str), spacer
             parts += str(part)
         height_offset: float = desired_height - spacers_height
-        stack: Stack = (abs(height_offset), height_offset, prices_total, spacers)
+        stack: Stack = Stack(abs(height_offset), prices_total, height_offset,
+                             desired_height, spacers)
+        assert stack.error == abs(height_offset)
+        assert stack.unit_price == prices_total
+        assert stack.error_offset == height_offset
+        assert stack.desired_height == desired_height
+        assert stack.spacers == spacers
+
         stack_key: StackKey = tuple(sorted(parts))
         stacks_table[stack_key] = stack
     return list(stacks_table.values())
+
+
+def stacks_cull(stacks: Stacks) -> Stacks:
+    """Return stacks that have duplicate heights culled."""
+    stacks_table: Dict[str, Stack] = {}
+    stack: Stack
+    actual_height: float
+    for stack in stacks:
+        error_offset: str = f"{stack.error_offset:.2f}"
+        if error_offset in stacks_table:
+            unit_price: float = stack.unit_price
+            previous_stack: Stack = stacks_table[error_offset]
+            previous_unit_price: float = previous_stack.unit_price
+            if unit_price < previous_unit_price:
+                stacks_table[error_offset] = stack
+        else:
+            stacks_table[error_offset] = stack
+    culled_stacks_list: List[Stack] = sorted(stacks_table.values())
+
+    # *culled_stacks* is sorted by error.
+    # We are only interested in errors less that .3mm.
+    culled_stacks_list = [stack for stack in culled_stacks_list if stack.error <= 0.3]
+    culled_stacks_list = sorted(culled_stacks_list, key=lambda stack: stack.unit_price)
+    culled_stacks: Stacks = tuple(culled_stacks_list)
+    return culled_stacks
 
 
 def heights_select(heights_text: str) -> Tuple[float, float, str]:
@@ -226,6 +352,21 @@ def heights_select(heights_text: str) -> Tuple[float, float, str]:
         mm_height = float(heights[1].strip(')mm').strip('('))
         fractional_height = "" if len(heights) < 3 else heights[2]
     return (mm_height, inch_height, fractional_height)
+
+
+def fractional_height_select(heights_text: str) -> float:
+    """Select the fractional heights."""
+    fractional_height: str
+    _, _, fractional_height = heights_select(heights_text)
+    height: float = 0.0
+    if fractional_height:
+        if '/' in fractional_height:
+            fractional_splits: List[str] = fractional_height.split('/')
+            if len(fractional_splits) == 2:
+                numerator: float = float(fractional_splits[0])
+                denominator: float = float(fractional_splits[1])
+                height = numerator / denominator
+    return height
 
 
 def mm_height_select(heights_text: str) -> float:
