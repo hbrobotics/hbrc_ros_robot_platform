@@ -2600,7 +2600,7 @@ class Encoder:
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
         encoder_pcb_directory: Path = hr2_directory / "electrical" / "encoder" / "rev_a"
         encoder_pcb_pretty_directory: Path = encoder_pcb_directory / "pretty"
-        encoder_pcb_path: Path = encoder_pcb_directory / "encoder.kicad_pcb"
+        encoder_pcb_path: Optional[Path] = encoder_pcb_directory / "encoder.kicad_pcb"
         # print(f"encoder_pcb_path='{encoder_pcb_path}'")
 
         # Create *encoder_pcb_chunk* that is used on the *encoder_pcb* (see below):
@@ -2611,6 +2611,8 @@ class Encoder:
             shaft_hole_pcb_chunk,
         ])
         encoder_pcb_chunk.footprint_generate("HR2", encoder_pcb_pretty_directory)
+        # Disable pcb_update():
+        encoder_pcb_path = None
         encoder_module: Module3D = encoder_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz, encoder_exterior, "Purple", encoder_pcb_path, [])
         encoder_use_module: UseModule3D = encoder_module.use_module_get()
@@ -4222,7 +4224,7 @@ class MasterBoard:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY environement variable not set"
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
         master_board_directory: Path = hr2_directory / "electrical" / "master_board" / "rev_a"
-        master_kicad_pcb_path: Path = master_board_directory / "master_board.kicad_pcb"
+        master_kicad_pcb_path: Optional[Path] = master_board_directory / "master_board.kicad_pcb"
 
         # Create the east and west encoder mating *PCBChunk*s:
         encoder_mate_pcb_chunk: PCBChunk = encoder.encoder_mate_pcb_chunk
@@ -4389,6 +4391,8 @@ class MasterBoard:
             se_pcb_chunk,
             sw_pcb_chunk
         ])
+        # Disable the pcb_update for now:
+        master_kicad_pcb_path = None
         master_module_with_nucleo: Module3D = master_with_nucleo_pcb_chunk.pcb_update(
             scad_program, pcb_origin, pcb_dz, master_exterior, "Orange", master_kicad_pcb_path, [])
         master_module_without_nucleo: Module3D = master_without_nucleo_pcb_chunk.pcb_update(
@@ -9151,7 +9155,7 @@ class STLink:
         assert "HR2_DIRECTORY" in os.environ, "HR2_DIRECTORY is not a defined environment variable."
         hr2_directory: Path = Path(os.environ["HR2_DIRECTORY"])
         st_adapter_directory: Path = hr2_directory / "electrical" / "st_adapter" / "rev_a"
-        st_adapter_kicad_pcb: Path = st_adapter_directory / "st_adapter.kicad_pcb"
+        st_adapter_kicad_pcb: Optional[Path] = st_adapter_directory / "st_adapter.kicad_pcb"
         st_adapter_pretty_directory: Path = st_adapter_directory / "pretty"
 
         # Create the *st_link_pcb_chunk* and associated *st_link_module*:
@@ -9217,6 +9221,8 @@ class STLink:
         st_adapter_exterior: Square = Square(
             "STLink Adapter Exterior", adapter_pcb_dx, adapter_pcb_dy,
             center=P2D(adapter_pcb_center_x, 0.0), corner_radius=1.5, corner_count=5)
+        # Disable PCB update:
+        st_adapter_kicad_pcb = None
         st_adapter_module: Module3D = st_adapter_pcb_chunk.pcb_update(
             scad_program, pcb_origin, adapter_pcb_dz, st_adapter_exterior,
             "Olive", st_adapter_kicad_pcb, [])
