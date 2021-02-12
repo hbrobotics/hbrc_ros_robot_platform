@@ -54,7 +54,7 @@ class Connectors:
         # print("=>Connectors.__init__()")
 
         # Some constants:
-        pins_dx_dy: float = 2.56  # = .1in
+        pins_dx_dy: float = 2.54  # = .1in
         pcb_pin_height: float = 2.79
         # female_insulation_height: float = 8.85
         female_insulation_height: float = 6.00
@@ -214,7 +214,7 @@ class Connectors:
             insulation_color="Maroon", male_pin_height=8.08,
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
         f2x35: RectangularConnector = RectangularConnector(
-            "F2x35", scad_program, 2, 35, female_insulation_height, pcb_pin_height,
+            "F2x35", scad_program, 2, 35, 8.51, pcb_pin_height,  # SAM1212-35-ND
             insulation_color="Maroon", cut_out=True,
             footprint_drill_diameter=1.016, footprint_pad_diameter=1.524)
 
@@ -6292,7 +6292,7 @@ class RectangularConnector:
                  tracing: str = "") -> None:
         """Initialize RectangularConnector and append to ScadProgram.
 
-        Create a rectangular mail header with through hole PCB pins.
+        Create a rectangular male/female header with through hole PCB pins.
         The center of the resulting header is at the center of the
         header at the surface of the PCB.  All lengths are specified
         in millimeters.

@@ -131,7 +131,9 @@ def main() -> None:
     standoffs: Spacers = csv_read(
         "standoffs_#2.csv", spacer_standoff_headings, spacer_standoff_selectors)
 
-    # Cull duplicate prices:
+    drawers_compute(spacers, standoffs)
+
+    # Cull duplicate spacers with higher prices:
     washers = spacers_cull(washers, "Washers")
     spacers = spacers_cull(spacers, "Spacers")
     standoffs = spacers_cull(standoffs, "Standoffs")
@@ -382,6 +384,102 @@ def string_select(text: str) -> str:
 def float_select(text: str) -> float:
     """Select a floating point number."""
     return float(text)
+
+
+def closest_fractional(mm_height: float) -> Tuple[int, str, float, str]:
+    """Find the closest fractional inch."""
+    inch_height = mm_height / 25.4
+    adjust: float = 1.0 / 128.
+    sixty_forths_numerator: int = int((inch_height + adjust) * 64.0)
+    numerator: int = sixty_forths_numerator
+    denominator: int = 64
+    whole_inches: int = 0
+    while numerator >= 64:
+        numerator -= 64
+        whole_inches += 1
+    while numerator % 2 == 0 and denominator % 2 == 0:
+        numerator >>= 1
+        denominator >>= 1
+    fractional: str = f"{numerator}/{denominator}"
+    drawer_id: str = "hw2ss"  # ss = Spacers/Standoffs
+    if whole_inches:
+        if numerator:
+            fractional = f"{whole_inches}-{fractional}"
+        else:
+            fractional = f"{whole_inches}"
+        drawer_id += f"{whole_inches}"
+    sixty_forths: int = whole_inches + sixty_forths_numerator
+    error = 64 * whole_inches * 64 + float(numerator) / float(denominator) - inch_height
+    if numerator == 0:
+        denominator = 0
+    drawer_id += f"{numerator:02d}{denominator:02d}"
+    return (sixty_forths, fractional, error, drawer_id)
+
+
+def drawers_compute(spacers: Spacers, standoffs: Spacers) -> None:
+    """Extract spacer and standoff part numbers."""
+    # All tables indexed by the spacer/standoff height in 1/64 inch:
+    fractional_table: Dict[int, Tuple[str, str]] = {}
+    drawers_table: Dict[int, Tuple[List[Spacer], List[Spacer]]] = {}  # List[Spacers, Standoffs]
+
+    height: Immutable
+    sixty_forths: int
+    fractional: str
+    price: Immutable
+    part_number: Immutable
+    drawer_id: str
+
+    spacer: Spacer
+    for spacer in spacers:
+        height = spacer[0]
+        assert isinstance(height, float)
+        price = spacer[-1]
+        assert isinstance(price, float)
+        part_number = spacer[-2]
+        assert isinstance(part_number, str)
+
+        sixty_forths, fractional, error, drawer_id = closest_fractional(height)
+        fractional_table[sixty_forths] = (fractional, drawer_id)
+        if sixty_forths not in drawers_table:
+            drawers_table[sixty_forths] = ([], [])
+        drawers_table[sixty_forths][0].append((price, part_number))
+
+    standoff: Spacer
+    for standoff in standoffs:
+        height = standoff[0]
+        assert isinstance(height, float)
+        price = standoff[-1]
+        assert isinstance(price, float)
+        part_number = standoff[-2]
+        assert isinstance(part_number, str)
+
+        sixty_forths, fractional, error, drawer_id = closest_fractional(height)
+        fractional_table[sixty_forths] = (fractional, drawer_id)
+        if sixty_forths not in drawers_table:
+            drawers_table[sixty_forths] = ([], [])
+        drawers_table[sixty_forths][1].append((price, part_number))
+
+    lines: List[str] = []
+    for sixty_forths in sorted(fractional_table.keys()):
+        fractional_drawer_id: Tuple[str, str] = fractional_table[sixty_forths]
+        fractional, drawer_id = fractional_drawer_id
+        drawer: Tuple[List[Spacer], List[Spacer]] = drawers_table[sixty_forths]
+
+        spacers_list: List[Spacer] = sorted(drawer[0])
+        spacer_part_number: str = f"{spacers_list[0][-1]} (SP)" if spacers_list else ""
+
+        standoffs_list: List[Spacer] = sorted(drawer[1])
+        standoff_part_number: str = f"{standoffs_list[0][-1]} (SO)" if standoffs_list else ""
+
+        lines.append(
+            f'    o.drawer("{drawer_id}", ["#2-56 {fractional} Inch", "Spacer/Standoff"],')
+        lines.append(
+            f'             ["D:{spacer_part_number}", "D:{standoff_part_number}"])')
+    lines.append("")
+    code: str = "\n".join(lines)
+    code_file: IO[str]
+    with open("/tmp/drawer_code.py", "w") as code_file:
+        code_file.write(code)
 
 
 if __name__ == "__main__":
