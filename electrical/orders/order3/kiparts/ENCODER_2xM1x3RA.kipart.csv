@@ -1,0 +1,11 @@
+ENCODER;2xM1x3RA,CN,HR2:ENCODER_2xM1x3RA,,HR2 Encoder Connectors,HR2 Encoder Connectors
+"Pin", "Name",     "Type",      "Side",  "Unit", "Style", "Hidden"
+"1",   "GND",      "power_out", "right", "A",    "line",  ""
+"2",   "QUADA",    "in",        "right", "A",    "line",  ""
+"3",   "QUADB",    "in",        "right", "A",    "line",  ""
+"4",   "VCC",      "power_out", "right", "A",    "line",  ""
+"5",   "MOTORIN+", "passive",   "right", "A",    "line",  ""
+"6",   "MOTORIN-", "passive",   "right", "A",    "line",  ""
+"7",   "MOTOR-",   "passive",   "right", "A",    "line",  ""
+"8",   "MOTOR+",   "passive",   "right", "A",    "line",  ""
+,,,,,,

@@ -6,7 +6,7 @@
 import csv
 import itertools
 from dataclasses import dataclass
-from typing import Callable, Dict, IO, List, Tuple, Union
+from typing import Any, Callable, Dict, IO, List, Tuple, Union
 
 Immutable = Union[float, str, int]
 Spacer = Tuple[Immutable, ...]
@@ -35,6 +35,7 @@ class StackRequest:
     name: str  # The name of the stack.
     desired_height: float  # The desired stack height in millimeters.
     count: int  # Number required per robot.
+    first_spacers: Spacers
     selected_index: int  # The index of the selected stack.
     selected_stack: Stack  # The selected stack (initialized to empty and filled in later).
 
@@ -78,8 +79,9 @@ def main() -> None:
         ("Thickness", mm_height_select),  # [0]
         ("Type", string_select),  # [1]
         ("Description", string_select),  # [2]
-        ("DK Part #", string_select),  # [1] [-2]
-        ("Price", float_select),  # [2] [-1]
+        ("Material", string_select),  # [3] [-3]
+        ("DK Part #", string_select),  # [4] [-2]
+        ("Price", float_select),  # [5] [-1]
     )
     washers: Spacers = csv_read("washers_#2.csv", washer_headings, washer_selectors)
     washers_list: List[Spacer] = []
@@ -123,8 +125,9 @@ def main() -> None:
         ("Type", string_select),  # [1]
         ("Threaded/Unthreaded", string_select),  # [2]
         ("Gender", string_select),  # [3]
-        ("DK Part #", string_select),  # [4] [-2]
-        ("Price", float_select),  # [5] [-1]
+        ("Material", string_select),  # [4] [-3]
+        ("DK Part #", string_select),  # [5] [-2]
+        ("Price", float_select),  # [6] [-1]
     )
     spacers: Spacers = csv_read(
         "spacers_#2.csv", spacer_standoff_headings, spacer_standoff_selectors)
@@ -140,12 +143,17 @@ def main() -> None:
 
     empty_stack: Stack = Stack(-1.0, -1.0, -1.0, -1.0, ())
     stack_requests: StackRequests = (
-        StackRequest("base_pi_height", 15.80, 2, 0, empty_stack),
-        StackRequest("base_master_height", 26.05, 2, 0, empty_stack),
-        StackRequest("battery_pi_height", 5.80, 2, 0, empty_stack),
-        StackRequest("battery_master_height", 45.55, 2, 0, empty_stack),
-        StackRequest("master_nucleo_height", 13.00, 4, 0, empty_stack),  # (from class Nucleo144)
-        StackRequest("master_arm_height", 28.40, 4, 0, empty_stack),  # mm arm_spacer_dz
+        StackRequest("base_to_pi", 15.80, 2, spacers, 0, empty_stack),
+        StackRequest("base_to_master", 28.40, 4, spacers, 0, empty_stack),
+        StackRequest("battery_to_pi", 6.35, 2, spacers, 0, empty_stack),
+        # master_nucleo_height from class Nucleo144=13.0  (round down to 1/2 inch=12.7mm)
+        StackRequest("master_to_nucleo_spacer", 12.70, 4, spacers, 0, empty_stack),
+        StackRequest("master_to_nucleo_standoff", 12.70, 1, standoffs, 0, empty_stack),
+        # mm arm_spacer_dz  (1-1/2)
+        StackRequest("master_to_bottom_arm_spacer", 38.10, 2, spacers, 0, empty_stack),
+        StackRequest("master_to_bottom_arm_standoff", 38.10, 2, standoffs, 0, empty_stack),
+        StackRequest("master_to_top_arm_standoff", 38.10 + 2.54, 2, standoffs, 0, empty_stack),
+        StackRequest("top_arm_to_lidar", 76.20, 2, standoffs, 0, empty_stack),
     )
 
     # Fill in the *stack_requests*:
@@ -153,27 +161,28 @@ def main() -> None:
     stack_request: StackRequest
     for stack_request in stack_requests:
         desired_height: float = stack_request.desired_height
+        first_spacers: Spacers = stack_request.first_spacers
         stacks_list: List[Stack] = \
-            stacks_search(desired_height, (washers,)) + \
-            stacks_search(desired_height, (standoffs,)) + \
-            stacks_search(desired_height, (spacers,)) + \
-            stacks_search(desired_height, (standoffs, spacers)) + \
-            stacks_search(desired_height, (standoffs, standoffs, spacers)) + \
-            stacks_search(desired_height, (washers, standoffs)) + \
-            stacks_search(desired_height, (washers, spacers)) + \
-            stacks_search(desired_height, (washers, standoffs, spacers)) + \
-            stacks_search(desired_height, (washers, standoffs, standoffs, spacers))
+            stacks_search(desired_height, (first_spacers,)) + \
+            stacks_search(desired_height, (first_spacers, standoffs)) + \
+            stacks_search(desired_height, (first_spacers, standoffs, washers)) + \
+            stacks_search(desired_height, (first_spacers, standoffs, standoffs)) + \
+            stacks_search(desired_height, (first_spacers, standoffs, standoffs, washers))
 
         print("")
         print(f"{stack_request.name}: {desired_height:.2f}mm")
         stacks: Stacks = stacks_cull(tuple(stacks_list))
         selected_index: int = stack_request.selected_index
-        for stack_index, stack in enumerate(stacks[:8]):
+        for stack_index, stack in enumerate(stacks[:4]):
             flag: str = "*" if stack_index == selected_index else " "
-            print(f"{flag} {stack_request.name}[{stack.error:.2f}, "
-                  f"{stack.unit_price:.2f}, {stack.error_offset:.2f}]:")
+            print(f"{flag} {stack_request.name}[{stack_index}]: "
+                  f"({stack.error:.2f}, {stack.unit_price:.2f}, {stack.error_offset:.2f}):")
             for index, spacer in enumerate(stack.spacers):
-                print(f"    {stack_request.name}[{stack_index}, {index}]: {spacer}")
+                height: Any = spacer[0]
+                assert isinstance(height, float)
+                fractional: str
+                _, fractional, _, _ = closest_fractional(height)
+                print(f"    {stack_request.name}[{stack_index}:{index}]: ({fractional}) {spacer}")
         print("")
 
         # Select the requested stack:
