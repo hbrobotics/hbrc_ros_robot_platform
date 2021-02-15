@@ -30,7 +30,7 @@
 
 KIPARTS_DIRECTORY := kiparts
 
-ORDER := order2
+ORDER := order3
 ORDER_CSV := $(KIPARTS_DIRECTORY)/$(ORDER).csv
 ORDER_LIB := $(ORDER).lib
 ORDER_DCM := $(ORDER).dcm
