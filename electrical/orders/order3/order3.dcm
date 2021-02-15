@@ -6,6 +6,18 @@ K ~
 F 
 $ENDCMP
 #
+$CMP WOW_IN;M2x6S
+D WOW Input Connector
+K ~
+F 
+$ENDCMP
+#
+$CMP WOW_OUT;M2x6S
+D WOW Output Connector
+K ~
+F 
+$ENDCMP
+#
 $CMP ENCODER;2xM1x3RA
 D HR2 Encoder Connectors
 K ~
