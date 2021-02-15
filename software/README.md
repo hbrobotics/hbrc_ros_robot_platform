@@ -98,7 +98,7 @@ The `STM32CubeIDE` IDE is selected because it is directly supported by microcont
 There are others (e.g. `vscode`, `Keil`, etc.) that could work as well,
 but they are not directly supported by STM.
 
-Please doe the following:
+Please do the following:
 
 1. Uninstall Notes:
 
@@ -304,7 +304,7 @@ The `STM32CubeIDE` (Integrated Development Environment) uses the concepts of wor
   to a microcontroller.
   The project directory *can* be stored as a sub-directory in the workspace.
   However, for this project that is not recommended.
-  Instead, projects are store in a different location (the HR2 `git` Repository).
+  Instead, projects are stored in a different location (the HR2 `git` Repository).
   None-the-less, the workspace can work with these projects in various different directories.
   Projects can easily be added and removed from a workspace.
 
