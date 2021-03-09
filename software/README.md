@@ -266,13 +266,336 @@ It program is run for the first time further below in the
 [Firmware Development](#firmware-development) section.
 That concludes `STM32CubeIDE` software installation.
 
+#### Purchases
+
+Please make the following purchases:
+
+* Raspberry Pi 4:
+  Make sure it has at lead 4GB of RAM.
+  8GB is available, but is not really needed.
+  While most of the stuff is available on Amazon, New Egg, Best Buy,
+  the Raspberry Pi 4 is usually cheaper at places like Digi-Key, Mouser, Newark, Arrow, etc.
+  Shop around.
+
+* Raspberry Pi 4 Heat sinks:
+  Make sure you get some Raspberry Pi 4 heat sinks.
+  They come in package of 4 -- 1 large for the processor, 1 medium for the memory, and
+  2 smaller ones for the Ethernet controller and USB controller.
+  *DO NOT* forget to install the heat sinks on to the Raspberry Pi 4.
+
+* Micro-SD to USB Adapter:
+  Make sure that you have a micro-SD to USB adapter.
+  If not, buy one.
+
+* Micro-SD card:
+  32GB micro-SD cards are pretty affordable.
+  Make sure it is `UHS-1`.
+  SanDisk is a common vendor, but there are others.
+  These cards are really small and easy to lose.
+  So keep careful track of them.
+  Also, it does not hurt to buy an extra just in case you misplace one.
+
+* Power Supply:
+  The Raspberry Pi4 is powered via a USB-C connector.
+  Supplies that plug into the wall and produce power for a USB-C connector
+  are readily available from Amazon, New Egg, etc.
+  However, the HR2 is meant to run off of a battery.
+  Instead is recommended that yous skip the wall supply and go directly to the battery.
+  Batteries come and go.
+  The one that is currently recommend is
+  (CONXWAN Power Bank)[https://www.amazon.com/gp/product/B08F7XM5GN/ref=ppx_yo_dt_b_asin].
+  This is has 3 3A output (1 USB-C and 2 USB-A).
+
 ### Robot Computer Ubuntu 20.04 Installation
 
-Download and install
-(Ubuntu 20.04)[https://ubuntu.com/tutorials/how-to-install-ubuntu-desktop-on-raspberry-pi-4]
-on the Raspberry Pi 4.
-Alas, this page designed to be read in full screen mode.
-(When will web page designers ever learn that requiring a full screen is a bad idea?)
+For the HR2, the nominal computer for the Robot Computer
+(see the very beginning of this document) is a Raspberry Pi 4 with at least 4GB.
+The Ubuntu 20.04 distribution of the Linux Operating system
+is installed on the micro-SD card (typically 32GB).
+The micro-SD card is inserted into the Raspberry Pi 4 and powered up.
+
+The directions below are for a headless WiFi connection and are based on the
+[Ubuntu Install Tutotoral](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi)
+for the Raspberry Pi.
+These instructions are for a "headless" install.
+What this means is that there is no need to plug in a display, keyboard, mouse, or network cable
+into the Raspberry Pi4.
+
+The only things required are:
+
+* Development Computer
+
+* Raspberry Pi 4 (see above)
+
+* USB-C Power (see above)
+
+* Micro-SD card with adapter (see above)
+
+* WiFi router connected to your network.
+
+For the WiFi router,
+you are going to need both the SSID (i.e. the router name) and associated password.
+
+The next caveat on these instructions is that only one Raspberry Pi 4 can be powered on
+while the installation is occurring.
+The reason for this is that there is one step in the process
+that requires running the `arp` (Address Resolution Protocol) and
+confusion ensues if more that Raspberry Pi 4 powered up at the same time.
+
+The basic steps are:
+
+1. Install Ubuntu 20.04 image onto a micro-SD card.
+
+2. Make some small changes to the micro-SD card.
+
+3. Install micro-SD card into Raspberry Pi4 and power it up.
+
+4. Determine the internet address of the Raspberry Pi4.
+
+5. Log into the Raspberry Pi 4 via the `ssh` (Secure Shell) program from your development computer.
+
+6. Perform more configuration on the Raspberry Pi 4.
+
+#### Install Ubuntu 20.04 on micro-SD Card
+
+Please do the following steps.
+
+1. Install `rpi-imager`:
+   Run `sudo apt install rpi-imager`.
+   It may ask you for permission (type 'Y`) followe your password (if requested.)
+
+2. Verify installation:
+   Type `which rpi-imager`.
+   It should respond with something like `/usr/bin/rpi-imager`.
+
+3. Insert micro-SD card into development computer:
+   Insert the micro-SD card into micro-SD card adapter.
+   Plug the adapter into a Development computer 
+   Dismiss any pop-windows that show up.
+   If the file browser starts up, you can close that as well.
+
+4. Run `rpi-imager`:
+   Type `rpi-imager` and a window should pop with 3 buttons on it.
+   The first two buttons are `[Choose OS]` and `[Choose SD Card]`.
+   The third button is a grayed out `[Write]` button.
+   
+5. Choose OS:
+   These windows change from time-to-time, so the instructions below may get a little out of date.
+
+   1. Click on `[Choose OS`].
+
+   2. Select `[Other general purpos OS]`.
+
+   3. Select `[Ubuntu]`.
+
+   4. Scroll down to `Ubuntu Server 20.04.X LTS (RPI 3/4/400)`.
+      This is the `64-bit server OS with long term support for arm64 architectures`.
+
+6. Choose SD Card:
+
+   It is extremely likely that only one card will be available.
+   A 32GB micro-SD card might show up as 31.9 GB.
+   Click on it.
+
+7. Write the Card:
+
+   The `[Write]` button should no longer be grayed out.
+   Click on it.
+   Click on `[YES]` in the pop-up.
+   It may ask for your password, type it in and click `[OK]`.
+   You may click on `[CANCEL WRITE]` at any time, but you will have to start all over again.
+   This should take a few minutes.
+
+8. Wait a while for the download to occur:
+   While waiting, please remember that there are additional steps required,
+   so do not unplug the micro-SD card adapter when you are done.
+   When the `rpi-imager` is done, it will say `remove the SC card from the reader`.
+   Do not remove the adapter,
+   but do click on `[Continue]`
+
+9. Close `rpi-imager`:
+   Dismiss the `rpi-imager` program by click on the `[X]` in the upper right corner.
+
+#### Make Micro-SD Card Modifications
+
+This is the part of the instructions that modifies the micro-SD card image to support headless booting.
+
+1. Find `system-boot`:
+   Start your favorite file browser.
+   There should be a section called `removable devices` (or something like that.)
+   You are looking for `system-boot`, please click on it.
+   It should list a whole bunch of stuff.
+
+2. Move into `system-boot` directory:
+   Edit `network-config`.
+
+
+* Setup Raspberry Pi 4.
+
+  * Install your heat sinks.
+
+  * Find a Micro-HDMI to HDMI cable.
+    * Plug the micro end into either one of the two Micro-HDMI ports on the long
+      edge of the Raspberry Pi on the opposite side of from the 40-pin connector.
+    * Plug the other end of the cable into a display.
+    * Turn on the display.
+
+  * Plug a network cable into the RJ45 jack.
+    Plug the other end into your network.
+
+  * Plug a keyboard and mouse into the USB ports.
+    If either the keyboard or mouse are wireless,
+    make sure that they have batteries and are switched "on".
+
+  * Plug the micro-SD card into the micro-SD socket on the bottom the RPi4.
+    The gold connector pins face upwards when sliding the card in.
+
+### `ssh` into Raspberry Pi4
+
+1. ssh into Raspberry Pi4 from development computer:
+   Run `ssh ubuntu@ubuntu`.
+   When prompted for `password:`, type in `ubuntu`.
+   The `ubuntu` will not be visible to keep it secret.
+
+2. Create a user account with a directory:
+   Run `sudo adduser NEWUSER`.
+
+3. `sudo usermod -aG sudo NEWUSER`
+
+   (Issue, do we need to do anything special to setup minicom.)
+
+4. `su NEWUSER`.  Fill in password.
+
+5. `whoami` => NEWUSER
+
+6. `cd && pwd` => '/home/NEWUSER`
+    
+7. `sudo passwd ubuntu`
+   Type in new password
+
+## Road map
+
+# https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi
+
+# On development machine:
+# link to `ip` info: https://packetpushers.net/linux-ip-command-ostensive-definition/
+sudo apt install iproute2   # Get `ip` command
+sudo apt install nmap       # Get `nmap` local net scanner.
+sudo apt install net-tools  # Get `arp` command
+sudo ip neigh flush all     # Flush arp cache *BEFORE* powering up RPi4
+
+# Plug in network cable into RPi4.
+# Install micro-SD card into RPi4.
+# Power up RPi4
+# Wait a couple of minutes for first boot.
+
+nmap -sP 192.168.1.0/24    # Force all addresses to be scanned.
+arp -na | grep -E "b8:27:eb|dc:a6:32"  # Get IP address of RPi4 network connection
+ssh ubuntu@192.168.1.N
+Password: ubuntu
+# It may be necessary to run the command below to clear the fingerprint issue.
+ssh-keygen -f "/home/wayne/.ssh/known_hosts" -R "192.168.1.N"  # Remove fingerprint for IP address
+# Change the password
+ssh ubuntu@192.168.1.N
+Password: NEWPASSWORD
+
+# Now on RPi4
+
+sudo echo NEWHOSTNAME > /etc/hostname
+sudo apt install libnss-mdns mdns-scan  # Tools needed for zeroconf
+ping NEWHOSTNAME.local  # Verify zero-conf is doing its thing.
+exit RPi4
+
+# On dev computer:
+ping NEWHOSTNAME.local  # Verify that zero-conf is doing its thing
+
+ssh ubuntu@NEWHOSTNAME.local
+Password: ubuntu
+
+# Back on RPi4:
+
+# Use nmcli to configure wifi.
+sudo apt install network-manager  # Get `nmcli` tool
+# Configure wifi
+# Use https://kifarunix.com/connect-to-wifi-in-linux-using-nmcli-command/
+sudo atp install net-tools  # Bring in `ifconfig`
+ifconfig  # Verify both interfaces are up.
+sudo halt
+
+# Unplug network cable.
+# Repower RPi4
+
+# Back on Development machine:
+ping NEWHOSTNAME.local
+ssh ubuntu@NEWHOSTNAME.local
+password: ubuntu
+
+# Back on RPi4
+
+# Create user accounts, change passwords, add sudo, etc.
+sudo update
+sudo upgrade
+# Install Foxy
+sudo apt install build-essential
+
+
+# Useful stuff
+
+nmap -sP 192.168.1.0/24
+ssh-keygen -f "/home/wayne/.ssh/known_hosts" -R "192.168.1.112"  # Remove fingerprint for IP address
+arp | grep
+arp -na | grep -E "b8:27:eb|dc:a6:32"
+
+A wifi address will not actually have RasPi HWaddress, instead it will have the address of the router
+
+https://kifarunix.com/connect-to-wifi-in-linux-using-nmcli-command/
+
+* Power up.
+
+  * Plug in a 5.0 volt supply with a Type C USB connector into the USB-C connector
+    next to the left of the two micro-HDMI connectors.
+
+  * If everything works stuff will show up on the screen.
+
+  * Eventually it will prompt with `User:`.  Type in `ubuntu`.
+
+  * Next it will prompt with `Password:`.  Type in `ubuntu`.
+
+  * Next it tell you that the password needs to be changed.
+    It will prompt with `password:` again.  Type in `ubuntu` again.
+
+  * Next it will ask you for a `new password`.  Type it in.  Remember it.
+
+  * Next it will ask you for `new passward again`.  Type in the same password again.
+
+  * Finally, it will promtp with `ubuntu@ubuntu:~$`.  You are logged in.
+
+* OS Setup.
+
+  * Start with updating new packages:
+    * `sudo apt update`.
+      Type in your `password:` when prompted.
+    * `sudo apt upgrade`.
+      Type `Y` to continue.
+      Wait for it to download and upgrade.
+  * `sudo apt install` the following packages:
+    * avahi-daemon
+    * avahi-discover
+    * avahi-utils
+    * libnss-mdns mdns-scan  # For avhi (i.e. zero-conf)
+    * linux-tools-common  # for usbip
+    * linux-tools-generic  # for usbip
+    * network-manager  # for nmcli
+    * network-tools  # for iconfig
+    * minicom
+    * python-is-python3
+    * openssh-server
+  * Install xubuntu:
+    * `sudo apt install tasksel`
+    * `sudo tasksel install xubuntu-desktop`
+      This takes a while.  Unfortunately, the computer can overheat.a
+    
+
 
 ### Robot Computer ROS2 Install
 
@@ -1096,5 +1419,10 @@ Search for "vscode openocd":
 [VSCode OpenOCD Setup](https://www.justinmklam.com/posts/2017/10/vscode-debugger-setup/)
 
 [Shows how VSCode tasks work](https://gist.github.com/janjongboom/51f2edbee8c965741465fa5feefe4cf1)
+
+[Visual Studio on RasPi](https://www.raspberrypi.org/blog/visual-studio-code-comes-to-raspberry-pi/)
+
+[USBIP Tutorial](https://www.linux-magazine.com/Issues/2018/208/Tutorial-USB-IP)
+
 
 -->

@@ -86,6 +86,10 @@ This code probably needs to be recompiled to run on the Arm instruction set for 
 or other non-x86 processors.
 
 <--
+USB_IP Article:
+    https://www.linux-magazine.com/Issues/2018/208/Tutorial-USB-IP
+
+
 Random notes:
 
 Name      STLNK      MPU Port Name   Morpho      ZIO
