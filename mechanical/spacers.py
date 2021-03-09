@@ -8,6 +8,8 @@ import itertools
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, IO, List, Tuple, Union
 
+# TODO: Rename Spacer to SpaceOff (for SPACER/standOFF).
+# TODO: Convert SpaceOff to a @dataclass(frozen=True, order=True, eq=True)
 Immutable = Union[float, str, int]
 Spacer = Tuple[Immutable, ...]
 Spacers = Tuple[Spacer, ...]
@@ -195,19 +197,36 @@ def main() -> None:
     digikey_part: str
     digikey_spacers: Dict[str, Spacer] = {}
     digikey_parts: Dict[str, StackRequests] = {}
+    digikey_height: float
+    digikey_heights: Dict[str, float] = {}
+    digikey_fractional: str
+    digikey_fractionals: Dict[str, str] = {}
     for stack_index, stack_request in enumerate(stack_requests):
         for spacer in stack_request.selected_stack.spacers:
             references_count += 1
             digikey_part = str(spacer[-2])
             assert isinstance(digikey_part, str)
             if digikey_part not in digikey_parts:
+                digikey_height = float(spacer[0])
+                digikey_heights[digikey_part] = digikey_height
+                _, digikey_fractional, _, _ = closest_fractional(digikey_height)
+                digikey_fractionals[digikey_part] = digikey_fractional
                 digikey_parts[digikey_part] = ()
             digikey_parts[digikey_part] += (stack_request,)
             digikey_spacers[digikey_part] = spacer
     print(f"References Count:{references_count}")
 
+    heights: List[Tuple[float, str]] = []
+    for digikey_part, digikey_height in digikey_heights.items():
+        heights.append((digikey_height, digikey_part))
+    heights.sort()
+
+    # Output all of the Digi-Key parts:
     total_unit_cost: float = 0.0
-    for digikey_part, stack_requests in digikey_parts.items():
+    # for digikey_part, stack_requests in digikey_parts.items():
+    for height, digikey_part in heights:
+        digikey_fractional = digikey_fractionals[digikey_part]
+        stack_requests = digikey_parts[digikey_part]
         total_count = 0
         stack_references: List[Tuple[str, int]] = []
         for stack_request in stack_requests:
@@ -218,7 +237,7 @@ def main() -> None:
         spacer_unit_price: Immutable = spacer[-1]
         assert isinstance(spacer_unit_price, float)
         total_unit_cost += total_count * spacer_unit_price
-        print(f"{digikey_part}: {total_count * robots_count}")
+        print(f"{digikey_fractional}: {digikey_part}: {total_count * robots_count}")
         print(f"  {stack_references}")
         print(f"  {spacer}")
     print(f"Total_unit_cost: 1 Robot: ${total_unit_cost:.2f}")
