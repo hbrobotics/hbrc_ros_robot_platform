@@ -1346,6 +1346,72 @@ Now run `stm33cubemx`:
 
 This completes all of the steps needed to run the Blinky program.
 
+## Next steps:
+
+### Microcode download
+
+1. Get usbip working between Desktop and SBC.
+2. Force mode probes or use system-D.
+3. Connect to IDE.
+4. Plug Type-A to Micro cable between RPi4 and Nucleo.
+5. Download a blinky from the IDE.
+
+### Debug UART.
+
+1. Configure Nucelo to output characters at 9600?/115200? baud to UART3 (ST-Link)
+2. Get developement computer to see the character output.
+3. Get double echo working for two communication between development computer and Nucleo
+
+### RPi4 UART
+
+1. Configure Nucleo RPI UART to output at 9600 baud
+2. Get minicom configure for RPi.
+3. Upgrade from software UART to hardware UART.
+4. Get bi-directional code working.
+
+### FreeRTOS
+
+1. Get both UART's working at the same time using FreeRTOS.
+2. Send characters down on UART and back up to the next UART.
+
+### RPi Pin control.
+
+1. Get the RPi digitial IO pins working.
+   * Clear ESTOP
+   * Alive
+   * Shut down
+
+### Motor control
+
+1. Use the RPi pin to clear EStop
+2. Start driving RPi motors
+
+### Encoders
+
+1. Read the encoder pins.
+2. Hook the encoders up to quadrature encoders.
+
+### Start developing Serial Port ROS protocol (ROS Serial, whatever.)
+
+1. Get keyboard teleop working
+
+### Servos
+
+1. Get the ADC's working for the servos.
+2. Output pulse widths
+
+### Sonars
+
+
+
+### LED's
+
+
+### Lidar
+
+
+
+
 <!--
 
 ## VSCodium
