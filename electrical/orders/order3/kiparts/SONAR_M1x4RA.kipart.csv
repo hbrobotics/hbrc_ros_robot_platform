@@ -1,0 +1,7 @@
+"SONAR;M1x4RA", "CN", "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Horizontal", "", "HR2 Sonar In Adapter", "HR2 Sonar In Adapter"
+"Pin", "Name", "Type",      "Side",  "Unit", "Style", "Hidden"
+"1",   "GND",  "power_out", "right", "A",    "line",  ""
+"2",   "ECHO", "in",        "right", "A",    "line",  ""
+"3",   "TRIG", "out",       "right", "A",    "line",  ""
+"4",   "VCC",  "power_out", "right", "A",    "line",  ""
+,,,,,,
