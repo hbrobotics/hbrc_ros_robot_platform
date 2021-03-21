@@ -136,6 +136,8 @@ or other non-x86 processors.
 <--
 USB_IP Article:
     https://www.linux-magazine.com/Issues/2018/208/Tutorial-USB-IP
+Systemd USBIP:
+    https://unix.stackexchange.com/questions/528769/usbip-startup-with-systemd
 
 
 Random notes:
@@ -182,3 +184,4 @@ E5V                                  CN11:6                        Feed 5V in he
 VIN                  Voltage > 5     CN11:24                       Probably better to use E5V
 
 -->
+

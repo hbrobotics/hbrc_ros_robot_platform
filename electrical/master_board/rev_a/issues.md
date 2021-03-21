@@ -42,7 +42,7 @@
     The 2 bottom sonar footprints are correct.
 23. Wheel clearnce is tight.  The Nucleo spacers need to be lifted up by about 3/16 inch.
     In other words -- 1/2" plus 3/16".
-24. 
+24. The motor driver needs a .1µF capicitor between between pin-11 (VCP) and pin-12 (VM).
 
 ## Wire Patches
 
