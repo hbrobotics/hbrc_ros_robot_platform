@@ -47,76 +47,8 @@ For the HR2 there are three computers/microcontrollers of interest:
 The ultimate goal is to be able to develop all software on the development computer and
 download/execute/debug the developed software to the appropriate computer.
 
-## Additional Needed Hardware
-
-In addition to the three computers above (64-bit x86 laptop/desktop), Raspberry Pi 4, and
-STM Nucleo-F767ZI, you need some additional hardware.
-The hardware is listed here, but discussed in greater detail in various sections below.
-
-In the United States For the more specialized electronics,
-[Digi-Key](https://www.digikey.com/) is a common electronics distributor.
-Much of the other items can be purchased from vendors such as Amazon, NewEgg, etc.
-For Digi-Key, links into their website are provided.
-
-* [4GB Raspberry Pi 4](https://www.digikey.com/en/products/detail/raspberry-pi/RASPBERRY-PI-4B-4GB/10258781):
-  This is discussed immediately above.
-
-* [Raspberry Pi 4 Heat Sinks](https://www.digikey.com/en/products/detail/seeed-technology-co-ltd/110991327/10451876)
-  The Raspberry Pi 4 runs hot and needs heat sinks.
-  The HR2 master PCB has holes in the board to radiate heat from the heat sinks.
-  They come in package of 4 -- 1 large for the processor, 1 medium for the memory, and
-  2 smaller ones for the Ethernet controller and USB controller.
-  *DO NOT* forget to install the heat sinks on to the Raspberry Pi 4.
-
-* [Nucelo-F767ZI](https://www.digikey.com/en/products/detail/stmicroelectronics/NUCLEO-F767ZI/6004740)
-  This is discussed in the section immediately above.
-
-* Micro-SD to USB Adapter:
-  There are plenty of these available out there.
-  Search for "USB A to micro SD adapter"
-
-* Micro-SD card:
-  32GB micro-SD cards are pretty affordable.
-  Make sure it is `UHS-1`.
-  SanDisk is a common vendor, but there are others.
-  These cards are really small and easy to lose.
-  So keep careful track of them.
-  Also, it does not hurt to buy an extra just in case you misplace one.
-
-* [Battery Pack](https://www.amazon.com/gp/product/B08F7XM5GN/ref=ppx_yo_dt_b_asin_title_o07_s00):
-  The Raspberry Pi4 is powered via a USB-C connector.
-  Batteries packs come and go.
-  The one that is currently recommend is the CONXWAN 26800mAh Power bank.
-  What is nice about this one is that it has 3 3A output (1 USB-C and 2 USB-A) connectors.
-  In addition, it can be charged either via the USB-C or a forth USB micro connector.
-  While the exact number power capacity (i.e. 26800mAh) is not that important,
-  it is nice to have at least 2 3A outputs.
-  Since some these battery packs do not come with a complete set of charging cables,
-  it may be necessary to purchase additional cables.
-  In general, the HR2 does not need long cables.
-  Also, when the battery pack shows up, be sure to charge it up
-  since it takes a while to charge these battery packs.
-
-For bringing up the Raspberry Pi 4,
-it is frequently useful to have some additional hardware.
-The hardware is listed below is primarily used for bringing up WiFi on the Raspberry Pi 4.
-For completeness, the hardware is listed here,
-but its usage is discussed in the sections further below.
-
-* HDMI Display:
-  The resolution does not particularly matter.
-  The only requirement is that it has a standard sized HDMI input jack.
-
-* Micro-HDMI to regular HDMI adapter cable:
-  The Raspberry Pi 4 has 2 micro HDMI connectors.
-  This cable adapts between the Raspberry Pi 4 micro-HDMI connector
-  and the regular display HDMI connector.
-
-* USB-A Keyboard:
-  This is needed to type commands into the Ubuntu console.
-
-* RJ45 Ethernet Cable:
-  This is very useful for bringing up the Raspberry Pi 4 WiFi.
+There is some [additional needed hardware](#additional-needed-hardware) to perform the software
+and firmware download.
 
 ## Software Download and Install
 
@@ -126,18 +58,108 @@ Setting up Wifi properly is a discussed much further below.
 
 This is broken into the following sections:
 
-1. [Development Computer Ubuntu 20.04 Install](#development-computer-ubuntu-2004-install):
+1. [Additional Needed Hardware](#additional-needed-hardware):
+   Some additional cables, micro-SD cards, etc. are needed during software download and installation.
+
+2. [Development Computer Ubuntu 20.04 Install](#development-computer-ubuntu-2004-install):
    Get the Ubuntu 20.04 Linux distribution running on your development computer
 
-2. [Development Computer ROS2 Install](#development-computer-ros2-install):
+3. [Development Computer ROS2 Install](#development-computer-ros2-install):
    Install ROS2 (Foxy) on your development computer.
 
-3. [Development Computer STM32CubeIDE Install](#development-computer-stm32cubeide-install):
+4. [Development Computer STM32CubeIDE Install](#development-computer-stm32cubeide-install):
    Install the STM32CubeIDE microcontroller software on development computer.
 
-4. [Robot Computer Ubuntu 20.04 Install](#robot-computer-ros2-install)
+5. [Robot Computer Ubuntu 20.04 Install](#robot-computer-ros2-install)
 
-5. [Robot Computer ROS2 Install](#robot-computer-ros2-install)
+6. [Robot Computer ROS2 Install](#robot-computer-ros2-install)
+
+## Additional Needed Hardware
+
+In addition to the three computers above in the [introduction](#introduction),
+you need some additional hardware.
+All of the possible needed hardware is listed here,
+but discussed in greater detail in various sections below.
+
+In the United States For the more specialized electronics,
+[Digi-Key](https://www.digikey.com/) is a common electronics distributor.
+Many of the other items can be purchased from vendors such as Amazon, NewEgg, etc.
+For Digi-Key, links into their website are provided,
+so you do not have to figure out how to find things on their website.
+
+The additional required hardware is needed:
+
+* [4GB Raspberry Pi 4](https://www.digikey.com/en/products/detail/raspberry-pi/RASPBERRY-PI-4B-4GB/10258781):
+  This is robot computer immediately above in the [introduction](#introducion).
+
+* [Raspberry Pi 4 Heat Sinks](https://www.digikey.com/en/products/detail/seeed-technology-co-ltd/110991327/10451876)
+  The Raspberry Pi 4 runs hot and needs heat sinks.
+  The HR2 master printed circuit board (PCB)  has holes in the board to radiate heat from the heat sinks.
+  They come in package of 4 -- 1 large for the processor, 1 medium for the memory, and
+  2 smaller ones for the Ethernet controller and USB controller.
+  *DO NOT* power up the Raspberry Pi 4 microcontroller without first attaching the heat sinks.
+
+* [Nucelo-F767ZI](https://www.digikey.com/en/products/detail/stmicroelectronics/NUCLEO-F767ZI/6004740)
+  This is the robot microcontroller the [introduction](#introduction).
+
+* Micro-SD to USB Adapter:
+  There are plenty of these available out there.
+  Search for "USB A to micro SD adapter".
+
+* Micro-SD card:
+  32GB micro-SD cards are pretty affordable.
+  Make sure it is `UHS-1`.
+  SanDisk is a common vendor, but there are others.
+  These cards are really small and easy to lose.
+  So keep careful track of them.
+  Also, it does not hurt to buy an extra just in case you lose one.
+
+* [Battery Pack](https://www.amazon.com/gp/product/B08F7XM5GN/ref=ppx_yo_dt_b_asin_title_o07_s00):
+  The Raspberry Pi4 is powered via a USB-C connector.
+  Batteries packs come and go.
+  The one that is currently recommend is the CONXWAN 26800mAh Power bank.
+  What is nice about this one is that it has 3 3A output connectors (1 USB-C and 2 USB-A).
+  In addition, it can be charged either via the USB-C or via a forth USB micro connector.
+  While the exact number power capacity (i.e. 26800mAh) is not that important,
+  it is nice to have at least 2 3A outputs.
+  Since some these battery packs do not come with a complete set of charging cables,
+  it may be necessary to purchase additional cables.
+  In general, the HR2 does not need long cables.
+  Also, when the battery first pack shows up,
+  be sure to charge it up  since it takes a while to charge these battery packs.
+
+* USB-A to USB-C Cable:
+  The robot is powered via a USB-A to USB-C cable.
+  Shorter cables are desirable (6in/15cm) to (12in/30cm).
+  The theory was that all USB cables with the correct connectors on the end would "just work".
+  In practice, the marketplace has learned to economize by creating specialized "power" cables
+  which are slightly less expensive to manufacture.
+  Thus, take any cable that is the correct length and do not worry about whether is says "power" or not.
+
+For bringing up the Raspberry Pi 4, it is frequently useful to have some additional hardware.
+The hardware is listed below is primarily used for bringing up WiFi on the Raspberry Pi 4.
+For completeness, the hardware is listed here, but its usage is discussed more completely
+in the [Robot Computer Ubuntu Installation](#robot-computer-ubuntu-installation) section
+of this document.
+Be sure to read about [keyboard/display vs. headless](#robot-computer-ubuntu-installation) configuration
+before purchasing any of the hardware immediately below:
+
+* HDMI Display (for keyboard/display based configuration):
+  The resolution does not particularly matter.
+  The only requirement is that it has a standard sized HDMI input jack.
+
+* Micro-HDMI to regular HDMI adapter cable (for keyboard/display based configuration):
+  The Raspberry Pi 4 has 2 micro HDMI connectors.
+  This cable adapts between the Raspberry Pi 4 micro-HDMI connector
+  and the regular display HDMI connector.
+
+* USB-A Keyboard (for keyboard/display based configuration):
+  This is needed to type commands into the Ubuntu console.
+
+* RJ45 Ethernet Cable (for "headless" based configuration):
+  It is counter-intuitive, but this is very useful for bringing up the Raspberry Pi 4 WiFi.
+
+The list above should be a pretty complete list of the required additional hardware.
 
 ### Development Computer Ubuntu 20.04 Install
 
@@ -341,13 +363,75 @@ It program is run for the first time further below in the
 [Firmware Development](#firmware-development) section.
 That concludes `STM32CubeIDE` software installation.
 
-### Robot Computer Ubuntu Installation
+## Robot Computer Ubuntu Installation
 
-For the HR2, the nominal computer for the Robot Computer
-(see the very beginning of this document) is a Raspberry Pi 4 with at least 4GB.
-The Ubuntu 20.04 distribution of the Linux Operating system
-is installed on the micro-SD card (typically 32GB).
-The micro-SD card is inserted into the Raspberry Pi 4 and powered up.
+This section is broken into the following sub-sections:
+
+* [Command Line Notation](command-line-notation):
+  This briefly discusses the command-line notation rules used.
+
+* [Bring Up Strategy](bring-up-strategy):
+  This discusses the two initial bring up strategies.
+  You get be pick between display/keyboard bring up vs. headless bring up.
+
+* [Raspberry Pi 4 Connector Locations]:
+  This is a quick overview of the Raspberry Pi 4 locations.
+
+* [Install Ubuntu onto a Micro-SD Card](#install-ubuntu-onto-a-micro-sd-card):
+  A program called `rpi-image` isntalled onto your development computer and
+  is used to load the Ubuntu image for the Raspberry Pi4 onto a micro-SD card.
+
+* [Raspberry Pi4 Connector Locations]:
+  This section describes the names and locations of the various Raspberry Pi 4 connectors.
+
+* [Initial Bring Up](initial-bring-up):
+  The Raspberry Pi 4 is powered up logged into.
+
+# [Log In and Configuration]:
+
+
+### Command Line Notation
+
+Most of the configuration is done via typing in commands to a console interpreter
+(i.e. a Linux shell.)
+When you see block of code like:
+
+     # Example comment
+     echo hello
+     # `hello` should show up.
+     
+Just type in the code one line at a time to the console.
+All characters after from sharp character (`#`) onward are a comment that does not need to be typed in.
+
+Also, you will see some upper-case keywords in the scripts below.
+You should substitute the values you choose for these keywords into the scripts below.
+For example, when you `NEWHOSTNAME` you substitute in the new host name that you selected
+(e.g. `myrobot`, `fun4me`, etc.)
+
+These are the current upper-case substitutions:
+
+* `NMAP_IP_RANGE`:
+  This is a special internet protocol address that is used by the `nmap` program.
+  This is for the headless install option only.
+
+* `RPI4_NET_ADDRESS:
+  This is a 4 decimal numbers separated by periods (`.`).
+  This is the initial internet address of the robot.
+  This instruct
+
+* `NEWHOSTNAME`:
+  The original host name provided by the downloaded Ubuntu image is `ubuntu`.
+  This needs to be changed.
+
+* `NEWUSERNAME`:
+  This is a new user account name that you select.
+  Many people just use their first name (e.g. `alice`, `bob`, `carol`, `dave`, etc.)
+
+### Bring Up Strategy
+
+For the HR2, the nominal computer for the Robot Computer is a Raspberry Pi 4 with at least 4GB.
+If necessary,
+reread the [introduction](#introduction) to refresh your memory of what the robot computer is.
 
 There are two installation strategies:
 
@@ -374,28 +458,7 @@ There are two installation strategies:
   If you normally use WiFi, you may have to search for the RJ45 connector on your cable modem.
   If you can not find a live RJ45 connector to plug into, you must use the display/keyboard method.
 
-In the directions immediately below some section only apply to headless and some only for
-display/keyboard and are marked as such.
-
-The overall steps are:
-
-1. [Install Ubuntu onto a Micro-SD Card](#install-ubuntu-onto-a-micro-sd-card):
-   This step downloads a Ubuntu 20.04 image that is suitable for the Raspberry Pi 4
-   and installs it onto a micro-SD card.
-
-2. [Initial Boot and Login](#initial-boot-and-login):
-   This step powers up the Raspberry Pi 4 and gets to the login prompt.
-
-3. [Initial Configuration](#configure-wifi):
-   This step sets up user accounts, enables `sudo` access, and download some software.
-
-4. [Wifi Configuration](#wifi-configuration):
-   This step configures the Wifi connections
-
-5. [Install ROS 2](#install-ros-2):
-   This steps install ROS2 locally on the Raspberry Pi 4.
-
-#### Install Ubuntu onto a Micro-SD Card
+### Install Ubuntu onto a Micro-SD Card
 
 The instructions here are based on 
 [Ubuntu Install](https://ubuntu.com/tutorials/how-to-install-ubuntu-desktop-on-raspberry-pi-4).
@@ -423,7 +486,7 @@ Since web pages change all the time, the steps are summarized below:
 
    1. Click on `[Choose OS`].
 
-   2. Select `[Other general purpos OS]`.
+   2. Select `[Other general purpose OS]`.
 
    3. Select `[Ubuntu]`.
 
@@ -457,12 +520,14 @@ Since web pages change all the time, the steps are summarized below:
 
 10. Remove the micro-SD card.
 
-#### Initial Boot and Login
+### Raspberry Pi 4 Connector Locations
 
-Before getting started please various Raspberry Pi 4 connectors.
-Orient the Raspberry Pi 4 so that the 40-pin connector (2 rows of 20 pins)
+Before getting started please familiarize yourself with the locations of Raspberry Pi 4 connectors.
+
+First, orient the Raspberry Pi 4 so that the 40-pin connector (2 rows of 20 pins)
 is on top and to the left.
-Please find the following connectors:   
+
+Now find the following connectors:   
 
    * RJ45 Ethernet connector:
      This is located on the right edge in the upper right.
@@ -488,15 +553,22 @@ Please find the following connectors:
      Just be aware that this component will light just as soon as power is applied
      to the Raspberry Pi 4.
 
+   * Green Activity LED:
+     There is a green activity LED immediately above the red power LED.
+     Again, you can not tell that it is green.
+     All you need to know is that it is there and turn on and off as various activies
+     occur on the Raspberry Pi 4.
+
 As a further note, there is no on/off switch on the Raspberry Pi 4.
 What this means that as soon as the "power cable" is connected
-between the battery pack  and the Raspberry Pi 4, the Raspberry Pi 4 will start.
+between the battery pack and the Raspberry Pi 4, the Raspberry Pi 4 will probably start.
 Do not plug in any power cable until explicitly told to do so in the instructions below.
+
 While the Raspberry Pi does not have an on/off switch,
 some battery packs do have an on/off switch.
-So depending upon you battery pack, you may have to toggle a batter power switch to provide power.
-Once power is applied, the Red Power LED will light up immediately
-and some other LED's that will light somewhat up after the power LED.
+So depending upon your battery pack, you may have to toggle a batter power switch to provide power.
+Once power is applied, the Red Power LED will light up immediately and
+the green activity LED will start to randomly turn on and off as the Ubuntu operating system powers up.
 In addition, if a display is both powered up and connected,
 it will start to display text on power up.
 
@@ -505,9 +577,20 @@ Please follow the instructions for either
 [Keyboard/Display Installation](#keyboard-display-installation) or
 [Headless Installation](#headless_installation).
 
-Please decide which of the two installation instructions you wish to do.
+### Initial Bring UP
 
-##### Keyboard/Display Installation
+This is where the initial Raspberry Pi 4 power up occurs.
+This takes you as far as the `login:` prompt.
+
+Perform the instructions below depending upon which [bring-up strategy](#bring-up-strategy) you selected:
+
+* [Keyboard/Display Bring Up](#keyboard-display-bring-up):
+  Perform these instructions for the keyboard/display power-up method.
+
+* [Headless Bring-up](#headless-bring-up):
+  Perform these instructions for the headless bring-up method.
+
+#### Keyboard/Display Bring-up
 
 For keyboard/display installation do the following:
 
@@ -535,13 +618,15 @@ For keyboard/display installation do the following:
    the USB-C connector on the Raspberry Pi 4.
    Your battery pack probably came with one, so plug it in and watch the show.
 
-7. When your display shows something like `ubuntu login:` it means you are ready to login
+7. When your display shows something with something like `ubuntu login:` it means you are ready to login
    and start configuring the Raspberry Pi.
    You can skip the section immediately below on headless install.
 
-##### Headless Installation
+Proceed to the [Initial Raspberry Pi 4 Configuration](#initial-raspberry-pi-4-configuration) section.
 
-The rest of this section concerns headless install which is significantly more complicated.
+#### Headless Bring-up
+
+This section concerns headless install which is significantly more complicated than the headless 
 The overall goal of a headless install is to login into the Raspberry Pi 4 remotely
 via the internet.
 
@@ -549,7 +634,7 @@ What makes headless installation harder is that when the Raspberry Pi connects t
 for the very first time is it will ask the network to give it an internet address
 via a protocol call DHCP -- Dynamic Host Configuration Protocol.
 We need to figure out what address was assigned by DHCP
-*before* you can log into the Raspberry Pi 4.
+*before* you can log into the Raspberry Pi 4 from the development computer.
 
 <!-- link to `ip` info: https://packetpushers.net/linux-ip-command-ostensive-definition/ -->
 
@@ -577,9 +662,9 @@ Please perform the following steps:
 
    Run the following command:
 
-     ping `hostname`.local  # Note that the accent ("`") is used instead of the single quote ("'").
+     ping -c 3 `hostname`.local  # Note that the accent ("`") is used instead of the single quote ("'").
      
-   It should start printing out numbers like:
+   It should print out a few lines as follows:
    
      PING ??? (192.168.xxx.yyy) ...
 
@@ -642,19 +727,18 @@ Please perform the following steps:
 
 10. Make sure Raspberry Pi 4 is alive:
 
-         ping RP4_NET_ADDRESS
+         ping -c 3 RP4_NET_ADDRESS
 
-    If you gets some output,
+    If you gets some output.
+    If not, the RP4_NET_ADDRESS you have is not connected to your Raspberry Pi 4 computer
 
-11. Use ssh to log into your Raspberry Pi 4:
+11. Use `ssh` to log into your Raspberry Pi 4:
 
     Run the following command.
 
          ssh ubuntu@RP4_NET_ADDRESS
 
-    It will probably complain about a fingerprint issue.
-
-         ssh-keygen -f "/home/wayne/.ssh/known_hosts" -R "192.168.xxx.yyy"
+    It might probably complain about a fingerprint issue.
 
     Please use the "yes" option.
 
@@ -662,7 +746,7 @@ Please perform the following steps:
     It will printout something:
 
         remove with:
-	ssh-keygen -f "/home/YOURACCOUTN/.ssh/known_hosts -R "AN_IP_ADDRESS"
+	ssh-keygen -f "/home/YOUR_ACCOUNT/.ssh/known_hosts -R "AN_IP_ADDRESS"
 
     Just run the command and try the `ssh ubuntu@RPI_NET_ADDRESS` again.
 
@@ -674,177 +758,205 @@ Please perform the following steps:
 
     Headless login appears to have largely succeeded.
 
-    (talk about it forcing a password change and hanging up)
+    It is now time to proceed to the next section immediately below.
 
-#### Configure Raspberry Pi 4
+### Initial Raspberry Pi 4 Configuration
+
+This section takes you from the `login:` prompt to more complete Raspberry Pi configuration.
 
 The basic steps are as follows:
 
-1. Change the login password:
+1. [Change the Login Password](#change-the-login-password):
+   The initial password is `ubuntu`, but the system forces you to change it to something else.
 
-   When you first login, the system will insist that you change the password
-   for the `ubuntu` account.
-   It will prompt you for the initial password first, followed by the new password two times.
-   The reason for prompting for the new password two times is just in case there is a typo.
-   Upon success, the Raspberry Pi 4 will disconnect.
-   You have successfully changed the password.
+2. [Change the Host Name](#change-the-host-name):
+   It is important the change the host name from `ubuntu` to something else.
 
+3. [Create a New User Account](create-a-new-user-account):
+   It is useful to create a new user account with `sudo` access.
 
-2. Use secure shell to login the Raspberry Pi 4 again:
+4. [Set Up Zero Configuration](set-up-zero_configuration):
+   This allows you to be able to connect to the robot with the robot name.
 
-   Run `ssh ubuntu@RPI_NET_ADDRESS` again.
-   I should prompt for a password.
-   Just type in the new password.
-   You should get prompt that looks like `ubuntu@ubuntu:!$`.
-   You are secure shelled into the Raspberry Pi 4 on the `ubuntu` account.
+5. [Login into Robot from Development Computer](login-into-robot-from-development-computer):
+   Now you should be able to login to the computer from your development computer.
 
-3. Set the Raspberry Pi host name:
+6. [Configure Wifi](configure-wifi):
+   Configure your WiFi access.
 
-   Right now you host name should be `ubuntu`.
+7. [Final Configuration Notes](final-configuration-notes):
+   Some final comments on configuration.
 
-   If you type `hostname`, it should return `ubuntu`.
-   This verifies that the host name is still `ubuntu`.
+#### Change the login password:
 
-   It is important to change the host name to something other than `ubuntu`.
-   The reason why is because it is necessary to get each robot a unique name
-   to make it easier to connect to it.
-   If all robots were named `ubuntu`, you would have to keep typing the annoying internet address
-   (e. g. 192.168.1.yyy`.)
+When you first login, the system will insist that you change the password for the `ubuntu` account.
+It will prompt you for the initial password (`ubuntu`) first, followed by your new password two times.
+The reason for prompting for the new password two times is just in case there is a typo.
+Upon success, the Raspberry Pi 4 will disconnect.
+You have successfully changed the password.
 
-   Come up with a fun new host name.
-   It should be lowercase letters and digits only, with no punctuation
-   (`alice`, `robot4all`, `go2dance`, etc.)
-   In the command below `NEWHOSTNAME` is used in the commands.
-   Please substitute your lowercase letters and digits for `NEWHOSTNAME` below:
+You will have to login again.
+On for the headless bring-up method,
+this will require that you run the `ssh ubuntu@RPI_NET_ADDRESS` command again.
+It should prompt for a password and just type in the new password.
 
-   Run the following commands:
+When you are done with this step the password should be changed and
+you should be logged into the Raspberry Pi 4.
+You should get prompt that looks like `ubuntu@ubuntu:!$`.
 
-        sudo hostnamectl set-hostname NEWHOSTNAME
-        # The prompt should change to `ubuntu@NEWHOSTNAME:$`
-        hostname
-        # You should get back `NEWHOSTNAME`
+#### Change the Host Name:
+
+Right now you host name should be `ubuntu`.
+
+If you type `hostname`, it should return `ubuntu`.
+This verifies that the host name is still `ubuntu`.
+
+It is important to change the host name to something other than `ubuntu`.
+The reason why is because it is necessary to get each robot a unique name
+to make it easier to connect to it.
+If all robots were named `ubuntu`, you would have to keep typing the annoying internet address
+(e. g. 192.168.1.yyy`) instead.
+
+Please come up with a fun new host name.
+It should be lowercase letters and digits only, with no punctuation
+(`alice`, `robot4all`, `go2dance`, etc.)
+In the command below `NEWHOSTNAME` is used in the commands,
+please substitute your lowercase letters and digits for `NEWHOSTNAME` below:
+
+Run the following commands:
+
+     sudo hostnamectl set-hostname NEWHOSTNAME
+     # The prompt should change to `ubuntu@NEWHOSTNAME:$`
+     hostname
+     # You should get back `NEWHOSTNAME`
                 
-4. Create a new user account:
+#### Create a New User Account:
 
-   You are welcome to continue using the `ubuntu` account the Raspberry Pi 4,
-   but most people try to create their own personal accounts.
-   Most people make their account names all lower case letters with no numbers or punctuation
-   (`greatfun`, `fred`, etc.)
-   In the scripts below, substitute your new account name for `NEWUSER`.
+You are welcome to continue using the `ubuntu` account the Raspberry Pi 4,
+but most people try to create their own personal accounts.
+Most people make their account names all lower case letters with no numbers or punctuation
+(`greatfun`, `fred`, etc.)
+
+In the script below, substitute your new account name for `NEWUSER`:
    
-       sudo adduser NEWUSER
-       # Type in new password once
-       # Type in the same password again
-       # Fill in the remaining information.
-       # Type `Y` when it asks `Is the information correct?
+     sudo adduser NEWUSER
+     # Type in new password once
+     # Type in the same password again
+     # Fill in the remaining information.
+     # Type `Y` when it asks `Is the information correct?
 
-5. Give the new account super-user capability:
+Give the new account super-user capability with the following command:
 
-   Run the following command:
+     sudo usermod -aG sudo NEWUSER
 
-       sudo usermod -aG sudo NEWUSER
+Now verify the user account with the commands below:
 
-6. Login to the NEWUSER account:
+     su NEWUSER
+     # Type in password
+     # The prompt should change to `NEWUSER@NEWHOSTNAME@:~$`
+     whoami
+     # It should respond with NEWUSER
+     sudo echo hello
+     # It should prompt for the password again follow by `hello`
+     exit
 
-       su NEWUSER
-       # Type in password
-       # The prompt should change to `NEWUSER@NEWHOSTNAME@:~$`
-       whoami
-       # It should respond with NEWUSER
-       sudo echo hello
-       # It should prompt for the password again follow by `hello`
-       exit
-
-##### Set up zero configuration.
+#### Set up zero configuration.
 
 Zero configuration is a way to export your host name make it easily accessible
 from you development computer.
 This means you will no longer have to type in obscure numbers.
 
-1. Install some zero configuration packages:
+First, install some zero configuration packages with the command below:
 
-  Run the following command:
+     sudo apt install net-tools libnss-mdns mdns-scan
 
-      sudo apt install net-tools libnss-mdns mdns-scan
+Now, verify that it works with the following command:
 
-2. Verify zero conf. is working.
+     ping -c 3 NEWHOSTNAME.local
+     # You should get back several lines of code.
 
-   Run the following command:
+Now logout as follow:
 
-      ping -c 3 NEWHOSTNAME.local
-      # You should get back several lines of code.
+     exit  # Force a logout
 
-##### Disconnect and Reconnect to the Raspberry Pi4:
+#### Login into Robot from Development Computer
 
-It should be very easy to logout and reconnect to the Raspberry Pi 4 now.
+It should be very easy to log into robot computer from your development computer:
 
-1. Disconnect from the Raspberry Pi 4:
+     ssh NEWUSER@NEWHOSTNAME.local
+     # It may complain about authenticity problems.
+     # If so, run `ssh-keygen -f ...` command and try the `ssh NEWUSER@NEWHOSTNAME.local` again.
+     # If it complains about fingerprints, type `Y`.
+     # Type in the password.
+     # You should get a prompt of `NEWUSER@NEWHOSTNAME@hr2b
 
-       exit
-       # It should say `logout` followed by Connection ... closed.
-
-2. Login again:
-
-       ssh NEWUSER@NEWHOSTNAME.local
-       # It may complain about authenticity problems.
-       # If so, run `ssh-keygen -f ...` command and try the `ssh NEWUSER@NEWHOSTNAME.local` again.
-       # If it complains about fingerprints, type `Y`.
-       # Type in the password.
-       # You should get a prompt of `NEWUSER@NEWHOSTNAME@hr2b
-
-##### Setup Wifi
+#### Configure Wifi
 
 The next step requires access to a WiFi router connected to your local network.
 
 <!-- https://kifarunix.com/connect-to-wifi-in-linux-using-nmcli-command/  -->
 
-1. Install network managers:
+1. Install network manager:
 
-   Run the following command:
+        sudo apt install network-manager   
+        Type `Y' for the prompt.  
 
-       sudo apt install network-manager   
-       Type `Y' for the prompt.  
+   You now have a program named `nmcli` (Network Manager Command Line Interface).
 
-   You now have a program named nmcli (Network Manager Command Line Interface).
+2. Verify WiFi is enabled:
 
-2. Verify WiFi is enables:
+   To verify that the wifi is enabled do the following:
 
-   Run the following command:
+        nmcli radio wifi
+        # It should come back with `enabled`.
+        # If `disabled` run `nmcli radio wifi on`
 
-       nmcli radio wifi
-       # It should come back with `enabled`.
-       # If `disabled` run `nmcli radio wifi on`
+3. Search for WiFi access points with the the following command:
 
-3. Search for WiFi access points:
-
-   Run the following commands:
-
-       nmcli dev wifi list
-       # A list of WiFi access points should show up.
+        nmcli dev wifi list
+        # A list of WiFi access points should show up.
 
    The name of the access point is called an `SSID`.
    Find the SSID of the WiFi access point to connect to.
    In the scripts, below substitute the correct name for SSID.
 
-4. Register a Wifi access point for logging in:
-
-  Run the following command:
+4. Register a Wifi access point for logging in with the following command:
 
        sudo nmcli --ask dev connect SSID
        # Type in your `sudo` password if prompted.
        # Type in WiFi password after the password prompt.
 
-5. Verify active connnection:
-
-  Run the following command:
+5. Verify active connection with the following command:
 
        nmcli con show --active
 
   You should see one active connection.
 
-6.
-  
+6. Reboot and Unplug Ethernet Cable with the following commands:
 
+       sudo reboot -h now  # Force an immediate reboot
+       # Now unplug the ethernet cable (for the headless bring up strategy)
+       # Wait a for a couple of minutes
+
+7. From your development computer, verify that the robot computer logged into the WiFi access point
+   with the following command:
+
+       ping -c 3 NEWHOSTNAME.local
+       # You should get 3 ping responses
+
+8. Login/logout to/from the robot computer with the following commands:
+
+       ssh NEWACCOUNT@NEWHOSTNAME
+       # Type in password for prompt
+       # When logged in shut down Raspberry Pi 4
+       sudo halt
+       # Type in password for prompt
+       # The robot should turn off
+
+#### Final Configuration Notes
+
+In general, configuration basically never ends.
+But this is a reasonable place to stop for now.
 
 <!--
 
@@ -934,15 +1046,6 @@ Find the bind ids with:
 usbip list -l
 
 -->
-
-
-### Robot Computer ROS2 Install
-
-There is a short [ROS2 Install Video](https://www.youtube.com/watch?v=AmuLiA840fA)
-that walks you through the
-[ROS2 Install Debians](https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Install-Debians/)
-web page instructions.
-Please follow these instructions.
 
 ## Firmware Development
 
