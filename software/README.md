@@ -70,10 +70,9 @@ This is broken into the following sections:
 4. [Development Computer STM32CubeIDE Install](#development-computer-stm32cubeide-install):
    Install the STM32CubeIDE microcontroller software on development computer.
 
-5. [Robot Computer Ubuntu 20.04 Install](#robot-computer-ros2-install)
+5. [Robot Computer Ubuntu Installation](#robot-computer-ubuntu-installation)
 
-6. [Robot Computer ROS2 Install](#robot-computer-ros2-install)
-
+6. [Robot Computer ROS2 Installation](#robot-computer-ros2-installation)
 ## Additional Needed Hardware
 
 In addition to the three computers above in the [introduction](#introduction),
@@ -953,10 +952,46 @@ The next step requires access to a WiFi router connected to your local network.
        # Type in password for prompt
        # The robot should turn off
 
+
 #### Final Configuration Notes
 
 In general, configuration basically never ends.
 But this is a reasonable place to stop for now.
+
+### Robot Computer ROS2 Installation
+
+* https://docs.ros.org/en/foxy/Installation/Linux-Install-Debians.html
+
+* Another URL:
+    https://roboticsbackend.com/install-ros2-on-raspberry-pi/
+
+* Setup Sources
+
+     sudo apt-key adv --fetch-keys https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
+
+        Executing: /tmp/apt-key-gpghome.nbuwdWLQeY/gpg.1.sh --fetch-keys https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
+        gpg: requesting key from 'https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc'
+        gpg: key F42ED6FBAB17C654: "Open Robotics <info@osrfoundation.org>" not changed
+        gpg: Total number processed: 1
+        gpg:              unchanged: 1
+
+     sudo apt-add-repository http://packages.ros.org/ros2/ubuntu
+
+        Get:1 http://packages.ros.org/ros2/ubuntu focal InRelease [4670 B]
+        Hit:2 http://ports.ubuntu.com/ubuntu-ports focal InRelease                          
+        Hit:3 http://ports.ubuntu.com/ubuntu-ports focal-updates InRelease
+        Get:4 http://packages.ros.org/ros2/ubuntu focal/main arm64 Packages [451 kB]
+        Hit:5 http://ports.ubuntu.com/ubuntu-ports focal-backports InRelease
+        Hit:6 http://ports.ubuntu.com/ubuntu-ports focal-security InRelease
+        Fetched 455 kB in 2s (231 kB/s)   
+        Reading package lists... Done
+
+     sudo apt install -y ros-foxy-ros-base
+     sudo apt install -y  python3-argcomplete
+     sudo apt install -y python3-colcon-common-extensions
+     source /opt/ros/foxy/setup.bash
+     echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
+
 
 <!--
 
@@ -977,9 +1012,43 @@ There are USBIP two articles that the information below is derived from:
 
 1. Install the `linux-tools-common` package:
 
+     # On robot computer:
+     # Do once
      sudo apt install linux-tools-common
      sudo apt install linux-tools-raspi
-     sudo apt install linux-cloud-tools-common  # Not sure about this one
+     sudo apt install hwids  # Not sure this works
+     sudo apt install usbutils
+     sudo apt install linux-cloud-tools-common  # Not sure about this one (seems to help)
+     sudo ln -s /usr/share/misc /usr/share/hwdata  # Only need to do once
+
+     # Do on reboot:
+     sudo modprobe usbip-core  # Not needed
+     *sudo modprobe usbip-host
+     *lsmod | grep usbip
+     *sudo usbipd -D  # Start usbip daemon
+     *netstat -tnlp | grep 3240  # Verify daemon is runnning
+     usbip list -l  # Should list usb ports
+     sudo usbip bind -b BUS_NAME  # 1-1.3 (for example)
+
+     # On development computer:
+     *sudo modprobe vhci_hcd
+     *sudo modprobe usbip_core
+     sudo usbip list -r hr2b.local  # Should show avail devices (there is only one exported for now)
+     sudo usbip attach -r hr2b.local -b BUS_NAME
+     lsusb | grep -i stm
+
+     # Detaching
+     sudo usbip port  # lists ports in use
+     # Prints out each port binding.  
+     sudo usbip detach -p 00  # Note that the port number is a string, not a number
+     lsusb | grep -i stm   # no match
+
+     # Unbind on the robot computer (Really quite optional)
+     sudo usbip unbind -b 1-1.3 # (for example)
+
+
+# Some daemon code that has not been worked on...
+
 
 First become super user:
 
