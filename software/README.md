@@ -1022,6 +1022,7 @@ There are USBIP two articles that the information below is derived from:
      sudo ln -s /usr/share/misc /usr/share/hwdata  # Only need to do once
 
      # Do on reboot:
+     # Note that usbipd is in /usr/bin/usbipd  not  /usr/sbin/usbipd
      sudo modprobe usbip-core  # Not needed
      *sudo modprobe usbip-host
      *lsmod | grep usbip
@@ -1047,8 +1048,50 @@ There are USBIP two articles that the information below is derived from:
      sudo usbip unbind -b 1-1.3 # (for example)
 
 
+<!--
+
+more /etc/systemd/system/usbipd.service
+[Unit]
+Description=usbip host daemon
+
+[Service]
+ExecStartPre=/usr/sbin/modprobe usbip-host
+ExecStart=/usr/bin/usbipd
+ExecStartPost=/usr/local/bin/usbipd.service.sh
+     
+[Install]
+WantedBy=multi-user.target
+
+
+more /usr/local/bin/usbipd.service.sh
+#!/usr/bin/bash
+log_file=/tmp/usbip_bind.log
+echo "/usr/local/bin/usbipd.servce.sh started" > "$log_file"
+/usr/bin/usbip list -p -l 2>&1 >> "$log_file"
+st_link_bus_id="$(/usr/bin/usbip list -p -l)"
+echo "st_link_bus_id1=$st_link_bus_id" >> "$log_file"
+st_link_bus_id=`echo $st_link_bus_id | /usr/bin/grep 0483`
+echo "st_link_bus_id2=$st_link_bus_id" >> "$log_file"
+st_link_bus_id=`echo $st_link_bus_id | /usr/bin/sed s,busid=,,`
+echo "st_link_bus_id3=$st_link_bus_id" >> "$log_file"
+st_link_bus_id=`echo $st_link_bus_id | /usr/bin/sed s,#.*,,`
+echo "st_link_bus_id4=$st_link_bus_id" >> "$log_file"
+if [ "$st_link_bus_id" ]
+then
+    echo "attempting bind" >> "$log_file"
+    /usr/bin/usbip bind -b "$st_link_bus_id" 2>&1 >> "$log_file"
+    echo "bind attempted" >> "$log_file"
+fi
+echo "/usr/local/bin/usbipd.servce.sh ended" >> "$log_file"
+
+
+-->
+
 # Some daemon code that has not been worked on...
 
+https://unix.stackexchange.com/questions/528769/usbip-startup-with-systemdmeet.google.com/qbh-vhse-uzv
+https://clouddocs.web.cern.ch/advanced_topics/share_usb_devices.html
+https://wiki.archlinux.org/index.php/USB/IP#Server_setup
 
 First become super user:
 
@@ -1059,7 +1102,7 @@ In order avoid firing up an editor, an old trick is used using `cat >FILENAME`..
 
 Store the content below into the file `/etc/systemd/system/usbipd.service`
 
-     cat >/etc/systemd/system/usbipd.service
+     # cat >/etc/systemd/system/usbipd.service
      [Unit]
      Description=usbip host daemon
      After=network-online.target
@@ -1070,7 +1113,7 @@ Store the content below into the file `/etc/systemd/system/usbipd.service`
      Restart=always
      ExecStartPre=/usr/sbin/modprobe usbip-core
      ExecStartPre=/usr/sbin/modprobe usbip-host
-     ExecStart=/usr/sbin/usbipd
+     ExecStart=/usr/sbin/usbipd   # <= note that on rp4, this should be /usr/bin/usbipd
      ExecStopPost=/usr/sbin/rmmod usbip-host
      ExecStopPost=/usr/sbin/rmmod usbip-core
      
@@ -1080,7 +1123,7 @@ Store the content below into the file `/etc/systemd/system/usbipd.service`
 
 Store the content below into the file `/etc/systemd/system/usbip-bind@.service`:
 
-     cat >/etc/systemd/system/usbip-bind@.service`
+     # cat >/etc/systemd/system/usbip-bind@.service`
      [Unit]
      Description=Bind USB device to usbipd
      After=network-online.target usbipd.service
@@ -1094,16 +1137,16 @@ Store the content below into the file `/etc/systemd/system/usbip-bind@.service`:
 
      [Install]
      WantedBy=multi-user.target
-     /etc/systemd/system/usbip-bind@.service
+     # Type Control-D to close
 
 Enable and start the daemon with:
 
      systemctl enable usbipd
-     systemctl start usbuipd
+     systemctl start usbuipd  # Probably a typo  usbuipd => usbipd
 
 Then add binds with:
 
-     systemctl enable usbip-bind@1-1.2.3
+     systemctl enable usbip-bind@1-1.2.3   # Using 
      systemctl start usbip-bind@1-1.2.3
 
 Replace 1-1.2.3 with the bind id of the USB device you want to share.
