@@ -59,7 +59,8 @@ Setting up Wifi properly is a discussed much further below.
 This is broken into the following sections:
 
 1. [Additional Needed Hardware](#additional-needed-hardware):
-   Some additional cables, micro-SD cards, etc. are needed during software download and installation.
+   Some additional cables, micro-SD cards, etc. are needed
+   during software download and installation.
 
 2. [Development Computer Ubuntu 20.04 Install](#development-computer-ubuntu-2004-install):
    Get the Ubuntu 20.04 Linux distribution running on your development computer
@@ -70,10 +71,14 @@ This is broken into the following sections:
 4. [Development Computer STM32CubeIDE Install](#development-computer-stm32cubeide-install):
    Install the STM32CubeIDE microcontroller software on development computer.
 
-5. [Robot Computer Ubuntu Installation](#robot-computer-ubuntu-installation)
+5. [Development Computer Configuration](#development-computer-configuration)
+   Some additional configuration for the development computer.
 
-6. [Robot Computer ROS2 Installation](#robot-computer-ros2-installation)
-## Additional Needed Hardware
+6. [Robot Computer Ubuntu Installation](#robot-computer-ubuntu-installation)
+
+7. [Robot Computer ROS2 Installation](#robot-computer-ros2-installation)
+
+### Additional Needed Hardware
 
 In addition to the three computers above in the [introduction](#introduction),
 you need some additional hardware.
@@ -181,6 +186,55 @@ You may do one of the following:
 Once you have Ubuntu 20.04 installed, please install the ROS2 version named
 [Foxy](https://index.ros.org/doc/ros2/Installation/Foxy/) which configured for Ubuntu 20.04.
 Do a full desktop install.
+
+### Development Computer Configuration:
+
+This is where various specialized configurations occur.
+For now there is only one:
+
+* [Install `usbip` Client Service](install-usbip-client-service)
+
+#### Install `usbip` Client Service
+
+The robot microcontroller has an ST-Link system on it that is used for firmware download and debug.
+The robot microcontroller firmware is developed on the development computer.
+The robot computer provides a bridge between the ST-Link on the robot microcontroller
+and the development computer as shown immediately below:
+
+                            IP                    USB
+     Development Computer <====> Robot Computer <=====> Robot Microcontroller
+        (usbip client)            (usbip host)
+
+The protocol is called `usbip` for USB Internet Protocol.
+This protocol enables the access to USB devices on other computers as if they are local.
+
+<!-- Are the correct packages already installed? -->
+
+Create a systemd service file:
+
+     sudo -s   # switch over to super user
+     cat <<EOF > /etc/systemd/system/usbip-client.service
+     [Unit]
+     Description=USB/IP Client Modules
+
+     [Service]
+     Type=oneshot
+     RemainAfterExit=true
+     ExecStart=/sbin/modprobe -qab vhci-hcd
+
+     [Install]
+     WantedBy=multi-user.target
+     EOF
+
+     exit # Exit super user mode
+
+     systemctl enable usbip-client.service
+     systemctl start usbip-client.service 
+     systemctl status usbip-client.service  # Should be OK
+
+     # Verify that it worked:
+     lsmod | grep vhci
+     # Should list two lines
 
 ### Development Computer STM32CubeIDE Install
 
@@ -362,7 +416,7 @@ It program is run for the first time further below in the
 [Firmware Development](#firmware-development) section.
 That concludes `STM32CubeIDE` software installation.
 
-## Robot Computer Ubuntu Installation
+### Robot Computer Ubuntu Installation
 
 This section is broken into the following sub-sections:
 
@@ -373,23 +427,26 @@ This section is broken into the following sub-sections:
   This discusses the two initial bring up strategies.
   You get be pick between display/keyboard bring up vs. headless bring up.
 
-* [Raspberry Pi 4 Connector Locations]:
-  This is a quick overview of the Raspberry Pi 4 locations.
-
 * [Install Ubuntu onto a Micro-SD Card](#install-ubuntu-onto-a-micro-sd-card):
   A program called `rpi-image` isntalled onto your development computer and
   is used to load the Ubuntu image for the Raspberry Pi4 onto a micro-SD card.
 
-* [Raspberry Pi4 Connector Locations]:
+* [Raspberry Pi 4 Connector Locations]:
   This section describes the names and locations of the various Raspberry Pi 4 connectors.
 
 * [Initial Bring Up](initial-bring-up):
-  The Raspberry Pi 4 is powered up logged into.
+  The Raspberry Pi 4 is powered up to the point that it can be logged into.
+  This is easy if you have a keyboard and display plugged into the Raspberry Pi 4
+  and it is significantly more difficult if you are not.
 
-# [Log In and Configuration]:
+* [Login and Configuration](login-and-configuration):
+  This takes you from login up to the point where is ready to do actual software development.
 
+* [Remote USB Installation](remote-usb-installation)
+  Remote USB is used to provide access to the ST-Link on the robot mircocontroller.
+  Code must be installed on both the robot computer (and the development computer.)
 
-### Command Line Notation
+#### Command Line Notation
 
 Most of the configuration is done via typing in commands to a console interpreter
 (i.e. a Linux shell.)
@@ -426,7 +483,7 @@ These are the current upper-case substitutions:
   This is a new user account name that you select.
   Many people just use their first name (e.g. `alice`, `bob`, `carol`, `dave`, etc.)
 
-### Bring Up Strategy
+#### Bring Up Strategy
 
 For the HR2, the nominal computer for the Robot Computer is a Raspberry Pi 4 with at least 4GB.
 If necessary,
@@ -457,7 +514,7 @@ There are two installation strategies:
   If you normally use WiFi, you may have to search for the RJ45 connector on your cable modem.
   If you can not find a live RJ45 connector to plug into, you must use the display/keyboard method.
 
-### Install Ubuntu onto a Micro-SD Card
+#### Install Ubuntu onto a Micro-SD Card
 
 The instructions here are based on 
 [Ubuntu Install](https://ubuntu.com/tutorials/how-to-install-ubuntu-desktop-on-raspberry-pi-4).
@@ -519,7 +576,7 @@ Since web pages change all the time, the steps are summarized below:
 
 10. Remove the micro-SD card.
 
-### Raspberry Pi 4 Connector Locations
+#### Raspberry Pi 4 Connector Locations
 
 Before getting started please familiarize yourself with the locations of Raspberry Pi 4 connectors.
 
@@ -576,7 +633,7 @@ Please follow the instructions for either
 [Keyboard/Display Installation](#keyboard-display-installation) or
 [Headless Installation](#headless_installation).
 
-### Initial Bring UP
+#### Initial Bring Up
 
 This is where the initial Raspberry Pi 4 power up occurs.
 This takes you as far as the `login:` prompt.
@@ -589,7 +646,7 @@ Perform the instructions below depending upon which [bring-up strategy](#bring-u
 * [Headless Bring-up](#headless-bring-up):
   Perform these instructions for the headless bring-up method.
 
-#### Keyboard/Display Bring-up
+##### Keyboard/Display Bring-up
 
 For keyboard/display installation do the following:
 
@@ -623,7 +680,7 @@ For keyboard/display installation do the following:
 
 Proceed to the [Initial Raspberry Pi 4 Configuration](#initial-raspberry-pi-4-configuration) section.
 
-#### Headless Bring-up
+##### Headless Bring-up
 
 This section concerns headless install which is significantly more complicated than the headless 
 The overall goal of a headless install is to login into the Raspberry Pi 4 remotely
@@ -759,7 +816,7 @@ Please perform the following steps:
 
     It is now time to proceed to the next section immediately below.
 
-### Initial Raspberry Pi 4 Configuration
+#### Login and Configuration
 
 This section takes you from the `login:` prompt to more complete Raspberry Pi configuration.
 
@@ -786,7 +843,7 @@ The basic steps are as follows:
 7. [Final Configuration Notes](final-configuration-notes):
    Some final comments on configuration.
 
-#### Change the login password:
+##### Change the login password:
 
 When you first login, the system will insist that you change the password for the `ubuntu` account.
 It will prompt you for the initial password (`ubuntu`) first, followed by your new password two times.
@@ -803,7 +860,7 @@ When you are done with this step the password should be changed and
 you should be logged into the Raspberry Pi 4.
 You should get prompt that looks like `ubuntu@ubuntu:!$`.
 
-#### Change the Host Name:
+##### Change the Host Name:
 
 Right now you host name should be `ubuntu`.
 
@@ -829,7 +886,7 @@ Run the following commands:
      hostname
      # You should get back `NEWHOSTNAME`
                 
-#### Create a New User Account:
+##### Create a New User Account:
 
 You are welcome to continue using the `ubuntu` account the Raspberry Pi 4,
 but most people try to create their own personal accounts.
@@ -859,7 +916,7 @@ Now verify the user account with the commands below:
      # It should prompt for the password again follow by `hello`
      exit
 
-#### Set up zero configuration.
+##### Set up zero configuration.
 
 Zero configuration is a way to export your host name make it easily accessible
 from you development computer.
@@ -878,7 +935,7 @@ Now logout as follow:
 
      exit  # Force a logout
 
-#### Login into Robot from Development Computer
+##### Login into Robot from Development Computer
 
 It should be very easy to log into robot computer from your development computer:
 
@@ -889,7 +946,7 @@ It should be very easy to log into robot computer from your development computer
      # Type in the password.
      # You should get a prompt of `NEWUSER@NEWHOSTNAME@hr2b
 
-#### Configure Wifi
+##### Configure Wifi
 
 The next step requires access to a WiFi router connected to your local network.
 
@@ -953,49 +1010,155 @@ The next step requires access to a WiFi router connected to your local network.
        # The robot should turn off
 
 
-#### Final Configuration Notes
+##### Remote USB Installation
 
-In general, configuration basically never ends.
-But this is a reasonable place to stop for now.
+The robot microcontroller has an ST-Link system on it that is used for firmware download and debug.
+The robot microcontroller firmware is developed on the development computer.
+The robot computer provides a bridge between the ST-Link on the robot microcontroller
+and the development computer as shown immediately below:
 
-### Robot Computer ROS2 Installation
+                            IP                    USB
+     Development Computer <====> Robot Computer <=====> Robot Microcontroller
+        (usbip client)            (usbip host)
 
-* https://docs.ros.org/en/foxy/Installation/Linux-Install-Debians.html
+A system called `usbip` is used to provide remote access to USB devices.
+A `usbip` client is installed on the development computer and a `usbip` host is installed
+on the robot computer.
+When `usbip` properly installed, the development computer accesses the remote ST-Link subusystem
+as if it was locally plugged into the development computer.
 
-* Another URL:
-    https://roboticsbackend.com/install-ros2-on-raspberry-pi/
+This section discusses how install `usbip` on the robot computer.
+It is broken into the following sections:
 
-* Setup Sources
+* [Install `usbip` Packages](install-usbip-packages)
 
-     sudo apt-key adv --fetch-keys https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
+* [Install `usbip` Service](install-usbip-service)
 
-        Executing: /tmp/apt-key-gpghome.nbuwdWLQeY/gpg.1.sh --fetch-keys https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
-        gpg: requesting key from 'https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc'
-        gpg: key F42ED6FBAB17C654: "Open Robotics <info@osrfoundation.org>" not changed
-        gpg: Total number processed: 1
-        gpg:              unchanged: 1
+* [Verify `usbip` Installation(verify-usbip-installation)
 
-     sudo apt-add-repository http://packages.ros.org/ros2/ubuntu
+###### Install `usbip` Packages
 
-        Get:1 http://packages.ros.org/ros2/ubuntu focal InRelease [4670 B]
-        Hit:2 http://ports.ubuntu.com/ubuntu-ports focal InRelease                          
-        Hit:3 http://ports.ubuntu.com/ubuntu-ports focal-updates InRelease
-        Get:4 http://packages.ros.org/ros2/ubuntu focal/main arm64 Packages [451 kB]
-        Hit:5 http://ports.ubuntu.com/ubuntu-ports focal-backports InRelease
-        Hit:6 http://ports.ubuntu.com/ubuntu-ports focal-security InRelease
-        Fetched 455 kB in 2s (231 kB/s)   
-        Reading package lists... Done
+Install the following packages:
 
-     sudo apt install -y ros-foxy-ros-base
-     sudo apt install -y  python3-argcomplete
-     sudo apt install -y python3-colcon-common-extensions
-     source /opt/ros/foxy/setup.bash
-     echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
+     sudo apt install linux-tools-common
+     sudo apt install linux-tools-raspi
+     sudo apt install usbutils
+     sudo apt install linux-cloud-tools-common  # Not sure about this one (seems to help)
 
+Install the following symbolic link:
 
-<!--
+     sudo ln -s /usr/share/misc /usr/share/hwdata  # Only need to do once
 
-### Bring Up `usbip`
+The symbolic link deals with the fact that the USB ids file got moved from `/usr/share/hwdata`
+to `/usr/share/misc`.
+It is much easier to fix this problem with a symbolic link than it is to fix the code.
+
+Once you have installed the packages and symbolic link, verify that everything is installed.
+
+    which usbip   # Should return `/usr/bin/usbip`   # This is the `usbip` user level program
+    which usbipd  # Should return `/usb/bin/usbipd`  # This is the `usbip` daemon.
+
+###### Install `usbip` Service
+
+The Robot computer needs to do three things on start-up.
+
+1. Load a couple of kernel modules -- `usbip-core` and `usbip-host`.
+
+2. Start the `usbipd` daemon.
+
+3. Find the ST-Link and make it available for remote access.
+
+This is done with two files:
+
+* `/etc/systemd/system/usbip_host.service`:
+  This is a `systemd` unit file that properly installs the kernel modules
+  and runs the daemon.
+  It also invokes the `usbip_host.service.sh` shell file.
+
+* `/usr/local/bin/usbip_host.service.sh`:
+  This determines if an ST-Link plugged into one of the robot computer USB ports and
+  (if present) bind it such that it is available for external access.
+  
+The is installed as super user:
+
+     sudo -s  # If prompted for a password, type it in.
+     # Prompt character changes from `>` to `#` to remind you that your are super-user
+
+Now the `/etc/systemd/system/usbip_host.service` is installed as follows:
+
+     cat <<EOF > /etc/systemd/system/usbip_host.service
+     [Unit]
+     Description=usbip host daemon
+
+     [Service]
+     ExecStartPre=/usr/sbin/modprobe usbip-host
+     ExecStart=/usr/bin/usbipd
+     ExecStartPost=/usr/local/bin/usbipd_host.service.sh
+     
+     [Install]
+     WantedBy=multi-user.target
+     EOF
+
+Now the `/usr/local/bin/usbip_host.service.sh` file is installed as:
+
+     cat <<EOF > /usr/local/bin/usbipd.service.sh
+     #!/usr/bin/bash
+     log_file=/tmp/usbip_bind.log
+     echo "/usr/local/bin/usbipd.servce.sh started" > "$log_file"
+     /usr/bin/usbip list -p -l 2>&1 >> "$log_file"
+     st_link_bus_id="$(/usr/bin/usbip list -p -l)"
+     echo "st_link_bus_id1=$st_link_bus_id" >> "$log_file"
+     st_link_bus_id=`echo $st_link_bus_id | /usr/bin/grep 0483`
+     echo "st_link_bus_id2=$st_link_bus_id" >> "$log_file"
+     st_link_bus_id=`echo $st_link_bus_id | /usr/bin/sed s,busid=,,`
+     echo "st_link_bus_id3=$st_link_bus_id" >> "$log_file"
+     st_link_bus_id=`echo $st_link_bus_id | /usr/bin/sed s,#.*,,`
+     echo "st_link_bus_id4=$st_link_bus_id" >> "$log_file"
+     if [ "$st_link_bus_id" ]
+     then
+         echo "attempting bind" >> "$log_file"
+         /usr/bin/usbip bind -b "$st_link_bus_id" 2>&1 >> "$log_file"
+         echo "bind attempted" >> "$log_file"
+     fi
+     echo "/usr/local/bin/usbipd.servce.sh ended" >> "$log_file"
+     EOF
+
+This file has a lot of logging code that is used to figure if something went wrong.
+The `echo` statements are used for debugging only.
+What this file does is list the USB devices and their associated bus ids.
+The ST-Link device is found (USB id `0483`) and the bus id is extracted.
+If the bus id is found, the ST-link is bound by `usbip` and it is available for remote use.
+
+Now exit super-user mode:
+
+     exit
+
+###### Verify `usbip` Installation
+
+Verify that both files exist:
+
+     ls -l /etc/systemd/system/usbip_host.service  # Should print a one line directory listing
+     ls -l /usr/local/bin/usbipd_host.service.sh   # Should print a one line directory listing
+
+Once you have installed both of these files you need to reboot and verify that everything is working:
+
+     sudo reboot -h now
+
+You will have to log in again.
+
+Verify that the kernel modules are loaded:
+
+     lsmod | grep usbip-host  # This should produce two lines
+
+Verify that the `usbipd` daemon is listening on port 3242:
+
+     netstat -tnlp | grep 3240  # Verify daemon is runnning, this should list at least one line
+
+Run the `usbip` command:
+
+     usbip list -l  # List various local (i.e. `-l`) USB ports
+
+<!-- USBIB Notes:
 
 `usbip` is a protocol for connecting 
 
@@ -1006,22 +1169,20 @@ There are USBIP two articles that the information below is derived from:
 * [Stack Overflow](https://unix.stackexchange.com/questions/528769/usbip-startup-with-systemd)
 
 * [RPi](https://community.home-assistant.io/t/rpi-as-z-wave-zigbee-over-ip-server-for-hass/23006)
-#### Download `usbip`
 
-#### Configure `systemd` Configuration Files
-
-1. Install the `linux-tools-common` package:
+* [Cern CentOS usbip](https://clouddocs.web.cern.ch/advanced_topics/share_usb_devices.html)
+Some commands:
 
      # On robot computer:
      # Do once
      sudo apt install linux-tools-common
      sudo apt install linux-tools-raspi
-     sudo apt install hwids  # Not sure this works
      sudo apt install usbutils
      sudo apt install linux-cloud-tools-common  # Not sure about this one (seems to help)
      sudo ln -s /usr/share/misc /usr/share/hwdata  # Only need to do once
 
      # Do on reboot:
+     # Note that usbipd is in /usr/bin/usbipd  not  /usr/sbin/usbipd
      sudo modprobe usbip-core  # Not needed
      *sudo modprobe usbip-host
      *lsmod | grep usbip
@@ -1046,75 +1207,59 @@ There are USBIP two articles that the information below is derived from:
      # Unbind on the robot computer (Really quite optional)
      sudo usbip unbind -b 1-1.3 # (for example)
 
-
-# Some daemon code that has not been worked on...
-
-
-First become super user:
-
-     sudo -s
-     # If prompted, type in your password next
-
-In order avoid firing up an editor, an old trick is used using `cat >FILENAME`...      
-
-Store the content below into the file `/etc/systemd/system/usbipd.service`
-
-     cat >/etc/systemd/system/usbipd.service
-     [Unit]
-     Description=usbip host daemon
-     After=network-online.target
-     Wants=network-online.target
-
-     [Service]
-     Type=simple
-     Restart=always
-     ExecStartPre=/usr/sbin/modprobe usbip-core
-     ExecStartPre=/usr/sbin/modprobe usbip-host
-     ExecStart=/usr/sbin/usbipd
-     ExecStopPost=/usr/sbin/rmmod usbip-host
-     ExecStopPost=/usr/sbin/rmmod usbip-core
-     
-     [Install]
-     WantedBy=multi-user.target
-     # Type Control-D to close
-
-Store the content below into the file `/etc/systemd/system/usbip-bind@.service`:
-
-     cat >/etc/systemd/system/usbip-bind@.service`
-     [Unit]
-     Description=Bind USB device to usbipd
-     After=network-online.target usbipd.service
-     Wants=network-online.target usbipd.service
-
-     [Service]
-     Type=oneshot
-     RemainAfterExit=yes
-     ExecStart=/usr/sbin/usbip bind --busid %i
-     ExecStop=/usr/sbin/usbip unbind --busid %i
-
-     [Install]
-     WantedBy=multi-user.target
-     /etc/systemd/system/usbip-bind@.service
-
-Enable and start the daemon with:
-
-     systemctl enable usbipd
-     systemctl start usbuipd
-
-Then add binds with:
-
-     systemctl enable usbip-bind@1-1.2.3
-     systemctl start usbip-bind@1-1.2.3
-
-Replace 1-1.2.3 with the bind id of the USB device you want to share.
-You can use as many of these as devices you want to share and you canthen bind and unbind each one
-individually and have then bind at machine startup (or not).
-
-Find the bind ids with:
-
-usbip list -l
-
 -->
+
+##### Final Configuration Notes
+
+In general, configuration basically never ends.
+But this is a reasonable place to stop for now.
+The next major step is to install ROS2 on the robot computer
+
+### Robot Computer ROS2 Installation
+
+<!--
+* https://docs.ros.org/en/foxy/Installation/Linux-Install-Debians.html
+
+* Another URL:
+    https://roboticsbackend.com/install-ros2-on-raspberry-pi/
+-->
+
+The intial installaton of ROS2 is pretty straight forward.
+The ROS2 organization maintains its own PPA (Personal Package Archive).
+The steps are:
+
+1. [Connect to ROS2 PPA](connect-to-ros2-ppa):
+   The ROS2 organization maintains its own PPA (Personal Package Archive).
+
+2. [Download ROS2 Foxy](download-ros2-foxy):
+   The latest ROS2 release is called "Foxy".
+
+3. [Final ROS2 Configuration](final-ros2-configuration):
+   The final ROS2 configuration is pretty simple.
+
+#### Connect to ROS2 PPA
+
+The ROS2 instructions for connecting to the ROS2 PPA are a little more involved
+than the instructions immediately below.
+The insturctions use `apt-key` rather than `curl`:
+
+     sudo apt-key adv --fetch-keys https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
+     sudo apt-add-repository http://packages.ros.org/ros2/ubuntu
+
+####  Download ROS2 Foxy
+
+Next install foxy:
+
+     sudo apt install -y ros-foxy-ros-base
+     sudo apt install -y  python3-argcomplete
+     sudo apt install -y python3-colcon-common-extensions
+
+#### Final ROS2 Configuration
+
+Next some modifications are made to make ROS2 more permanent:
+
+     source /opt/ros/foxy/setup.bash
+     echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
 
 ## Firmware Development
 
@@ -1202,7 +1347,6 @@ Now, please follow the following steps:
    
    Select on `[Existing Projects into Workspace]` and click on the `[Next>]` button.
    
-
 6. Import Projects:
 
    The `[Import Projects]` window pops up.
@@ -1210,7 +1354,6 @@ Now, please follow the following steps:
    Now you get to `(x) Select  root directory` and  click on the `[Browse...]` button.
    Using a file chooser, select the directory `$HR2_DIRECTORY/software`,
    where `$HR2_DIRECTORY` is the directory that contains the local copy of the HR2 `git` repository.
-
 
 7. Import `blinky`:
 
