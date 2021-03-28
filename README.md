@@ -725,6 +725,11 @@ The current files in the `bin` directory are:
   environment that has been configured to work with the `stm32cube` software for supporting
   STM32 micro-controllers.
 
+* `xstm32cubeid`:
+  This is a shell script that attempt to attach to an externel (i.e. remote) ST-Link
+  before starting the stm32cube.
+  This is preformed using an the `usbip` (i.e. USB Internet Protocol) for remote access to USB devices.
+
 More scripts are likely to be added over time.
 
 #### Coding Style
