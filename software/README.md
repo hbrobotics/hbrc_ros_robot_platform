@@ -192,7 +192,9 @@ Do a full desktop install.
 This is where various specialized configurations occur.
 For now there is only one:
 
-* [Install `usbip` Client Service](#install-usbip-client-service)
+* [Install `usbip` Client Service](#install-usbip-client-service):
+  The `usbip` protocol is used to allow the development computer to connect to the ST-Link
+  on the robot micrcontroller.
 
 #### Install `usbip` Client Service
 
@@ -431,7 +433,7 @@ This section is broken into the following sub-sections:
   A program called `rpi-image` isntalled onto your development computer and
   is used to load the Ubuntu image for the Raspberry Pi4 onto a micro-SD card.
 
-* [Raspberry Pi 4 Connector Locations](#raspberry_pi_4_connector_locations):
+* [Raspberry Pi 4 Connector Locations](#raspberry-pi-4-connector-locations):
   This section describes the names and locations of the various Raspberry Pi 4 connectors.
 
 * [Initial Bring Up](#initial-bring-up):
@@ -1034,7 +1036,7 @@ It is broken into the following sections:
 
 * [Install `usbip` Service](#install-usbip-service)
 
-* [Verify `usbip` Installation(#verify-usbip-installation)
+* [Verify `usbip` Installation](#verify-usbip-installation)
 
 ###### Install `usbip` Packages
 
