@@ -1,3 +1,26 @@
+<!--
+MIT License
+
+Copyright 2020-21 Home Brew Robotics Club
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be included in all copies
+or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
 # HR2 Robot Software
 
 <!-- ==================================== 100 Characters ======================================= -->
@@ -833,7 +856,7 @@ The basic steps are as follows:
 3. [Create a New User Account](#create-a-new-user-account):
    It is useful to create a new user account with `sudo` access.
 
-4. [Set Up Zero Configuration](#set-up-zero_configuration):
+4. [Set Up Zero Configuration](#set-up-zero-configuration):
    This allows you to be able to connect to the robot with the robot name.
 
 5. [Login into Robot from Development Computer](#login-into-robot-from-development-computer):
@@ -842,7 +865,11 @@ The basic steps are as follows:
 6. [Configure Wifi](#configure-wifi):
    Configure your WiFi access.
 
-7. [Final Configuration Notes](#final-configuration-notes):
+7. [Remote USB Installation](#remote-usb-installation):
+   This configures a system call `usbip`
+   for remote access to the ST-Link device on the Robot Microcontroller.
+
+8. [Final Configuration Notes](#final-configuration-notes):
    Some final comments on configuration.
 
 ##### Change the login password:
@@ -1160,7 +1187,7 @@ Run the `usbip` command:
 
      usbip list -l  # List various local (i.e. `-l`) USB ports
 
-<!-- USBIB Notes:
+<!-- USBIP Notes:
 
 `usbip` is a protocol for connecting 
 

@@ -1,0 +1,103 @@
+#!/bin/bash
+# This file is licensed using the "MIT License" below:
+#
+####################################################################################################
+#
+# MIT License
+#
+# Copyright 2021 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+####################################################################################################
+#<---------------------------------------- 100 Characters ---------------------------------------->#
+
+# A program to run the stm32cubeid with a remote connection to the ST-Link on the nucleo.
+#
+# This code makes a destinction between whether the HR2_REMOTE environment variable in one of 3 states:
+#
+# 1. Unset:
+#    In the unset state, no attempt is made to attach to the remote ST-Link.
+#    An annoying message is output to tell the user to set the HR2_REMOTE environment variable.
+# 2. Set to empty:
+#    When set to the empty string, the user is saying, do not bother with attempt to to attach
+#    to a remote ST-Link.  No annoying message is generated either.
+# 3. Set to non-empty:
+#    When set to an none empty value, this code will attempt to find and attach to the ST-Link
+#    device on that machine.
+#
+# This is accomplished by a very obsure bash syntax that goes by the name of "parameter expanson".
+# The syntax is ${VAR+DEFAULT} returns the value of VAR if it is set and "DEFAULT" if it is not set.
+# You have been warned.
+
+PORT_NAME=""
+if [ "$HR2_REMOTE" ]
+then
+    # HR2_REMOTE is non-empty.  Search for remote ST-link.
+    if [ "$(which usbip)" ]
+    then
+	BUS_NAME=$(usbip list -r "$HR2_REMOTE" 2>&1 | grep 0483 | sed "s,:.*,," | sed "s, *,,g")
+        if [ "$BUS_NAME" ]
+	then
+	    echo "You may be prompted for your sudo password (i.e. your login password)."
+	    echo "Attempting attach to ST-Link at $HR2_REMOTE via $BUS_NAME ..."
+	    sudo usbip attach -r "$HR2_REMOTE" -b "$BUS_NAME"
+            sleep 5
+	    PORT_NAME="$(usbip port 2>&1 | grep Port | sed 's,Port ,,' | sed 's,:.*,,')"
+	    echo "PORT_NAME=$PORT_NAME"
+	    if [ "$PORT_NAME" ]
+	    then
+		echo "Remote ST-Link appears to have been found."
+	    else
+		echo "Remote ST-Link was found, but attach failed."
+	    fi
+	else
+	    echo "Unable to find remote ST-Link."
+	fi
+    else
+	echo "/usb/bin/usbip is not installed.  Not attempting to find remote ST-Link."
+    fi
+else
+    # See the comment about bash parameter expansion to understand what the '+' is doing.
+    # HR2_REMOTE is either empty or not set:
+    if [ ! "${HR2_REMOTE+IS_SET}" ]
+    then
+	# HR2_REMOTE is not set; let the user know that they have to set this value:
+	echo "HR2_REMOTE environment variable is not set; not searching for remote ST-Link."
+	echo "Set HR2_REMOTE to empty string to suppress this message."
+	echo "For example, `export HR2_REMOTE=''`"
+    # elses
+	# HR2_REMOTE is set to empty value; means the user does not want to try to find remote STM.
+	# echo "HR2_REMOTE is set to an empty string"  # For debugging only
+    fi
+fi
+
+# Now run stme32cubeide:
+stm32cubeide
+
+# Attempt to detach from ST-Link
+if [ "$PORT_NAME" ]
+then
+    echo "Attempting to detach from ST-Link. (sudo may prompt for password)"
+    sudo usbip detach -p "$PORT_NAME"
+    PORT_NAME="$(usbip port 2>&1 | grep Port | sed 's,Port ,,' | sed 's,:.*,,')"
+    if [ "$PORT_NAME" ]
+    then
+	echo "Detach failed"
+    fi
+fi
