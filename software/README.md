@@ -192,7 +192,7 @@ Do a full desktop install.
 This is where various specialized configurations occur.
 For now there is only one:
 
-* [Install `usbip` Client Service](install-usbip-client-service)
+* [Install `usbip` Client Service](#install-usbip-client-service)
 
 #### Install `usbip` Client Service
 
@@ -420,10 +420,10 @@ That concludes `STM32CubeIDE` software installation.
 
 This section is broken into the following sub-sections:
 
-* [Command Line Notation](command-line-notation):
+* [Command Line Notation](#command-line-notation):
   This briefly discusses the command-line notation rules used.
 
-* [Bring Up Strategy](bring-up-strategy):
+* [Bring Up Strategy](#bring-up-strategy):
   This discusses the two initial bring up strategies.
   You get be pick between display/keyboard bring up vs. headless bring up.
 
@@ -431,18 +431,18 @@ This section is broken into the following sub-sections:
   A program called `rpi-image` isntalled onto your development computer and
   is used to load the Ubuntu image for the Raspberry Pi4 onto a micro-SD card.
 
-* [Raspberry Pi 4 Connector Locations]:
+* [Raspberry Pi 4 Connector Locations](#raspberry_pi_4_connector_locations):
   This section describes the names and locations of the various Raspberry Pi 4 connectors.
 
-* [Initial Bring Up](initial-bring-up):
+* [Initial Bring Up](#initial-bring-up):
   The Raspberry Pi 4 is powered up to the point that it can be logged into.
   This is easy if you have a keyboard and display plugged into the Raspberry Pi 4
   and it is significantly more difficult if you are not.
 
-* [Login and Configuration](login-and-configuration):
+* [Login and Configuration](#login-and-configuration):
   This takes you from login up to the point where is ready to do actual software development.
 
-* [Remote USB Installation](remote-usb-installation)
+* [Remote USB Installation](#remote-usb-installation)
   Remote USB is used to provide access to the ST-Link on the robot mircocontroller.
   Code must be installed on both the robot computer (and the development computer.)
 
@@ -828,19 +828,19 @@ The basic steps are as follows:
 2. [Change the Host Name](#change-the-host-name):
    It is important the change the host name from `ubuntu` to something else.
 
-3. [Create a New User Account](create-a-new-user-account):
+3. [Create a New User Account](#create-a-new-user-account):
    It is useful to create a new user account with `sudo` access.
 
-4. [Set Up Zero Configuration](set-up-zero_configuration):
+4. [Set Up Zero Configuration](#set-up-zero_configuration):
    This allows you to be able to connect to the robot with the robot name.
 
-5. [Login into Robot from Development Computer](login-into-robot-from-development-computer):
+5. [Login into Robot from Development Computer](#login-into-robot-from-development-computer):
    Now you should be able to login to the computer from your development computer.
 
-6. [Configure Wifi](configure-wifi):
+6. [Configure Wifi](#configure-wifi):
    Configure your WiFi access.
 
-7. [Final Configuration Notes](final-configuration-notes):
+7. [Final Configuration Notes](#final-configuration-notes):
    Some final comments on configuration.
 
 ##### Change the login password:
@@ -1030,11 +1030,11 @@ as if it was locally plugged into the development computer.
 This section discusses how install `usbip` on the robot computer.
 It is broken into the following sections:
 
-* [Install `usbip` Packages](install-usbip-packages)
+* [Install `usbip` Packages](#install-usbip-packages)
 
-* [Install `usbip` Service](install-usbip-service)
+* [Install `usbip` Service](#install-usbip-service)
 
-* [Verify `usbip` Installation(verify-usbip-installation)
+* [Verify `usbip` Installation(#verify-usbip-installation)
 
 ###### Install `usbip` Packages
 
@@ -1217,24 +1217,16 @@ The next major step is to install ROS2 on the robot computer
 
 ### Robot Computer ROS2 Installation
 
-<!--
-* https://docs.ros.org/en/foxy/Installation/Linux-Install-Debians.html
-
-* Another URL:
-    https://roboticsbackend.com/install-ros2-on-raspberry-pi/
--->
-
 The intial installaton of ROS2 is pretty straight forward.
-The ROS2 organization maintains its own PPA (Personal Package Archive).
 The steps are:
 
-1. [Connect to ROS2 PPA](connect-to-ros2-ppa):
+1. [Connect to ROS2 PPA](#connect-to-ros2-ppa):
    The ROS2 organization maintains its own PPA (Personal Package Archive).
 
-2. [Download ROS2 Foxy](download-ros2-foxy):
+2. [Download ROS2 Foxy](#download-ros2-foxy):
    The latest ROS2 release is called "Foxy".
 
-3. [Final ROS2 Configuration](final-ros2-configuration):
+3. [Final ROS2 Configuration](#final-ros2-configuration):
    The final ROS2 configuration is pretty simple.
 
 #### Connect to ROS2 PPA
@@ -1246,7 +1238,7 @@ The insturctions use `apt-key` rather than `curl`:
      sudo apt-key adv --fetch-keys https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
      sudo apt-add-repository http://packages.ros.org/ros2/ubuntu
 
-####  Download ROS2 Foxy
+#### Download ROS2 Foxy
 
 Next install foxy:
 
