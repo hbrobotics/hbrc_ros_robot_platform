@@ -53,4 +53,8 @@ Text Label 5150 3700 0    50   ~ 0
 TRIG
 Text Label 5150 3800 0    50   ~ 0
 VCC
+Text Notes 6200 3750 0    50   ~ 0
+The Female 1x4 Right Angle connector is a Sullins PPTC041LGBN-RC.\nThe distance from the center of the pin that connects to the PCB to\nthe top edge of the connector is 1.6mm + 8.5mm = 10.1mm.
+Text Notes 1300 3950 0    50   ~ 0
+The sonar connectors on the Master board are F1x4 Sullins PPPC041LFBN-RC.\nThese have an insulation height of 8.5mm.\nThe M2x4 connectors are 40 pin break away Sullins PREC040SBAN-M71RC.\nThese connectors are 4mm from center of pin to the surface black insulator.\nWhat this means is that the distance from the bottom edge to the is\n4mm + 8.5mm = 12.5mm.
 $EndSCHEMATC
