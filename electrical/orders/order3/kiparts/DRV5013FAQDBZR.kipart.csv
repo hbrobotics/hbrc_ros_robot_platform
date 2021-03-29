@@ -1,0 +1,6 @@
+"DRV5013FAQDBZR", "Q", "Package_TO_SOT_SMD:SOT-23", "https://www.ti.com/lit/ds/symlink/drv5013.pdf", "DRV5013 Digital-Latch Hall Effect Sensor", "DRV5013 Digital-Latch Hall Effect Sensor"
+"Pin", "Name", "Type",      "Side",  "Unit", "Style", "Hidden"
+"1",   "VCC",   "power_in", "right", "A",    "line",  ""
+"2",   "OUT",   "passive",  "right", "A",    "line",  ""
+"3",   "GND",   "power_in", "right", "A",    "line",  ""
+,,,,,,

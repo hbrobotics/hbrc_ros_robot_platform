@@ -13,156 +13,144 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Comp
-L Sensor_Magnetic:AH1806-W Q1
-U 1 1 5F40AB04
-P 7950 2650
-F 0 "Q1" H 7850 3000 50  0000 R CNN
-F 1 "AH1806;SC59" H 7900 2300 50  0000 R CNN
-F 2 "HR2:SC59" H 8150 2700 60  0001 L CNN
-F 3 "https://www.diodes.com/assets/Datasheets/AH1806.pdf" H 8150 2500 60  0001 L CNN
-F 4 "https://www.diodes.com/assets/Datasheets/AH1806.pdf" H 8150 2600 60  0001 L CNN "manf#"
-F 5 "AH1806 Omnipolar Hall Effect Switch" H 8150 2400 60  0001 L CNN "Field5"
-	1    7950 2650
-	-1   0    0    -1  
-$EndComp
-$Comp
-L Sensor_Magnetic:AH1806-W Q2
-U 1 1 5F41D920
-P 7950 4250
-F 0 "Q2" H 7850 4600 50  0000 R CNN
-F 1 "AH1806;SC59" H 7900 3900 50  0000 R CNN
-F 2 "HR2:SC59" H 8150 4300 60  0001 L CNN
-F 3 "https://www.diodes.com/assets/Datasheets/AH1806.pdf" H 8150 4100 60  0001 L CNN
-F 4 "https://www.diodes.com/assets/Datasheets/AH1806.pdf" H 8150 4200 60  0001 L CNN "manf#"
-F 5 "AH1806 Omnipolar Hall Effect Switch" H 8150 4000 60  0001 L CNN "Field5"
-	1    7950 4250
-	-1   0    0    -1  
-$EndComp
 Wire Wire Line
-	5900 2200 6400 2200
-Wire Wire Line
-	6200 3400 6600 3400
+	5300 3500 4800 3500
 $Comp
 L Device:R_US R1
 U 1 1 5F42263B
-P 6400 3750
-F 0 "R1" H 6300 3850 50  0000 L CNN
-F 1 "47KΩ;1005" H 6400 3650 50  0000 L CNN
-F 2 "Resistor_SMD:R_0402_1005Metric" V 6440 3740 50  0001 C CNN
-F 3 "~" H 6400 3750 50  0001 C CNN
-	1    6400 3750
+P 4200 3150
+F 0 "R1" H 4100 3250 50  0000 L CNN
+F 1 "47KΩ;1608" H 4200 3050 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 4240 3140 50  0001 C CNN
+F 3 "~" H 4200 3150 50  0001 C CNN
+	1    4200 3150
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:R_US R2
 U 1 1 5F422F39
-P 6600 2850
-F 0 "R2" H 6500 2950 50  0000 L CNN
-F 1 "47KΩ;1005" H 6600 2750 50  0000 L CNN
-F 2 "Resistor_SMD:R_0402_1005Metric" V 6640 2840 50  0001 C CNN
-F 3 "~" H 6600 2850 50  0001 C CNN
-	1    6600 2850
+P 4800 3150
+F 0 "R2" H 4700 3250 50  0000 L CNN
+F 1 "47KΩ;1608" H 4800 3050 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 4840 3140 50  0001 C CNN
+F 3 "~" H 4800 3150 50  0001 C CNN
+	1    4800 3150
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6400 3600 6400 2200
-Connection ~ 6400 2200
+	4200 3000 4200 2800
 Wire Wire Line
-	6400 2200 6600 2200
-Wire Wire Line
-	6600 2200 6600 2700
-Wire Wire Line
-	6600 3000 6600 3400
-Connection ~ 6600 2200
-Text Label 5150 4250 0    50   ~ 0
+	4800 3300 4800 3500
+Text Label 3350 4500 0    50   ~ 0
 QUADA
-Text Label 5150 4350 0    50   ~ 0
+Text Label 3350 4600 0    50   ~ 0
 GND
-Wire Wire Line
-	6600 3400 7100 3400
-Connection ~ 6600 3400
-Text Notes 7350 3700 0    50   ~ 0
-The AH1806 is a Unipolar Hall Effect sensor.  The center of each\nSC59 package must be placed 4mm from the motor shaft center\n(i.e. on a 4mm radius circle centered on the motor shaft.)\nIn addition, the two sensors must be placed 90 degrees apart\non this 4mm radius circle.\n
-Text Notes 3450 5050 0    50   ~ 0
+Text Notes 5600 4000 0    50   ~ 0
+The DRV5013FAQBZR is a Hall Effect sensor that changes state each time\nthe sensor senses that magnetic field has changed.  Please note that only\na small number of the DRV5013 detect filed direction changes.  Most only\ndetect presense and non presense of a field.  The latter ones are not useful.\nThe center of each SOT23 package must be placed and the magnetic field\nflux near maximum strength.  In addition, the two sensors must be placed\n90 degrees apart.\n
+Text Notes 1650 5300 0    50   ~ 0
 CN1 is a hybrid connector for two male 1x3 right angle pin headers and\ntwo oval slots to be soldered to the motors.  It is represented as an\nintegrated connector so that the mechanical spacing of everything is\ncorrect.  There is also a motor shaft hole included.
 Wire Wire Line
-	7950 2200 7950 2250
+	5300 2900 5850 2900
 Wire Wire Line
-	6600 2200 7950 2200
+	5300 2900 5300 3500
+Connection ~ 5400 4600
 Wire Wire Line
-	7950 3100 7950 3050
+	4200 4500 5850 4500
 Wire Wire Line
-	7500 3800 7950 3800
+	4200 3300 4200 4500
+Connection ~ 4200 4500
 Wire Wire Line
-	7950 3800 7950 3850
-Wire Wire Line
-	7100 2650 7650 2650
-Wire Wire Line
-	7100 2650 7100 3400
-Wire Wire Line
-	7200 4350 7200 4750
-Wire Wire Line
-	7200 4750 7950 4750
-Wire Wire Line
-	7950 4750 7950 4650
-Wire Wire Line
-	7200 4350 7200 3100
-Wire Wire Line
-	7200 3100 7950 3100
-Connection ~ 7200 4350
-Wire Wire Line
-	6400 4250 7650 4250
-Wire Wire Line
-	6400 3900 6400 4250
-Connection ~ 6400 4250
-Wire Wire Line
-	6200 4150 6200 3400
-Text Label 5150 4150 0    50   ~ 0
+	5300 4400 5300 3500
+Text Label 3350 4400 0    50   ~ 0
 QUADB
-Text Label 5150 4050 0    50   ~ 0
+Text Label 3350 4300 0    50   ~ 0
 VCC
 Wire Wire Line
-	7500 3800 7500 4050
+	4000 4300 5700 4300
+Connection ~ 4000 4300
 Wire Wire Line
-	5900 4050 7500 4050
-Connection ~ 5900 4050
-Wire Wire Line
-	5900 4050 5900 2200
-Text Label 5150 3750 0    50   ~ 0
+	4000 4300 4000 2800
+Text Label 3350 4000 0    50   ~ 0
 MOTOR-
-Text Label 5150 3650 0    50   ~ 0
+Text Label 3350 3900 0    50   ~ 0
 MOTOR+
 Wire Wire Line
-	5500 3850 5500 3750
+	3700 4100 3700 4000
 Wire Wire Line
-	5600 3650 5600 3950
+	3800 3900 3800 4200
 Wire Wire Line
-	7200 4350 5050 4350
+	5400 4600 3250 4600
 Wire Wire Line
-	5050 4250 6400 4250
+	3250 4500 4200 4500
 Wire Wire Line
-	5050 4150 6200 4150
+	3250 4400 5300 4400
 Wire Wire Line
-	5050 4050 5900 4050
+	3250 4300 4000 4300
 Wire Wire Line
-	5600 3950 5050 3950
+	3800 4200 3250 4200
 Wire Wire Line
-	5050 3850 5500 3850
+	3250 4100 3700 4100
 Wire Wire Line
-	5500 3750 5050 3750
+	3700 4000 3250 4000
 Wire Wire Line
-	5050 3650 5600 3650
+	3250 3900 3800 3900
 $Comp
 L HR2:ENCODER;2xM1x3RA CN1
-U 1 1 5F409D86
-P 4150 4350
-F 0 "CN1" H 4450 4500 50  0000 C CNN
-F 1 "ENCODER;2xM1x3RA" H 4600 3500 50  0000 C CNN
-F 2 "HR2:ENCODER_2xM1x3RA" H 4350 4400 60  0001 L CNN
-F 3 "HR2 Encoder Connectors" H 4350 4200 60  0001 L CNN
-F 4 "HR2 Encoder Connectors" H 4350 4100 60  0001 L CNN "Field5"
-	1    4150 4350
+U 1 1 606123CB
+P 2350 4600
+F 0 "CN1" H 2700 3750 50  0000 R CNN
+F 1 "ENCODER;2xM1x3RA" H 3300 4750 50  0000 R CNN
+F 2 "HR2:ENCODER_2xM1x3RA" H 2550 4650 60  0001 L CNN
+F 3 "HR2 Encoder Connectors" H 2550 4450 60  0001 L CNN
+F 4 "HR2 Encoder Connectors" H 2550 4350 60  0001 L CNN "desc"
+	1    2350 4600
 	1    0    0    1   
 $EndComp
+$Comp
+L HR2:DRV5013FAQDBZR Q1
+U 1 1 606117B3
+P 6550 2800
+F 0 "Q1" H 7050 2950 50  0000 R CNN
+F 1 "DRV5013FAQDBZR;SOT23" H 7350 2450 50  0000 R CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 6750 2850 60  0001 L CNN
+F 3 "https://www.ti.com/lit/ds/symlink/drv5013.pdf" H 6750 2650 60  0001 L CNN
+F 4 "https://www.ti.com/lit/ds/symlink/drv5013.pdf" H 6750 2750 60  0001 L CNN "manf#"
+F 5 "DRV5013 Digital-Latch Hall Effect Sensor" H 6750 2550 60  0001 L CNN "desc"
+	1    6550 2800
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5850 2800 4800 2800
+Connection ~ 4800 2800
+Wire Wire Line
+	4800 2800 4800 3000
+Wire Wire Line
+	4800 2800 4200 2800
+Connection ~ 4200 2800
+Wire Wire Line
+	4200 2800 4000 2800
+Wire Wire Line
+	5850 3000 5400 3000
+Wire Wire Line
+	5400 3000 5400 4600
+Connection ~ 5300 3500
+$Comp
+L HR2:DRV5013FAQDBZR Q2
+U 1 1 6062122A
+P 6550 4400
+F 0 "Q2" H 7050 4550 50  0000 R CNN
+F 1 "DRV5013FAQDBZR;SOT23" H 7350 4050 50  0000 R CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 6750 4450 60  0001 L CNN
+F 3 "https://www.ti.com/lit/ds/symlink/drv5013.pdf" H 6750 4250 60  0001 L CNN
+F 4 "https://www.ti.com/lit/ds/symlink/drv5013.pdf" H 6750 4350 60  0001 L CNN "manf#"
+F 5 "DRV5013 Digital-Latch Hall Effect Sensor" H 6750 4150 60  0001 L CNN "desc"
+	1    6550 4400
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5850 4400 5700 4400
+Wire Wire Line
+	5700 4400 5700 4300
+Wire Wire Line
+	5850 4600 5400 4600
 $EndSCHEMATC
