@@ -18,6 +18,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP DRV5013FAQDBZR
+D DRV5013 Digital-Latch Hall Effect Sensor
+K ~
+F https://www.ti.com/lit/ds/symlink/drv5013.pdf
+$ENDCMP
+#
 $CMP WOW_OUT;M2x6S
 D WOW Output Connector
 K ~
