@@ -548,7 +548,7 @@ Since web pages change all the time, the steps are summarized below:
 1. Install `rpi-imager`:
    Run the following command to install `rpi-imager`:
 
-     `sudo apt install rpi-imager`
+     `sudo apt install -y rpi-imager`
 
 2. Install Micro-SD Card into the computer:
    Install the 32GB (or larger) micro-SD into the micro-SD card adapter.
@@ -665,7 +665,7 @@ This takes you as far as the `login:` prompt.
 
 Perform the instructions below depending upon which [bring-up strategy](#bring-up-strategy) you selected:
 
-* [Keyboard/Display Bring Up](#keyboard-display-bring-up):
+* [Keyboard/Display Bring Up](#keyboarddisplay-bring-up)
   Perform these instructions for the keyboard/display power-up method.
 
 * [Headless Bring-up](#headless-bring-up):
@@ -703,7 +703,7 @@ For keyboard/display installation do the following:
    and start configuring the Raspberry Pi.
    You can skip the section immediately below on headless install.
 
-Proceed to the [Initial Raspberry Pi 4 Configuration](#initial-raspberry-pi-4-configuration) section.
+Proceed to the [Initial Bring up](#initial-bring-up) section.
 
 ##### Headless Bring-up
 
@@ -724,10 +724,10 @@ Please perform the following steps:
 1. Install the following packages on your development computer:
 
    Install the following packages onto your computer:
-     sudo apt install iproute2               # Get `ip` command
-     sudo apt install nmap                   # Get `nmap` local net scanner.
-     sudo apt install net-tools              # Get `arp` command, ping, ifconfig, etc.
-     sudo apt install libnss-mdns mdns-scan  # For avhi (i.e. zero-conf)
+     sudo apt install -y iproute2               # Get `ip` command
+     sudo apt install -y nmap                   # Get `nmap` local net scanner.
+     sudo apt install -y net-tools              # Get `arp` command, ping, ifconfig, etc.
+     sudo apt install -y libnss-mdns mdns-scan  # For avhi (i.e. zero-conf)
 
    For you information:
    * The `ip` command is used to flush something called the ARP cache.
@@ -887,7 +887,7 @@ It should prompt for a password and just type in the new password.
 
 When you are done with this step the password should be changed and
 you should be logged into the Raspberry Pi 4.
-You should get prompt that looks like `ubuntu@ubuntu:!$`.
+You should get prompt that looks like `ubuntu@ubuntu:~$`.
 
 ##### Change the Host Name:
 
@@ -934,6 +934,10 @@ Give the new account super-user capability with the following command:
 
      sudo usermod -aG sudo NEWUSER
 
+<!--
+Issue: It did not set default directory to /home/NEWUSER .
+-->
+
 Now verify the user account with the commands below:
 
      su NEWUSER
@@ -953,7 +957,7 @@ This means you will no longer have to type in obscure numbers.
 
 First, install some zero configuration packages with the command below:
 
-     sudo apt install net-tools libnss-mdns mdns-scan
+     sudo apt install -y net-tools libnss-mdns mdns-scan
 
 Now, verify that it works with the following command:
 
@@ -975,6 +979,8 @@ It should be very easy to log into robot computer from your development computer
      # Type in the password.
      # You should get a prompt of `NEWUSER@NEWHOSTNAME@hr2b
 
+<!-- Consider doing a `sudo apt update && sudo apt upgrade` -->
+
 ##### Configure Wifi
 
 The next step requires access to a WiFi router connected to your local network.
@@ -983,8 +989,7 @@ The next step requires access to a WiFi router connected to your local network.
 
 1. Install network manager:
 
-        sudo apt install network-manager   
-        Type `Y' for the prompt.  
+        sudo apt install -y network-manager   
 
    You now have a program named `nmcli` (Network Manager Command Line Interface).
 
@@ -1007,7 +1012,7 @@ The next step requires access to a WiFi router connected to your local network.
 
 4. Register a Wifi access point for logging in with the following command:
 
-       sudo nmcli --ask dev connect SSID
+       sudo nmcli --ask dev wifi connect SSID
        # Type in your `sudo` password if prompted.
        # Type in WiFi password after the password prompt.
 
@@ -1017,19 +1022,30 @@ The next step requires access to a WiFi router connected to your local network.
 
   You should see one active connection.
 
-6. Reboot and Unplug Ethernet Cable with the following commands:
+6. Run `ifconfig` (Interface Configure):
+
+       ifconfig
+
+   You should get network status for `eth0`, `lo`, and `wlan0`.
+   `eth0` is the hardwired ethernet.
+   `lo` is a  LOopback pseudo interface.
+   `wanl0` is the wireless (WiFi) interface.
+   Just in case, write down `inet` address.
+   You can ignore the `netmask` and `broadcast` fields.
+
+7. Reboot and Unplug Ethernet Cable with the following commands:
 
        sudo reboot -h now  # Force an immediate reboot
        # Now unplug the ethernet cable (for the headless bring up strategy)
        # Wait a for a couple of minutes
 
-7. From your development computer, verify that the robot computer logged into the WiFi access point
+8. From your development computer, verify that the robot computer logged into the WiFi access point
    with the following command:
 
        ping -c 3 NEWHOSTNAME.local
        # You should get 3 ping responses
 
-8. Login/logout to/from the robot computer with the following commands:
+9. Login/logout to/from the robot computer with the following commands:
 
        ssh NEWACCOUNT@NEWHOSTNAME
        # Type in password for prompt
@@ -1069,10 +1085,10 @@ It is broken into the following sections:
 
 Install the following packages:
 
-     sudo apt install linux-tools-common
-     sudo apt install linux-tools-raspi
-     sudo apt install usbutils
-     sudo apt install linux-cloud-tools-common  # Not sure about this one (seems to help)
+     sudo apt install -y linux-tools-common
+     sudo apt install -y linux-tools-raspi
+     sudo apt install -y usbutils
+     sudo apt install -y linux-cloud-tools-common  # Not sure about this one (seems to help)
 
 Install the following symbolic link:
 
@@ -1122,7 +1138,7 @@ Now the `/etc/systemd/system/usbip_host.service` is installed as follows:
      [Service]
      ExecStartPre=/usr/sbin/modprobe usbip-host
      ExecStart=/usr/bin/usbipd
-     ExecStartPost=/usr/local/bin/usbipd_host.service.sh
+     ExecStartPost=/usr/local/bin/usbip_host.service.sh
      
      [Install]
      WantedBy=multi-user.target
@@ -1130,7 +1146,7 @@ Now the `/etc/systemd/system/usbip_host.service` is installed as follows:
 
 Now the `/usr/local/bin/usbip_host.service.sh` file is installed as:
 
-     cat <<EOF > /usr/local/bin/usbipd.service.sh
+     cat <<EOF > /usr/local/bin/usbipd_host.service.sh
      #!/usr/bin/bash
      log_file=/tmp/usbip_bind.log
      echo "/usr/local/bin/usbipd.servce.sh started" > "$log_file"
@@ -1149,8 +1165,17 @@ Now the `/usr/local/bin/usbip_host.service.sh` file is installed as:
          /usr/bin/usbip bind -b "$st_link_bus_id" 2>&1 >> "$log_file"
          echo "bind attempted" >> "$log_file"
      fi
-     echo "/usr/local/bin/usbipd.servce.sh ended" >> "$log_file"
+     echo "/usr/local/bin/usbipd_host.servce.sh ended" >> "$log_file"
      EOF
+
+Set the execute bit:
+
+     chmod +x /usr/local/bin/usbipd.service.sh
+
+Enable the usbip host service:
+
+     systemctl enable usbipd_host.service
+     systemctl start usbipd_host.service
 
 This file has a lot of logging code that is used to figure if something went wrong.
 The `echo` statements are used for debugging only.
@@ -1183,9 +1208,20 @@ Verify that the `usbipd` daemon is listening on port 3242:
 
      netstat -tnlp | grep 3240  # Verify daemon is runnning, this should list at least one line
 
+
+Plug a cable between one of the the Robot computer USB connectors and the ST-link connector
+(the smaller of the 2 boards on Nucleo.)
+
 Run the `usbip` command:
 
      usbip list -l  # List various local (i.e. `-l`) USB ports
+
+If it shows up with something like:
+
+      - busid 1-1.1 (0483:374b)
+        STMicroelectronics : ST-LINK/V2.1 (0483:374b)
+
+You have succeeded.
 
 <!-- USBIP Notes:
 
