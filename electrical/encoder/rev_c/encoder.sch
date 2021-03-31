@@ -45,7 +45,7 @@ Text Label 3350 4500 0    50   ~ 0
 QUADA
 Text Label 3350 4600 0    50   ~ 0
 GND
-Text Notes 5600 4000 0    50   ~ 0
+Text Notes 6000 4000 0    50   ~ 0
 The DRV5013FAQBZR is a Hall Effect sensor that changes state each time\nthe sensor senses that magnetic field has changed.  Please note that only\na small number of the DRV5013 detect filed direction changes.  Most only\ndetect presense and non presense of a field.  The latter ones are not useful.\nThe center of each SOT23 package must be placed and the magnetic field\nflux near maximum strength.  In addition, the two sensors must be placed\n90 degrees apart.\n
 Text Notes 1650 5300 0    50   ~ 0
 CN1 is a hybrid connector for two male 1x3 right angle pin headers and\ntwo oval slots to be soldered to the motors.  It is represented as an\nintegrated connector so that the mechanical spacing of everything is\ncorrect.  There is also a motor shaft hole included.
@@ -66,7 +66,7 @@ QUADB
 Text Label 3350 4300 0    50   ~ 0
 VCC
 Wire Wire Line
-	4000 4300 5700 4300
+	4000 4300 5750 4300
 Connection ~ 4000 4300
 Wire Wire Line
 	4000 4300 4000 2800
@@ -120,7 +120,7 @@ F 5 "DRV5013 Digital-Latch Hall Effect Sensor" H 6750 2550 60  0001 L CNN "desc"
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	5850 2800 4800 2800
+	5850 2800 5750 2800
 Connection ~ 4800 2800
 Wire Wire Line
 	4800 2800 4800 3000
@@ -132,7 +132,7 @@ Wire Wire Line
 Wire Wire Line
 	5850 3000 5400 3000
 Wire Wire Line
-	5400 3000 5400 4600
+	5400 3000 5400 4150
 Connection ~ 5300 3500
 $Comp
 L HR2:DRV5013FAQDBZR Q2
@@ -148,9 +148,53 @@ F 5 "DRV5013 Digital-Latch Hall Effect Sensor" H 6750 4150 60  0001 L CNN "desc"
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	5850 4400 5700 4400
+	5850 4400 5750 4400
 Wire Wire Line
-	5700 4400 5700 4300
+	5750 4400 5750 4300
 Wire Wire Line
 	5850 4600 5400 4600
+$Comp
+L Device:C_Small C1
+U 1 1 60634648
+P 5600 2650
+F 0 "C1" V 5371 2650 50  0000 C CNN
+F 1 "10nF;1608" V 5462 2650 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5600 2650 50  0001 C CNN
+F 3 "~" H 5600 2650 50  0001 C CNN
+	1    5600 2650
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5700 2650 5750 2650
+Wire Wire Line
+	5750 2650 5750 2800
+Connection ~ 5750 2800
+Wire Wire Line
+	5750 2800 4800 2800
+Wire Wire Line
+	5500 2650 5400 2650
+Wire Wire Line
+	5400 2650 5400 3000
+Connection ~ 5400 3000
+$Comp
+L Device:C_Small C2
+U 1 1 60637842
+P 5600 4150
+F 0 "C2" V 5371 4150 50  0000 C CNN
+F 1 "10nF;1608" V 5462 4150 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5600 4150 50  0001 C CNN
+F 3 "~" H 5600 4150 50  0001 C CNN
+	1    5600 4150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5500 4150 5400 4150
+Connection ~ 5400 4150
+Wire Wire Line
+	5400 4150 5400 4600
+Wire Wire Line
+	5700 4150 5750 4150
+Wire Wire Line
+	5750 4150 5750 4300
+Connection ~ 5750 4300
 $EndSCHEMATC
