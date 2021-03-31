@@ -724,10 +724,11 @@ Please perform the following steps:
 1. Install the following packages on your development computer:
 
    Install the following packages onto your computer:
-     sudo apt install -y iproute2               # Get `ip` command
-     sudo apt install -y nmap                   # Get `nmap` local net scanner.
-     sudo apt install -y net-tools              # Get `arp` command, ping, ifconfig, etc.
-     sudo apt install -y libnss-mdns mdns-scan  # For avhi (i.e. zero-conf)
+
+        sudo apt install -y iproute2               # Get `ip` command
+        sudo apt install -y nmap                   # Get `nmap` local net scanner.
+        sudo apt install -y net-tools              # Get `arp` command, ping, ifconfig, etc.
+        sudo apt install -y libnss-mdns mdns-scan  # For avhi (i.e. zero-conf)
 
    For you information:
    * The `ip` command is used to flush something called the ARP cache.
@@ -743,11 +744,11 @@ Please perform the following steps:
 
    Run the following command:
 
-     ping -c 3 `hostname`.local  # Note that the accent ("`") is used instead of the single quote ("'").
+        ping -c 3 `hostname`.local  # Note that the accent ("`") is used instead of the single quote ("'").
      
    It should print out a few lines as follows:
    
-     PING ??? (192.168.xxx.yyy) ...
+        PING ??? (192.168.xxx.yyy) ...
 
    There are three internet address ranges that are reserved for local area networks.
    * Class A: 192.168.yyy.zzz where yyy is normally 1 (i.e. 192.168.1.zzz).
