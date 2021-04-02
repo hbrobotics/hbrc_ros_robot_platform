@@ -1,0 +1,10 @@
+[Unit]
+Description=usbip host daemon
+
+[Service]
+ExecStartPre=/usr/sbin/modprobe usbip-host
+ExecStart=/usr/bin/usbipd
+ExecStartPost=/usr/local/bin/usbipd.service.sh
+     
+[Install]
+WantedBy=multi-user.target
