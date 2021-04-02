@@ -10,8 +10,7 @@ merge, publish, distribute, sublicense, and/or sell copies of the Software, and 
 permit persons to whom the Software is furnished to do so, subject to the following
 conditions:
 
-The above copyright notice and this permission notice shall be included in all copies
-or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
@@ -1116,10 +1115,10 @@ The Robot computer needs to do three things on start-up.
 
 This is done with two files:
 
-* `/etc/systemd/system/usbip_host.service`:
+* `/etc/systemd/system/usbipd.service`:
   This is a `systemd` unit file that properly installs the kernel modules
   and runs the daemon.
-  It also invokes the `usbip_host.service.sh` shell file.
+  It also invokes the `usbipd.service.sh` shell file immediately below.
 
 * `/usr/local/bin/usbip_host.service.sh`:
   This determines if an ST-Link plugged into one of the robot computer USB ports and
@@ -1130,99 +1129,86 @@ The is installed as super user:
      sudo -s  # If prompted for a password, type it in.
      # Prompt character changes from `>` to `#` to remind you that your are super-user
 
-Now the `/etc/systemd/system/usbip_host.service` is installed as follows:
+Now install `/etc/systemd/system/usbipd.service` as follows:
 
-     cat <<EOF > /etc/systemd/system/usbip_host.service
-     [Unit]
-     Description=usbip host daemon
+     cd /etc/systemd/system
+     wget https://raw.githubusercontent.com/hbrobotics/hbrc_ros_robot_platform/master/bin/usbipd.service
 
-     [Service]
-     ExecStartPre=/usr/sbin/modprobe usbip-host
-     ExecStart=/usr/bin/usbipd
-     ExecStartPost=/usr/local/bin/usbip_host.service.sh
-     
-     [Install]
-     WantedBy=multi-user.target
-     EOF
+Now install `/usr/local/bin/usbipd.service.sh` as follows:
 
-Now the `/usr/local/bin/usbip_host.service.sh` file is installed as:
-
-     cat <<EOF > /usr/local/bin/usbipd_host.service.sh
-     #!/usr/bin/bash
-     log_file=/tmp/usbip_bind.log
-     echo "/usr/local/bin/usbipd.servce.sh started" > "$log_file"
-     /usr/bin/usbip list -p -l 2>&1 >> "$log_file"
-     st_link_bus_id="$(/usr/bin/usbip list -p -l)"
-     echo "st_link_bus_id1=$st_link_bus_id" >> "$log_file"
-     st_link_bus_id=`echo $st_link_bus_id | /usr/bin/grep 0483`
-     echo "st_link_bus_id2=$st_link_bus_id" >> "$log_file"
-     st_link_bus_id=`echo $st_link_bus_id | /usr/bin/sed s,busid=,,`
-     echo "st_link_bus_id3=$st_link_bus_id" >> "$log_file"
-     st_link_bus_id=`echo $st_link_bus_id | /usr/bin/sed s,#.*,,`
-     echo "st_link_bus_id4=$st_link_bus_id" >> "$log_file"
-     if [ "$st_link_bus_id" ]
-     then
-         echo "attempting bind" >> "$log_file"
-         /usr/bin/usbip bind -b "$st_link_bus_id" 2>&1 >> "$log_file"
-         echo "bind attempted" >> "$log_file"
-     fi
-     echo "/usr/local/bin/usbipd_host.servce.sh ended" >> "$log_file"
-     EOF
-
-Set the execute bit:
-
-     chmod +x /usr/local/bin/usbipd.service.sh
-
-Enable the usbip host service:
-
-     systemctl enable usbipd_host.service
-     systemctl start usbipd_host.service
-
-This file has a lot of logging code that is used to figure if something went wrong.
-The `echo` statements are used for debugging only.
-What this file does is list the USB devices and their associated bus ids.
-The ST-Link device is found (USB id `0483`) and the bus id is extracted.
-If the bus id is found, the ST-link is bound by `usbip` and it is available for remote use.
-
-Now exit super-user mode:
-
-     exit
+     cd /usr/local/bin
+     wget https://raw.githubusercontent.com/hbrobotics/hbrc_ros_robot_platform/master/bin/usbipd.service.sh
+     chmod +x usbipd.service.sh
 
 ###### Verify `usbip` Installation
+
+Plug a USB-A to USB-micro cable between the Robot Computer and the Robot Microcontroller
+(i.e. the Nucleo.)
 
 Verify that both files exist:
 
      ls -l /etc/systemd/system/usbip_host.service  # Should print a one line directory listing
      ls -l /usr/local/bin/usbipd_host.service.sh   # Should print a one line directory listing
 
-Once you have installed both of these files you need to reboot and verify that everything is working:
+Now enable/start the service:
 
+     systemctl enable usbipd.service
+     systemctl start usbipd.service
+
+Verify that it is running:
+
+     systemctl status usbipd.service
+     # A bunch of stuff should print out.  "Active: active (running) ..." is want is wanted.
+     
+Verify that it can find the ST-Link module:
+
+     usbip list -l
+     # It should print out `busid ...` followed by `STMicroelectronics ...`
+
+Verify that it remotely accessible:
+
+     usbip list -r localhost
+     # Should print out `localhost`, followed by the same lines as imediately above.
+
+Now exit super-user mode:
+
+     exit
+
+Things are looking good.
+Now comes the final test where the Robot computer is rebooted and accessed remotely
+from the development computer.
+
+Force the Robot Computer to reboot.
+     
      sudo reboot -h now
+     # If you are logged via remote shell, you will be immediately logged out.
 
-You will have to log in again.
+Wait 2 or 3 minutes for the Robot Computer to reboot.
+While you are waiting do the following in a console window on the deveopment computer:
 
-Verify that the kernel modules are loaded:
+     export HR2_REMOTE=NEWHOSTNAME.local
+     # This sets the HR2_REMOTE environment variable to be the robot host name followed by `.local`.
+     
+After the 2 or 3 minutes have elapsed, you should be able to ping the Robot computer:
 
-     lsmod | grep usbip-host  # This should produce two lines
+     ping -c 3 $HR2_REMOTE
+     # You should get 3 ping messages.
 
-Verify that the `usbipd` daemon is listening on port 3242:
+If that does not work you can try to run the following commands:
 
-     netstat -tnlp | grep 3240  # Verify daemon is runnning, this should list at least one line
+     sudo ip neigh flush all   # Flush arp cache *BEFORE* powering up RPi4
+     sudo nmap -p ssh -n NMAP_IP_RANGE  # Class A is ~10 seconds, others are about ~5 minutes.
+     arp
 
+Once `ping` is working, do the following:
 
-Plug a cable between one of the the Robot computer USB connectors and the ST-link connector
-(the smaller of the 2 boards on Nucleo.)
+     usbip list -r $HR2_REMOTE
+     # Should get the pretty much listing as when this command was run on the Robot computer.
 
-Run the `usbip` command:
-
-     usbip list -l  # List various local (i.e. `-l`) USB ports
-
-If it shows up with something like:
-
-      - busid 1-1.1 (0483:374b)
-        STMicroelectronics : ST-LINK/V2.1 (0483:374b)
-
-You have succeeded.
+That is pretty much it.
+Eventually, when the firmware development software is ready for use,
+the `.../bin/xstm32cubeide` wrapper is used to access the ST-Link remotely
+from the development computer.
 
 <!-- USBIP Notes:
 
