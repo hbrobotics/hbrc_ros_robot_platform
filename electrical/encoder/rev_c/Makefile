@@ -4,7 +4,7 @@
 #
 # MIT License
 #
-# Copyright 2019, 2020, 2021 Home Brew Robotics Club
+# Copyright 2019-2021 Home Brew Robotics Club
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this
 # software and associated documentation files (the "Software"), to deal in the Software
@@ -28,19 +28,21 @@
 
 .PHONY: all clean everything
 
-ORDER := order3
-ORDERS_DIRECTORY := ../../orders/$(ORDER)
+ORDERS_DIRECTORY := ../../orders/order3
 KIPARTS_DIRECTORY := $(ORDERS_DIRECTORY)/kiparts
 
+ORDER := order3
 ORDER_CSV := $(KIPARTS_DIRECTORY)/$(ORDER).csv
 ORDER_LIB := $(ORDERS_DIRECTORY)/$(ORDER).lib
 ORDER_DCM := $(ORDERS_DIRECTORY)/$(ORDER).dcm
 
 KIPART_BASES := \
-    ENCODER_2xM1x3RA
+    encoder
 KIPART_CSVS := ${KIPART_BASES:%=$(KIPARTS_DIRECTORY)/%.kipart.csv}
 
-all: $(ORDER_LIB)
+all:
+	rm -f encoder_rev_c.zip
+	zip -u encoder_rev_c.zip *.gbr *.drl 
 
 $(ORDER_LIB): ${KIPART_CSVS}
 	(cd $(ORDERS_DIRECTORY) ; $(MAKE) )
