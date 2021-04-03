@@ -60,7 +60,18 @@ const osThreadAttr_t defaultTask_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 osThreadId_t ledsTaskHandle;
+const osThreadAttr_t ledsTask_attributes = {
+  .name = "ledsTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+
 osThreadId_t servoTaskHandle;
+const osThreadAttr_t servoTask_attributes = {
+  .name = "servoTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 
 void LedsTask(void *argument);
 void ServoTask(void *argument);
@@ -102,8 +113,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  ledsTaskHandle = osThreadNew(LedsTask, NULL, &defaultTask_attributes);
-  servoTaskHandle = osThreadNew(ServoTask, NULL, &defaultTask_attributes);
+  ledsTaskHandle = osThreadNew(LedsTask, NULL, &ledsTask_attributes);
+  servoTaskHandle = osThreadNew(ServoTask, NULL, &servoTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -152,15 +163,15 @@ void ServoTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    int i = 1000;
+    int i;
 
-    for (; i <= 2000; i += 50)
+    for (i = 1000; i <= 2000; i += 50)
     {
       htim2.Instance->CCR1 = i;
       osDelay(100);
     }
 
-    for (; i >= 1000; i -= 50)
+    for (i = 2000; i >= 1000; i -= 50)
     {
       htim2.Instance->CCR1 = i;
       osDelay(100);
