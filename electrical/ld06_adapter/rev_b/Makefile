@@ -41,8 +41,8 @@ KIPART_BASES := \
 KIPART_CSVS := ${KIPART_BASES:%=$(KIPARTS_DIRECTORY)/%.kipart.csv}
 
 all:
-	rm -f encoder_rev_c.zip
-	zip -u encoder_rev_c.zip *.gbr *.drl 
+	rm -f ld06_adapter_rev_b.zip
+	zip -u ld06_adpater_rev_b.zip *.gbr *.drl 
 
 $(ORDER_LIB): ${KIPART_CSVS}
 	(cd $(ORDERS_DIRECTORY) ; $(MAKE) )
