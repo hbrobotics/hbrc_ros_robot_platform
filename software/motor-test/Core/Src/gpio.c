@@ -94,7 +94,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(WOW_EN_GPIO_Port, WOW_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, ESTOP_CLR_Pin|ESTOP_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ESTOP_CLR_GPIO_Port, ESTOP_CLR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PEPin PEPin PEPin PEPin */
   GPIO_InitStruct.Pin = DIO_SCK_Pin|DIO_NSS_Pin|DIO_MOSO_Pin|DIO_MOSI_Pin;
@@ -261,11 +261,11 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(WOW_EN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = SBC_ALIVE_Pin;
+  /*Configure GPIO pins : PDPin PDPin */
+  GPIO_InitStruct.Pin = SBC_ALIVE_Pin|ESTOP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SBC_ALIVE_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PDPin PDPin */
   GPIO_InitStruct.Pin = INT1_Pin|ECHO1_Pin;
@@ -273,12 +273,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PDPin PDPin */
-  GPIO_InitStruct.Pin = ESTOP_CLR_Pin|ESTOP_Pin;
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = ESTOP_CLR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(ESTOP_CLR_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PDPin PDPin */
   GPIO_InitStruct.Pin = WOW_RX_Pin|WOW_TX_Pin;
