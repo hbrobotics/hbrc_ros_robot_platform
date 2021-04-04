@@ -28,7 +28,7 @@ KIPART_CSV := $(KIPART_DIR)/NUCLEO_F767ZI_2xF2x35.kipart.csv
 
 all:
 	mypy pinsbind.py
-	flake8 --max-line-length=100 pinsbind.py
+	flake8 --max-line-length=100 --ignore=Q000,W504 pinsbind.py
 	pydocstyle pinsbind.py
 	python pinsbind.py
 	kicube32 $(IOC_CSV) $(F767ZI_CSV) $(KIPART_CSV)
