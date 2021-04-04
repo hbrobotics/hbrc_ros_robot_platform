@@ -115,8 +115,20 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
+  HAL_Delay(10000);
+
   // clear ESTOP
-  HAL_GPIO_WritePin(GPIOD, ESTOP_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ESTOP_CLR_GPIO_Port, ESTOP_CLR_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ESTOP_CLR_GPIO_Port, ESTOP_CLR_Pin, GPIO_PIN_RESET);
+
+  HAL_Delay(1);
+
+  int estop = HAL_GPIO_ReadPin(ESTOP_GPIO_Port, ESTOP_Pin);
+  if (estop)
+    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);
+  else
+    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);
+
 
   while (1)
   {
