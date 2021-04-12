@@ -63,6 +63,14 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void button_probe(void)
+{
+  int button = HAL_GPIO_ReadPin(USER_BTN_GPIO_Port, USER_BTN_Pin);
+  if (button)
+	HAL_GPIO_WritePin(GRN_LED_GPIO_Port, GRN_LED_Pin, GPIO_PIN_SET);
+  else
+	HAL_GPIO_WritePin(GRN_LED_GPIO_Port, GRN_LED_Pin, GPIO_PIN_RESET);
+}
 
 /* USER CODE END 0 */
 
@@ -115,19 +123,14 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  HAL_Delay(10000);
+  HAL_Delay(1000);
 
   // clear ESTOP
+  HAL_GPIO_WritePin(ESTOP_CLR_GPIO_Port, ESTOP_CLR_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(ESTOP_CLR_GPIO_Port, ESTOP_CLR_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(ESTOP_CLR_GPIO_Port, ESTOP_CLR_Pin, GPIO_PIN_RESET);
 
   HAL_Delay(1);
-
-  int estop = HAL_GPIO_ReadPin(ESTOP_GPIO_Port, ESTOP_Pin);
-  if (estop)
-    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);
-  else
-    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);
 
 
   while (1)
@@ -136,10 +139,19 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+	button_probe();
+
+    int estop = HAL_GPIO_ReadPin(ESTOP_GPIO_Port, ESTOP_Pin);
+    if (estop)
+      HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);
+    else
+      HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);
+
     uint16_t pw = MOTOR_PWM_MIN;
 
     // ramp up "forward"
     for (; pw < MOTOR_PWM_MAX; pw += 1) {
+      button_probe();
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pw);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pw);
@@ -151,6 +163,7 @@ int main(void)
 
     // ramp down "forward"
     for (; pw > MOTOR_PWM_MIN; pw -= 1) {
+      button_probe();
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pw);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pw);
@@ -162,6 +175,7 @@ int main(void)
 
     // ramp up "backward"
     for (; pw < MOTOR_PWM_MAX; pw += 1) {
+      button_probe();
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pw);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0);
@@ -173,6 +187,7 @@ int main(void)
 
     // ramp down "backward"
     for (; pw > MOTOR_PWM_MIN; pw -= 1) {
+      button_probe();
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pw);
       __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0);

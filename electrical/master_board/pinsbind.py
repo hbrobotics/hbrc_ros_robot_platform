@@ -33,9 +33,9 @@
 """Figure out pin binding for Morpho/Zio connectors."""
 
 # Use type hints for mypy program.
-from typing import Dict, IO, List, Set, Text, Tuple
 import csv  # .csv file parser (CSV => Comma Separated Values)
 import itertools
+from typing import Dict, IO, List, Set, Text, Tuple
 
 # Some type definitions:
 
@@ -115,7 +115,7 @@ def main() -> None:
             len(unbound_signals),
             tuple(unbound_signals),
             peripheral_permutation,
-            )
+        )
         permutation_scores.append(permutation_score)
 
     # Sort *permutation_scores* so that the best permutations sort to the front:
@@ -312,7 +312,7 @@ def morpho_set_extract() -> Set[Text]:
             if (
                     len(pin_name) >= 3 and pin_name[0] == 'P' and
                     pin_name[1] in "ABCDEFG" and pin_name[2:].isdigit()):
-                morpho_set |= set([pin_name])
+                morpho_set |= set(pin_name)
     return morpho_set
 
 
@@ -362,7 +362,7 @@ def ordered_permutations(peripherals: TextTuple, count: int) -> TextTuple:
         permutations_set.add(sorted_permutation)
 
     # Extract the final *ordered_permutations* from the set and return them:
-    ordered_permutations: TextTuple = tuple(sorted(list(permutations_set)))
+    ordered_permutations: TextTuple = tuple(sorted(permutations_set))
     return ordered_permutations
 
 
@@ -646,11 +646,11 @@ def pin_binds_get(peripheral_permutation: TextTuple, arduino_signals: Signals,
 
         # Miscellaneous pins.
         pin_binds.extend([
-             (">PD3", "ESTOP_CLR", daughter_signals, "PD3"),  # Was PC2
-             ("ADC3_IN12", "SERVO_CUR", daughter_signals, "PC2"),
-             ("ADC3_IN6", "SERVO_POS", daughter_signals, "PF8"),
-             (">PC12", "WOW_EN", daughter_signals, "PC12"),
-             (">PD0", "SBC_ALIVE", daughter_signals, "PD0"),
+            (">PD3", "ESTOP_CLR", daughter_signals, "PD3"),  # Was PC2
+            ("ADC3_IN12", "SERVO_CUR", daughter_signals, "PC2"),
+            ("ADC3_IN6", "SERVO_POS", daughter_signals, "PF8"),
+            (">PC12", "WOW_EN", daughter_signals, "PC12"),
+            (">PD0", "SBC_ALIVE", daughter_signals, "PD0"),
         ])
     return pin_binds
 
@@ -676,14 +676,14 @@ def pin_signals_sets_get() -> Tuple[Signals, Signals, Signals,
     arduino_set: Set[Text]
     arduino_signals: Signals
     arduino_signals, arduino_set = signals_subset(all_signals, '@', "Arduino")
-    print(f"arduino_set={len(arduino_set)}:{sorted(list(arduino_set))}")
+    print(f"arduino_set={len(arduino_set)}:{sorted(arduino_set)}")
 
     # The daughter pins are the Zio connector signal pins that do not map to Arduino pins.
     # Extract *daughter_set* and *daughter_signals* from *all_signals*:
     daughter_set: Set[Text]
     daugther_signals: Signals
     daughter_signals, daughter_set = signals_subset(all_signals, '+', "Daughter")
-    print(f"daughter_set={len(daughter_set)}:{sorted(list(daughter_set))}")
+    print(f"daughter_set={len(daughter_set)}:{sorted(daughter_set)}")
 
     # The morpho pins are the morpho connector signal pins that do not map to any of the Zio
     # connector pins.
@@ -691,21 +691,21 @@ def pin_signals_sets_get() -> Tuple[Signals, Signals, Signals,
     morpho_set: Set[Text]
     morpho_signals: Signals
     morpho_signals, morpho_set = signals_subset(all_signals, '-', "Morpho")
-    print(f"morpho_set={len(morpho_set)}:{sorted(list(morpho_set))}")
+    print(f"morpho_set={len(morpho_set)}:{sorted(morpho_set)}")
 
     # Nucleo pins are pins that are pre-wired by the Nucleo board:
     nucleo_set: Set[Text] = nucleo_set_create()
-    print(f"nucleo_set={len(nucleo_set)}:{sorted(list(nucleo_set))}")
+    print(f"nucleo_set={len(nucleo_set)}:{sorted(nucleo_set)}")
 
     # Look for pins that are used are prebound by Nucleo:
-    print(f"nucleo_arduino_pins={sorted(list(nucleo_set & arduino_set))}")
-    print(f"nucleo_daughter_pins={sorted(list(nucleo_set & daughter_set))}")
-    print(f"nucleo_morpho_pins={sorted(list(nucleo_set & morpho_set))}")
+    print(f"nucleo_arduino_pins={sorted(nucleo_set & arduino_set)}")
+    print(f"nucleo_daughter_pins={sorted(nucleo_set & daughter_set)}")
+    print(f"nucleo_morpho_pins={sorted(nucleo_set & morpho_set)}")
 
     # Compute some sets to check for issues (yes at least one was found and fixed):
     connector_set: Set[Text] = arduino_set | daughter_set | morpho_set
     non_connector_nucleo_set: Set[Text] = nucleo_set - connector_set
-    print(f"non_connector_nucleo_set={sorted(list(non_connector_nucleo_set))}")
+    print(f"non_connector_nucleo_set={sorted(non_connector_nucleo_set)}")
 
     return (arduino_signals, daughter_signals, morpho_signals,
             arduino_set, daughter_set, morpho_set, pin_numbers_table)
@@ -914,7 +914,7 @@ def signals_subset(signals: Signals, pattern: Text, title: Text) -> Tuple[Signal
                     pin_name[2:].isdigit()), f"Bad pin name from '{pin_name}'"
             if flag in pattern:
                 culled_signal_pins.append(annotated_pin_name)
-                pin_names_set |= set([pin_name])  # Need to enclose in list to avoid set of letters.
+                pin_names_set |= set(pin_name)  # Need to enclose in list to avoid set of letters.
 
         # Only keep result that have at least one annotated pin name:
         if len(culled_signal_pins) > 1:
@@ -1038,13 +1038,13 @@ def summary_show(peripheral_permutation: TextTuple,
     # assert pin_bindings_size == signal_bindings_size, (
     #     f"pin_bindings_size={pin_bindings_size} != signal_bindings_size={signal_bindings_size}")
 
-    unused_set: Set[Text] = set(list(pin_bindings_table.keys()))
+    unused_set: Set[Text] = set(pin_bindings_table.keys())
     unused_arduino_set: Set[Text] = arduino_set - unused_set
     unused_daughter_set: Set[Text] = daughter_set - unused_set
     unused_morpho_set: Set[Text] = morpho_set - unused_set
-    print(f"unused_arduino_set= {len(unused_arduino_set)}: {sorted(list(unused_arduino_set))}")
-    print(f"unused_morpho_set: {len(unused_morpho_set)}: {sorted(list(unused_morpho_set))}")
-    print(f"unused_daughter_set: {len(unused_daughter_set)}: {sorted(list(unused_daughter_set))}")
+    print(f"unused_arduino_set= {len(unused_arduino_set)}: {sorted(unused_arduino_set)}")
+    print(f"unused_morpho_set: {len(unused_morpho_set)}: {sorted(unused_morpho_set)}")
+    print(f"unused_daughter_set: {len(unused_daughter_set)}: {sorted(unused_daughter_set)}")
     print(f"Peripherals: {peripheral_permutation}")
     print("")
 

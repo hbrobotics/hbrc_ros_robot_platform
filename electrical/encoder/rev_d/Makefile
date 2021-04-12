@@ -1,6 +1,10 @@
+# This file is licensed using the "MIT License" below:
+#
+# ##################################################################################################
+#
 # MIT License
 #
-# Copyright 2020 Home Brew Robotics Club
+# Copyright 2019-2021 Home Brew Robotics Club
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this
 # software and associated documentation files (the "Software"), to deal in the Software
@@ -18,18 +22,35 @@
 # FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
+#
+# ##################################################################################################
+# <======================================= 100 characters =======================================> #
 
-IOC_DIR := rev_a/hr2
-IOC_CSV := $(IOC_DIR)/hr2.ioc
-F767ZI_DIR := rev_a
-F767ZI_CSV := $(F767ZI_DIR)/master.csv
-KIPART_DIR := ../orders/order1/kiparts
-KIPART_CSV := $(KIPART_DIR)/NUCLEO_F767ZI_2xF2x35.kipart.csv
+.PHONY: all clean everything
+
+ORDERS_DIRECTORY := ../../orders/order3
+KIPARTS_DIRECTORY := $(ORDERS_DIRECTORY)/kiparts
+
+ORDER := order3
+ORDER_CSV := $(KIPARTS_DIRECTORY)/$(ORDER).csv
+ORDER_LIB := $(ORDERS_DIRECTORY)/$(ORDER).lib
+ORDER_DCM := $(ORDERS_DIRECTORY)/$(ORDER).dcm
+
+KIPART_BASES := \
+    encoder
+KIPART_CSVS := ${KIPART_BASES:%=$(KIPARTS_DIRECTORY)/%.kipart.csv}
 
 all:
-	mypy pinsbind.py
-	flake8 --max-line-length=100 --ignore=Q000,W504 pinsbind.py
-	pydocstyle pinsbind.py
-	python pinsbind.py
-	kicube32 $(IOC_CSV) $(F767ZI_CSV) $(KIPART_CSV)
+	rm -f encoder_rev_d.zip
+	zip -u encoder_rev_d.zip *.gbr *.drl 
+
+$(ORDER_LIB): ${KIPART_CSVS}
+	(cd $(ORDERS_DIRECTORY) ; $(MAKE) )
+
+foo:
+	echo KIPART_CSVS=$(KIPART_CSVS)
+	echo ORDER_DIRECTORY=$(ORDERS_DIRECTORY)
+
+clean:
+	(cd $(ORDERS_DIRECTORY) ; $(MAKE) clean)
 

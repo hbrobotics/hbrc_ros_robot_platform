@@ -43,6 +43,13 @@
 23. Wheel clearnce is tight.  The Nucleo spacers need to be lifted up by about 3/16 inch.
     In other words -- 1/2" plus 3/16".
 24. The motor driver needs a .1µF capicitor between between pin-11 (VCP) and pin-12 (VM).
+25. The ESTOP LED is inverted.  It should be ON for an ESTOP not OFF.
+26. The RxD and TxD pins on U19 are swapped.
+27. There is something weird going on with power coming in from the STLink USB connector
+    event when the Nucleo is jumpered for E5V.
+28. The right encoders is flipped and is incompatible with the the associated encoder.
+
+
 
 ## Wire Patches
 
