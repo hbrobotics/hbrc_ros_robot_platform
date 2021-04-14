@@ -10,7 +10,8 @@ merge, publish, distribute, sublicense, and/or sell copies of the Software, and 
 permit persons to whom the Software is furnished to do so, subject to the following
 conditions:
 
-The above copyright notice and this permission notice shall be included in all or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all or
+substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
@@ -1504,6 +1505,19 @@ Now, please follow the following steps:
     You may also unplug your Nucleo-767ZI board.
 
 That is it for now.
+
+### Micro-ROS
+
+Start at:
+
+[µROS Home Page](https://micro.ros.org/):
+This is one of those horrible pages that can only be viewed in full screen mode.
+
+[µROS Tutorials](https://micro.ros.org//docs/tutorials/core/overview/):
+At least this page does not hog the whole screen.
+
+Use the `bin/uros_install.sh` script to install µROS for Linux.
+
 
 <!--
 
