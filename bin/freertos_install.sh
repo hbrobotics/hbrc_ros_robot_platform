@@ -1,4 +1,33 @@
 #!/bin/bash
+
+# This file is licensed using the "MIT License" below:
+#
+####################################################################################################
+#
+# MIT License
+#
+# Copyright 2021 Home Brew Robotics Club
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+# FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+####################################################################################################
+
+
 echo "================ Installing ROS 2 and the micro-ROS build system. ================"
 
 if [[ "$#" != "1" ]]
@@ -6,6 +35,23 @@ then
     echo "usage: uros_install.sh WS_DIR"
     exit 1
 fi
+
+# There are steps below that do no work inside of a python virtual environment.
+# We detect this and ask the user to disable their Python Virtual Environment.
+if [[ "$VIRTUAL_ENV" ]]
+then
+    echo "This script will not work with a Python virtual environment enabled."
+    echo "A Python Virtual Environment is currently enabled."
+    echo "Please type 'deactivate' to disable the Python Virtual Environment."
+    echo "After the script is done remember to renable the Python Virutal Environment by typing:"
+    echo "    workon $(echo $VIRTUAL_ENV | sed 's,^.*/,,g')"
+    exit 1
+fi
+
+# for env_var in $(env | grep VIRTUAL | grep ENV | sed 's,=.*,,g')
+# do
+#     unset $env_var
+# done
 
 echo "================ Create entirely NEW workspace $WS_DIR. ================"
 WS_DIR="$1"
