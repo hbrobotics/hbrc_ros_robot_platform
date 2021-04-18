@@ -9,6 +9,21 @@ These encoder boards are soldered to the motor and have 2 male 1x3 right angle c
 that plug into 2 associated female 1x3 receptacles on the master board.
 The connectors are to the side of each motor.
 
+The Pololu encoder schematic uses the Diodes Incorporated AH1751 in the SOT23 package.
+The AH1751 has A Bhys (Magnetic field hysteresis) 75 Gauss = 7.5mT
+The CGS units for magnetic field strengths are Gauss and the MKS units are Tesla.
+To convert from Gauss to Tesla, divide by 10000 (note: 10^4, not 10^3!)
+
+The recommended replacement is the DI AH1751 is the DI AH3774.
+Instead, for Rev. C and Rev D. the TI DRV5013 is used.
+The AH1751 has A Bhy (Magnetic field hysteresis) 75 Gauss = 7.5mT
+The TI DRV5013 has 4 versions of the chip that have different Bhys:
+* FA: 2.6mT
+* AD: 5.4mT
+* AG: 12mT
+* BC: 24mT
+The closest match to the DI AH1751 is the TI DRV5013AD.
+
 There are the following versions:
 
 1. [Rev A.](#rev_a):
@@ -28,3 +43,49 @@ There are the following versions:
    on the Rev. A master board, by inverting the wiring on the encoder.
    Thus, this board is only meant to be used as the Right encoder for the Rev. A  master board.
 
+<!--
+Pin locations are from left to right facing the top side are:
+Left Side:
+* 1: GND
+* 2: QUADA
+* 3: QUADB
+
+Right Side:
+* 4: VCC (3.3V-5V)
+* 5: MOTOR-
+* 6: MOTOR+
+
+Motor tabs:
+* 7: MOTOR- (Left tab)
+* 8: MOTOR+ (Right tab)
+
+LQUAD_A:
+* PD12: CN10-21  LPTIM1_IN1 (CN12-43)
+
+LQUAD_B: (Two pins shorted together)
+* PA4: CN7-17  (CN11-32)
+* PE1: CN10-24 LPTIM1_IN2 (CN11=61)
+
+RQUAD_A:
+* PC6: CN7-1 TIM8_CH1 (CN12-04)
+
+RQUAD_B: 
+* PC7: CN7-11 TIM8_CH2 (CN12-19)
+
+GND:
+* CN8-13
+* CN9-23
+* CN9-12
+* CN7-8
+* CN10-5
+* CN10-17
+* CN10-27
+* CN10-22
+
++3.3V:
+* CN8-7
+
++5V:
+* CN8-9
+
+-->
