@@ -68,10 +68,10 @@ void HAL_LPTIM_MspInit(LPTIM_HandleTypeDef* lptimHandle)
     /* LPTIM1 clock enable */
     __HAL_RCC_LPTIM1_CLK_ENABLE();
 
-    __HAL_RCC_GPIOG_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
     /**LPTIM1 GPIO Configuration
-    PG12     ------> LPTIM1_IN1
+    PD12     ------> LPTIM1_IN1
     PE1     ------> LPTIM1_IN2
     */
     GPIO_InitStruct.Pin = LQUAD_A_Pin;
@@ -106,7 +106,7 @@ void HAL_LPTIM_MspDeInit(LPTIM_HandleTypeDef* lptimHandle)
     __HAL_RCC_LPTIM1_CLK_DISABLE();
 
     /**LPTIM1 GPIO Configuration
-    PG12     ------> LPTIM1_IN1
+    PD12     ------> LPTIM1_IN1
     PE1     ------> LPTIM1_IN2
     */
     HAL_GPIO_DeInit(LQUAD_A_GPIO_Port, LQUAD_A_Pin);
