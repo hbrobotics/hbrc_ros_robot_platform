@@ -43,6 +43,15 @@ There are the following versions:
    on the Rev. A master board, by inverting the wiring on the encoder.
    Thus, this board is only meant to be used as the Right encoder for the Rev. A  master board.
 
+5. [Rev E.](#rev_e):
+   A board spin on Rev.C that swaps a ground pin with quadrature signal to match a corresponding
+   error on Master Board Rev. A.
+
+6. [Rev F.](#rev_f):
+   A board spin on Rev.D that swaps a ground pin with quadrature signal to match a corresponding
+   error on Master Board Rev. A.
+
+
 <!--
 Pin locations are from left to right facing the top side are:
 Left Side:
@@ -87,5 +96,22 @@ GND:
 
 +5V:
 * CN8-9
+
+Rev E: Left to right from front side:  Works for left motor.
+1: QUADB
+2: QUADA
+3: GND
+4: VCC
+5: MOTOR+
+6: MOTOR-
+
+Rev F: Left to right from front side:   Works for right motor.
+6: MOTOR-
+5: MOTOR+
+4: VCC
+3: GND
+2: QUADA
+1: QUADB
+
 
 -->

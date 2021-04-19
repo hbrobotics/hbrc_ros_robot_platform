@@ -30,6 +30,12 @@ K ~
 F 
 $ENDCMP
 #
+$CMP ENCODER_FIX;2xM1x3RA
+D Fixed HR2 Encoder Connectors
+K ~
+F 
+$ENDCMP
+#
 $CMP SONAR;M1x4RA
 D HR2 Sonar In Adapter
 K ~
