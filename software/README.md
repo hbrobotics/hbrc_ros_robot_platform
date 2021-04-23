@@ -1296,8 +1296,9 @@ The insturctions use `apt-key` rather than `curl`:
 Next install foxy:
 
      sudo apt install -y ros-foxy-ros-base
-     sudo apt install -y  python3-argcomplete
+     sudo apt install -y python3-argcomplete
      sudo apt install -y python3-colcon-common-extensions
+     sudo apt install -y python3-vcstool
 
 #### Final ROS2 Configuration
 
@@ -2122,7 +2123,13 @@ This completes all of the steps needed to run the Blinky program.
 ### Lidar
 
 
+<!--
 
+## Standalone GDB 
+
+[https://mcuoneclipse.com/2015/03/25/command-line-programming-and-debugging-with-gdb/](command line)
+
+-->
 
 <!--
 
