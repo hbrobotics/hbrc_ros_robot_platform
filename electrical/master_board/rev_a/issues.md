@@ -51,8 +51,22 @@
     associated encoder.
 29. The labels on the encoder signals are swapped.  LQUAD_A/LQUAD_B are connected to the
     right motor/encoder and RQUAD_A/RQUAD_B are connected to the left encoder.
+30. The serial port on the microcontroll is connected to the console pins on the RasPi4.
+    This is a mistake.  Instead, use UART5 on the RasPi4.  
 
+<!--
+RasPi4:
+* Pin 8  => TXD1
+* Pin 10 <= RXD1
 
+* Pin 32 TXD5 => SBC_TX
+* Pin 33 RXD5 <= SBC_RX
+
+Master Board:
+* PB15 USART1_RX CN12-17 <= SBC_TX
+* PB6  USART1_TX CN12-26 => SBC_RX
+
+-->
 
 ## Wire Patches
 
