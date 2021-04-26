@@ -78,14 +78,14 @@ source /opt/ros/foxy/setup.bash
 
 if [[ "$ROS_DISTRO" != "foxy" ]]
 then
-	echo "ROS2 is not is at the foxy release"
-	exit 1
+    echo "ROS2 is not is at the foxy release"
+    exit 1
 fi
 
 if [[ ! "$(which ros2)" ]]
 then
-	echo "ros2 command is not present"
-	exit 1
+    echo "ros2 command is not present"
+    exit 1
 fi
 
 
@@ -99,7 +99,6 @@ echo "==== Install pip3  ===="
 sudo apt-get install python3-pip -y
 echo "==== Do colcon build ===="
 colcon build
-source install/local_setup.bash
 
 echo "================ Create firmware step ================"
 ros2 run micro_ros_setup create_firmware_ws.sh freertos nucleo_f767zi
@@ -118,3 +117,23 @@ ros2 run micro_ros_setup create_agent_ws.sh
 # Build step
 ros2 run micro_ros_setup build_agent.sh
 source install/local_setup.bash
+
+echo "================ Some final notes: ================"
+echo "To rebuild the the microcontroller firmware from scatch (similar to 'make clean'):"
+echo "    cd $(WS_DIR)"
+echo "    source /opt/ros/foxy/setup.bash"
+echo "    source install/local_setup.bash"
+echo "    ros2 run micro_ros_setup build_firmware.sh"
+echo ""
+echo "To incrementally rebuild the microcontroller firmware (similar to `make`):"
+echo "    cd $(WS_DIR)"
+echo "    source /opt/ros/foxy/setup.bash"
+echo "    source install/local_setup.bash"
+echo "    ros2 run micro_ros_setup build_firmware.sh -f"
+echo ""
+echo "To flash the firmware to the microcontroller run the following commands:"
+echo "    cd $(WS_DIR)"
+echo "    source /opt/ros/foxy/setup.bash"
+echo "    source install/local_setup.bash"
+echo "    ros2 run micro_ros_setup flash_firmware."
+echo ""
