@@ -48,11 +48,6 @@ then
     exit 1
 fi
 
-# for env_var in $(env | grep VIRTUAL | grep ENV | sed 's,=.*,,g')
-# do
-#     unset $env_var
-# done
-
 echo "================ Create entirely NEW workspace $WS_DIR. ================"
 WS_DIR="$1"
 if [[ -d "$WS_DIR" ]]
@@ -120,19 +115,19 @@ source install/local_setup.bash
 
 echo "================ Some final notes: ================"
 echo "To rebuild the the microcontroller firmware from scatch (similar to 'make clean'):"
-echo "    cd $(WS_DIR)"
+echo "    cd $WS_DIR"
 echo "    source /opt/ros/foxy/setup.bash"
 echo "    source install/local_setup.bash"
 echo "    ros2 run micro_ros_setup build_firmware.sh"
 echo ""
 echo "To incrementally rebuild the microcontroller firmware (similar to `make`):"
-echo "    cd $(WS_DIR)"
+echo "    cd $WS_DIR"
 echo "    source /opt/ros/foxy/setup.bash"
 echo "    source install/local_setup.bash"
 echo "    ros2 run micro_ros_setup build_firmware.sh -f"
 echo ""
 echo "To flash the firmware to the microcontroller run the following commands:"
-echo "    cd $(WS_DIR)"
+echo "    cd $WS_DIR"
 echo "    source /opt/ros/foxy/setup.bash"
 echo "    source install/local_setup.bash"
 echo "    ros2 run micro_ros_setup flash_firmware."

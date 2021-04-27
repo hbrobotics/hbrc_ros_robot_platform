@@ -1509,16 +1509,67 @@ That is it for now.
 
 ### Micro-ROS
 
-Start at:
+The micro-ROS documentation is still a work in progress.
+Reasonable starting points are:
 
-[µROS Home Page](https://micro.ros.org/):
-This is one of those horrible pages that can only be viewed in full screen mode.
+* [micro-ROS Home Page](https://micro.ros.org/):
+  This is the top level page.
+  At the time of this writing, the page is totally mangeled unless it is viewed in full screen mode.
+  When will web page designers ever learn?
+  (Sorry, that is a rhetorical question.)
 
-[µROS Tutorials](https://micro.ros.org//docs/tutorials/core/overview/):
-At least this page does not hog the whole screen.
+* [micro-ROS Tutorials](https://micro.ros.org//docs/tutorials/core/overview/):
+  The tutorials and demos are a reasonable place to start.
 
-Use the `bin/uros_install.sh` script to install µROS for Linux.
+As an overview, various flavors of ROS2 run on different computers.
 
+* Development Computer:
+  The development computer is an 64-bit x86 machine that runs stock ROS2.
+  GUI intensive tools such as RViz, STM32CubeIDE, etc. can be run here.
+  All of these tools are compiled to 64-bit x86 code.
+  The [Development Computer ROS2 Install](#development-computer-ros2-install) is described above.
+
+* Robot Computer:
+  The Robot computer computer is 64-bit Arm Raspberry Pi 4.
+  ROS is already compiled for these platforms.
+  The [Robot Computer ROS2 Installation](#robot-computer-ros2-installation) is described above.
+  Only non-GUI programs are installed on the robot computer.
+  The key program that needs to be run on the robot computer is called the micro-ROS agent
+  and it dedicated to talking to the robot microcontroller.
+
+* Robot Microcontroller:
+  The Robot microcontroller is a 32-b Arm Microcontroller (STM32F767ZI).
+  It is currently a Nucleo-F767ZI.
+  It has code that interfaces the to the robot sensors and actuators.
+  It all has code to communicate with the micro-ROS agent that runs on the Robot computer.
+
+The protocol that glues all of this together is called Data Distribution Service (DDS).
+All three of the computers have implementations of the DDS protocol.
+The one on the Robot microcontroller is a stripped down version of DDS to make it fit.
+
+### Micro-ROS on Linux
+
+The
+[First micro-ROS application on Linux](https://micro.ros.org//docs/tutorials/core/first_application_linux/)
+runs everything on your Development computer.
+Typing the scripts in the code to follow the tutorial is a bit error prone,
+so there is a shell script in the HR2 `bin` directory call `uros_linux_install.sh`.
+This program takes one argument which is a directory to install everything into.
+It is perfectly acceptable to specify a directory in the `/tmp` directory the first time.
+This allows any problems to be easily deleted.
+
+Feel free to read the shell script file as you read through the tutorial.
+It might make your life a little easier.
+
+The
+[First micro-ROS application on an RTOS](https://micro.ros.org//docs/tutorials/core/first_application_rtos/)
+builds the micro-ROS agent to run on either your development computer or on your robot computer.
+It also build the micro-ROS firmware which is downloadable to the Robot Microcontroller.
+As with the first tutorial,
+there is anither script in the `bin` directory called `uros_nucle_install.sh`
+that will install the micro-ros code and build both the agent and the firmware.
+The first time you run this script do it on your Development computer.
+Eventually, you will rerun the same script on your Robot computer (i.e. the Raspberry Pi 4.)
 
 <!--
 
