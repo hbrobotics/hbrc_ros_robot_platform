@@ -94,6 +94,7 @@ echo "==== Install pip3  ===="
 sudo apt-get install python3-pip -y
 echo "==== Do colcon build ===="
 colcon build
+source install/local_setup.bash
 
 echo "================ Create firmware step ================"
 ros2 run micro_ros_setup create_firmware_ws.sh freertos nucleo_f767zi
