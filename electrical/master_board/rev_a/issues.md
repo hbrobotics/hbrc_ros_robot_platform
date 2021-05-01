@@ -53,6 +53,10 @@
     right motor/encoder and RQUAD_A/RQUAD_B are connected to the left encoder.
 30. The serial port on the microcontroll is connected to the console pins on the RasPi4.
     This is a mistake.  Instead, use UART5 on the RasPi4.  
+31. The Motor controller will start with motors at full speed on power-up.  Add pull-down/pull-up
+    resistors to the two CTL pins for each motor to force them into a known (and safe) state when
+    starting up.  Likewise the SLEEP pin needs a power-up pull-up/down resistor to put it into a
+    known state on power up.
 
 <!--
 RasPi4:

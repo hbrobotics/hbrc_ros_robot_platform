@@ -80,6 +80,8 @@ void Error_Handler(void);
 #define RMII_RXD1_GPIO_Port GPIOC
 #define LD1_Pin GPIO_PIN_0
 #define LD1_GPIO_Port GPIOB
+#define RMOTOR_CTL2_Pin GPIO_PIN_1
+#define RMOTOR_CTL2_GPIO_Port GPIOB
 #define SERVO3_Pin GPIO_PIN_10
 #define SERVO3_GPIO_Port GPIOB
 #define SERVO4_Pin GPIO_PIN_11
@@ -96,6 +98,8 @@ void Error_Handler(void);
 #define USB_PowerSwitchOn_GPIO_Port GPIOG
 #define USB_OverCurrent_Pin GPIO_PIN_7
 #define USB_OverCurrent_GPIO_Port GPIOG
+#define RMOTOR_CTL1_Pin GPIO_PIN_8
+#define RMOTOR_CTL1_GPIO_Port GPIOC
 #define USB_SOF_Pin GPIO_PIN_8
 #define USB_SOF_GPIO_Port GPIOA
 #define USB_VBUS_Pin GPIO_PIN_9
@@ -114,6 +118,10 @@ void Error_Handler(void);
 #define RMII_TX_EN_GPIO_Port GPIOG
 #define RMII_TXD0_Pin GPIO_PIN_13
 #define RMII_TXD0_GPIO_Port GPIOG
+#define LMOTOR_CTL1_Pin GPIO_PIN_4
+#define LMOTOR_CTL1_GPIO_Port GPIOB
+#define LMOTOR_CTL2_Pin GPIO_PIN_5
+#define LMOTOR_CTL2_GPIO_Port GPIOB
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

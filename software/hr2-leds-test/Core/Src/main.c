@@ -22,7 +22,6 @@
 #include "adc.h"
 #include "lptim.h"
 #include "spi.h"
-#include "tim.h"
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
@@ -96,7 +95,6 @@ int main(void)
   MX_ADC2_Init();
   MX_ADC3_Init();
   MX_LPTIM1_Init();
-  MX_TIM3_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 

@@ -46,10 +46,12 @@ There are the following versions:
 5. [Rev E.](#rev_e):
    A board spin on Rev.C that swaps a ground pin with quadrature signal to match a corresponding
    error on Master Board Rev. A.
+   The hub hole is the wrong size.  (How did that happen?)
 
 6. [Rev F.](#rev_f):
    A board spin on Rev.D that swaps a ground pin with quadrature signal to match a corresponding
    error on Master Board Rev. A.
+   The hub hole is the wrong size.  (How did that happen?)
 
 
 <!--

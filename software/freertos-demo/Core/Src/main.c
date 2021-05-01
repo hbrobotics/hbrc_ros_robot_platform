@@ -98,7 +98,6 @@ int main(void)
   MX_ADC2_Init();
   MX_ADC3_Init();
   MX_LPTIM1_Init();
-  MX_TIM3_Init();
   MX_SPI3_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */

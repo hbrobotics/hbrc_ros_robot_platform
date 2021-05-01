@@ -76,6 +76,8 @@ void Error_Handler(void);
 #define RMII_RXD1_GPIO_Port GPIOC
 #define LD1_Pin GPIO_PIN_0
 #define LD1_GPIO_Port GPIOB
+#define RMOTOR_CTL2_Pin GPIO_PIN_1
+#define RMOTOR_CTL2_GPIO_Port GPIOB
 #define RMII_TXD1_Pin GPIO_PIN_13
 #define RMII_TXD1_GPIO_Port GPIOB
 #define LD3_Pin GPIO_PIN_14
@@ -94,6 +96,8 @@ void Error_Handler(void);
 #define RQUAD_A_GPIO_Port GPIOC
 #define RQUAD_B_Pin GPIO_PIN_7
 #define RQUAD_B_GPIO_Port GPIOC
+#define RMOTOR_CTL1_Pin GPIO_PIN_8
+#define RMOTOR_CTL1_GPIO_Port GPIOC
 #define USB_SOF_Pin GPIO_PIN_8
 #define USB_SOF_GPIO_Port GPIOA
 #define USB_VBUS_Pin GPIO_PIN_9
@@ -114,6 +118,10 @@ void Error_Handler(void);
 #define RMII_TXD0_GPIO_Port GPIOG
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
+#define LMOTOR_CGL1_Pin GPIO_PIN_4
+#define LMOTOR_CGL1_GPIO_Port GPIOB
+#define LMOTOR_CTL2_Pin GPIO_PIN_5
+#define LMOTOR_CTL2_GPIO_Port GPIOB
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
 #define LQUAD_B_Pin GPIO_PIN_1
