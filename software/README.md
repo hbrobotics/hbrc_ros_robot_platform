@@ -2261,4 +2261,16 @@ Search for "vscode openocd":
 [USBIP Tutorial](https://www.linux-magazine.com/Issues/2018/208/Tutorial-USB-IP)
 
 
+To copy an Eclipse project.
+
+1. Create an empty directory in the correct location to contain the new project.
+2. In the Eclipse project explorer, select the project to be copied.
+3. Right click on the mouse and select the Copy option.
+4. Right click on the mouse and select the paste options.
+5. A pop-up ensues:x
+   * Give the project a new name (usually matching the empty directory you copied.)
+   * Deselect the [ ] use default location.
+   * Use the file browser to locate the empty directory you created and select it.
+   * Hit [OK] (or whatever it is called.)
+
 -->
