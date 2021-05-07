@@ -2110,6 +2110,26 @@ Now run `stm33cubemx`:
 
 This completes all of the steps needed to run the Blinky program.
 
+<!--
+To configure a Raspberry Pi 4 UART:
+edit the `/boot/firmare/usercfg.txt`
+
+     #dtoverlay=uart1
+     #dtoverlay=uart2
+     #dtoverlay=uart3
+     #dtoverlay=uart4
+     #dtoverlay=uart5
+     dtoverlay=disable-bt
+
+Remove the comment for the uarts you want enabled.
+The are allocated as `/dev/ttyAMAx`, where `x` is is `0`, `1` in the order of the
+the uarts enabled.
+
+     
+file `
+
+..>
+
 ## Next steps:
 
 ### Microcode download
@@ -2273,4 +2293,87 @@ To copy an Eclipse project.
    * Use the file browser to locate the empty directory you created and select it.
    * Hit [OK] (or whatever it is called.)
 
+* USART3
+  * Mode:
+    * Mode: Asynchronous
+    * Hardware Flow Control (RS232): Disable
+  * Configuration:
+    * Parameter Settings
+      * Basic Parameters
+        * Baud Rate: 115200
+        * Word Length 8 BIts (including Parity)
+        * Parity: None
+        * Stop Bits: 1
+      * Advanced Parameters:
+        * Data Direction: Receive and Transmit
+        * Oversampling: 16 Samples
+        * Single Sample: Disable
+      * Advance Features:
+        * Auto Baudrate: Disable
+        * TX Pin Active Level Inversion: Disable
+        * RX Pin Active Level Inversion: Disable
+        * Data Inversion: Disable
+        * TX and RX Pins Swapping: Disable
+        * Overrun: Enable
+        * DMA on RX Error: Enable
+        * MSB First: Disable
+    * User Constants:
+      * blank
+    * NVIC Settings:
+      * DMA stream 1 global interrupt:
+        * Enabled: False
+        * Preemption Priority: 5
+        * Sub-priority: 0
+      * DMA stream 1 global interrupt:
+        * Enabled: False
+        * Preemption Priority: 5
+        * Sub-priority: 0
+      * USART3 global interrupt
+        * Enabled: True
+        * Preemption Priority: 5
+        * Sub-priority: 0
+    * DMA Settings:
+      * USART3_TX:
+        * Stream: DMA1 Stream 3
+        * Direction: Memory To Peripheral
+        * Priority: Low
+        * DMA Request Settings:
+	  * Mode: Normal
+	    * Increment Address:
+	      * Peripheral: Disable
+	      * Memory: Enable
+	  * Use Fifo: Disable
+	    * Use Fifo: Disable
+            * Threshold: Not visible when fifo disabled
+ 	    * Data Width:
+	      * Peripheral: Byte
+	      * Memory: Byte
+	    * Burst Size:
+	      * Peripheral: Not visible when fifo disabled
+	      * Memory: Not visible when fifo disableda
+      * USART3_RX:
+        * Stream: DMA1 Stream 1
+        * Direction: Peripheral to Memory
+        * Priority: Low
+        * Datawidth:
+	  * Peripheral: Byte
+	  * Memory: Byte
+	* Use Fifo: Disable
+    * GPIO Settings:
+      * USART3_TX:
+        * Pin Name: PD8
+        * GPIO output level: n/a
+        * GPIO Mode: Alternate Function Pull Push
+        * GPIO Pull-up: No pull-up
+        * Maximum output speed: Very High
+        * User: Label: <blank>
+        * Modified True
+      * USART3_RX:
+        * Pin Name: PD9
+        * GPIO output level: n/a
+        * GPIO Mode: Alternate Function Pull Push
+        * GPIO Pull-up: No pull-up
+      * Maximum output speed: Very High
+        * User: Label: <blank>
+        * Modified True
 -->

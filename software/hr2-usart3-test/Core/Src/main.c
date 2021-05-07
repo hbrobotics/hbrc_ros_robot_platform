@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
 #include "lptim.h"
 #include "tim.h"
 #include "usart.h"
@@ -90,6 +91,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_TIM8_Init();
   MX_LPTIM1_Init();
@@ -103,15 +105,23 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim8,TIM_CHANNEL_ALL);
   HAL_LPTIM_Encoder_Start(&hlptim1,65535L);
   uint8_t c;
+  // uint8_t i = 0;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	    // Read right and left encoder counts
-		HAL_UART_Receive(&huart3, &c, 1, 0xffffffff);
-		HAL_UART_Transmit(&huart3, &c, 1, 100);
-		HAL_UART_Transmit(&huart3, &c, 1, 100);
+	// Read right and left encoder counts
+	HAL_UART_Receive(&huart3, &c, 1, 0xffffffff);
+	HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+	HAL_UART_Transmit(&huart3, &c, 1, 100);
+	HAL_UART_Transmit(&huart3, &c, 1, 100);
+	// c = (i == 0 ? '\r' : (i == 1 ? '\n' : ' ' + i));
+	// HAL_UART_Transmit(&huart3, &c, 1, 100);
+	// i = (i + 1) & 0x3f;
+	// HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }

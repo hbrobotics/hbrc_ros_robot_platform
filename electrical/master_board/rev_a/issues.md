@@ -45,20 +45,57 @@
 24. The motor driver needs a .1µF capacitor between pin-11 (VCP) and pin-12 (VM).
 25. The ESTOP LED is inverted.  It should be ON for an ESTOP not OFF.
 26. The RxD and TxD pins on U19 are swapped.
-27. There is something weird going on with power coming in from the STLink USB connector
+27. There is something weird going on with power coming in from the ST-Link USB connector
     event when the Nucleo is powered by E5V jumper.
 28. The right encoder is rotated 180 degrees along the Z-axis  and is incompatible with the
     associated encoder.
 29. The labels on the encoder signals are swapped.  LQUAD_A/LQUAD_B are connected to the
     right motor/encoder and RQUAD_A/RQUAD_B are connected to the left encoder.
-30. The serial port on the microcontroll is connected to the console pins on the RasPi4.
+30. The serial port on the microcontroller is connected to the console pins on the RasPi4.
     This is a mistake.  Instead, use UART5 on the RasPi4.  
 31. The Motor controller will start with motors at full speed on power-up.  Add pull-down/pull-up
     resistors to the two CTL pins for each motor to force them into a known (and safe) state when
     starting up.  Likewise the SLEEP pin needs a power-up pull-up/down resistor to put it into a
     known state on power up.
+32. UART3 can be connected to either the ST-LINK or the Morpho Pins:
+    * STLK_TX (Nucleo Scehmatic Name):
+      * ST-Link:
+        * U2-Pin 12
+	* CN5:TX (Upper)
+      * Nucleo:
+        * PD9
+        * U8B-Pin 78
+	* USART3_RX
+        * SB6 Closed=>ST-Link    <==== Open SB6
+        * SB4 Closed=>Morpho CN11-69
+      * Pi4
+        * TXD3: Pin 7
+    * STLK_RX (Nucleo Scehmatic Name):
+      * ST-Link:
+        * U2-Pin 13:
+	* CN5: RX (Lower)
+      * Nucleo:
+        * PD8
+        * U8B-Pin 77
+	* USART3_TX
+	* SB5 Closed=>ST-Link
+	* SB7 Closed=>Morpho CN12-10
+      * Pi 4
+        * RXD3 Pin 29
 
 <!--
+7: TXD3(Pi4)             Avail
+8: TXD0 or TXD1(Pi4)     SBC_TX
+10: RXD0 or RXD1(Pi4)    SBC_RX
+21: RXD4 (Pi4)           Avail
+24: TXD4 (Pi4)           SBC_ALIVE
+27: TXD2 (Pi4)           ID_SDA
+28: RXD2 (Pi4)           ID_SCL
+29: RXD3 (Pi4)           Avail
+32: TXD5 (Pi4)           Avail (Wired to USART1)
+33: RXD5 (Pi4)           Avail (Wired to USART1)
+
+
 RasPi4:
 * Pin 8  => TXD1
 * Pin 10 <= RXD1
