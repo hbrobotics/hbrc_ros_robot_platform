@@ -30,11 +30,19 @@
 
 echo "================ Installing ROS 2 and the micro-ROS build system. ================"
 
-if [[ "$#" != "1" ]]
+if [[ "$#" -lt "1" ]]
 then
-    echo "usage: uros_install.sh WS_DIR"
+    echo "usage: uros_install.sh WS_DIR [MICRO_ROS_REPO]"
     exit 1
 fi
+
+# Allow override of MICRO_ROS_REPO to download from a different github.com repository.
+MICRO_ROS_REPO="micro-ROS"
+if [[ "$2" ]]
+then
+    MICRO_ROS_REPO="$2"
+fi
+echo "MICRO_ROS_REPO=$MICRO_ROS_REPO"
 
 # There are steps below that do no work inside of a python virtual environment.
 # We detect this and ask the user to disable their Python Virtual Environment.
@@ -86,7 +94,7 @@ fi
 
 echo "================ Download the micro-ROS tools ================"
 mkdir src
-git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
+git clone -b $ROS_DISTRO https://github.com/$MICRO_ROS_REPO/micro_ros_setup.git src/micro_ros_setup
 echo "==== Update dependencies using rosdep ===="
 sudo apt update && rosdep update
 rosdep install --from-path src --ignore-src -y
