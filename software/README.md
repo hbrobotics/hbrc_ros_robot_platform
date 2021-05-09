@@ -915,7 +915,7 @@ Run the following commands:
      # The prompt should change to `ubuntu@NEWHOSTNAME:$`
      hostname
      # You should get back `NEWHOSTNAME`
-                
+
 ##### Create a New User Account:
 
 You are welcome to continue using the `ubuntu` account the Raspberry Pi 4,
@@ -934,6 +934,10 @@ In the script below, substitute your new account name for `NEWUSER`:
 Give the new account super-user capability with the following command:
 
      sudo usermod -aG sudo NEWUSER
+
+<!--
+sudo usermod -a -G dialout wayne
+-->
 
 <!--
 Issue: It did not set default directory to /home/NEWUSER .

@@ -110,6 +110,11 @@ ros2 run micro_ros_setup create_firmware_ws.sh freertos nucleo_f767zi
 echo "================ Configure firmware step ================"
 ros2 run micro_ros_setup configure_firmware.sh ping_pong --transport serial
 
+echo "================ Make sure additiona tools are installed ================"
+sudo apt install -y python3-argcomplete
+sudo apt install -y python3-colcon-common-extensions
+sudo apt install -y python3-vcstool
+
 echo "================ Building the Firmware ================"
 ros2 run micro_ros_setup build_firmware.sh
 source /opt/ros/foxy/setup.bash
