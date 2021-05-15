@@ -107,15 +107,21 @@ source install/local_setup.bash
 echo "================ Create firmware step ================"
 ros2 run micro_ros_setup create_firmware_ws.sh freertos nucleo_f767zi
 
+# HR2 clone goes here.  .../firmware/freertos_apps/.git
+
 echo "================ Configure firmware step ================"
 ros2 run micro_ros_setup configure_firmware.sh ping_pong --transport serial
 
-echo "================ Make sure additiona tools are installed ================"
+echo "================ Make sure additional tools are installed ================"
 sudo apt install -y python3-argcomplete
 sudo apt install -y python3-colcon-common-extensions
 sudo apt install -y python3-vcstool
+sudo apt install -y python3-rosdep
+sudo apt install -y python3-rosdep-modules
 
 echo "================ Building the Firmware ================"
+sudo rosdep init
+rosdep update
 ros2 run micro_ros_setup build_firmware.sh
 source /opt/ros/foxy/setup.bash
 source install/local_setup.bash

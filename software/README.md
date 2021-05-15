@@ -21,7 +21,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 DEALINGS IN THE SOFTWARE.
 -->
 
-                # HR2 Robot Software
+# HR2 Robot Software
 
 <!-- ==================================== 100 Characters ======================================= -->
 
@@ -1570,10 +1570,25 @@ The
 builds the micro-ROS agent to run on either your development computer or on your robot computer.
 It also build the micro-ROS firmware which is downloadable to the Robot Microcontroller.
 As with the first tutorial,
-there is anither script in the `bin` directory called `uros_nucle_install.sh`
+there is anither script in the `bin` directory called `uros_nucleo_install.sh`
 that will install the micro-ros code and build both the agent and the firmware.
 The first time you run this script do it on your Development computer.
 Eventually, you will rerun the same script on your Robot computer (i.e. the Raspberry Pi 4.)
+
+<!--
+
+Errors when running `.../bin/uros_nueclo_install /tmp/foo jnugen` on a Ras Pi 4,:
+
+* `/tmp/foo/install/micro_ros_setup/config/freertos/list_apps.sh: line 25: pushd: /tmp/foo/firmware/freertos_apps/apps: No such file or directory`
+
+* `/tmp/foo/install/micro_ros_setup/lib/micro_ros_setup/build_firmware.sh: line 65: /tmp/foo/firmware/dev_ws/install/setup.bash: No such file or directory`
+
+* `/tmp/foo/install/micro_ros_setup/lib/micro_ros_setup/build_firmware.sh: line 65: /tmp/foo/firmware/dev_ws/install/setup.bash: No such file or directory`
+
+* `=== ./uros/rclc (git) ===`
+  `Could not checkout ref 'master': fatal: invalid reference: master`
+
+-->
 
 <!--
 
