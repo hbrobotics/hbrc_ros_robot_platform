@@ -1150,7 +1150,7 @@ Plug a USB-A to USB-micro cable between the Robot Computer and the Robot Microco
 Verify that both files exist:
 
      ls -l /etc/systemd/system/usbip_host.service  # Should print a one line directory listing
-     ls -l /usr/local/bin/usbipd.service.sh   # Should print a one line directory listing
+     ls -l /usr/local/bin/usbip_host.service.sh   # Should print a one line directory listing
 
 Now enable/start the service:
 
