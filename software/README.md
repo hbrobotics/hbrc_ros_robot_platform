@@ -453,7 +453,7 @@ This section is broken into the following sub-sections:
   You get be pick between display/keyboard bring up vs. headless bring up.
 
 * [Install Ubuntu onto a Micro-SD Card](#install-ubuntu-onto-a-micro-sd-card):
-  A program called `rpi-image` isntalled onto your development computer and
+  A program called `rpi-imager` installed onto your development computer and
   is used to load the Ubuntu image for the Raspberry Pi4 onto a micro-SD card.
 
 * [Raspberry Pi 4 Connector Locations](#raspberry-pi-4-connector-locations):
@@ -934,10 +934,7 @@ In the script below, substitute your new account name for `NEWUSER`:
 Give the new account super-user capability with the following command:
 
      sudo usermod -aG sudo NEWUSER
-
-<!--
-sudo usermod -a -G dialout wayne
--->
+     sudo usermod -aG dialout NEWUSER
 
 <!--
 Issue: It did not set default directory to /home/NEWUSER .
@@ -1120,16 +1117,16 @@ The Robot computer needs to do three things on start-up.
 
 This is done with two files:
 
-* `/etc/systemd/system/usbipd.service`:
+* `/etc/systemd/system/usbip-host.service`:
   This is a `systemd` unit file that properly installs the kernel modules
   and runs the daemon.
-  It also invokes the `usbipd.service.sh` shell file immediately below.
+  It also invokes the `usbip-host.service.sh` shell file immediately below.
 
 * `/usr/local/bin/usbip_host.service.sh`:
   This determines if an ST-Link plugged into one of the robot computer USB ports and
   (if present) bind it such that it is available for external access.
   
-The is installed as super user:
+The file is installed as super user:
 
      sudo -s  # If prompted for a password, type it in.
      # Prompt character changes from `>` to `#` to remind you that your are super-user
@@ -1137,13 +1134,13 @@ The is installed as super user:
 Now install `/etc/systemd/system/usbipd.service` as follows:
 
      cd /etc/systemd/system
-     wget https://raw.githubusercontent.com/hbrobotics/hbrc_ros_robot_platform/master/bin/usbipd.service
+     wget https://raw.githubusercontent.com/hbrobotics/hbrc_ros_robot_platform/master/bin/usbip_host.service
 
-Now install `/usr/local/bin/usbipd.service.sh` as follows:
+Now install `/usr/local/bin/usbip_host.service.sh` as follows:
 
      cd /usr/local/bin
      wget https://raw.githubusercontent.com/hbrobotics/hbrc_ros_robot_platform/master/bin/usbipd.service.sh
-     chmod +x usbipd.service.sh
+     chmod +x usbip_host.service.sh
 
 ###### Verify `usbip` Installation
 
@@ -1153,7 +1150,7 @@ Plug a USB-A to USB-micro cable between the Robot Computer and the Robot Microco
 Verify that both files exist:
 
      ls -l /etc/systemd/system/usbip_host.service  # Should print a one line directory listing
-     ls -l /usr/local/bin/usbipd_host.service.sh   # Should print a one line directory listing
+     ls -l /usr/local/bin/usbipd.service.sh   # Should print a one line directory listing
 
 Now enable/start the service:
 
@@ -1274,7 +1271,7 @@ The next major step is to install ROS2 on the robot computer
 
 ### Robot Computer ROS2 Installation
 
-The intial installaton of ROS2 is pretty straight forward.
+The initial installation of ROS2 is pretty straight forward.
 The steps are:
 
 1. [Connect to ROS2 PPA](#connect-to-ros2-ppa):
@@ -1290,7 +1287,7 @@ The steps are:
 
 The ROS2 instructions for connecting to the ROS2 PPA are a little more involved
 than the instructions immediately below.
-The insturctions use `apt-key` rather than `curl`:
+The instructions use `apt-key` rather than `curl`:
 
      sudo apt-key adv --fetch-keys https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
      sudo apt-add-repository http://packages.ros.org/ros2/ubuntu
