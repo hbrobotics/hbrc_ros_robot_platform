@@ -1139,7 +1139,7 @@ Now install `/etc/systemd/system/usbipd.service` as follows:
 Now install `/usr/local/bin/usbip_host.service.sh` as follows:
 
      cd /usr/local/bin
-     wget https://raw.githubusercontent.com/hbrobotics/hbrc_ros_robot_platform/master/bin/usbipd.service.sh
+     wget https://raw.githubusercontent.com/hbrobotics/hbrc_ros_robot_platform/master/bin/usbip_host.service.sh
      chmod +x usbip_host.service.sh
 
 ###### Verify `usbip` Installation
@@ -1154,12 +1154,12 @@ Verify that both files exist:
 
 Now enable/start the service:
 
-     systemctl enable usbipd.service
-     systemctl start usbipd.service
+     systemctl enable usbip_host.service
+     systemctl start usbip_host.service
 
 Verify that it is running:
 
-     systemctl status usbipd.service
+     systemctl status usbip_host.service
      # A bunch of stuff should print out.  "Active: active (running) ..." is want is wanted.
      
 Verify that it can find the ST-Link module:
