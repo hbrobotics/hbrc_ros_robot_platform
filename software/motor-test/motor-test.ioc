@@ -721,4 +721,3 @@ SH.S_TIM3_CH4.0=TIM3_CH4,PWM Generation4 CH4
 PB1.GPIOParameters=GPIO_Label
 PA7.Signal=SPI1_MOSI
 PA6.Locked=true
-isbadioc=false

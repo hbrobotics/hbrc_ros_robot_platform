@@ -82,6 +82,13 @@
 	* SB7 Closed=>Morpho CN12-10
       * Pi 4
         * RXD3 Pin 29
+33. PB4 is connected to LMOTOR_CTL1.  On startup, PB is conne NJTRST and is an output that
+    is set to high.  That causes the right motor to go full speed until the initialization
+    code gets around to converting into a GPIO in the low state.  Pull down resistors do
+    not help.  The pins that do not initialize to floating are described in section 6.3.1
+    in the reference manual (page 223.)  The PA15 and PB4 are not suitable.  PB4 is currently
+    used as TIM3_CH4.  The correct thing to a timer that does not use PBB or PBA15 ***AND***
+    connect pull down resistors to the LMOTOR/RMOTOR_CTL1/2 pins.
 
 <!--
 7: TXD3(Pi4)             Avail

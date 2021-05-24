@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 log_file=/tmp/usbip_bind.log
-echo "/usr/local/bin/usbipd.servce.sh started" > "$log_file"
+echo "/usr/local/bin/usbipd_host.servce.sh started" > "$log_file"
 /usr/bin/usbip list -p -l 2>&1 >> "$log_file"
 st_link_bus_id="$(/usr/bin/usbip list -p -l)"
 echo "st_link_bus_id1=$st_link_bus_id" >> "$log_file"
