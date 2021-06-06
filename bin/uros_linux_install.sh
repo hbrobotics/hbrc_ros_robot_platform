@@ -3,32 +3,32 @@ echo "================ Installing ROS 2 and the micro-ROS build system. ========
 
 if [[ "$#" != "1" ]]
 then
-    echo "usage: uros_install.sh WS_DIR"
+    echo "usage: uros_linux_install.sh WS_DIR"
     exit 1
 fi
 
 echo "================ Create entirely NEW workspace $WS_DIR. ================"
 WS_DIR="$1"
-if [[ -d "$WS_DIR" ]]
+if [[ -d "${WS_DIR}" ]]
 then
-    echo "To stop removal of $WSDIR, type Control-C!"
+    echo "To stop removal of ${WS_DIR}, type Control-C!"
     echo ""
     for count in 9 8 7 6 5 4 3 2 1
     do
-	echo "Entirely remove $WS_DIR in $count second(s)"
+	echo "Entirely remove ${WS_DIR} in ${count} second(s)"
 	sleep 1
     done
-    echo "==== Removing $WS_DIR directory ===="
-    rm -rf "$WS_DIR"
+    echo "==== Removing ${WS_DIR} directory ===="
+    rm -rf "${WS_DIR}"
 fi
-echo "==== Create brand new $WS_DIR directory ===="
-mkdir -p "$WS_DIR"
+echo "==== Create brand new ${WS_DIR} directory ===="
+mkdir -p "${WS_DIR}"
 
-# All commands are executed in $WS_DIR from here on out.
-cd $WS_DIR
+# All commands are executed in ${WS_DIR} from here on out.
+cd "${WS_DIR}"
 
 echo "==== Verify the ROS 2 installation. ===="
-source /opt/ros/foxy/setup.bash
+source "/opt/ros/foxy/setup.bash"
 
 if [[ "$ROS_DISTRO" != "foxy" ]]
 then
@@ -42,10 +42,14 @@ then
 	exit 1
 fi
 
+echo "================ Install pyyaml, empy, lark, numpy ================"
+pip install pyyaml
+pip install empy
+pip install lark
+pip install numpy
 
 echo "================ Download the micro-ROS tools ================"
-mkdir src
-git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
+git clone -b "${ROS_DISTRO}" https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
 echo "==== Update dependencies using rosdep ===="
 sudo apt update && rosdep update
 rosdep install --from-path src --ignore-src -y
