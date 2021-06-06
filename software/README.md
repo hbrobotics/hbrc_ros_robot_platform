@@ -1166,11 +1166,13 @@ Verify that it can find the ST-Link module:
 
      usbip list -l
      # It should print out `busid ...` followed by `STMicroelectronics ...`
+     # If not, try to reboot.
 
 Verify that it remotely accessible:
 
      usbip list -r localhost
      # Should print out `localhost`, followed by the same lines as imediately above.
+     # If not, try to reboot.
 
 Now exit super-user mode:
 
@@ -2392,4 +2394,10 @@ To copy an Eclipse project.
       * Maximum output speed: Very High
         * User: Label: <blank>
         * Modified True
+-->
+
+<!--
+
+[Eclipse JLink FreeRTOS Notes](https://www.freertos.org/FreeRTOS_Support_Forum_Archive/February_2010/freertos_freeRTOS_w_Eclipse_and_JLink_3541181.html)
+
 -->
