@@ -218,7 +218,63 @@ function tutorial_interfaces_examples {
 
     # Update the workspace:
     ws_update.py "${DEV_WS}" "${DESCRIPTION}"
-    tree "${DEV_WS}"
+}
+
+function python_parmaters_node_py_create {
+    cat >> python_parameters_node.py <<EOF
+import rclpy
+import rclpy.node
+from rclpy.exceptions import ParameterNotDeclaredException
+from rcl_interfaces.msg import ParameterType
+
+class MinimalParam(rclpy.node.Node):
+    def __init__(self):
+        super().__init__('minimal_param_node')
+        timer_period = 2  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+
+        self.declare_parameter('my_parameter', 'world')
+
+    def timer_callback(self):
+        my_param = self.get_parameter('my_parameter').get_parameter_value().string_value
+
+        self.get_logger().info('Hello %s!' % my_param)
+
+        my_new_param = rclpy.parameter.Parameter(
+            'my_parameter',
+            rclpy.Parameter.Type.STRING,
+            'world'
+        )
+        all_new_parameters = [my_new_param]
+        self.set_parameters(all_new_parameters)
+
+def main():
+    rclpy.init()
+    node = MinimalParam()
+    rclpy.spin(node)
+
+if __name__ == '__main__':
+    main()
+EOF
+}
+
+function python_parameters_examples {
+    echo "================> Create the python parameters examples package."
+    # Define some constants:
+    local PKG_NAME="python_parameters"
+    #local NODE_NAME="minimal_srvcli"
+    local DESCRIPTION="Examples of ROS2 parameters using python."
+    
+    # Construct the directory tree:
+    (cd "${SRC}" && \
+	 ros2 pkg create --build-type ament_python "${PKG_NAME}" --dependencies rclpy
+    )
+
+    # Install the `python_parameters_node.py` program.
+    (cd "${SRC}/${PKG_NAME}/${PKG_NAME}" && python_parmaters_node_py_create )
+
+    # Update the workspace:  # This actually messes up package.xml
+    ws_update.py "${DEV_WS}" "${DESCRIPTION}"
 }
 
 build_workspace
@@ -233,6 +289,9 @@ packages+=("py_srvcli")
 
 tutorial_interfaces_examples
 packages+=("tutorial_interfaces")
+
+python_parameters_examples
+packages+=("python_parameters")
 
 # Temporarity disable bash tracing:
 set +eux
