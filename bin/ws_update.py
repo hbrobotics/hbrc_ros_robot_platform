@@ -30,7 +30,7 @@
 import subprocess
 import sys
 from pathlib import Path
-from typing import IO, List, Set, Tuple
+from typing import Dict, IO, List, Set, Tuple
 
 
 def main(tracing: str = "") -> int:
@@ -114,8 +114,8 @@ def packages_find(workspace_path: Path, tracing: str = "") -> Tuple[Path, ...]:
     final_packages: Tuple[Path, ...] = tuple(sorted(all_packages))
 
     if tracing:
-        print(f"{tracing}<=packages_find({workspace_path})=>{all_packages}")
-    return tuple(all_packages)
+        print(f"{tracing}<=packages_find({workspace_path})=>{final_packages}")
+    return tuple(final_packages)
 
 
 def package_update(package_path: Path, description: str, tracing: str = "") -> None:
@@ -127,6 +127,7 @@ def package_update(package_path: Path, description: str, tracing: str = "") -> N
         python_packages_find(package_path, tracing=next_tracing))
 
     import_names: Set[str] = set()
+    has_param_talker: bool = False
     python_package_path: Path
     for python_package_path in python_package_paths:
         python_paths: Tuple[Path, ...] = python_paths_find(python_package_path,
@@ -135,10 +136,14 @@ def package_update(package_path: Path, description: str, tracing: str = "") -> N
         for python_path in python_paths:
             import_names |= python_imports_get(python_path, tracing=next_tracing)
 
-        entries: Tuple[Tuple[str, str], ...] = python_entries_find(python_paths,
-                                                                   tracing=next_tracing)
-        setup_update(package_path, description, entries, tracing=next_tracing)
+        label_entries: Dict[str, str] = python_label_entries_find(
+            python_paths, tracing=next_tracing)
+        has_param_talker |= "param_talker" in label_entries
+        setup_update(package_path, description, label_entries, tracing=next_tracing)
 
+    # Kludge: trim import names to zero for parameters package.
+    if has_param_talker:
+        import_names = set()
     if (package_path / "package.xml").exists():
         package_xml_update(package_path, import_names, description, tracing=next_tracing)
     if (package_path / "CMakeLists.txt").exists():
@@ -171,13 +176,15 @@ def python_paths_find(python_package_path: Path, tracing: str = "") -> Tuple[Pat
     if tracing:
         print(f"{tracing}=>python_paths_find({python_package_path})")
     python_path: Path
-    python_files: Tuple[Path, ...] = tuple(sorted(
-        [python_path
-         for python_path in python_package_path.glob("*.py")
-         if python_path.name != "__init__.py"]))
+    python_files: List[Path] = [
+        python_path
+        for python_path in python_package_path.glob("*.py")
+        if python_path.name != "__init__.py"
+    ]
+    python_files.sort()
     if tracing:
         print(f"{tracing}<=python_paths_find({python_package_path})=>{python_files}")
-    return python_files
+    return tuple(python_files)
 
 
 def python_imports_get(python_path: Path, tracing: str = "") -> Set[str]:
@@ -276,6 +283,7 @@ def package_cmakelists_update(package_path: Path, tracing: str = "") -> None:
     if tracing:
         print(f"{tracing}<=package_cmakelists_update({package_path})")
 
+
 def package_xml_update(package_path: Path, import_names: Set[str],
                        description: str, tracing: str = "") -> None:
     """Update the package.xml file."""
@@ -302,7 +310,17 @@ def package_xml_update(package_path: Path, import_names: Set[str],
     with open(xml_path) as xml_file:
         xml_lines = xml_file.read().split('\n')
 
+    # Find the <depend>DEPEND_NAME</depend> entries.
+    depend_names: Set[str] = set()
     xml_line: str
+    for xml_line in xml_lines:
+        if xml_line.startswith("  <depend>") and xml_line.endswith("</depend>"):
+            depend_name: str = xml_line[10:-9]
+            depend_names.add(depend_name)
+
+    # Remove duplicates from *import_names*:
+    import_names -= depend_names
+
     updated_xml_lines: List[str] = []
     for xml_line in xml_lines:
         if xml_line.startswith("  <description>"):
@@ -312,7 +330,9 @@ def package_xml_update(package_path: Path, import_names: Set[str],
         elif xml_line.startswith("  <license>"):
             updated_xml_lines.append("  <license>MIT</license>")
             import_name: str
-            for import_name in import_names:
+            for depend_name in sorted(depend_names):
+                updated_xml_lines.append(f"  <depend>{depend_name}</depend>")
+            for import_name in sorted(import_names):
                 updated_xml_lines.append(f"  <exec_depend>{import_name}</exec_depend>")
             if rosidl_needed:
                 updated_xml_lines.extend([
@@ -320,6 +340,8 @@ def package_xml_update(package_path: Path, import_names: Set[str],
                     "  <exec_depend>rosidl_default_runtime</exec_depend>",
                     "  <member_of_group>rosidl_interface_packages</member_of_group>",
                 ])
+        elif xml_line.startswith("  <depend>"):
+            pass  # Delete this previously installed line.
         elif xml_line.startswith("  <exec_depend>"):
             pass  # Delete this previously installed line.
         elif xml_line.startswith("  <build_depend>rosidl_default_generators</build_depend>"):
@@ -337,10 +359,10 @@ def package_xml_update(package_path: Path, import_names: Set[str],
         xml_file.write(updated_xml)
 
     # For debugging only:
-    # print("================================================================")
-    # print(f"{xml_path}")
-    # print(updated_xml)
-    # print("================================================================")
+    print("================================================================")
+    print(f"{xml_path}")
+    print(updated_xml)
+    print("================================================================")
 
     if tracing:
         print(f"{tracing}<=package_xml_update('{xml_path}', {import_names}, '{description}')")
@@ -363,11 +385,11 @@ def maintainer_get() -> str:
 
 
 def setup_update(package_path: Path, description: str,
-                 entries: Tuple[Tuple[str, str], ...], tracing: str = "") -> None:
+                 label_entries: Dict[str, str], tracing: str = "") -> None:
     """Update the setup.py file."""
     # next_tracing: str = tracing + " " if tracing else ""
     if tracing:
-        print(f"{tracing}=>setup_update({package_path}, '{description}', {entries})")
+        print(f"{tracing}=>setup_update({package_path}, '{description}', {label_entries})")
 
     setup_path: Path = package_path / "setup.py"
     assert setup_path.exists(), f"{setup_path} does not exist"
@@ -397,7 +419,7 @@ def setup_update(package_path: Path, description: str,
             updated_setup_lines.append(setup_line)
             label: str
             module_name: str
-            for label, module_name in entries:
+            for label, module_name in label_entries.items():
                 updated_setup_lines.append(
                     f"            '{label} = {package_name}.{module_name}:main',")
         elif setup_line.endswith(":main',"):
@@ -409,23 +431,24 @@ def setup_update(package_path: Path, description: str,
     with open(setup_path, "w") as setup_file:
         setup_file.write(updated_setup)
 
+    # For debugging only:
     # print("================================================================")
     # print(f"{setup_path}")
     # print(updated_setup)
     # print("================================================================")
 
     if tracing:
-        print(f"{tracing}<=setup_update({package_path}, '{description}', {entries})")
+        print(f"{tracing}<=setup_update({package_path}, '{description}', {label_entries})")
 
 
-def python_entries_find(
-        python_paths: Tuple[Path, ...], tracing: str = "") -> Tuple[Tuple[str, str], ...]:
+def python_label_entries_find(
+        python_paths: Tuple[Path, ...], tracing: str = "") -> Dict[str, str]:
     """Scan python files for entry label pairs."""
     # next_tracing: str = tracing + " " if tracing else ""
     if tracing:
         print(f"{tracing}=>python_entries_find({python_paths})")
 
-    label_module_pairs: List[Tuple[str, str]] = []
+    label_entries: Dict[str, str] = {}
     python_path: Path
     for python_path in python_paths:
         label: str = ""
@@ -443,18 +466,20 @@ def python_entries_find(
                     label = "client"
                 elif python_line.find("create_publisher(") >= 0:
                     label = "talker"
+                elif python_line.find(".declare_parameter(") >= 0:
+                    label = "param_talker"
                 elif python_line.find("create_service(") >= 0:
                     label = "service"
                 elif python_line.find("create_subscription(") >= 0:
                     label = "listener"
         if label and python_module_name:
-            label_pair: Tuple[str, str] = (label, python_module_name)
-            label_module_pairs.append(label_pair)
+            assert label not in label_entries, f"Duplicate lable '{label}'."
 
-    label_module_pairs.sort()
+            label_entries[label] = python_module_name
+
     if tracing:
-        print(f"{tracing}<=python_entries_find({python_paths} => {label_module_pairs}")
-    return tuple(label_module_pairs)
+        print(f"{tracing}<=python_entries_find({python_paths} => {label_entries}")
+    return label_entries
 
 
 if __name__ == "__main__":
