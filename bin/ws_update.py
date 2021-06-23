@@ -484,3 +484,50 @@ def python_label_entries_find(
 
 if __name__ == "__main__":
     main(tracing=" ")
+
+# [ROS Python Launch Files](https://www.youtube.com/watch?v=RDoig5qEHRM)
+
+# Note that PKG only occurs onece
+# mkdir -p WS/PKG/launch
+# cat >> WS/src/PKG/launch/launch.py <<EOF  # Note it is not PKG/PKG
+# from launch import LaunchDescription
+# from launch_ros.actions import Node
+#
+# def generate_launch_description():
+#    return LaunchDescription([
+#        Node(
+#           package="py_pubsub",
+#           executable="talker",
+#           output="screen",
+#        ),
+#        Node(
+#           package="py_pubsub",
+#           executable="listener",
+#           output="screen",
+#        ),
+#    ])
+# EOF
+
+# in setyp.py
+# Add: imports:
+# from setuptools import setup  # Already presetn
+# import os  # For os is for os.join() only
+# from glob import glob
+# 
+# in data_files add:
+#    (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
+
+# Run `colcon build`
+#
+# source intall/setup.bash
+# ros2 launch py_pubsub launch.py
+
+# [https://roboticsbackend.com/ros2-launch-file-example/](https://roboticsbackend.com/ros2-launch-file-example/)
+
+# [Writing a ROS 2 launch file](https://github.com/bponsler/ros2-support/blob/master/tutorials/ros2-launch.md)
+
+# [ROS2 Launch File Migrator](https://github.com/aws-robotics/ros2-launch-file-migrator)
+# Look at the test fixtures.
+
+# [ROS1 roslaunch](http://wiki.ros.org/roslaunch)
+# [ROS1 roslaunch XML](http://wiki.ros.org/roslaunch/XML/launch)
