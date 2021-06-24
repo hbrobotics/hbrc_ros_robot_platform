@@ -27,7 +27,7 @@ import subprocess
 import sys
 
 from pathlib import Path
-from typing import IO, List, Tuple
+from typing import Dict, IO, List, Tuple
 
 def main() -> int:
     # Parse command line arguments:
@@ -54,22 +54,217 @@ def main() -> int:
 
     serial_agent_generator: SerialAgentGenerator = SerialAgentGenerator()
     # Temporary:
-    serial_agent_generator.publisher_add("topic", "String")
-    serial_agent_generator.subscription_add("topic", "String")
-    serial_agent_generator.timer_add("event", "String", 0.5)
+    serial_agent_generator.publisher_add("std_msgs.msg", "String", "topic")
+    serial_agent_generator.subscription_add("std_msgs.msg", "String", "topic")
+    serial_agent_generator.client_add("example_interfaces", "AddTwoInts", "add_two_ints")
+    serial_agent_generator.server_add("example_interfaces", "AddTwoInts", "add_two_ints")
+    serial_agent_generator.timer_add("add_two_ints", "String", 4.0)
     serial_agent_generator.serial_agent_py_create(ros2_package_directory, package_name)
+
     return 0
 
 
-class SerialAgentGenerator:
+class ImportManager(object):
+    """Class to keep track of import statements.
+
+    It is really easy for different packages to conflict on the type names that
+    they create.  This package attempts to detect these errors and fail with a
+    a semi useful error message.
+    """
+
+    # ImportManager.__init__():
+    def __init__(self) -> None:
+        """Initialize ImportManager"""
+        self.all_tags: Tuple[str, ...] = ()  # All allowed tags
+        self.tag_to_import_lines: Dict[str, List[str]] = {}  # tag => lines
+        self.tag_to_comment_line: Dict[str, str] = {}  # tag => comment line
+        self.import_lines_to_tag: Dict[str, str] = {}  # import_line => tag
+        self.global_to_import_line: Dict[str, str] = {}  # global_name => import_line
+
+    # ImportManager.tag_create():
+    def tag_create(self, tag: str, comment_line: str) -> None:
+        """Create an import tag."""
+        assert tag not in self.all_tags, "Duplicate tag '{tag}' creation."
+        self.all_tags += (tag,)
+        self.tag_to_comment_line[tag] = comment_line
+        self.tag_to_import_lines[tag] = []
+
+    # ImportManager.insert():
+    def insert(self, tag: str, global_name: str, import_line: str, comment: str) -> None:
+        if global_name == "AddTwoInts":
+            print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {tag}")
+        assert tag in self.all_tags, f"Tag '{tag}' is not one of {self.all_tags}."
+        if global_name in self.global_to_import_line:
+            # Duplicate global name.  It may be OK:
+            previous_import_line: str = self.global_to_import_line[global_name]
+            assert import_line  == previous_import_line, (
+                f"'{global_name}' is defined by both '{previous_import_line}' and '{import_line}'")
+        else:
+            if import_line not in self.tag_to_import_lines[tag]:
+                self.global_to_import_line[global_name] = import_line
+                self.import_lines_to_tag[import_line] = tag
+                if comment:
+                    import_line += f"  # {comment}"
+                self.tag_to_import_lines[tag].append(import_line)
+
+    # ImportManager.simple_import():
+    def simple_import(self, tag: str, global_name: str, comment: str = "") -> None:
+        """Generate a simple import statement."""
+        import_line: str = f"import {global_name}"
+        self.insert(tag, global_name, import_line, comment)
+
+    # ImportManager.import_as():
+    def import_as(self, tag: str, import_name: str, global_name: str, comment: str = "") -> None:
+        """Generate an import/as statement."""
+        import_line: str = f"import {import_name} as {global_name}"
+        self.insert(tag, global_name, import_line, comment)
+
+    # ImportManager.from_import():
+    def from_import(self, tag: str, import_name: str, global_name: str, comment: str = "") -> None:
+        """Generate an from/import statement."""
+        assert global_name != "topic", f"tag='{tag}"  # Debug only
+        import_line: str = f"from {import_name} import {global_name}"
+        self.insert(tag, global_name, import_line, comment)
+
+    # ImportManager.from_import_as():
+    def from_import_as(self, tag: str, import_name: str,
+                       actual_name: str, global_name: str, comment: str = "") -> None:
+        """Generate a from/import/as statement."""
+        import_line: str = f"from {import_name} import {actual_name} as {global_name}"
+        self.insert(tag, global_name, import_line, comment)
+
+    # ImportManager.import_lines_get():
+    def import_lines_get(self) -> List[str]:
+        """Return a list of all of the imports."""
+        # Standard import lines go first:
+        import_lines: List[str] = [
+            "",
+            "# Type hint imports:",
+            "from typing import Any, Callable, Dict, List, Optional, Set",
+        ]
+
+        # Append the remaining import lines on a tag by tag basis:
+        tag: str
+        for tag in self.all_tags:
+            tag_import_lines: List[str] = self.tag_to_import_lines[tag]
+            if tag_import_lines:
+                comment_line: str = self.tag_to_comment_line[tag]
+                import_lines.extend(["", comment_line] + sorted(self.tag_to_import_lines[tag]))
+
+        return import_lines
+
+    # ImportManager.service_types_import():
+    def service_types_import(self, service_package: str, service_type: str) -> Tuple[str, str]:
+        """Import the types needed for a service."""
+
+        # Ensure that the service message type is imported.
+        # self.from_import("server", service_package, service_type, "type: ignore")
+
+        # Also ensure that associated Request and Response types are imported:
+        request_type: str = f"{service_type}.Request"
+        response_type: str = f"{service_type}.Response"
+        self.from_import("service", f"{service_package}.srv", service_type, "type: ignore")
+        return request_type, response_type
+
+
+# TaggedLines:
+class TaggedLines(object):
+    """Class for managing the tagged lines."""
+    
+    # TaggedLines.__init__():
+    def __init__(self) -> None:
+        """Initialize the InitManager."""
+
+        self.tags: Tuple[str, ...] = ()
+        self.lines: Dict[str, List[str]] = {}
+        self.prefix_lines: Dict[str, List[str]] = {}
+
+    # TaggedLines.tag_create():
+    def tag_create(self, tag: str, prefix_lines: List[str]) -> None:
+        """Create a new tag tagged buffer."""
+
+        assert tag not in self.tags, f"Defining a duplicate tag: '{tag}'"
+        self.tags += (tag,)
+        self.lines[tag] = []
+        self.prefix_lines[tag] = prefix_lines
+
+    # TaggedLine.prefix_set():
+    def prefix_set(self, tag: str, prefix_lines: List[str]) -> None:
+        """Set the prefix lines."""
+        assert tag in self.tags, f"Unknown tag '{tag}'"
+        self.prefix_lines[tag] = prefix_lines
+
+        # Force the prefix to show up.
+        self.lines[tag].append("")
+
+    # TaggedLines.extend():
+    def extend(self, tag: str, lines: List[str]) -> None:
+        """Append some lines to a tagged buffer."""
+        assert tag in self.tags, f"Unknonw tag '{tag}'"
+        self.lines[tag].extend(lines)
+
+    # TaggegLines.lines_get():
+    def lines_get(self) -> List[str]:
+        """Return the tagged lines as a single list of lines."""
+        all_lines: List[str] = []
+        tag: str
+        for tag in self.tags:
+            lines: List[str] = self.lines[tag]
+            # Empty lines a the end for rce
+            if lines:
+                # Empty lines are trimmed.  Thus, a prefix only can be output:
+                while lines and lines[0] == "":
+                    lines.pop(0)
+                all_lines.extend([""] + self.prefix_lines[tag] + lines)
+        return all_lines
+
+# SerialAgentGenerator:
+class SerialAgentGenerator(object):
     """Class for generating a serial agent."""
 
     # SerialAgentGenerator.__init__():
     def __init__(self) -> None:
         """Initialize SerialAgentGenerator."""
 
-        # Miscellaneous variables:
-        triple_quote: str = '"' * 3
+        # Create all of the import tags for *import_manager*:
+        import_manager: ImportManager = ImportManager()
+        import_manager.tag_create("required", "# Required imports:")
+        import_manager.tag_create("publisher", "# Publisher required imports:")
+        import_manager.tag_create("subscription", "# Subscription required imports:")
+        import_manager.tag_create("message", "# Message type required imports:")
+        import_manager.tag_create("client", "# Client required imports:")
+        import_manager.tag_create("server", "# Server required imports:")
+        import_manager.tag_create("service", "# Service type required imports:")
+        import_manager.tag_create("timer", "# Timer required imports:")
+        self.import_manager: ImportManager = import_manager
+
+        # Fill in the requried imports:
+        import_manager.simple_import("required", "rclpy", "type: ignore")
+        import_manager.from_import_as("required", "rclpy.impl.rcutils_logger",
+                                      "RcutilsLogger", "Logger", "type: ignore")
+        import_manager.from_import("required", "rclpy.node", "Node", "type: ignore")
+        
+        # Various sections of generated code.
+        indent: str = " " * 8
+        init_tagged_lines: TaggedLines = TaggedLines()
+        init_tagged_lines.tag_create("publisher", [])
+        init_tagged_lines.tag_create("subscription", [])
+        init_tagged_lines.tag_create("client", [])
+        init_tagged_lines.tag_create("server", [])
+        init_tagged_lines.tag_create("timer", [])
+
+        # This comes last:
+        init_tagged_lines.tag_create("server_wait", [])  # Prefix lines filled elsewhere
+
+        self.init_tagged_lines: TaggedLines = init_tagged_lines
+
+        # Callback methods are added to this list:
+        callback_tagged_lines: TaggedLines = TaggedLines()
+        callback_tagged_lines.tag_create("subscription", [])
+        callback_tagged_lines.tag_create("client", [])
+        callback_tagged_lines.tag_create("server", [])
+        callback_tagged_lines.tag_create("timer", [])
+        self.callback_tagged_lines: TaggedLines = callback_tagged_lines
 
         # Copyright lines for the beginning of the file:
         self.copyright_lines: List[str] = [
@@ -77,6 +272,9 @@ class SerialAgentGenerator:
             "# Generated code is not really covered by copyright law.",
         ]
 
+        # Create the main() function:
+        dq1: str = "\""
+        dq3: str = dq1 * 3
         self.main_lines: List[str] = [
             "",
             "",
@@ -93,101 +291,58 @@ class SerialAgentGenerator:
             "    rclpy.spin(serial_agent)",
             "",
             "    # Destroy the serial agent node explicitly.",
-            "    agent_node.destroy_node()",
+            "    serial_agent.destroy_node()",
             "",
             "    # Shut down the Python ROS2 interface library.",
             "    rclpy.shutdown()",
         ]
 
-        # The standard import lines that do not change:
-        self.start_import_lines: List[str] = [
-            "",
-            "# Type hint imports:",
-            "from typing import Any, Dict, List, Optional",
-            "",
-            "# Rclpy imports:",
-            "import rclpy",
-            "from rclpy.client import Client",
-            "from rclpy.impl.rcutils_logger import RcutilsLogger as Logger",
-            "from rclpy.node import Node",
-            "from rclpy.publisher import Publisher",
-            "from rclpy.subscription import Subscription",
-            "from rclpy.timer import Timer",
-        ]
-
-        # The message import lines:
-        self.message_import_lines: List[str] = [
-            "",
-            "# Message Type imports:",
-            "from std_msgs.msg import String",  # Temporary
-        ]
-
-        # The service import lines:
-        self.service_import_lines: List[str] = [
-            "",
-            "# Service Type imports:",
-            "from example_interfaces.srv import AddTwoInts",  # Temporary
-        ]
-
         # Serial Agent class lines:
         self.class_header_lines: List[str] = [
             "",
+            "",
             "# SerialAgent:",
             "class SerialAgent(Node):",
-            f"    {triple_quote}Serial Agent for managing pulications/subscriptions{triple_quote}",
-            "",
+            f"    {dq3}Serial Agent for managing ROS2 topics and services.{dq3}",
         ]
 
         self.init_start_lines: List [str] = [
             "",
             "    # SerialAgent.init():",
             "    def __init__(self) -> None:",
-            f"        {triple_quote}Initialize SerialAgent class.{triple_quote}",
+            f"        {dq3}Initialize SerialAgent class.{dq3}",
             "",
             "        # Initialize the Node super-class:",
-            "        print('=>SerialAgent.__init__()')",
             "        super().__init__('serial_agent')",
         ]
-
-
-        self.publisher_init_lines: List[str] = []
-        self.timer_init_lines: List[str] =[]
-        self.subscription_init_lines: List[str] = []
-
-        # Callback methods are added to this list:
-        self.callback_lines: List[str] = []
 
         # The boiler plate code to call main() goes here:
         self.main_call_lines: List[str] = [
             "",
             "",
+            "# Call main():",
             "if __name__ == '__main__':",
             "    main(args=None)",
         ]
 
+
+
     # SerialAgent.serial_agent_pyt_create():
     def serial_agent_py_create(self, ros2_package_directory: Path, package_name: str) -> None:
         """Write out `serial_agent.py` file."""
-        triple_quote: str = '"' * 3
+        dq1: str = "\""
+        dq3: str = dq1 * 3
 
-        all_import_lines: List[str] = (
-            self.start_import_lines +
-            self.message_import_lines +
-            self.service_import_lines
-        )
-
-        all_init_lines: List[str] = (
-            self.init_start_lines +
-            self.publisher_init_lines +
-            self.subscription_init_lines +
-            self.timer_init_lines
-        )
+        # Joint all of the import lines into *all_import_lines*:
+        all_import_lines: List[str] = self.import_manager.import_lines_get()
+        all_init_lines: List[str] = self.init_start_lines + self.init_tagged_lines.lines_get()
+        all_callback_lines: List[str] = self.callback_tagged_lines.lines_get()
 
         # Join all of the lines that make up the class into *all_class_lines*:
         all_class_lines: List[str] = (
             self.class_header_lines +
             all_init_lines +
-            self.callback_lines
+            all_callback_lines
         )
 
         # Join all the lines together into *all_lines* and create a single
@@ -208,23 +363,27 @@ class SerialAgentGenerator:
             serial_agent_py_file.write(all_content)
 
     # SerialAgent.publisher_add():
-    def publisher_add(self, topic_name: str, topic_type: str) -> None:
+    def publisher_add(self, topic_package_name: str, topic_type: str, topic_name: str) -> None:
         """Add a publisher to the serial agent."""
         
-        publisher_init_lines: List[str] = self.publisher_init_lines
+        # Make sure the Publisher type is imported:
+        import_manager: ImportManager = self.import_manager
+        import_manager.from_import("publisher", "rclpy.publisher", "Publisher", "type: ignore")
+        import_manager.from_import("message", topic_package_name, topic_type, "type: ignore")
 
-        if not publisher_init_lines:
-            publisher_init_lines.extend([
-                "",
-                "        # Create all topic pubishers here:",
-                "        self.publishers_table: Dict[str, Publisher] = {}",
-                "        self.publishers_counter: Dict[str, int] = {}",
-                "        print('Publishing to {tuple(self.agent_publishers.names())}')",
-            ])
+
+        # Make sure the publisher tables are created:
+        init_tagged_lines: TaggedLines = self.init_tagged_lines
+        init_tagged_lines.prefix_set("publisher", [
+            f"        # Create all topic Publisher's here:",
+            f"        self.publishers_table: Dict[str, Publisher] = {{}}",
+            f"        self.publishers_counter: Dict[str, int] = {{}}",
+        ])
+        
 
         # Add publisher here:
         subscription_callback_name: str = f"{topic_name}_subscription_callback"
-        publisher_init_lines.extend([
+        init_tagged_lines.extend("publisher", [
             f"        self.publishers_table['{topic_name}'] = self.create_publisher(",
             f"            {topic_type}, '{topic_name}', 10)",
             f"        self.publishers_counter['{topic_name}'] = 0",
@@ -232,213 +391,245 @@ class SerialAgentGenerator:
             
 
     # SerialAgent.timer_add():
-    def timer_add(self, topic_name: str, topic_type: str, period: float) -> None:
+    def timer_add(self, timer_name: str, timer_type: str, period: float) -> None:
         """Add a timer callback."""
 
-        # Ensure that the timers dictionary is created:
-        timer_init_lines: List[str] = self.timer_init_lines
-        if not timer_init_lines:
-            timer_init_lines.extend([
-                "",
-                "        # Create all timers here:",
-                "        self.timers_table: Dict[str, Timer] = {}",
-                "        self.timers_counter: Dict[str, int] = {}",
-            ])
+        # Ensure that the Timer type is imported:
+        import_manager: ImportManager = self.import_manager
+        import_manager.from_import("timer", "rclpy.timer", "Timer", "type: ignore")
 
         # Create the timer here:
-        callback_name: str = f"{topic_name}_timer"
-        timer_init_lines.extend([
-            f"        self.timers_table['{topic_name}'] = (",
+        callback_name: str = f"{timer_name}_timer"
+        init_tagged_lines: TaggedLines = self.init_tagged_lines
+        init_tagged_lines.prefix_set("timer", [
+            f"        # Create all Timer's here:",
+            f"        self.timers_table: Dict[str, Timer] = {{}}",
+            f"        self.timers_counter: Dict[str, int] = {{}}",
+        ])
+        init_tagged_lines.extend("timer", [
+            f"        self.timers_table['{timer_name}'] = (",
             f"            self.create_timer({period}, self.{callback_name}))",
-            f"        self.timers_counter['{topic_name}'] = 0",
+            f"        self.timers_counter['{timer_name}'] = 0",
         ])
         
         # Create the callback counter and function:
-        callback_lines: List[str] = self.callback_lines
-        dq: str = "\""  # Double Quote
-        dq3: str = dq * 3
-        callback_lines.extend([
+        dq1: str = "\""
+        dq3: str = dq1 * 3
+        callback_tagged_lines: TaggedLines = self.callback_tagged_lines
+        callback_tagged_lines.extend("timer", [
             "",
             f"    # SerialAgent.{callback_name}:",
             f"    def {callback_name}(self) -> None:",
-            f"        {dq3}Callback for {topic_name} Timer.{dq3}",
+            f"        {dq3}Callback for {timer_name} Timer.{dq3}",
             "",
-            f"        count: int = self.timers_counter['{topic_name}']",
-            f"        message: {topic_type} = {topic_type}()",
+            f"        count: int = self.timers_counter['{timer_name}']",
+            f"        message: {timer_type} = {timer_type}()",
             f"        message.data = f'Counter={{count}}'",
             "",
             f"        # Temporary:",
             f"        publisher: Publisher = self.publishers_table['topic']",
             f"        publisher.publish(message)",
-            f"        print('\\nTimer({dq}{topic_name}{dq}): '",
-            f"              f'Publish {{message}} to Topic({dq}{topic_name}{dq})')",
+            f"        print('\\nTimer({dq1}{timer_name}{dq1}): '",
+            f"              f'Publish {{message}} to Topic({dq1}{timer_name}{dq1})')",
             "",
-            f"        self.timers_counter['{topic_name}'] = count + 1",
+            f"        self.timers_counter['{timer_name}'] = count + 1",
             f"        # print('<=SerialAgent.{callback_name}()')",
         ])
 
-    # SerialAgent.subscrption_add():
-    def subscription_add(self, topic_name: str, topic_type: str) -> None:
+    # SerialAgent.client_add():
+    def client_add(self, service_package: str, service_type: str, client_name: str) -> None:
+        """Add a client to the serial agent."""
+    
+        # Ensure that the Client type is imported:
+        import_manager: ImportManager = self.import_manager
+        import_manager.from_import("client", "rclpy.task", "Future", "type: ignore")
+        import_manager.from_import("client", "rclpy.client", "Client", "type: ignore")
+
+        request_type: str
+        response_type: str
+        request_type, response_type = import_manager.service_types_import(
+            service_package, service_type)
+
+        # Ensure that the client wait code is added to the __init__ startup.
+        init_tagged_lines: TaggedLines = self.init_tagged_lines
+        init_tagged_lines.prefix_set("server_wait", [
+            "        # Wait for all requested client services to become available:",
+            "        logger: Logger = self.get_logger()",
+            "        while self.client_waits:",
+            "            client_name: str",
+            "            for client_name in tuple(self.client_waits):",
+            "                client: Client = self.clients_table[client_name]",
+            "                if client.wait_for_service():",
+            "                    self.client_waits.remove(client_name)",
+            "            if not self.client_waits:",
+            "                logger.info(f'Waiting for {{client_waits}} to become available')",
+        ])
+
+        # Create the client and add it to the clients dictionariers:
+        init_tagged_lines.prefix_set("client", [
+            f"        # Client send rouines are defined here:",
+        ])
+        init_tagged_lines.prefix_set("client", [
+            f"        # Create all service Client's here:",
+            f"        self.clients_table: Dict[str, Client] = {{}}",
+            f"        self.clients_counter: Dict[str, int] = {{}}",
+            f"        self.client_waits: Set[str] = set()",
+        ])
+        init_tagged_lines.extend("client", [
+            f"        self.clients_table['{client_name}'] = self.create_client(",
+            f"            {service_type}, '{client_name}')",
+            f"        self.clients_counter['{client_name}'] = 0",
+            f"        self.client_waits.add('{client_name}')",
+        ])
+
+        # Generate a request routine with a callback for the eventual response:
+        dq1: str = "\""
+        dq3: str = dq1 * 3
+        request_send_name: str = f"{client_name}_request_send"
+        response_callback_name: str = f"{client_name}_response_callback"
+        indent: str = " " * (len(request_send_name) + 1)
+        callback_tagged_lines: TaggedLines = self.callback_tagged_lines
+        callback_tagged_lines.extend("client", [
+            "",
+            f"    # SerialAgent.{request_send_name}()",
+            f"    # Debugging:",
+            f"    def {request_send_name}(self, a: int, b: int,",
+            f"        {indent}response_callback: Callable[[Any], None]) -> None:",
+            f"        {dq3}Initiate a request/response to/from {client_name} server.{dq3}",
+            "",
+            f"        request: {request_type} = {request_type}()",
+            f"        request.a = a",
+            f"        request.b = b",
+            f"        client: Client = self.clients_table['{client_name}']",
+            f"        response_future: Future = client.call_async(request)",
+            f"        # Debugging:",
+            f"        print(f'response_future={{response_future}})')",
+            f"        response_future.add_done_callback(response_callback)",
+            f"        print('Client({dq1}{client_name}{dq1}): '",
+            f"              f'Sent {dq1}{{request}}{dq1}')",
+        ])
+
+        callback_tagged_lines.extend("client", [
+            "",
+            f"    # SerialAgent.{response_callback_name}():",
+            f"    # Debugging:",
+            f"    def {response_callback_name}(self, response_future: Future) -> None:",
+            f"        {dq3}Response callback routine for {client_name}.{dq3}",
+            "",
+            f"        # Debugging:",
+            f"        try:",
+            f"            response: Any = response_future.result()",
+            f"        except Exception as error:",
+            f"            assert False, 'Fixme!'",
+            f"        else:",
+            f"            assert isinstance(response, {response_type})",
+            f"            print('Client({dq1}{client_name}{dq1}): '",
+            f"                  f'Got response={dq1}{{response}}{dq1}')",
+        ])
+
+    # SerialAgent.server_add():
+    def server_add(self, service_package_name: str, service_type: str, server_name: str) -> None:
+        """Add a server to the serial agent."""
+
+        # Ensure that the Server type is imported.
+        # Note rclpy.service.Service is changed to Server to be more consistent.
+        import_manager: ImportManager = self.import_manager
+        import_manager.from_import_as(
+            "server", "rclpy.service", "Service", "Server", "type: ignore")
+
+        # Ensure that the service Request and Response types are imported.
+        request_type: str
+        response_type: str
+        request_type, response_type = import_manager.service_types_import(
+            service_package_name, service_type)
+
+        # Ensure that the server dictionaries are first initalized to empty:
+        init_tagged_lines: TaggedLines = self.init_tagged_lines
+        init_tagged_lines.prefix_set("server", [
+            "        # Create all service Server's here:",
+            "        self.servers_table: Dict[str, Server] = {}",
+            "        self.servers_counter: Dict[str, int] = {}",
+        ])
+
+        # Create the server and add it to the servers dictionary:
+        callback_name: str = f"{server_name}_server_callback"
+        init_tagged_lines.extend("server", [
+            f"        # Create all topic Subscription's here:",
+            f"        self.servers_table['{server_name}'] = self.create_service(",
+            f"            {service_type}, '{server_name}', self.{callback_name})",
+            f"        self.servers_counter['{server_name}'] = 0",
+        ])
+
+        # Create the callback method for the server:
+        dq1: str = "\""
+        dq3: str = dq1 * 3
+        indent: str = " " * len(callback_name)
+        callback_tagged_lines: TaggedLines = self.callback_tagged_lines
+        callback_tagged_lines.extend("server", [
+            "",
+            f"    # SerialAgent.{callback_name}() -> {response_type}:",
+            f"    def {callback_name}(self,",
+            f"         {indent}request: {request_type},",
+            f"         {indent}response: {response_type}) -> None:",
+            "",
+            f"        {dq3}Callback for '{server_name}' service request.{dq3}",
+            f"        # Debugging only:",
+            f"        print(f'Service({dq1}{server_name}{dq1}): Got {dq1}{{request}}{dq1}')",
+            f"        response.sum = request.a + request.b",
+            f"        print(f'Service({dq1}{server_name}{dq1}): Sent {dq1}{{response}}{dq1}')",
+            f"        return response",
+        ])
+
+    # SerialAgent.subscription_add():
+    def subscription_add(self, subscription_package_name: str,
+                         subscription_type: str, subscription_name: str) -> None:
         """Add a subscription to the serial agent."""
 
+        # Make sure the Subscription type is imported:
+        import_manager: ImportManager = self.import_manager
+        import_manager.from_import(
+            "subscription", "rclpy.subscription", "Subscription", "type: ignore")
+        import_manager.from_import(
+            "message", subscription_package_name, subscription_type, "type: ignore")
 
         # Ensure that the subscriptions dictionary is initalized to empty:
-        subscription_init_lines: List[str] = self.subscription_init_lines
-        if not subscription_init_lines:
-            self.subscription_init_lines.extend([
-                "",
-                "        # Create all Topic subscriptions here:",
+        init_tagged_lines: TaggedLines = self.init_tagged_lines
+        init_tagged_lines.prefix_set("subscription", [
+                "        # Create all topic Subscription's here:",
                 "        self.subscriptions_table: Dict[str, Subscription] = {}",
-                "        self.subscriptions_counter: Dict[str, 0] = {}",
-            ])
+                "        self.subscriptions_counter: Dict[str, int] = {}",
+        ])
 
         # Create the subscription and add it to the subscriptions dictionary:
-        callback_name: str = f"{topic_name}_subscription_callback"
-        subscription_init_lines.extend([
-            f"        self.subscriptions_table['{topic_name}'] = self.create_subscription(",
-            f"            {topic_type}, '{topic_name}', self.{callback_name}, 10)",
-            f"        self.subscriptions_counter['{topic_name}'] = 0",
+        callback_name: str = f"{subscription_name}_subscription_callback"
+        init_tagged_lines.extend("subscription", [
+            f"        self.subscriptions_table['{subscription_name}'] = self.create_subscription(",
+            f"            {subscription_type}, '{subscription_name}', self.{callback_name}, 10)",
+            f"        self.subscriptions_counter['{subscription_name}'] = 0",
         ])
 
         # Create the callback method for the subscription:
-        dq: str = "\""
-        dq3: str = dq * 3
-        callback_lines: List[str] = self.callback_lines
-        callback_lines.extend([
+        dq1: str = "\""
+        dq3: str = dq1 * 3
+        callback_tagged_lines: TaggedLines = self.callback_tagged_lines
+        callback_tagged_lines.extend("subscription", [
             "",
             f"    # SerialAgent.{callback_name}():",
-            f"    def {callback_name}(self, message: {topic_type}) -> None:",
-            f"        {dq3}Callback for '{topic_name}' topic subscription.{dq3}",
+            f"    def {callback_name}(self, message: {subscription_type}) -> None:",
+            f"        {dq3}Callback for '{subscription_name}' topic subscription.{dq3}",
+            f"        count: int = self.subscriptions_counter['{subscription_name}']",
+            f"        count += 1",
+            f"        self.subscriptions_counter['{subscription_name}'] = count",
+            f"        # Debgging only:",
+            f"        print(f'Subscription({dq1}{subscription_name}{dq1}): '"
+            f"              f'Got {dq1}{{message.data}}{dq1}')",
             "",
-            f"        print(f'Subscription({dq}{topic_name}{dq}): Got {dq}{{message.data}}{dq}')",
+            f"        # Debugging:",
+            f"        a: int = count",
+            f"        b: int = count + 1",
+            f"        self.add_two_ints_request_send(a, b, self.add_two_ints_response_callback)",
         ])
 
-# def serial_agent_py_create(python_package_directory: Path, package_name: str) -> None:
-#    """Create serail agent python file."""
-#    agent_lines: List[str] = []
-#    agent_lines.extend([
-#        "# Code generate by ros2_serial_manager.py.",
-#        "# Generated code is not particularly copyrightable",
-#        "",
-#    ])
-#
-#    # Add message imports:
-#    agent_lines.extend([
-#        "from std_msgs.msg import String"
-#        "",
-#    ])
-#
-#    # Create AgentNode class:
-#    agent_lines.extend([
-#        "class AgentNode(Node):",
-#        '    """Agent message/service/parameter transfer Node."""',
-#        "",
-#    ])
-#    
-#    # 
-#    quote3: str = '"' * 3
-#
-#    # Create the AgentNode.__init__() method:
-#    init_lines: List[str] = []
-#    publisher_init_lines: List[str] = [
-#        "",
-#        "        # Register topic subscrptions:",
-#    ]
-#    publisher_callback_lines: List[str] = [
-#        "",
-#        "        # Register topic publishers :",
-#    ]
-#
-#
-#
-#    subscription_init_lines: List[str] = []
-#    subscription_callback_lines: List[str]  = []
-#    
-#    agent_lines.extend([
-#        "    def __init__(self):",
-#        f"        {quote3}Initalize AgentNode.{quote3}",
-#        "        super().__init__('agent')",
-#        "",
-#        "        # Create the service availability checking timer:",
-#        "        timer_period: float = 1.0",
-#        "        self._service_timer: Timer = self.create_timer(timer_period)",
-#        "",
-#        "        # Register topic publishers:",
-#        "        self._publications: Dict[str, Publisher] = {}",
-#        "        self._publications['topic2'] = self.create_publisher(",
-#        "            String, 'topic2', 10)",
-#        "",
-#        "        # Register topic subscriptions:",
-#        "        self._subscriptions: Dict[str, Subscription] = {}",
-#        "        self._subscriptions['topic'] = self.create_subscription(",
-#        "            String, 'topic', self.callback1, 10)",
-#        "        self._subscriptions['topic2'] = self.create_subscription(",
-#        "            String, 'topic2', self.callback2, 10)",
-#        "",
-#        "        # Register service providers:",
-#        "        self._service_providers",
-#        "",
-#        "        # Register service requests:",
-#        "        self._pending_clients: Dict[int, Tuple[str, Client] = {}",
-#        "        self._clients: Dict[int, Tuple[str, Client] = {}",
-#        "        client = self.create_client(AddTwoInts, 'add_two_ints')",
-#        "        client_info: ClientInfo = (client, 'add_two_ints')",
-#        "        self._clients[id(client)] = ",
-#        "",
-#    ])
-#        
-#    # Create the AgentNode callback methods:
-#    agent_lines.extend([
-#        "    def service_availability_callback(self) -> None:",
-#        f"       {quote3}Timere callback for checking service availablity.{quote3}",
-#        "        print('')",
-#        "",
-#        "    def callback1(self, msg: String) -> None:",
-#        "        print(f'callback1(\"{msg.data}\")')",
-#        "        msg2: String = String()",
-#        "        msg2.data = f'<{msg.data}>'",
-#        "        self._publications['topic2'].publish(msg2)",
-#        "",
-#        "    def callback2(self, msg: String) -> None:",
-#        "        print(f'callback2(\"{msg.data}\")')"
-#        "",
-#    ])
-#
-#    # Generate main():
-#    agent_lines.extend([
-#        "def main(args: Optional[List[str]] = None) -> None:",
-#        "    # Initialize the Python ROS2 interface library.",
-#        "    rclpy.init(args=args)",
-#        "",
-#        "    # Create the agent Node.",
-#        "    agent_node: AgentNode = AgentNode()",
-#        "",
-#        "    # Start the agent Node.  All activity occurs via callback routines.",
-#        "    rclpy.spin(agent_node)",
-#        "",
-#        "    # Destroy the node explicitly.",
-#        "    agent_node.destroy_node()",
-#        "",
-#        "    # Shut down the Python ROS2 interface library.",
-#        "    rclpy.shutdown()",
-#        "",
-#    ])
-#
-#    # Generate main function call:
-#    agent_lines.extend([
-#        "if __name__ == '__main__':",
-#        "    main(args=None)",
-#    ])
-#
-#    # Convert *agent_lines* into a single *agent_content* string:
-#    agent_lines.append("")
-#    agent_content: str = "\n".join(agent_lines)
-#
-#    # Write *agent_content* out to *agent_path* file:
-#    agent_path: Path = python_package_directory / f"serial_agent.py"
-#    agent_file: IO[str]
-#    with open(agent_path, "w") as agent_file:
-#        agent_file.write(agent_content)
 
 def resource_create(ros2_package_directory: Path, package_name: str) -> None:
     """Create the resource directory an fill it in."""
@@ -450,6 +641,7 @@ def resource_create(ros2_package_directory: Path, package_name: str) -> None:
     resource_package_file: IO[str]
     with open(resource_package_path, "w") as resource_package_file:
         pass
+
 
 def setup_py_create(ros2_package_directory: Path, package_name: str) -> None:
     """Create the `setup.py` file. """
@@ -492,6 +684,7 @@ def setup_py_create(ros2_package_directory: Path, package_name: str) -> None:
     with open(setup_py_path, "w") as setup_py_file:
         setup_py_file.write(setup_py_content)
 
+
 def package_xml_create(ros2_package_directory: Path, package_name: str) -> None:
     """Create the `package.xml` file."""
     # Get the *maintainer* and *email*:
@@ -532,6 +725,7 @@ def package_xml_create(ros2_package_directory: Path, package_name: str) -> None:
     with open(package_xml_path, "w") as package_xml_file:
         package_xml_file.write(package_xml_content)
 
+
 def init_py_create(python_package_directory: Path) -> None:
     """Create the empty `__init__.py` file."""
     init_py_path: Path = python_package_directory / "__init__.py"
@@ -558,6 +752,7 @@ def setup_cfg_create(ros_package_directory: Path, package_name: str) -> None:
     with open(setup_cfg_path, "w") as setup_cfg_file:
         setup_cfg_file.write(setup_cfg_content)
 
+
 def email_get() -> str:
     """Return the maintainer E-mail from git."""
     done: subprocess.CompletedProcess = subprocess.run(
@@ -574,9 +769,9 @@ def maintainer_get() -> str:
     return done.stdout.strip("\n")
 
 
-
 if __name__ == "__main__":
     main()
+
 
 # [Multiple futures await](https://stackoverflow.com/questions/46785274/asyncio-speculatively-await-multiple-futures)
 
