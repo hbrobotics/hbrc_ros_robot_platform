@@ -312,3 +312,7 @@ tree "${DEV_WS}"
 
 #  [Define custom messages in python package (ROS2)](https://answers.ros.org/question/350084/define-custom-messages-in-python-package-ros2/)
 # [Publishing in Python with custom message fails.](https://github.com/ros2/ros2/issues/682)
+
+# [Serial/TCP Interconnect](https://superuser.com/questions/614494/redirect-serial-com-to-tcp-port)
+
+# [Raspberry Pi UART](https://raspberrypi.stackexchange.com/questions/1094/how-can-i-set-the-uart-speed)

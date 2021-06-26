@@ -2401,3 +2401,135 @@ To copy an Eclipse project.
 [Eclipse JLink FreeRTOS Notes](https://www.freertos.org/FreeRTOS_Support_Forum_Archive/February_2010/freertos_freeRTOS_w_Eclipse_and_JLink_3541181.html)
 
 -->
+<!--
+
+Serial line bridge protocol.
+
+Using the ROS2 Python interface, it is possible to dynamically access topics
+(i.e publish and subscribe), services (i.e. remote procedure call), and configuration parameters.
+Conceptually, the bridge protocol allows a microcontroller running an RTOS
+(Real Time Operating System) to interact with the ROS2 Python Interface running on another machine
+via the serial protocol.
+
+The serial line protocol uses a serial line to bridge between two processors --
+an agent processor
+
+[Create Dynamic Types](https://www.geeksforgeeks.org/create-classes-dynamically-in-python/)
+
+
+# [importlib Tutorial](https://realpython.com/python-import/)
+# Equivalant to `from tutorial_interfaces.msg import Num`
+import importlib
+tutorial_interfaces_module = importlib.import_module("tutorial_interfaces.msg")
+num_class = getattr(tutoral_interfaces_module, "Num")
+assert isinstance(num_class, class)
+
+# contructor
+parent_class = ...
+
+def constructor(self, arg):
+    parent_class.__init__(self, arg)
+    self.constructor_arg = arg
+
+# method
+def display_method(self, arg):
+    print arg
+
+# class method
+@classmethod
+def class_method(cls, arg):
+    print(arg)
+
+# create class dynamically
+Geeks = type("Geeks", (object, ), {
+    # constrcuctor
+    "__init__": constructor
+
+    # data members:
+    "string_attr": "A string",
+    "int_attr: 1234,
+
+    # member functions:
+    "func_arg": display_method,
+    "class_func": class_method,
+})    
+
+-->
+
+<!--
+# Copyright 2016 Open Source Robotics Foundation, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import rclpy
+from rclpy.node import Node
+
+# from std_msgs.msg import String    ## Imported via importlib below!
+
+import importlib
+
+def fred_callback(msg):
+    print(f"Fred callback '{msg}'")
+
+def wilma_callback(msg):
+    print(f"Wilma callback '{msg}'")
+
+
+class MinimalSubscriber(Node):
+
+    def __init__(self):
+        super().__init__('minimal_subscriber')
+
+        # Equivalant to `from tutorial_interfaces.msg import String`
+        tutorial_interfaces_module = importlib.import_module("std_msgs.msg")
+        String = getattr(tutorial_interfaces_module, "String")
+
+        self._subscriptions = []
+        self._subscriptions.append(self.create_subscription(
+            String,
+            'topic',
+            fred_callback,
+            10))
+        self._subscriptions.append(self.create_subscription(
+            String,
+            'topic',
+            wilma_callback,
+            10))
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    minimal_subscriber = MinimalSubscriber()
+    assert isinstance(minimal_subscriber, Node), f"Not a Node {type(minimal_subscriber)}"
+
+    rclpy.spin(minimal_subscriber)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    minimal_subscriber.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+-->
+
+<!--
+[Acutal rclpy API Documentation](https://docs.ros2.org/latest/api/rclpy/api/topics.html#module-rclpy.subscription)
+
+[Example callback group](https://github.com/ros2/examples/blob/master/rclpy/executors/examples_rclpy_executors/callback_group.py)
+
+[Redirect serial com to TCP](https://superuser.com/questions/614494/redirect-serial-com-to-tcp-port)
+
+-->
