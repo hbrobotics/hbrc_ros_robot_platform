@@ -23,11 +23,21 @@
 
 # <====================================== 100 Characters ========================================> #
 
+# https://medium.com/vaidikkapoor/understanding-non-blocking-i-o-with-python-part-1-ec31a2e2db9b
+# https://docs.ros2.org/latest/api/rclpy/api/topics.html#module-rclpy.subscription
+# [Acutal rclpy API Documentation]
+# (https://docs.ros2.org/latest/api/rclpy/api/topics.html#module-rclpy.subscription)
+# https://nicolovaligi.com/articles/concurrency-and-parallelism-in-ros1-and-ros2-application-apis/
+
+
 import crcmod  # type:ignore
 import importlib
 import rclpy  # type:ignore
+import struct
 import sys
 import time
+
+from asyncio import Queue
 
 from rclpy.client import Client  # type: ignore
 from rclpy.node import Node  # type: ignore
@@ -311,6 +321,7 @@ class Packet(object):
     slip_start: ClassVar[int] = 0x81
     slip_stop: ClassVar[int] = 0x21
     slip_specials: ClassVar[Tuple[int, ...]] = (slip_escape, slip_start, slip_stop)
+    struct_endian: str = "!"  # "!" stands for network which happens to be big-endian
     ros_type_convert: ClassVar[Dict[str, Tuple[str, str]]] = {
         "bool": ("?", "_Bool"),
         "byte": ("B", "unsigned char"),
@@ -355,7 +366,7 @@ class Packet(object):
                 struct_names.append(name)
 
         # Now sweep through *struct_names* and create the *struct_format* string:
-        struct_format: str = "!"  # "!" stands for network which is big-endian
+        struct_format: str = self.struct_endian
         struct_name: str
         ros_type_convert: Dict[str, Tuple[str, str]] = self.ros_type_convert
         for struct_name in struct_names:
@@ -376,6 +387,76 @@ class Packet(object):
 
         return (f"Packet({type(self.packet_type)}, '{self.struct_format}', "
                 f"{self.struct_names}, {self.string_names}')")
+
+    # Packet.encode():
+    def encode(self, packet_content: Any, id: int) -> bytes:
+        """Encode packet content into bytes."""
+
+        assert isinstance(packet_content, self.packet_type), (
+            f"Packet content is {type(packet_content)} rather than {type(self.packet_type)}")
+        packet_bytes: bytearray = bytearray()
+
+        # Start with the id:
+        assert 0 <= id <= 255, f"id value ({id}) does not fit into a byte"
+        packet_bytes.append(id & 0x255)
+        
+        # Put all of the strings in next because they have a length byte:
+        string_name: str
+        for string_name in self.string_names:
+            assert string_name in packet_content, (
+                "String name '{string_name} not one of {string_names}'")
+            string_content: str = packet_content[string_name]
+            string_size: int = len(string_content)
+            if string_size > 255:
+                print("Truncating string to 255 characters")
+                string_content = string_content[:255]
+                string_size = 255
+            packet_bytes.append(string_size)
+            chr: str
+            packet_bytes += bytearray([min(ord(chr), 255)
+                                       for chr in string_content])
+            
+        # Put the struct in next:
+        struct_name: str
+        struct_values: List[int] = [packet_content[struct_name]
+                                    for struct_name in self.struct_names]
+        packet_bytes += struct.pack(self.struct_format, *struct_values)
+        return bytes(packet_bytes)
+
+
+    def decode(self, packet_bytes: bytes) -> Tuple[int, Any]:
+        """Decode a bucket of bytes."""
+        
+        # Create the xxx:
+        packet_content: Any = self.packet_type()
+
+        index: int = 0
+        id: int = packet_bytes[index]
+        index += 1
+        
+        # Sweep through the *string_names* and stuff the associated strings into *packet_type*:
+        string_name: str
+        for string_name in self.string_names:
+            length: int = packet_bytes[index]
+            index += 1
+            end_index: int = index + length
+            byte: int
+            string: str = "".join([chr(byte) for byte in packet_bytes[index:end_index]])
+            setattr(packet_content, string_name, string)
+            index = end_index
+
+        # Unpack the *struct_values* from the remainder of *packet_bytes*:
+        struct_values: Tuple[int, ...] = struct.unpack(self.struct_format, packet_bytes[index:])
+        struct_names: Tuple[str, ...] = self.struct_names
+        assert len(struct_values) == len(struct_names), "Struct mismatch"
+
+        # Stuff *struct_values* into *packet_content*:
+        struct_index: int
+        struct_name: str
+        for struct_index, struct_name in enumerate(struct_names):
+            setattr(packet_content, struct_name, struct_values[struct_index])
+            
+        return packet_content
 
 
 # Handle:
@@ -535,10 +616,12 @@ class ServiceHandle(Handle):
         self.response_type: Any = response_type
         self.request_packet: Packet = Packet(request_type)
         self.response_packet: Packet = Packet(response_type)
+        self.request_queue: Queue[Any] = Queue()
+        self.response_queue: Queue[Any] = Queue()
 
         # These field get filled in later:
-        self.client: Optional[Client] = None
-        self.server: Optional[Server] = None
+        self.client: Optional[Any] = None
+        self.server: Optional[Any] = None
         self.serial_agent: Optional[SerialAgent] = None
 
     # ServiceHandle.__repr__():
