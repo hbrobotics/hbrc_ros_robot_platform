@@ -23,6 +23,7 @@
 
 # <====================================== 100 Characters ======================================= > #
 
+import shutil
 import subprocess
 import sys
 
@@ -52,6 +53,16 @@ def main() -> int:
     setup_py_create(ros2_package_directory, package_name)
     resource_create(ros2_package_directory, package_name)
 
+    # Read in 
+    serial_agent_py_source: Path = Path("serial_agent.py")
+    serial_agent_py_destination: Path = python_package_directory / "serial_agent.py"
+
+    if True:
+        shutil.copyfile(serial_agent_py_source, serial_agent_py_destination)
+        print(f"{serial_agent_py_source} copied to {serial_agent_py_destination}")
+        return 0
+
+    # Temporary testing of SerialAgentGenerator class:
     serial_agent_generator: SerialAgentGenerator = SerialAgentGenerator()
     # Temporary:
     serial_agent_generator.publisher_add("std_msgs.msg", "String", "topic")
