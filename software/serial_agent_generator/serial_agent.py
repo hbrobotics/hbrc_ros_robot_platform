@@ -201,6 +201,22 @@ def main(ros_arguments: Optional[List[str]] = None) -> int:
     return 0
 
 
+@dataclass(order=True, frozen=True)
+class ROSFieldType:
+    """Class that represents information about a ROS Type."""
+
+    ros_type: str  # ROS type (e.g. "bool", "int8", ..., "duration")
+    cpp_type: str  # C++ type (e.g. "uint8_t", "int8_t", ..., "ros::Duration")
+    python_type: str  # Python type (e.g. "bool", "int", ..., "rospy.Duration")
+    struct_format: str  # struct type (e.g. "B", "b", ..., "ii")
+    c_type: str  # C type (e.g. "unsigned char", "signed char", ..., "2 * signed")
+    size: int  # Size in bytes (e.g. (1, 2, ..., 8)
+
+
+# Kludge: Just access this function using a global declaration.
+crc_compute: Callable[[bytes], int] = crcmod.mkCrcFun(0x11021, initCrc=0, xorOut=0xffff)
+
+
 # Agent:
 class Agent:
     """Class that implements a ROS serial agent Node."""
@@ -543,23 +559,43 @@ class Packet(object):
     There are both full and partial packet formats.  The full packet format is:
 
     * Start: A reserved byte that only occurs at the beginning of packets. (1 byte)
-    * Length: The total length of the packet in bytes (2 bytes)
+    * Length: The total length of the packet in bytes (2 bytes, 14-bits only)
     * Packet Id: An identifier that specifies the data format of the packet content. (1 byte)
-    * Strings: If there are any strings, each string has a length (1 byte) followed by
-      that many 8-bit (ASCII) bytes.  (1 LEN bytes)
     * Structure: The remaining content is packed into a structure. (N bytes)
+    * Strings: If there are any strings, each string has a length (1 byte) followed by
+      that many 8-bit (ASCII) bytes.  (1 + LEN bytes)
     * Transmission Control: There are some bytes to control message re-transmits. (3-bytes for now)
-    * CRC: There is a 16-bit cyclic redundancy check which is computed over all preceding
-      packet bytes (i.e. from Start through Transmission Control.) (2-bytes)
+    * CRC: There is a standard 16-bit cyclic redundancy check (2-bytes, reduced to 14-bits)
     * Stop: A reserved byte that only occurs at the end of packets. (1 byte)
 
-    A partial packet only has the packet id, strings, and structure fields present.
-    Partial packets are sent to a queue read by the serial line multiplexer thread,
-    which then adds the remaining fields before sending to the microcontroller over
-    the serial line.  Likewise the serial line de-multiplexer thread reads full packets
-    from the serial line, decodes them and dispatches the unpacked content to the
-    appropriate threads.  These two serial line threads communicate with one another
-    to detect and resend messages that that get damaged.
+    The varaious packet spans:
+
+    * Partial Packet:
+      A partial packet only has the packet id, strings, and structure fields present.
+      These are output by various callbacks and sent to the serial line serializer.
+    * Byte Escapting:
+      The sequence of bytes that can be escaped by the esacpe byte (see below.)
+    * CRC Computation:
+      The CRC computate covers everything except the Start, CRC and Stop information.
+      In other words it covers the partail packet plus length and transmission control.
+    * Full Packet:
+      This is the full packet from Start to Stop
+
+    The crude ASCII art diagram shows the spans visually.
+
+              1     2        1         *        *            3             2   1
+           +-----+------+---------+---------+-------+--------------------+---+----+
+           |Start|Length|Packet_ID|Structure|Strings|Transmission_Control|CRC|Stop|
+           +-----+------+---------+---------+-------+--------------------+---+----+
+           ^     ^      ^                           ^                    ^        ^
+           |     |      |                           |                    |        |
+           |     |      |<-----Partial Packet------>|                    |        |
+           |     |      |                                                |        |
+           |     |      |<-----Byte Escaping---------------------------->|        |
+           |     |                                                       |        |
+           |     |<------------CRC Computation-------------------------->|        |
+           |                                                                      |
+           |<------------------Full Packet--------------------------------------->|
 
     There are 3 characters reserved for message framing:
 
@@ -577,7 +613,7 @@ class Packet(object):
     The two values are combined to form a 14-bit unsigned number (i.e.  00HH HHHH HLLL LLLL)
     that specifies the remaining number of bytes.  The two zero are required to avoid
     having a length field that needs Escape characters.  The Length field specifies the
-    entire packet length including all escape characters.
+    entire packet length including all Escape characters.
 
     The transmssion control bytes currently are:
 
@@ -594,23 +630,37 @@ class Packet(object):
       the most significant bit and N+8 is the most signicant bit.  It is expected that the
       missing messages will be resent.
 
-    The CRC is a standard 16-bit CCIT Cyclic Redundancy Check.
+    The CRC is a standard 16-bit CCIT Cyclic Redundancy Check.  It is reduced to 14 bits
+    by masking it with 0x7f7f.  This disables any chance of escape characters being needed.
     """
+
+    ros_field_types: ClassVar[Dict[str, ROSFieldType]] = {
+        # key: ROSTYPE("ROS Type", "C++ Type", "Python Type", "Struct Format", "C Type", "Size")
+        "bool": ROSFieldType("bool", "uint8_t", "bool", "B", "unsigned char", 1),
+        "int8": ROSFieldType("int8", "int8_t", "int", "b", "signed char", 1),
+        "uint8": ROSFieldType("uint8", "uint8_t", "int", "B", "unsigned char", 1),
+        "int16": ROSFieldType("int16", "int16_t", "int", "h", "short", 2),
+        "uint16": ROSFieldType("uint16", "uint16_t", "int", "H", "unsigned short", 2),
+        "int32": ROSFieldType("int32", "int32_t", "int", "i", "int", 4),
+        "uint32": ROSFieldType("uint32", "uint32_t", "int", "I", "unsigned int", 4),
+        "int64": ROSFieldType("int64", "int64_t", "int", "q", "long long", 8),
+        "uint64": ROSFieldType("uint64", "uint64_t", "int", "Q", "unsigned long long", 8),
+        "float32": ROSFieldType("float32", "float", "float", "f", "float", 4),
+        "float64": ROSFieldType("float64", "double", "float", "d", "double", 8),
+        "string": ROSFieldType("string", "std::string", "bytes", "", "", -1),  # Special
+        "time": ROSFieldType("time", "ros::Time", "rospy.Time", "II", "2 * unsigned int", 8),
+        "duration": ROSFieldType("duration",
+                                 "ros::Duration", "rospy.Duration", "ii", "2 * signed", 8),
+    }
 
     # Define the SLIP (originally stood for Serial Line Internet Protocol) characters.
     # The concept is the same, but different characters are used than the original SLIP protocol.
     slip_start: ClassVar[int] = 0xfc
     slip_escape: ClassVar[int] = 0xfd
     slip_stop: ClassVar[int] = 0xfe
-    slip_specials: ClassVar[Tuple[int, ...]] = (slip_escape, slip_start, slip_stop)
     slip_twiddle: ClassVar[int] = 0x80  # Used to set the high order bit.
-
-    # Define an encoder array to convert unescaped bytes to escaped ones:
-    index: int
-    encoder: ClassVar[List[Tuple[int, ...]]] = [(index,) for index in range(256)]
-    encoder[slip_start] = (slip_escape, slip_start ^ slip_twiddle)
-    encoder[slip_stop] = (slip_escape, slip_stop ^ slip_twiddle)
-    encoder[slip_escape] = (slip_escape, slip_escape ^ slip_twiddle)
+    encoder: ClassVar[Tuple[Tuple[int, ...], ...]] = tuple(
+        (0xfd, byte ^ 0x80) if byte in (0xfc, 0xfd, 0xfe) else (byte,) for byte in range(256))
 
     # The Python struct library is used to pack and unpack data to/from bytes.
     struct_endian: ClassVar[str] = "!"  # "!" stands for network which happens to be big-endian
@@ -632,44 +682,50 @@ class Packet(object):
         # "wstring": # not supported
     }
 
-    # The python crcmod library is used to compute CRC's:
-    crc_compute: ClassVar[Callable[[bytes], int]]
-    crc_compute = crcmod.mkCrcFun(0x11021, initCrc=0, xorOut=0xffff)
-
     # Packet.__init__():
     def __init__(self, packet_type: Any) -> None:
         """Initialize a Packet given a message instance."""
         # Create a *packet_instance* and extract information from it:
         packet_instance: Any = packet_type()
-        name_types: Dict[str, str] = packet_instance.get_fields_and_field_types()
-        sorted_names: Tuple[str, ...] = tuple(sorted(name_types.keys()))
 
-        # The Python struct library is used to encode and decode most ROS messages.
-        # The exception is for strings which are variable length.  So we split *sorted_names*
-        # into *struct_names* and *string_names*:
-        struct_names: List[str] = []
+        # A ROS *packet_instance* must implement the *get_fields_and_types* method.
+        # Get the *named_field_types* dictionary:
+        named_field_types: Dict[str, str] = packet_instance.get_fields_and_field_types()
+
+        # Grab the *sorted_names*:
+        sorted_names: Tuple[str, ...] = tuple(sorted(named_field_types.keys()))
+
+        # Split out *string_names* and *size_name_types* (a tuple needed to correctly
+        # order the struct names to be from largest to smallest.):
+        ros_field_types: Dict[str, ROSFieldType] = self.ros_field_types
         string_names: List[str] = []
-        name: str
-        for name in sorted_names:
-            if name_types[name] == "string":
-                string_names.append(name)
+        size_name_types: List[Tuple[int, str, str]] = []
+        ros_field_type: ROSFieldType
+        field_name: str
+        field_type: str
+        for field_name in sorted_names:
+            field_type = named_field_types[field_name]
+            assert field_type in ros_field_types, f"Unknown ROS type '{field_type}'"
+            if field_type == "string":
+                string_names.append(field_name)
             else:
-                struct_names.append(name)
+                ros_field_type = ros_field_types[field_type]
+                # Negate the struct size so that larger structs sort first.
+                size_name_types.append((-ros_field_type.size, field_name, field_type))
+        print(f"size_name_types={size_name_types}")
 
-        # Now sweep through *struct_names* and create the *struct_format* string:
+        # Assemble *struct_names* (largest struct size first, and then alphabetical there after).
+        # At the same time construct *struct_format* which is the format string needed by the
+        # Python struct library:
         struct_format: str = self.struct_endian
-        struct_name: str
-        # ros_type_convert: Dict[str, Tuple[str, str]] = self.ros_type_convert
-        for struct_name in struct_names:
-            ros_type: str = name_types[struct_name]
-            struct_letter: str
-            struct_letter, _ = self.ros_type_convert[ros_type]
-            struct_format += struct_letter
+        struct_names: List[str] = []
+        for _, field_name, field_type in sorted(size_name_types):
+            struct_names.append(field_name)
+            ros_field_type = ros_field_types[field_type]
+            struct_format += ros_field_type.struct_format
 
-        # Now figure how big the struct size is:
-        zeros: List[int] = [0] * len(struct_names)
-        packed_struct: bytes = struct.pack(struct_format, *zeros)
-        struct_size: int = len(packed_struct)
+        # Now compute the *struct_size* in bytes:
+        struct_size: int = struct.calcsize(struct_format)
 
         # Load results into *self*:
         self.packet_type: Any = packet_type
@@ -684,21 +740,133 @@ class Packet(object):
         return (f"Packet({type(self.packet_type)}, '{self.struct_format}', "
                 f"{self.struct_names}, {self.string_names}')")
 
-    # Packet.decode():
-    def decode(self, packet_bytes: bytes, index: int) -> Tuple[int, Any]:
+    # Packet.full_decode():
+    def full_decode(self, full_packet: bytes) -> Tuple[bytes, Tuple[int, int, int]]:
+        """Convert a full packet into a partial packet with transmission control bytes."""
+        print(f"=>Packet.full_decode({repr(full_packet)})")
+
+        # Process the first 3 bytes (i.e. Start and Length):
+        full_size: int = len(full_packet)
+        if full_size < 3:
+            raise ValueError(f"packet {repr(full_packet)} is too small")
+        if full_packet[0] != self.slip_start:
+            raise ValueError(f"packet {repr(full_packet)} does not start with "
+                             f"0x{self.slip_start:02x}")
+
+        # Extract and verify the *length*:
+        high_length: int = full_packet[1]
+        low_length: int = full_packet[2]
+        if high_length >= 128 or low_length >= 128:
+            raise ValueError(f"packet {repr(full_packet)} has actual length bytes of "
+                             f"0x{high_length:02x} and 0x{low_length:02x} "
+                             "neither of which should have bit 0x80 set")
+        length: int = (high_length << 7) | low_length
+        if full_size != length:
+            raise ValueError(f"packet {repr(full_packet)} has actual length of {full_size},"
+                             f"not the desired length of {length}")
+
+        # Process the last three bytes (i.e. CRC and Stop):
+        if full_packet[-1] != self.slip_stop:
+            raise ValueError(f"packet {repr(full_packet)} ends with 0x{full_packet[-1]:02x},"
+                             f"not the desired 0x{self.slip_stop}")
+        crc_low: int = full_packet[-2]
+        crc_high: int = full_packet[-3]
+        if crc_high >= 128 or crc_low >= 128:
+            raise ValueError(f"packet {repr(full_packet)} has actual length bytes of "
+                             f"0x{crc_high:02x} and 0x{crc_low:02x} "
+                             "neither of which should have bit 0x80 set")
+        crc: int = (crc_high << 8) | crc_low
+
+        # Verify the CRC:
+        actual_crc: int = crc_compute(full_packet[3:-3]) & 0x7f7f
+        if actual_crc != crc:
+            raise ValueError(f"packet {repr(full_packet)} has an actual CRC of 0x{actual_crc:02x}, "
+                             f"but the desired CRC is 0x{crc:02x}")
+
+        # Extract the transmission *control* tuple.  This is three bytes of information that
+        # expand to 6 bytes with escape character (i.e. all 3 bytes have the 8th bit set.)
+        # Rather unescaping the *full_packet* from the beginning, some cleverness is done instead.
+        # Instead the last 6 bytes are grabbed, unescaped, and the remaining 3 bytes are the
+        # transmission control values:
+        escaped_control: bytes = full_packet[-9:-3]
+        unescaped_control: bytes = self.unescape(escaped_control)
+        if len(unescaped_control) < 3:
+            raise ValueError(f"packet {repr(full_packet)} does not have 3 transmission "
+                             "control bytes")
+        control: Tuple[int, int, int] = (
+            unescaped_control[-3], unescaped_control[-2], unescaped_control[-1])
+
+        # Now the *control* values are entered into the *rescapded_control* to that
+        # the final length the the escaped control bytes can be determined:
+        encoder: Tuple[Tuple[int, ...], ...] = self.encoder
+        reescaped_control: bytearray = bytearray()
+        for byte in control:
+            reescaped_control.extend(encoder[byte])
+        control_escaped_size: int = len(reescaped_control)
+
+        # With *control_escaped_size* the end of the *partial_packet* is known and extracted:
+        partial_packet: bytes = full_packet[3:-(control_escaped_size + 3)]
+
+        print(f"<=Packet.full_decode({repr(full_packet)})"
+              f"=>({repr(partial_packet)},{repr(control)})")
+        return (partial_packet, control)
+
+    # Packet.full_encode():
+    def full_encode(self,
+                    partial_packet_bytes: bytes, control_bytes: Tuple[int, int, int]) -> bytes:
+        """Convert a partial Packet into a full Packet."""
+        # print("=>Packet.full_encode("
+        #       f"{repr(partial_packet_bytes)}, {control_bytes})")
+
+        # Create *crc_bytes* which contains all of the bytes to be CRC'ed.
+        # This the *partial_packet* (already_escaped) and the *control_bytes*
+        # (which are not escaped yet:
+        crc_bytes: bytearray = bytearray(partial_packet_bytes)
+        assert len(control_bytes) == 3, (
+            "Length of transmission control bytes ({len(control_bytes)}) is not 3")
+        encoder: Tuple[Tuple[int, ...], ...] = self.encoder
+        control_byte: int
+        for control_byte in control_bytes:
+            crc_bytes.extend(encoder[control_byte])
+
+        # Compute the *crc* and associated *crc_high* and *crc_low* bytes over *crc_bytes*:
+        global crc_compute
+
+        # crc_compute: Callable[[bytes], int] = self.crc_compute
+        # crc_compute: Callable[[bytes], int] = crcmod.mkCrcFun(0x11021, initCrc=0, xorOut=0xffff)
+        crc: int = crc_compute(bytes(crc_bytes)) & 0x7f7f
+        crc_high: int = (crc >> 8) & 0x7f
+        crc_low: int = crc & 0x7f
+
+        # Compute *total_length* and associated the *high_length* and *low_length* bytes:
+        front_length: int = 1 + 2  # Start(1) + Length(2)
+        end_length: int = 2 + 1  # CRC(2) + End(1)
+        total_length: int = front_length + len(crc_bytes) + end_length
+        assert total_length <= 0x3fff, f"Packet Length is too long 0x{total_length:x} > 0x3fff"
+        high_length: int = total_length >> 7
+        low_length: int = total_length & 0x7f
+
+        # Construct the *full_packet*:
+        full_packet: bytearray = bytearray((self.slip_start, high_length, low_length))
+        assert len(full_packet) == front_length, f"Packet header is {len(full_packet)} long"
+        full_packet.extend(crc_bytes)
+        assert len(full_packet) == front_length + len(crc_bytes), "broke here"
+        full_packet.extend((crc_high, crc_low, self.slip_stop))
+        full_packet_bytes: bytes = bytes(full_packet)
+        assert len(full_packet) == total_length, (
+            f"Actual packet length ({len(full_packet)}) is not desired length ({total_length})")
+        # print("<=Packet.full_encode("
+        #       f"{repr(partial_packet_bytes)}, {control_bytes})=>{repr(full_packet_bytes)}")
+        return(full_packet_bytes)
+
+    # Packet.partial_decode():
+    def partial_decode(self, packet_bytes: bytes, index: int) -> Tuple[int, Any]:
         """Decode a strings and structs from a packet."""
         # print(f"=>Packet.decode({repr(packet_bytes)})")
         # Create the *packet_content* instance to put the data into:
         packet_content: Any = self.packet_type()
         packet_size: int = len(packet_bytes)
         assert index <= packet_size, "Packet.decode(): index error: bad start index"
-
-        # Skip over start byte.
-        start_byte: int = packet_bytes[index]
-        index += 1
-        assert start_byte == self.slip_start, (
-            f"Packet.decode(): start_byte ({start_byte}) not equal to slip_start {self.slip_start}")
-        assert index <= packet_size, "Packet.decode(): index error: start byte"
 
         # Extract the *packet_id*:
         packet_id: int = packet_bytes[index]
@@ -743,19 +911,16 @@ class Packet(object):
         # print(f"<=Packet.decode({repr(packet_bytes)})=>({packet_id}, {packet_content}")
         return (packet_id, packet_content)
 
-    # Packet.encode():
-    def encode(self, packet_content: Any, packet_id: int) -> bytes:
+    # Packet.partial_encode():
+    def partial_encode(self, packet_content: Any, packet_id: int) -> bytes:
         """Encode packet content into partial bytes packet."""
-        # print(f"=>Packet.encode({packet_content}, {packet_id})")
+        # print(f"=>Packet.partial_encode({packet_content}, {packet_id})")
         assert isinstance(packet_content, self.packet_type), (
             f"Packet content is {type(packet_content)} rather than {type(self.packet_type)}")
         packet_bytes: bytearray = bytearray()
 
-        # Start with a start byte:
-        packet_bytes.append(self.slip_start)
-
         # Start with the *packet_id*:
-        encoder: List[Tuple[int, ...]] = self.encoder
+        encoder: Tuple[Tuple[int, ...], ...] = self.encoder
         assert 0 <= packet_id <= 255, f"Packet id ({packet_id} does not fit in a byte.)"
         packet_bytes.extend(encoder[packet_id])
 
@@ -796,8 +961,15 @@ class Packet(object):
             packet_bytes.extend(encoder[struct_byte])
 
         final_packet_bytes: bytes = bytes(packet_bytes)
-        # print(f"<=Packet.encode({packet_content}, {packet_id})=>{repr(final_packet_bytes)}")
+        # print(f"<=Packet.partail_encode({packet_content}, "
+        #       f"{packet_id})=>{repr(final_packet_bytes)}")
         return final_packet_bytes
+
+    # Packet.ros_field_types_get():
+    @classmethod
+    def ros_field_types_get(cls) -> Dict[str, ROSFieldType]:
+        """Return the ROS Field Types table."""
+        return cls.ros_field_types
 
     # Packet.unescape():
     def unescape(self, escaped_bytes: bytes) -> bytes:
@@ -1067,23 +1239,36 @@ class TopicHandle(Handle):
         assert isinstance(message, self.message_type), (
             f"message {message} does name match {self.message_type}")
         message_packet: Packet = self.message_packet
-        packet_bytes: bytes = message_packet.encode(message, self.subscription_packet_id)
-        # print(f"message_packet={repr(packet_bytes)}")
+        partial_packet_bytes: bytes = message_packet.partial_encode(message,
+                                                                    self.subscription_packet_id)
+        # print(f"partial_packet={repr(partial_packet_bytes)}")
+        control: Tuple[int, int, int] = (1, 2, 3)
+        full_packet_bytes: bytes = message_packet.full_encode(partial_packet_bytes, control)
+        extracted_partial_packet: bytes
+        extracted_control: Tuple[int, int, int]
+        extracted_partial_packet, extracted_control = (
+            message_packet.full_decode(full_packet_bytes))
+        assert control == extracted_control, f"Mismatch control {control} != {extracted_control}"
+        assert partial_packet_bytes == extracted_partial_packet, (
+            "partial packet decode problem: "
+            f"{repr(partial_packet_bytes)} != {repr(extracted_partial_packet)}")
+        print(f"full_packet={repr(full_packet_bytes)}")
 
         # Decode *packet_types* into *unescaped_packet_bytes*:
-        unescaped_bytes: bytes = message_packet.unescape(packet_bytes)
+        unescaped_bytes: bytes = message_packet.unescape(partial_packet_bytes)
         # print(f"unescaped_bytes={repr(unescaped_bytes)}")
 
         # Decode *unescaped_packet_bytes* into *decode_content:
         decode_packet_id: int
         decode_content: Any
-        decode_packet_id, decode_content = message_packet.decode(unescaped_bytes, 0)
+        decode_packet_id, decode_content = message_packet.partial_decode(unescaped_bytes, 0)
         assert decode_packet_id == self.subscription_packet_id, (
             f"decode_packet_id ({decode_packet_id}) "
             f"does not match subscription_packet_id ({self.subscription_packet_id})")
         assert message.data == decode_content.data, (
             f"message.data ({message.data}) does not match "
             f"decode_content.data ({decode_content.data})")
+        print("Yahoo! They match!")
 
         if self.ros_path == "echo":
             add_two_ints_agent_node: AgentNode
