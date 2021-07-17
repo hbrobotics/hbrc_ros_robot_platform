@@ -40,37 +40,73 @@ model, packet format, and code generation (TBD).
 
 ### Command Line
 
-In addition to flags, the command line species a list of traffic descriptors of the form:
+The current intention is do all configuration from the command line.  This avoids a
+separate configuration file and instead allows all configuration to be done via ROS launch files.
 
-    NODE_NAME:KIND:IMPORT_PATH:TYPE_NAME:ROS_PATH
+There are 5 related commands that specify various mirroring operations that are very similar
 
-Where:
+* `--publisher=NODE_NAME:PRIORITY:IMPORT_PATH:TYPE_NAME:ROS_PATH`:
+  The microcontroller can publish messages to a ROS Topic.
 
-* NODE_NAME: This is the name of a rospy Node.  Each Node can share multiple communication kinds.
-  This node shows up as a separate node in the ROS `rqt` program.
+* `--subscription=NODE_NAME:PRIORITY:IMPORT_PATH:TYPE_NAME:ROS_PATH`:
+  The microcontroller can subscribe ROS Topic messages.
 
-* KIND: This is one of:
+* `--client=NODE_NAME:PRIORITY:IMPORT_PATH:TYPE_NAME:ROS_PATH`:
+  The microcontroller is a client can request information from any other ROS server node.
 
-  * `publish`: The node can send messages to ROS a topic.
+* `--server=`NODE_NAME::PRIORITY:IMPORT_PATH:TYPE_NAME:ROS_PATH:PRIORITY`:
+  The microcontroller is a server that respond with information from any other ROS server Node.
 
-  * `subscribe`: The node can receive messages from a ROS topic.
+* `--timer=`NODE_NAME:PRIORITY:TIMER_NAME:RATE`:
+  The microcontroller can receive periodic timer messages.
 
-  * `client`: The node can send a request message to a ROS service and receive a corresponding
-    response message back.
+(TBD Parameter support)
 
-  * `server`: The node can receive a request message for a ROS service and generate a corresponding
-    response message back.
+The parameter to the right of the equal sign ("=") a list of colon (":") separated values
+that are listed immediately below:
 
-  * `parameter`: Supports the ROS parameter protocol (not implemented yet.)
+* `NODE_NAME`:
+  This is the name of a `rospy` Node.  Since each Node can share multiple communication kinds,
+  this node name occur more than one of the flags above (e.g. multiple publishers, subscriptions,
+  etc.)  This node shows up as a separate node in the ROS `rqt` program.
 
-* IMPORT_PATH: This name of a Python package that describes the message formats.
+* `IMPORT_PATH`: This name of a Python package that contains the needed message definitions
+  (e.g. `std_msgs.msg`, `example_interfaces.srv`, etc.)
 
-* TYPE_NAME: In rospy, the message format is specified by Python type.  In conjunction with the
-  IMPORT_PATH, it is possible for Python to dynamically load in the message format information.
+* `TYPE_NAME`: In rospy, the message format is specified by Python type.  In conjunction with the
+  `IMPORT_PATH`, it is possible for Python to dynamically load in the message format information.
+  (e.g. `String`, `AddTwoInts`, etc.)
 
-* ROSPATH: This the ROS topic or service name
+* `ROSPATH`: This the ROS topic or service name (e.g. `sonars`, `motor/left`, `motor/right`, etc.)
 
-The internal data structures are designed to support these traffic descriptors.
+* `TIMER_NAME`: Is the name of the timer.
+
+* `RATE`: This species the timer period as a rate in Hz.
+
+* `PRIORITY`: This specifies the message priority where the higher priority messages are always
+  sent first.  At least one timer is required to ensure that the protocol will recover from
+  dropped messages.  This timer needs to have the highest priority.  An emergency stop message
+  probably has the next highest priority.
+
+The next argument supports serial communication.  The serial communication can be done
+with either a physical device (e.g. `/dev/ttyN`, `/dev/AMC`, etc.) or a named pipe/fifo (e.g.
+`/tmp/agent2micro`, `/tmp/micro2agent`).  The following command line argument must be specified
+at least once (for read/write) or twice (one for read, the other for write).
+
+* `--io=FILE_NAME:FLAGS,...` :
+   `FILE_NAME` is the file name for the device or named pipe.  `FLAGS` must be one or more of:
+
+   * `create`: The pipe is created if it does not already exist.
+   * 'device`: The a device is specified.
+   * 'pipe`: The a pipe is specified
+   * `read`: Agent reads from the device/pipe.
+   * `write`: Agent write to the device/pipe.
+   * More flags r
+
+Code generation:
+
+TBD
+
 
 ## Class Summary
 
@@ -148,12 +184,14 @@ This code is run through both `mypy` and `flake8 --max-length_line=100 -ignore=Q
      mistakes-using-service-and-client-in-same-node-ros2-python](Informative)
 """
 
+import os
+import stat
 import importlib
 import struct
 import sys
 # import time
 from dataclasses import dataclass
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple
+from typing import Any, Callable, ClassVar, Dict, List, IO, Optional, Tuple
 
 import crcmod  # type:ignore
 
@@ -183,7 +221,7 @@ def main(ros_arguments: Optional[List[str]] = None) -> int:
     arguments: List[str] = sys.argv[1:]
     agent: Agent = Agent(executor, arguments)
 
-    agent.timer_create("serial_agent", "timer1", 1.0)
+    # agent.timer_create("serial_agent", "timer1", 1.0)
     # agent.timer_create("serial_agent", "timer2", 5.0)
 
     print("Start executor.spin()")
@@ -241,16 +279,22 @@ class Agent:
         self.packet_handles: List[Handle] = []
         self.packet_id: int = 0
 
+        self.read_io_channel: Optional[IOChannel] = None
+        self.write_io_channel: Optional[IOChannel] = None
+
         # Parse *arguments*:
         if not arguments:
             # Create some default arguments.
             arguments = [
-                "serial_agent:publish:std_msgs.msg:String:topic",
-                "serial_agent:subscribe:std_msgs.msg:String:topic",
-                "serial_agent:publish:std_msgs.msg:String:echo",
-                "serial_agent:subscribe:std_msgs.msg:String:echo",
-                "serial_agent:client:example_interfaces.srv:AddTwoInts:add_two_ints",
-                "serial_agent_server1:server:example_interfaces.srv:AddTwoInts:add_two_ints",
+                "--publisher=serial_agent:0:std_msgs.msg:String:topic",
+                "--subscription=serial_agent:0:std_msgs.msg:String:topic",
+                "--publisher=serial_agent:0:std_msgs.msg:String:echo",
+                "--subscription=serial_agent:0:std_msgs.msg:String:echo",
+                "--client=serial_agent:0:example_interfaces.srv:AddTwoInts:add_two_ints",
+                "--server=serial_agent_server1:0:example_interfaces.srv:AddTwoInts:add_two_ints",
+                "--timer=serial_agent_timer:10:timer:0.5",
+                "--io=/tmp/agent2micro:create,pipe,write",
+                "--io=/tmp/micro2agent:create,pipe,read",
             ]
         self.arguments_parse(arguments)
         # print(f"arguments: {arguments}")
@@ -280,38 +324,111 @@ class Agent:
     # Agent.arguments_parse():
     def arguments_parse(self, arguments: List[str]) -> None:
         """Parse the command line arguments."""
-        # Sweep through the *arguments:
-        # print("=>Agent.arguments_parse(*)")
+        # Sweep through the *arguments*:
+        print("=>Agent.arguments_parse(*)")
         argument: str
         for argument in arguments:
-            if argument.startswith("-"):
-                # Process flags here:
-                pass
-            else:
-                # Split *registration* into *kind*, *import_path*, *type_name*, and *ros_path*:
-                registration: List[str] = argument.split(":")
-                assert len(registration) == 5, f"Registration '{registration} is wrong'"
-                kind: str
-                agent_node_name: str
+            # Split out the *flag_name*, *flag_options*, *colon_split*:
+            if not argument.startswith("--"):
+                raise ValueError(f"Command line argument '{argument}' does not start with '--'")
+            equals_split: Tuple[str, ...] = tuple(argument.split("="))
+            assert len(equals_split) == 2, (
+                f"More than one '=' in command line argument '{argument}'")
+            flag_name: str
+            flag_options: str
+            flag_name, flag_options = equals_split
+            colon_split: Tuple[str, ...] = tuple(flag_options.split(":"))
+
+            # Dispatch on *flag_name*:
+            agent_node_name: str
+            priority: str
+            priority_value: int
+            if flag_name in ("--client", "--publisher", "--server", "--subscription"):
+                # Unpack *colon_split* into *agent_name*, *priority*, *import_path*,
+                # *type_name*, and *ros_path*:
+                if len(colon_split) != 5:
+                    raise ValueError(
+                        f"Commad line argument '{argument}' has {len(colon_split)} instead "
+                        "of the desired 5 -- NODE_NAME:PRIORITY:IMPORT_PATH:TYPE_NAME:ROSPATH")
                 import_path: str
                 type_name: str
                 ros_path: str
-                acceptable_kinds: Tuple[str, ...] = ("publish", "subscribe", "client", "server")
-                agent_node_name, kind, import_path, type_name, ros_path = registration
+                agent_node_name, priority, import_path, type_name, ros_path = colon_split
 
-                topic_handle: TopicHandle
-                assert kind in acceptable_kinds, f"'{kind}' not one of {acceptable_kinds}"
-                if kind == "publish":
+                # Verify that *priority* is an integer and fits into a byte:
+                if not priority.isdigit():
+                    raise ValueError(f"Priority '{priority}' is not an integer")
+                priority_value = int(priority)
+                if not 0 <= priority_value <= 255:
+                    raise ValueError(f"Priority '{priority}' does not fit in a byte")
+
+                # Create communication channel:
+                if flag_name == "--publisher":
                     self.publisher_create(agent_node_name, import_path, type_name, ros_path)
-                elif kind == "subscribe":
+                elif flag_name == "--subscription":
                     self.subscription_create(agent_node_name, import_path, type_name, ros_path)
-                elif kind == "client":
+                elif flag_name == "--client":
                     self.client_create(agent_node_name, import_path, type_name, ros_path)
-                elif kind == "server":
+                elif flag_name == "--server":
                     self.server_create(agent_node_name, import_path, type_name, ros_path)
                 else:
-                    assert False, f"'{kind}' is not an exceptable kind."
-        # print("<=Agent.arguments_parse(*)")
+                    assert False, f"'{flag_name}' is not an exceptable kind."
+            elif flag_name == "--timer":
+                # Unpack *colon_split* into *node_name*, *priority*, and *rate*:
+                if len(colon_split) != 4:
+                    raise ValueError(f"Command line argument '{argument}' has {len(colon_split)} "
+                                     f"options instead of the desired 4 -- "
+                                     "NODE_NAME:PRIORITY:TIMER_NAME:RATE")
+                rate: str
+                timer_name: str
+                agent_node_name, priority, timer_name, rate = colon_split
+
+                # Verity argument types:
+                if not priority.isdigit():
+                    raise ValueError(f"Command line argument '{argument}' priority is '{priority}' "
+                                     "which is not an integer")
+                priority_value = int(priority)
+                rate_value: float
+                try:
+                    rate_value = float(rate)
+                except ValueError:
+                    raise ValueError(f"Command line argument '{argument}' rate is '{rate}' "
+                                     "which is not an float")
+                if rate_value <= 0.0:
+                    raise ValueError(f"Command line argument '{argument}' rate is '{rate}' "
+                                     "is not positive")
+
+                # Create the timer:
+                self.timer_create(agent_node_name, timer_name, 1 / rate_value)
+            elif flag_name == "--io":
+                print(f"processing '{argument}'")
+                # Extract *colon_split* into *file_name* and *flags*:
+                io_channel: IOChannel = IOChannel(argument, colon_split)
+                if io_channel.read:
+                    if self.read_io_channel:
+                        raise ValueError(f"Command line argument '{argument}' tries to open "
+                                         "more than one read I/O channel")
+                    else:
+                        self.read_io_channel = io_channel
+                if io_channel.write:
+                    if self.write_io_channel:
+                        raise ValueError(f"Command line argument '{argument}' tries to open "
+                                         "more than one writeI/O channel")
+                    else:
+                        self.write_io_channel = io_channel
+            else:
+                raise ValueError(f"Unrecognized flag '{flag_name}'")
+
+        # Open the I/O channels:
+        # print(f"read_io_channel:{self.read_io_channel}")
+        # print(f"write_io_channel:{self.write_io_channel}")
+        if self.read_io_channel and not self.write_io_channel:
+            raise ValueError(f"Read channel '{self.read_io_channel.file_name}' is specified "
+                             "but no write channel is specified")
+        if self.write_io_channel and not self.read_io_channel:
+            raise ValueError(f"Write channel '{self.write_io_channel.file_name}' is specified "
+                             "but no read channel is specified")
+        print("<=Agent.arguments_parse(*)")
 
     # Agent.client_create():
     def client_create(self, agent_node_name: str,
@@ -552,6 +669,20 @@ class AgentNode(Node):
         timers_table[timer_key] = timer
 
 
+# encoder_create():
+def encoder_create(start: int, escape: int, stop: int, twiddle: int) -> Tuple[Tuple[int, ...], ...]:
+    """Return the escape encoder tuple table."""
+    specials: Tuple[int, ...] = (start, escape, stop)
+    encoder_list: List[Tuple[int, ...]] = []
+    byte: int
+    for byte in range(256):
+        if byte in specials:
+            encoder_list.append((escape, byte ^ twiddle))
+        else:
+            encoder_list.append((byte,))
+    return tuple(encoder_list)
+
+
 # Packet:
 class Packet(object):
     """A Packet class converts between ROS topic and service messages and bytes.
@@ -635,7 +766,7 @@ class Packet(object):
     """
 
     ros_field_types: ClassVar[Dict[str, ROSFieldType]] = {
-        # key: ROSTYPE("ROS Type", "C++ Type", "Python Type", "Struct Format", "C Type", "Size")
+        # "Key": ROSTYPE("ROS Type", "C++ Type", "Python Type", "Struct Format", "C Type", Size)
         "bool": ROSFieldType("bool", "uint8_t", "bool", "B", "unsigned char", 1),
         "int8": ROSFieldType("int8", "int8_t", "int", "b", "signed char", 1),
         "uint8": ROSFieldType("uint8", "uint8_t", "int", "B", "unsigned char", 1),
@@ -647,22 +778,22 @@ class Packet(object):
         "uint64": ROSFieldType("uint64", "uint64_t", "int", "Q", "unsigned long long", 8),
         "float32": ROSFieldType("float32", "float", "float", "f", "float", 4),
         "float64": ROSFieldType("float64", "double", "float", "d", "double", 8),
-        "string": ROSFieldType("string", "std::string", "bytes", "", "", -1),  # Special
-        "time": ROSFieldType("time", "ros::Time", "rospy.Time", "II", "2 * unsigned int", 8),
+        "string": ROSFieldType("string", "std::string", "bytes", "", "", -1),  # Special size
+        "time": ROSFieldType("time", "ros::Time", "rospy.Time", "II", "!!", 8),  # 2 * unsigned int!
         "duration": ROSFieldType("duration",
-                                 "ros::Duration", "rospy.Duration", "ii", "2 * signed", 8),
+                                 "ros::Duration", "rospy.Duration", "ii", "!!", 8),  # 2 * signed!
     }
 
     # Define the SLIP (originally stood for Serial Line Internet Protocol) characters.
-    # The concept is the same, but different characters are used than the original SLIP protocol.
+    # The concept is the same, but different characters are used than the original SLIP protocol:
     slip_start: ClassVar[int] = 0xfc
     slip_escape: ClassVar[int] = 0xfd
     slip_stop: ClassVar[int] = 0xfe
     slip_twiddle: ClassVar[int] = 0x80  # Used to set the high order bit.
-    encoder: ClassVar[Tuple[Tuple[int, ...], ...]] = tuple(
-        (0xfd, byte ^ 0x80) if byte in (0xfc, 0xfd, 0xfe) else (byte,) for byte in range(256))
+    encoder: ClassVar[Tuple[Tuple[int, ...], ...]] = encoder_create(
+        slip_start, slip_escape, slip_stop, slip_twiddle)
 
-    # The Python struct library is used to pack and unpack data to/from bytes.
+    # The Python struct library is used to pack and unpack data to/from bytes:
     struct_endian: ClassVar[str] = "!"  # "!" stands for network which happens to be big-endian
     ros_type_convert: ClassVar[Dict[str, Tuple[str, str]]] = {
         "bool": ("?", "_Bool"),
@@ -741,7 +872,8 @@ class Packet(object):
                 f"{self.struct_names}, {self.string_names}')")
 
     # Packet.full_decode():
-    def full_decode(self, full_packet: bytes) -> Tuple[bytes, Tuple[int, int, int]]:
+    @classmethod
+    def full_decode(cls, full_packet: bytes) -> Tuple[int, bytes, Tuple[int, int, int]]:
         """Convert a full packet into a partial packet with transmission control bytes."""
         print(f"=>Packet.full_decode({repr(full_packet)})")
 
@@ -749,9 +881,9 @@ class Packet(object):
         full_size: int = len(full_packet)
         if full_size < 3:
             raise ValueError(f"packet {repr(full_packet)} is too small")
-        if full_packet[0] != self.slip_start:
+        if full_packet[0] != cls.slip_start:
             raise ValueError(f"packet {repr(full_packet)} does not start with "
-                             f"0x{self.slip_start:02x}")
+                             f"0x{cls.slip_start:02x}")
 
         # Extract and verify the *length*:
         high_length: int = full_packet[1]
@@ -766,9 +898,9 @@ class Packet(object):
                              f"not the desired length of {length}")
 
         # Process the last three bytes (i.e. CRC and Stop):
-        if full_packet[-1] != self.slip_stop:
+        if full_packet[-1] != cls.slip_stop:
             raise ValueError(f"packet {repr(full_packet)} ends with 0x{full_packet[-1]:02x},"
-                             f"not the desired 0x{self.slip_stop}")
+                             f"not the desired 0x{cls.slip_stop}")
         crc_low: int = full_packet[-2]
         crc_high: int = full_packet[-3]
         if crc_high >= 128 or crc_low >= 128:
@@ -783,13 +915,13 @@ class Packet(object):
             raise ValueError(f"packet {repr(full_packet)} has an actual CRC of 0x{actual_crc:02x}, "
                              f"but the desired CRC is 0x{crc:02x}")
 
-        # Extract the transmission *control* tuple.  This is three bytes of information that
-        # expand to 6 bytes with escape character (i.e. all 3 bytes have the 8th bit set.)
-        # Rather unescaping the *full_packet* from the beginning, some cleverness is done instead.
-        # Instead the last 6 bytes are grabbed, unescaped, and the remaining 3 bytes are the
-        # transmission control values:
+        # Extract the transmission *control* tuple.  This is three bytes of information that can
+        # expand up to 6 bytes with escape characters (i.e. all 3 bytes have the 8th bit set.)
+        # Rather unescaping the *full_packet* from the beginning, some cleverness is used instead.
+        # Instead the last 6 bytes are grabbed, unescaped, and the last 3 bytes of the result
+        # are the transmission control values:
         escaped_control: bytes = full_packet[-9:-3]
-        unescaped_control: bytes = self.unescape(escaped_control)
+        unescaped_control: bytes = cls.unescape(escaped_control)
         if len(unescaped_control) < 3:
             raise ValueError(f"packet {repr(full_packet)} does not have 3 transmission "
                              "control bytes")
@@ -798,18 +930,22 @@ class Packet(object):
 
         # Now the *control* values are entered into the *rescapded_control* to that
         # the final length the the escaped control bytes can be determined:
-        encoder: Tuple[Tuple[int, ...], ...] = self.encoder
+        encoder: Tuple[Tuple[int, ...], ...] = cls.encoder
         reescaped_control: bytearray = bytearray()
         for byte in control:
             reescaped_control.extend(encoder[byte])
         control_escaped_size: int = len(reescaped_control)
 
-        # With *control_escaped_size* the end of the *partial_packet* is known and extracted:
+        # Extract *partial_packet* now that *control_escaped_size* is known:
         partial_packet: bytes = full_packet[3:-(control_escaped_size + 3)]
+
+        # Now extract the *packet_id* from *partial_packet*:
+        escaped_header: bytes = cls.unescape(partial_packet[:2])
+        packet_id: int = escaped_header[0]
 
         print(f"<=Packet.full_decode({repr(full_packet)})"
               f"=>({repr(partial_packet)},{repr(control)})")
-        return (partial_packet, control)
+        return (packet_id, partial_packet, control)
 
     # Packet.full_encode():
     def full_encode(self,
@@ -972,12 +1108,13 @@ class Packet(object):
         return cls.ros_field_types
 
     # Packet.unescape():
-    def unescape(self, escaped_bytes: bytes) -> bytes:
+    @classmethod
+    def unescape(cls, escaped_bytes: bytes) -> bytes:
         """Take a packet with escapes and remove them."""
         # print(f"=>Packet.unescape({repr(escaped_bytes)})")
         unescaped_bytes: bytearray = bytearray()
-        slip_escape: int = self.slip_escape
-        slip_twiddle: int = self.slip_twiddle
+        slip_escape: int = cls.slip_escape
+        slip_twiddle: int = cls.slip_twiddle
         escaped_byte: int
         escape_found: bool = False
         for escaped_byte in escaped_bytes:
@@ -1050,6 +1187,118 @@ class HandleKey:
     import_path: str
     type_name: str
     ros_path: str
+
+
+# IOChannel:
+class IOChannel:
+    """A handle for deal with serial I/O."""
+
+    # IOChannel.__init__():
+    def __init__(self, argument: str, colon_split: Tuple[str, ...]) -> None:
+        """Init an IOChannel."""
+        # Start with all value set to *False*:
+        self.create: bool = False
+        self.device: bool = False
+        self.pipe: bool = False
+        self.read: bool = False
+        self.write: bool = False
+
+        # Extract *file_name* and *flags* from *colon_split*:
+        if len(colon_split) != 2:
+            raise ValueError(f"Command line argument '{argument}' has {len(colon_split)} fields"
+                             "instead of 2 -- FILE_NAME:FLAGS")
+        flags: str
+        file_name: str
+        file_name, flags = colon_split
+
+        # Process the *flags* treating *self* as a dictionary:
+        flag: str
+        for flag in flags.split(","):
+            if hasattr(self, flag):
+                setattr(self, flag, True)
+            else:
+                raise ValueError(f"Command line argument '{argument}' does not support "
+                                 f"'{flag}' option")
+
+        # Do some consistency checking:
+        if self.device and self.pipe:
+            raise ValueError(f"Command line argument '{argument}' can not specify "
+                             "'device' and 'pipe' at the same time")
+        if not self.device and not self.pipe:
+            raise ValueError(f"Command line argument '{argument}' does not specify "
+                             "one of 'device' or 'pipe'")
+        if not self.read and not self.write:
+            raise ValueError(f"Command line argument '{argument}' does not specify "
+                             "one of 'read' or 'write'")
+        if self.read and self.write and self.pipe:
+            raise ValueError(f"Command line argument '{argument}' cannot both read "
+                             "write a pipe")
+        if self.create and self.device:
+            raise ValueError(f"Command line argument '{argument}' cannot create device "
+                             "'{self.file_name}'")
+
+        # Create the named pipe (FIFO) it it does not already exist:
+        if self.create and self.pipe:
+            try:
+                os.mkfifo(file_name)
+            except FileExistsError:
+                if not stat.S_ISFIFO(os.stat(file_name).st_mode):
+                    raise RuntimeError(f"'{file_name}' already exists and is not a named pipe")
+
+        # Finish loading up I/O handle.  Note that both *read_file* and *write_file* are only
+        # opened on the first read or write.  This has to do with a peculiar "feature" of
+        # named pipes.  Each end of a named pipe is needs to be opened before the two open()
+        # calls will return.  The first open() does not return until after the second open()
+        # is invoked:
+        self.file_name: str = file_name
+        self.read_file: Optional[IO[bytes]] = None
+        self.write_file: Optional[IO[bytes]] = None
+
+    # IOChannel.__str__():
+    def __str__(self):
+        """Return a text representation of an IOChannel."""
+        return (f"IOCHannel(create={self.create}, device={self.device}, read={self.read}, "
+                f"pipe={self.pipe} write={self.write}, file_name='{self.file_name}')")
+
+    # IOChannel.open():
+    def open(self):
+        """Open an I/O channel."""
+        # Now open it the channel:
+        try:
+            file_name: str = self.file_name
+            if self.read and self.write:
+                # "w+" is explained here:
+                #     https://stackoverflow.com/questions/1466000/
+                #         difference-between-modes-a-a-w-w-and-r-in-built-in-open-function
+                read_write_file: IO[bytes] = open(file_name, "w+b")
+                self.read_file = read_write_file
+                self.write_file = read_write_file
+            elif self.read:
+                # This will stall until the other end of the pipe is opened for writing:
+                self.read_file = open(file_name, "rb")
+            else:
+                # This will stall until the other end of the pipe is opened for reading:
+                self.write_file = open(file_name, "wb")
+        except FileNotFoundError:
+            raise RuntimeError("File '{file_name}' does not exist")
+
+    # IOChannel.data_read():
+    def data_read(self, amount: int) -> bytes:
+        """Read some data from an I/O channel."""
+        if not self.read_file:
+            self.open()  # This will stall until both sides of a named pipe are opened.
+            if not self.read_file:
+                raise RuntimeError("Can not read from '{self.file_name}'")
+        return self.read_file.read(amount)
+
+    # IOChannel.data_write(data: bytes) -> None:
+    def data_write(self, data: bytes) -> None:
+        """Write some data to an I/O channel."""
+        if not self.write_file:
+            self.open()  # This will stall until both sides of a named pipe are opened.
+            if not self.write_file:
+                raise RuntimeError("Can not write to '{self.file_name}'")
+        self.write_file.write(data)
 
 
 # TimerHandle:
@@ -1244,10 +1493,14 @@ class TopicHandle(Handle):
         # print(f"partial_packet={repr(partial_packet_bytes)}")
         control: Tuple[int, int, int] = (1, 2, 3)
         full_packet_bytes: bytes = message_packet.full_encode(partial_packet_bytes, control)
+        extracted_packet_id: int
         extracted_partial_packet: bytes
         extracted_control: Tuple[int, int, int]
-        extracted_partial_packet, extracted_control = (
+        extracted_packet_id, extracted_partial_packet, extracted_control = (
             message_packet.full_decode(full_packet_bytes))
+        assert self.subscription_packet_id == extracted_packet_id, (
+            f"Deisred packet id ({self.subscription_packet_id}) "
+            f"is not actual packet id ({extracted_packet_id})")
         assert control == extracted_control, f"Mismatch control {control} != {extracted_control}"
         assert partial_packet_bytes == extracted_partial_packet, (
             "partial packet decode problem: "
