@@ -225,7 +225,7 @@ def main(ros_arguments: Optional[List[str]] = None) -> int:
     executor: Executor = rclpy.executors.MultiThreadedExecutor()
 
     # Create the *agent* from command line *arguments*:
-    arguments: List[str] = sys.argv[1:]
+    arguments: Tuple[str, ...] = tuple(sys.argv[1:])
     agent: Agent = Agent(executor, arguments)
 
     serial_line: Optional[SerialLine] = agent.serial_line
@@ -299,7 +299,7 @@ class Agent:
     slip: ClassVar[SLIP] = SLIP(start=0xfc, escape=0xfd, stop=0xfe, twiddle=0x80)
 
     # Agent.__init__():
-    def __init__(self, executor: Executor, arguments: List[str]) -> None:
+    def __init__(self, executor: Executor, arguments: Tuple[str, ...]) -> None:
         """Init the serial agent."""
         # Collect the various objects in tables to detect accidental duplicates and
         # for final shut-down:
@@ -319,37 +319,25 @@ class Agent:
         self.packet_handles: "List[Union[Handle, TimerHandle]]" = []
         self.packet_id: int = 0
 
+        self.is_agent: bool = False
+        self.is_micro: bool = False
+        self.is_stand_alone: bool = False
         self.read_io_channel: Optional[IOChannel] = None
         self.write_io_channel: Optional[IOChannel] = None
-        self.serial_line: Optional[SerialLine] = None
+        self.pending_queue: Queue[bytes] = Queue()
 
-        # Parse *arguments*:
-        if not arguments:
-            # Create some default arguments.
-            arguments = [
-                "--publisher=serial_agent:0:std_msgs.msg:String:topic",
-                "--subscription=serial_agent:0:std_msgs.msg:String:topic",
-                "--publisher=serial_agent:0:std_msgs.msg:String:echo",
-                "--subscription=serial_agent:0:std_msgs.msg:String:echo",
-                "--client=serial_agent:0:example_interfaces.srv:AddTwoInts:add_two_ints",
-                "--server=serial_agent_server1:0:example_interfaces.srv:AddTwoInts:add_two_ints",
-                "--timer=serial_agent_timer:10:timer:0.5",
-                "--io=/tmp/agent2micro:device,write",
-                "--io=/tmp/micro2agent:create,pipe,read",
-            ]
-
-        # This does a lot of configuration:
+        # This is where everything is configured:
         self.arguments_parse(arguments)
 
-        self.pending_queue: Queue[bytes] = Queue()
+        # Create the *serial_line*:
         read_io_channel: Optional[IOChannel] = self.read_io_channel
         write_io_channel: Optional[IOChannel] = self.write_io_channel
-        assert isinstance(read_io_channel, IOChannel)
-        assert isinstance(write_io_channel, IOChannel)
-        serial_line: SerialLine = SerialLine(read_io_channel, write_io_channel,
-                                             tuple(self.priorities), self.pending_queue)
-        self.serial_line = serial_line
-        # print(f"arguments: {arguments}")
+        if not read_io_channel:
+            raise ValueError("No read channel specified")
+        if not write_io_channel:
+            raise ValueError("No write channel specified")
+        self.serial_line: SerialLine = SerialLine(read_io_channel, write_io_channel,
+                                                  tuple(self.priorities), self.pending_queue)
 
     # Agent.agent_node_create_once():
     def agent_node_create_once(self, agent_node_name: str) -> "AgentNode":
@@ -373,12 +361,202 @@ class Agent:
         agent_node: AgentNode = agent_nodes[agent_node_name]
         return agent_node
 
-    # Agent.arguments_parse():
-    def arguments_parse(self, arguments: List[str]) -> None:
-        """Parse the command line arguments."""
-        # Sweep through the *arguments*:
-        print("=>Agent.arguments_parse(*)")
+    # Agent.argument_files_read():
+    def argument_files_read(self, arguments: Tuple[str, ...]) -> Tuple[str, ...]:
+        """Read in arguments files that start with '@'."""
+        expanded_arguments: List[str] = []
         argument: str
+        for argument in arguments:
+            if argument.startswith("@"):
+                # Open *arguments_file_name* for reading:
+                arguments_file_name: str = argument[1:]
+                if not os.path.exists(arguments_file_name):
+                    raise ValueError(f"@{argument} does not exist")
+
+                # Read in *argument_lines*:
+                arguments_file: IO[str]
+                lines: List[str]
+                with open(arguments_file_name, "r") as arguments_file:
+                    lines = arguments_file.read().splitlines()
+
+                # Append all non-empty and non-comment lines:
+                line: str
+                for line in lines:
+                    if line and not line.startswith("#"):
+                        expanded_arguments.append(line.rstrip())
+            else:
+                expanded_arguments.append(argument)
+        return tuple(expanded_arguments)
+
+    # Agent.arguments_mode_extract():
+    def argument_mode_extract(self, arguments: Tuple[str, ...]) -> Tuple[str, ...]:
+        """Process the --agent and --micro flags."""
+        remaining_arguments: List[str] = []
+        arguement: str
+        for argument in arguments:
+            if argument == "--is_agent":
+                self.is_agent = True
+            elif argument == "--is_micro":
+                self.is_micro = True
+            else:
+                remaining_arguments.append(argument)
+
+        # Perform mode sanity checks:
+        self.is_stand_alone = False
+        if self.is_agent and self.is_micro:
+            raise ValueError("Setting both --agent and --micro is not allowed.")
+        elif not self.is_agent and not self.is_micro:
+            # If neither are specified, default to *is_agent* and mark *is_stand_alone*:
+            self.is_agent = True
+            self.is_stand_alone = True
+        return tuple(remaining_arguments)
+
+    # Agent.arguments_empty_expand():
+    def arguments_empty_expand(self, arguments: Tuple[str, ...]) -> Tuple[str, ...]:
+        """Expand an empty arguments list."""
+        if not arguments:
+            # Create some default arguments.
+            arguments += (
+                "--publisher=serial_agent:0:std_msgs.msg:String:topic",
+                "--subscription=serial_agent:0:std_msgs.msg:String:topic",
+                "--publisher=serial_agent:0:std_msgs.msg:String:echo",
+                "--subscription=serial_agent:0:std_msgs.msg:String:echo",
+                "--client=serial_agent:0:example_interfaces.srv:AddTwoInts:add_two_ints",
+                "--server=serial_agent_server1:0:example_interfaces.srv:AddTwoInts:add_two_ints",
+            )
+            if self.is_stand_alone:
+                # In stand alone mode, just dump output to a file:
+                arguments += (
+                    "--timer=serial_agent_timer:10:timer:0.5",
+                    "--io=/tmp/agent2micro:device,write",  # Dump to file.
+                    "--io=/tmp/micro2agent:create,pipe,read",
+                )
+            elif self.is_agent:
+                # In agnent mode, use two pipes:
+                arguments += (
+                    "--timer=serial_agent_timer:10:timer:0.5",
+                    "--io=/tmp/agent2micro:create:pipe,write",
+                    "--io=/tmp/micro2agent:create,pipe,read",
+                )
+            elif self.is_micro:
+                # In *is_micro_mode*, there is no timer and pipe reads/write are flipped:
+                arguments += (
+                    "--io=/tmp/agent2micro:create,pipe,read",
+                    "--io=/tmp/micro2agent:create,pipe,write",
+                )
+        return arguments
+
+    # Agent.argument_message_process():
+    def argument_message_process(self, argument: str, flag_name: str,
+                                 colon_split: Tuple[str, ...]) -> None:
+        """Process --publisher, --subscription, --client, and --server flags."""
+        # Unpack *colon_split* into *agent_name*, *priority*, *import_path*,
+        # *type_name*, and *ros_path*:
+        if len(colon_split) != 5:
+            raise ValueError(
+                f"Commad line argument '{argument}' has {len(colon_split)} instead "
+                "of the desired 5 -- NODE_NAME:PRIORITY:IMPORT_PATH:TYPE_NAME:ROSPATH")
+
+        # Unpack *colon_split*:
+        agent_name: str
+        priority: str
+        import_path: str
+        type_name: str
+        ros_path: str
+        agent_node_name, priority, import_path, type_name, ros_path = colon_split
+
+        # Verify that *priority* is an integer and fits into a byte:
+        if not priority.isdigit():
+            raise ValueError(f"Priority '{priority}' is not an integer")
+        priority_value = int(priority)
+        if not 0 <= priority_value <= 255:
+            raise ValueError(f"Priority '{priority}' does not fit in a byte")
+
+        # Create communication channel:
+        if flag_name == "--publisher":
+            self.publisher_create(agent_node_name, priority_value, import_path, type_name, ros_path)
+        elif flag_name == "--subscription":
+            self.subscription_create(agent_node_name, priority_value,
+                                     import_path, type_name, ros_path)
+        elif flag_name == "--client":
+            self.client_create(agent_node_name, priority_value, import_path, type_name, ros_path)
+        elif flag_name == "--server":
+            self.server_create(agent_node_name, priority_value, import_path, type_name, ros_path)
+
+    # Agent.argument_timer_process():
+    def argument_timer_process(self, argument: str, flag_name: str,
+                               colon_split: Tuple[str, ...]) -> None:
+        """Process the --timer flag."""
+        # Unpack *colon_split* into *node_name*, *priority*, and *rate*:
+        if len(colon_split) != 4:
+            raise ValueError(f"Command line argument '{argument}' has {len(colon_split)} "
+                             f"options instead of the desired 4 -- "
+                             "NODE_NAME:PRIORITY:TIMER_NAME:RATE")
+        rate: str
+        timer_name: str
+        agent_node_name, priority, timer_name, rate = colon_split
+
+        # Verity argument types:
+        if not priority.isdigit():
+            raise ValueError(f"Command line argument '{argument}' priority is '{priority}' "
+                             "which is not an integer")
+        priority_value = int(priority)
+        rate_value: float
+        try:
+            rate_value = float(rate)
+        except ValueError:
+            raise ValueError(f"Command line argument '{argument}' rate is '{rate}' "
+                             "which is not an float")
+        if rate_value <= 0.0:
+            raise ValueError(f"Command line argument '{argument}' rate is '{rate}' "
+                             "is not positive")
+
+        # Create the timer:
+        self.timer_create(agent_node_name, priority_value, timer_name, 1 / rate_value)
+
+    # Agent.argument_io_process():
+    def argument_io_process(self, argument: str, flag_name: str,
+                            colon_split: Tuple[str, ...]) -> None:
+        """Process the --io flag."""
+        # Extract *colon_split* into *file_name* and *flags*:
+        io_channel: IOChannel = IOChannel(argument, colon_split)
+        if io_channel.read:
+            if self.read_io_channel:
+                raise ValueError(f"Command line argument '{argument}' tries to open "
+                                 "more than one read I/O channel")
+            else:
+                self.read_io_channel = io_channel
+        if io_channel.write:
+            if self.write_io_channel:
+                raise ValueError(f"Command line argument '{argument}' tries to open "
+                                 "more than one writeI/O channel")
+            else:
+                self.write_io_channel = io_channel
+
+    # Agent.arguments_sanity_check():
+    def arguments_sanity_check(self):
+        """Perform a sanity check of the command line arguments."""
+        # Open the I/O channels:
+        # print(f"read_io_channel:{self.read_io_channel}")
+        # print(f"write_io_channel:{self.write_io_channel}")
+        if self.read_io_channel and not self.write_io_channel:
+            raise ValueError(f"Read channel '{self.read_io_channel.file_name}' is specified "
+                             "but no write channel is specified")
+        if self.write_io_channel and not self.read_io_channel:
+            raise ValueError(f"Write channel '{self.write_io_channel.file_name}' is specified "
+                             "but no read channel is specified")
+
+    # Agent.arguments_parse():
+    def arguments_parse(self, arguments: Tuple[str, ...]) -> None:
+        """Parse the command line arguments."""
+        # Prescan arguments to set *is_agent* and *is_micro* flags.
+        # Also, deal with indirect flags file (i.e. "@args_file_name"):
+        print("=>Agent.arguments_parse(*)")
+        arguments = self.argument_files_read(arguments)
+        arguments = self.argument_mode_extract(arguments)
+        arguments = self.arguments_empty_expand(arguments)
+
+        # Now do the full scan of *culled_arguments*:
         for argument in arguments:
             # Split out the *flag_name*, *flag_options*, *colon_split*:
             if not argument.startswith("--"):
@@ -396,94 +574,14 @@ class Agent:
             priority: str
             priority_value: int
             if flag_name in ("--client", "--publisher", "--server", "--subscription"):
-                # Unpack *colon_split* into *agent_name*, *priority*, *import_path*,
-                # *type_name*, and *ros_path*:
-                if len(colon_split) != 5:
-                    raise ValueError(
-                        f"Commad line argument '{argument}' has {len(colon_split)} instead "
-                        "of the desired 5 -- NODE_NAME:PRIORITY:IMPORT_PATH:TYPE_NAME:ROSPATH")
-                import_path: str
-                type_name: str
-                ros_path: str
-                agent_node_name, priority, import_path, type_name, ros_path = colon_split
-
-                # Verify that *priority* is an integer and fits into a byte:
-                if not priority.isdigit():
-                    raise ValueError(f"Priority '{priority}' is not an integer")
-                priority_value = int(priority)
-                if not 0 <= priority_value <= 255:
-                    raise ValueError(f"Priority '{priority}' does not fit in a byte")
-
-                # Create communication channel:
-                if flag_name == "--publisher":
-                    self.publisher_create(agent_node_name, priority_value,
-                                          import_path, type_name, ros_path)
-                elif flag_name == "--subscription":
-                    self.subscription_create(agent_node_name, priority_value,
-                                             import_path, type_name, ros_path)
-                elif flag_name == "--client":
-                    self.client_create(agent_node_name, priority_value,
-                                       import_path, type_name, ros_path)
-                elif flag_name == "--server":
-                    self.server_create(agent_node_name, priority_value,
-                                       import_path, type_name, ros_path)
-                else:
-                    assert False, f"'{flag_name}' is not an exceptable kind."
+                self.argument_message_process(argument, flag_name, colon_split)
             elif flag_name == "--timer":
-                # Unpack *colon_split* into *node_name*, *priority*, and *rate*:
-                if len(colon_split) != 4:
-                    raise ValueError(f"Command line argument '{argument}' has {len(colon_split)} "
-                                     f"options instead of the desired 4 -- "
-                                     "NODE_NAME:PRIORITY:TIMER_NAME:RATE")
-                rate: str
-                timer_name: str
-                agent_node_name, priority, timer_name, rate = colon_split
-
-                # Verity argument types:
-                if not priority.isdigit():
-                    raise ValueError(f"Command line argument '{argument}' priority is '{priority}' "
-                                     "which is not an integer")
-                priority_value = int(priority)
-                rate_value: float
-                try:
-                    rate_value = float(rate)
-                except ValueError:
-                    raise ValueError(f"Command line argument '{argument}' rate is '{rate}' "
-                                     "which is not an float")
-                if rate_value <= 0.0:
-                    raise ValueError(f"Command line argument '{argument}' rate is '{rate}' "
-                                     "is not positive")
-
-                # Create the timer:
-                self.timer_create(agent_node_name, priority_value, timer_name, 1 / rate_value)
+                self.argument_timer_process(argument, flag_name, colon_split)
             elif flag_name == "--io":
-                print(f"processing '{argument}'")
-                # Extract *colon_split* into *file_name* and *flags*:
-                io_channel: IOChannel = IOChannel(argument, colon_split)
-                if io_channel.read:
-                    if self.read_io_channel:
-                        raise ValueError(f"Command line argument '{argument}' tries to open "
-                                         "more than one read I/O channel")
-                    else:
-                        self.read_io_channel = io_channel
-                if io_channel.write:
-                    if self.write_io_channel:
-                        raise ValueError(f"Command line argument '{argument}' tries to open "
-                                         "more than one writeI/O channel")
-                    else:
-                        self.write_io_channel = io_channel
+                self.argument_io_process(argument, flag_name, colon_split)
             else:
                 raise ValueError(f"Unrecognized flag '{flag_name}'")
-
-        # Open the I/O channels:
-        # print(f"read_io_channel:{self.read_io_channel}")
-        # print(f"write_io_channel:{self.write_io_channel}")
-        if self.read_io_channel and not self.write_io_channel:
-            raise ValueError(f"Read channel '{self.read_io_channel.file_name}' is specified "
-                             "but no write channel is specified")
-        if self.write_io_channel and not self.read_io_channel:
-            raise ValueError(f"Write channel '{self.write_io_channel.file_name}' is specified "
-                             "but no read channel is specified")
+        self.arguments_sanity_check()
         print("<=Agent.arguments_parse(*)")
 
     # Agent.client_create():
