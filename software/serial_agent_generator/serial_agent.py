@@ -38,12 +38,13 @@ DEALINGS IN THE SOFTWARE.
 The documentation below discusses the command line arguments, class structure, execution
 model, packet format, and code generation (TBD).
 
-### Command Line
+## Command Line
 
 The current intention is do all configuration from the command line.  This avoids a
 separate configuration file and instead allows all configuration to be done via ROS launch files.
 
 There are 5 related commands that specify various mirroring operations that are very similar
+to one another:
 
 * `--publisher=NODE_NAME:PRIORITY:IMPORT_PATH:TYPE_NAME:ROS_PATH`:
   The microcontroller can publish messages to a ROS Topic.
@@ -70,6 +71,11 @@ that are listed immediately below:
   this node name occur more than one of the flags above (e.g. multiple publishers, subscriptions,
   etc.)  This node shows up as a separate node in the ROS `rqt` program.
 
+* `PRIORITY`: This specifies the message priority where the higher priority messages are always
+  sent first.  At least one timer is required to ensure that the protocol will recover from
+  dropped messages.  This timer needs to have the highest priority.  An emergency stop message
+  probably has the next highest priority.
+
 * `IMPORT_PATH`: This name of a Python package that contains the needed message definitions
   (e.g. `std_msgs.msg`, `example_interfaces.srv`, etc.)
 
@@ -83,10 +89,6 @@ that are listed immediately below:
 
 * `RATE`: This species the timer period as a rate in Hz.
 
-* `PRIORITY`: This specifies the message priority where the higher priority messages are always
-  sent first.  At least one timer is required to ensure that the protocol will recover from
-  dropped messages.  This timer needs to have the highest priority.  An emergency stop message
-  probably has the next highest priority.
 
 The next argument supports serial communication.  The serial communication can be done
 with either a physical device (e.g. `/dev/ttyN`, `/dev/AMC`, etc.) or a named pipe/fifo (e.g.
@@ -125,7 +127,7 @@ The classes are:
 
 * TimerHandle: Similar to the Handle base class, but for managing timers.
 
-### Execution Model
+## Execution Model
 
 The rclpy main loop supports multiple different execution strategies.  The one used for this
 program is *MultiThreadedExectuor* with *ReentrantCallabkGroup*.  What this means is that under
@@ -141,7 +143,7 @@ the callback.  Ultimately, this means that enough Python threads need to be allo
 ensure stalled threads do not freeze out the publish/subscribe message traffic.  (A `# CAN STALL`
 comment is used to flag these methods.)
 
-### Packet Format
+## Packet Format
 
 There are two dedicated Python threads for interfacing to the serial line.  One thread sends
 serial line traffic and the other receives serial line traffic.  These two threads communicate
@@ -154,11 +156,13 @@ Any messages that are the wrong length or do not match the CRC are dropped to fo
 and the transmission control system will get them transmitted again.  All of the
 transmission control is managed by the robot host to simplify the microcontroller code.
 
-### Code Generation
+See the `Packet` class for way more information.
+
+## Code Generation
 
 To be designed.
 
-### Miscellaneous
+## Miscellaneous
 
 This code is run through both `mypy` and `flake8 --max-length_line=100 -ignore=Q00`.
 
@@ -184,14 +188,17 @@ This code is run through both `mypy` and `flake8 --max-length_line=100 -ignore=Q
      mistakes-using-service-and-client-in-same-node-ros2-python](Informative)
 """
 
-import os
-import stat
+import fcntl
 import importlib
+import os
+import queue
+import stat
 import struct
 import sys
 # import time
 from dataclasses import dataclass
-from typing import Any, Callable, ClassVar, Dict, List, IO, Optional, Tuple
+from queue import Queue
+from typing import Any, Callable, ClassVar, Dict, IO, List, Optional, Tuple, Union
 
 import crcmod  # type:ignore
 
@@ -221,8 +228,11 @@ def main(ros_arguments: Optional[List[str]] = None) -> int:
     arguments: List[str] = sys.argv[1:]
     agent: Agent = Agent(executor, arguments)
 
-    # agent.timer_create("serial_agent", "timer1", 1.0)
-    # agent.timer_create("serial_agent", "timer2", 5.0)
+    serial_line: Optional[SerialLine] = agent.serial_line
+    assert isinstance(serial_line, SerialLine), "Not a SerialLine"
+    print("Creating reader task")
+    executor.create_task(serial_line.reader)
+    executor.create_task(serial_line.writer)
 
     print("Start executor.spin()")
     try:
@@ -239,6 +249,21 @@ def main(ros_arguments: Optional[List[str]] = None) -> int:
     return 0
 
 
+# DecodedPacket:
+@dataclass(frozen=True)
+class DecodedPacket:
+    """Class that represents a decoded packet."""
+
+    # The "from_" prefix refers to packet received from the microcontroller to the agent.
+    from_sequence: int  # The from packet sequence index
+    from_packet_id: int  # The from packet id from the microcontroller.
+    from_partial_packet: bytes  # The partial packet from the microcontroller.
+    # The "to_" prefix refers to packets previously sent from agent to microcontroller.
+    to_sequence: int  # Highest packet seq. sent to microcontroller has no missing packets below.
+    to_missing: int  # A mask of missing packets that the microcontroller has not yet received.
+
+
+# ROSFieldType:
 @dataclass(order=True, frozen=True)
 class ROSFieldType:
     """Class that represents information about a ROS Type."""
@@ -251,6 +276,17 @@ class ROSFieldType:
     size: int  # Size in bytes (e.g. (1, 2, ..., 8)
 
 
+# SLIP:
+@dataclass(order=True, frozen=True)
+class SLIP:
+    """Class that contains the SLIP-like (Serial Line Interget Prococol) constants."""
+
+    start: int  # Start byte
+    escape: int  # Escape byte
+    stop: int  # Stop byte
+    twiddle: int  # Slip twiddle bit
+
+
 # Kludge: Just access this function using a global declaration.
 crc_compute: Callable[[bytes], int] = crcmod.mkCrcFun(0x11021, initCrc=0, xorOut=0xffff)
 
@@ -258,6 +294,9 @@ crc_compute: Callable[[bytes], int] = crcmod.mkCrcFun(0x11021, initCrc=0, xorOut
 # Agent:
 class Agent:
     """Class that implements a ROS serial agent Node."""
+
+    # This is the only place the *slip* object is defined.
+    slip: ClassVar[SLIP] = SLIP(start=0xfc, escape=0xfd, stop=0xfe, twiddle=0x80)
 
     # Agent.__init__():
     def __init__(self, executor: Executor, arguments: List[str]) -> None:
@@ -276,11 +315,13 @@ class Agent:
         self.subscriptions_table: Dict[Tuple[str, str], Tuple[AgentNode, TopicHandle]] = {}
         self.timers_table: Dict[Tuple[str, str], Tuple[AgentNode, TimerHandle]] = {}
 
-        self.packet_handles: List[Handle] = []
+        self.priorities: List[int] = []
+        self.packet_handles: "List[Union[Handle, TimerHandle]]" = []
         self.packet_id: int = 0
 
         self.read_io_channel: Optional[IOChannel] = None
         self.write_io_channel: Optional[IOChannel] = None
+        self.serial_line: Optional[SerialLine] = None
 
         # Parse *arguments*:
         if not arguments:
@@ -293,10 +334,21 @@ class Agent:
                 "--client=serial_agent:0:example_interfaces.srv:AddTwoInts:add_two_ints",
                 "--server=serial_agent_server1:0:example_interfaces.srv:AddTwoInts:add_two_ints",
                 "--timer=serial_agent_timer:10:timer:0.5",
-                "--io=/tmp/agent2micro:create,pipe,write",
+                "--io=/tmp/agent2micro:device,write",
                 "--io=/tmp/micro2agent:create,pipe,read",
             ]
+
+        # This does a lot of configuration:
         self.arguments_parse(arguments)
+
+        self.pending_queue: Queue[bytes] = Queue()
+        read_io_channel: Optional[IOChannel] = self.read_io_channel
+        write_io_channel: Optional[IOChannel] = self.write_io_channel
+        assert isinstance(read_io_channel, IOChannel)
+        assert isinstance(write_io_channel, IOChannel)
+        serial_line: SerialLine = SerialLine(read_io_channel, write_io_channel,
+                                             tuple(self.priorities), self.pending_queue)
+        self.serial_line = serial_line
         # print(f"arguments: {arguments}")
 
     # Agent.agent_node_create_once():
@@ -364,13 +416,17 @@ class Agent:
 
                 # Create communication channel:
                 if flag_name == "--publisher":
-                    self.publisher_create(agent_node_name, import_path, type_name, ros_path)
+                    self.publisher_create(agent_node_name, priority_value,
+                                          import_path, type_name, ros_path)
                 elif flag_name == "--subscription":
-                    self.subscription_create(agent_node_name, import_path, type_name, ros_path)
+                    self.subscription_create(agent_node_name, priority_value,
+                                             import_path, type_name, ros_path)
                 elif flag_name == "--client":
-                    self.client_create(agent_node_name, import_path, type_name, ros_path)
+                    self.client_create(agent_node_name, priority_value,
+                                       import_path, type_name, ros_path)
                 elif flag_name == "--server":
-                    self.server_create(agent_node_name, import_path, type_name, ros_path)
+                    self.server_create(agent_node_name, priority_value,
+                                       import_path, type_name, ros_path)
                 else:
                     assert False, f"'{flag_name}' is not an exceptable kind."
             elif flag_name == "--timer":
@@ -399,7 +455,7 @@ class Agent:
                                      "is not positive")
 
                 # Create the timer:
-                self.timer_create(agent_node_name, timer_name, 1 / rate_value)
+                self.timer_create(agent_node_name, priority_value, timer_name, 1 / rate_value)
             elif flag_name == "--io":
                 print(f"processing '{argument}'")
                 # Extract *colon_split* into *file_name* and *flags*:
@@ -431,12 +487,13 @@ class Agent:
         print("<=Agent.arguments_parse(*)")
 
     # Agent.client_create():
-    def client_create(self, agent_node_name: str,
+    def client_create(self, agent_node_name: str, priority: int,
                       import_path: str, type_name: str, ros_path: str) -> None:
         """Create a client for a ROS service."""
         # print(f"=>client_create()")
         agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        service_handle: ServiceHandle = self.service_handle_get(import_path, type_name, ros_path)
+        service_handle: ServiceHandle = (
+            self.service_handle_get(priority, import_path, type_name, ros_path))
         agent_node.client_create(service_handle)
 
         # Record information into the *clients_table*:
@@ -448,13 +505,23 @@ class Agent:
         # print(f"<=client_create(): key={key})")
 
     # Agent.packet_id_get():
-    def packet_id_get(self, handle: "Handle") -> int:
+    def packet_id_get(self, handle: "Union[Handle, TimerHandle]") -> int:
         """Return the next packet id."""
+        # Update *packet_id*:
         packet_id: int = self.packet_id
-        packet_handles: List[Handle] = self.packet_handles
-        assert len(packet_handles) == packet_id, "packet_handels is broken"
-        packet_handles.append(handle)
         self.packet_id += 1
+
+        # Insert *priority* into *priorities*:
+        priority: int = handle.priority_get()
+        priorities: List[int] = self.priorities
+        while len(priorities) <= packet_id:
+            priorities.append(-1)
+        priorities[packet_id] = priority
+
+        # Append *handle* to *packet_handles*:
+        packet_handles: List[Union[Handle, TimerHandle]] = self.packet_handles
+        assert len(packet_handles) >= packet_id, "packet_handles is broken"
+        packet_handles.append(handle)
         return packet_id
 
     # Agent.nodes_destroy():
@@ -464,15 +531,20 @@ class Agent:
         agent_node: Node
         for agent_node in self.agent_nodes.values():
             agent_node.destroy_node()
+
+        serial_line: Optional[SerialLine] = self.serial_line
+        if serial_line:
+            serial_line.shutdown()
         # print("<=Agent.destroy_nodes()")
 
     # Agent.publisher_create():
-    def publisher_create(self, agent_node_name: str,
+    def publisher_create(self, agent_node_name: str, priority: int,
                          import_path: str, type_name: str, ros_path: str) -> None:
         """Create a publisher."""
         # Create the publisher:
         agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        topic_handle: TopicHandle = self.topic_handle_get(import_path, type_name, ros_path)
+        topic_handle: TopicHandle = (
+            self.topic_handle_get(priority, import_path, type_name, ros_path))
         agent_node.publisher_create(topic_handle)
 
         # Record information into *publishers_table*:
@@ -483,12 +555,13 @@ class Agent:
         publishers_table[key] = (agent_node, topic_handle)
 
     # Agent.server_create():
-    def server_create(self, agent_node_name: str,
+    def server_create(self, agent_node_name: str, priority: int,
                       import_path: str, type_name: str, ros_path: str) -> None:
         """Create a server for a ROS service."""
         # Create the server:
         agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        service_handle: ServiceHandle = self.service_handle_get(import_path, type_name, ros_path)
+        service_handle: ServiceHandle = (
+            self.service_handle_get(priority, import_path, type_name, ros_path))
         agent_node.server_create(service_handle)
 
         # Record informatin into the *servers_table*:
@@ -499,7 +572,7 @@ class Agent:
         servers_table[key] = (agent_node, service_handle)
 
     # Agent.service_handle_get():
-    def service_handle_get(self,
+    def service_handle_get(self, priority: int,
                            import_path: str, type_name: str, ros_path: str) -> "ServiceHandle":
         """Get a ServiceHandle for a ROS Server."""
         service_handles: Dict[HandleKey, ServiceHandle] = self.service_handles
@@ -507,19 +580,26 @@ class Agent:
         service_handle: ServiceHandle
         handle_key: HandleKey = HandleKey(import_path, type_name, ros_path)
         if handle_key not in service_handles:
-            service_handle = ServiceHandle(import_path, type_name, ros_path, self)
+            service_handle = ServiceHandle(priority, import_path, type_name, ros_path, self)
             service_handles[service_handle.key_get()] = service_handle
         else:
             service_handle = service_handles[handle_key]
         return service_handle
 
+    # Agent.slip_get():
+    @classmethod
+    def slip_get(cls) -> SLIP:
+        """Return the SLIP constants."""
+        return cls.slip
+
     # Agent.subscription_create():
-    def subscription_create(self, agent_node_name: str,
+    def subscription_create(self, agent_node_name: str, priority: int,
                             import_path: str, type_name: str, ros_path: str) -> None:
         """Create a subscription."""
         # print("=>agent.subscription_create()")
         agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        topic_handle: TopicHandle = self.topic_handle_get(import_path, type_name, ros_path)
+        topic_handle: TopicHandle = (
+            self.topic_handle_get(priority, import_path, type_name, ros_path))
         agent_node.subscription_create(topic_handle)
 
         # Record information into *subscriptions_table*:
@@ -531,37 +611,40 @@ class Agent:
         # print("<=agent.subscription_create()")
 
     # Agent.timer_create():
-    def timer_create(self, agent_node_name, timer_name: str, timer_period: float) -> None:
+    def timer_create(self, agent_node_name, priority: int,
+                     timer_name: str, timer_period: float) -> None:
         """Create a timer."""
         # print("=>Agent.timer_create()")
         agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        timer_handle: TimerHandle = self.timer_handle_get(agent_node_name, timer_name)
+        timer_handle: TimerHandle = self.timer_handle_get(agent_node_name, priority, timer_name)
         agent_node.timer_create(timer_handle, timer_period)
         # print("<=Agent.timer_create()")
 
     # Agent.timer_handle.get():
-    def timer_handle_get(self, agent_node_name: str, timer_name: str) -> "TimerHandle":
+    def timer_handle_get(self, agent_node_name: str, priority: int,
+                         timer_name: str) -> "TimerHandle":
         """Get a unique timer handle."""
         timer_handles: Dict[Tuple[str, str], TimerHandle] = self.timer_handles
         timer_handle_key: Tuple[str, str] = (agent_node_name, timer_name)
 
         timer_handle: TimerHandle
         if timer_handle_key not in timer_handles:
-            timer_handle = TimerHandle(agent_node_name, timer_name, self)
+            timer_handle = TimerHandle(agent_node_name, priority, timer_name, self)
             timer_handles[timer_handle_key] = timer_handle
         else:
             timer_handle = timer_handles[timer_handle_key]
         return timer_handle
 
     # Agent.topic_handle_get():
-    def topic_handle_get(self, import_path: str, type_name: str, ros_path: str) -> "TopicHandle":
+    def topic_handle_get(self, priority: int,
+                         import_path: str, type_name: str, ros_path: str) -> "TopicHandle":
         """Get a unique TopicHandle for a ROS topic."""
         handle_key: HandleKey = HandleKey(import_path, type_name, ros_path)
         topic_handles: Dict[HandleKey, TopicHandle] = self.topic_handles
 
         topic_handle: TopicHandle
         if handle_key not in topic_handles:
-            topic_handle = TopicHandle(import_path, type_name, ros_path, self)
+            topic_handle = TopicHandle(priority, import_path, type_name, ros_path, self)
             topic_handles[topic_handle.key_get()] = topic_handle
         else:
             topic_handle = topic_handles[handle_key]
@@ -670,9 +753,11 @@ class AgentNode(Node):
 
 
 # encoder_create():
-def encoder_create(start: int, escape: int, stop: int, twiddle: int) -> Tuple[Tuple[int, ...], ...]:
+def encoder_create(slip: SLIP) -> Tuple[Tuple[int, ...], ...]:
     """Return the escape encoder tuple table."""
-    specials: Tuple[int, ...] = (start, escape, stop)
+    twiddle: int = slip.twiddle
+    escape: int = slip.escape
+    specials: Tuple[int, ...] = (slip.start, escape, slip.stop)
     encoder_list: List[Tuple[int, ...]] = []
     byte: int
     for byte in range(256):
@@ -786,12 +871,8 @@ class Packet(object):
 
     # Define the SLIP (originally stood for Serial Line Internet Protocol) characters.
     # The concept is the same, but different characters are used than the original SLIP protocol:
-    slip_start: ClassVar[int] = 0xfc
-    slip_escape: ClassVar[int] = 0xfd
-    slip_stop: ClassVar[int] = 0xfe
-    slip_twiddle: ClassVar[int] = 0x80  # Used to set the high order bit.
-    encoder: ClassVar[Tuple[Tuple[int, ...], ...]] = encoder_create(
-        slip_start, slip_escape, slip_stop, slip_twiddle)
+    slip: SLIP = Agent.slip_get()
+    encoder: ClassVar[Tuple[Tuple[int, ...], ...]] = encoder_create(slip)
 
     # The Python struct library is used to pack and unpack data to/from bytes:
     struct_endian: ClassVar[str] = "!"  # "!" stands for network which happens to be big-endian
@@ -843,7 +924,7 @@ class Packet(object):
                 ros_field_type = ros_field_types[field_type]
                 # Negate the struct size so that larger structs sort first.
                 size_name_types.append((-ros_field_type.size, field_name, field_type))
-        print(f"size_name_types={size_name_types}")
+        # print(f"size_name_types={size_name_types}")
 
         # Assemble *struct_names* (largest struct size first, and then alphabetical there after).
         # At the same time construct *struct_format* which is the format string needed by the
@@ -873,24 +954,25 @@ class Packet(object):
 
     # Packet.full_decode():
     @classmethod
-    def full_decode(cls, full_packet: bytes) -> Tuple[int, bytes, Tuple[int, int, int]]:
-        """Convert a full packet into a partial packet with transmission control bytes."""
-        print(f"=>Packet.full_decode({repr(full_packet)})")
+    def full_decode(cls, full_packet: bytes) -> DecodedPacket:
+        """Convert a full packet into a DecodedPacket."""
+        # print(f"=>Packet.full_decode({repr(full_packet)})")
+
+        slip: SLIP = Agent.slip_get()
 
         # Process the first 3 bytes (i.e. Start and Length):
         full_size: int = len(full_packet)
         if full_size < 3:
             raise ValueError(f"packet {repr(full_packet)} is too small")
-        if full_packet[0] != cls.slip_start:
-            raise ValueError(f"packet {repr(full_packet)} does not start with "
-                             f"0x{cls.slip_start:02x}")
+        if full_packet[0] != slip.start:
+            raise ValueError(f"packet {repr(full_packet)} does not start with {hex(slip.start)}")
 
         # Extract and verify the *length*:
         high_length: int = full_packet[1]
         low_length: int = full_packet[2]
         if high_length >= 128 or low_length >= 128:
             raise ValueError(f"packet {repr(full_packet)} has actual length bytes of "
-                             f"0x{high_length:02x} and 0x{low_length:02x} "
+                             f"{hex(high_length)} and {hex(low_length)} "
                              "neither of which should have bit 0x80 set")
         length: int = (high_length << 7) | low_length
         if full_size != length:
@@ -898,22 +980,22 @@ class Packet(object):
                              f"not the desired length of {length}")
 
         # Process the last three bytes (i.e. CRC and Stop):
-        if full_packet[-1] != cls.slip_stop:
-            raise ValueError(f"packet {repr(full_packet)} ends with 0x{full_packet[-1]:02x},"
-                             f"not the desired 0x{cls.slip_stop}")
+        if full_packet[-1] != slip.stop:
+            raise ValueError(f"packet {repr(full_packet)} ends with {hex(full_packet[-1])},"
+                             f"not the desired {hex(slip.stop)}")
         crc_low: int = full_packet[-2]
         crc_high: int = full_packet[-3]
         if crc_high >= 128 or crc_low >= 128:
             raise ValueError(f"packet {repr(full_packet)} has actual length bytes of "
-                             f"0x{crc_high:02x} and 0x{crc_low:02x} "
+                             f"{hex(crc_high)} and {hex(crc_low)} "
                              "neither of which should have bit 0x80 set")
         crc: int = (crc_high << 8) | crc_low
 
         # Verify the CRC:
         actual_crc: int = crc_compute(full_packet[3:-3]) & 0x7f7f
         if actual_crc != crc:
-            raise ValueError(f"packet {repr(full_packet)} has an actual CRC of 0x{actual_crc:02x}, "
-                             f"but the desired CRC is 0x{crc:02x}")
+            raise ValueError(f"packet {repr(full_packet)} has an actual CRC of {hex(actual_crc)}, "
+                             f"but the desired CRC is {hex(crc)}")
 
         # Extract the transmission *control* tuple.  This is three bytes of information that can
         # expand up to 6 bytes with escape characters (i.e. all 3 bytes have the 8th bit set.)
@@ -928,7 +1010,13 @@ class Packet(object):
         control: Tuple[int, int, int] = (
             unescaped_control[-3], unescaped_control[-2], unescaped_control[-1])
 
-        # Now the *control* values are entered into the *rescapded_control* to that
+        # Unpack the values from control:
+        from_sequence: int
+        to_sequence: int
+        to_mask: int
+        from_sequence, to_sequence, to_mask = control
+
+        # Now the *control* values are entered into the *reescaped_control* to that
         # the final length the the escaped control bytes can be determined:
         encoder: Tuple[Tuple[int, ...], ...] = cls.encoder
         reescaped_control: bytearray = bytearray()
@@ -936,16 +1024,16 @@ class Packet(object):
             reescaped_control.extend(encoder[byte])
         control_escaped_size: int = len(reescaped_control)
 
-        # Extract *partial_packet* now that *control_escaped_size* is known:
-        partial_packet: bytes = full_packet[3:-(control_escaped_size + 3)]
+        # Extract *frompartial_packet* now that *control_escaped_size* is known:
+        from_partial_packet: bytes = full_packet[3:-(control_escaped_size + 3)]
 
         # Now extract the *packet_id* from *partial_packet*:
-        escaped_header: bytes = cls.unescape(partial_packet[:2])
-        packet_id: int = escaped_header[0]
+        from_packet_id: int = Packet.partial_packet_id_get(from_partial_packet)
 
-        print(f"<=Packet.full_decode({repr(full_packet)})"
-              f"=>({repr(partial_packet)},{repr(control)})")
-        return (packet_id, partial_packet, control)
+        decoded_packet: DecodedPacket = DecodedPacket(from_sequence, from_packet_id,
+                                                      from_partial_packet, to_sequence, to_mask)
+        # print(f"<=Packet.full_decode({repr(full_packet)})=>({decoded_packet})")
+        return decoded_packet
 
     # Packet.full_encode():
     def full_encode(self,
@@ -967,6 +1055,7 @@ class Packet(object):
 
         # Compute the *crc* and associated *crc_high* and *crc_low* bytes over *crc_bytes*:
         global crc_compute
+        slip: SLIP = Agent.slip_get()
 
         # crc_compute: Callable[[bytes], int] = self.crc_compute
         # crc_compute: Callable[[bytes], int] = crcmod.mkCrcFun(0x11021, initCrc=0, xorOut=0xffff)
@@ -978,16 +1067,16 @@ class Packet(object):
         front_length: int = 1 + 2  # Start(1) + Length(2)
         end_length: int = 2 + 1  # CRC(2) + End(1)
         total_length: int = front_length + len(crc_bytes) + end_length
-        assert total_length <= 0x3fff, f"Packet Length is too long 0x{total_length:x} > 0x3fff"
+        assert total_length <= 0x3fff, f"Packet Length is too long {hex(total_length)} > 0x3fff"
         high_length: int = total_length >> 7
         low_length: int = total_length & 0x7f
 
         # Construct the *full_packet*:
-        full_packet: bytearray = bytearray((self.slip_start, high_length, low_length))
+        full_packet: bytearray = bytearray((slip.start, high_length, low_length))
         assert len(full_packet) == front_length, f"Packet header is {len(full_packet)} long"
         full_packet.extend(crc_bytes)
         assert len(full_packet) == front_length + len(crc_bytes), "broke here"
-        full_packet.extend((crc_high, crc_low, self.slip_stop))
+        full_packet.extend((crc_high, crc_low, slip.stop))
         full_packet_bytes: bytes = bytes(full_packet)
         assert len(full_packet) == total_length, (
             f"Actual packet length ({len(full_packet)}) is not desired length ({total_length})")
@@ -1047,6 +1136,19 @@ class Packet(object):
         # print(f"<=Packet.decode({repr(packet_bytes)})=>({packet_id}, {packet_content}")
         return (packet_id, packet_content)
 
+    # Packet.partial_packet_id_get():
+    @classmethod
+    def partial_packet_id_get(cls, partial_packet: bytes) -> int:
+        """Return the packet id from an escaped partial packet."""
+        # For partial packet id is the first byte (that may be escaped):
+        if len(partial_packet) < 2:
+            raise ValueError(f"Partial packet {repr(partial_packet)} is too short.")
+        slip: SLIP = cls.slip
+        packet_id: int = partial_packet[0]
+        if partial_packet[0] == slip.escape:
+            packet_id = partial_packet[1] ^ slip.twiddle
+        return packet_id
+
     # Packet.partial_encode():
     def partial_encode(self, packet_content: Any, packet_id: int) -> bytes:
         """Encode packet content into partial bytes packet."""
@@ -1081,7 +1183,7 @@ class Packet(object):
             for string_chr in string_content:
                 string_byte: int = ord(string_chr)
                 if string_byte > 255:
-                    print(f"Converting character 0x{string_byte:02x} to 0xff")
+                    print(f"Converting character {hex(string_byte)} to 0xff")
                     string_byte = 255
                 packet_bytes.extend(encoder[string_byte])
 
@@ -1112,16 +1214,17 @@ class Packet(object):
     def unescape(cls, escaped_bytes: bytes) -> bytes:
         """Take a packet with escapes and remove them."""
         # print(f"=>Packet.unescape({repr(escaped_bytes)})")
+        slip: SLIP = cls.slip
+        escape: int = slip.escape
+        twiddle: int = slip.twiddle
         unescaped_bytes: bytearray = bytearray()
-        slip_escape: int = cls.slip_escape
-        slip_twiddle: int = cls.slip_twiddle
         escaped_byte: int
         escape_found: bool = False
         for escaped_byte in escaped_bytes:
             if escape_found:
-                unescaped_bytes.append(escaped_byte ^ slip_twiddle)
+                unescaped_bytes.append(escaped_byte ^ twiddle)
                 escape_found = False
-            elif escaped_byte == slip_escape:
+            elif escaped_byte == escape:
                 escape_found = True
             else:
                 unescaped_bytes.append(escaped_byte)
@@ -1134,13 +1237,15 @@ class Handle(object):
     """Base class for publish/subscribe topics and client/server services."""
 
     # Handle.__init__():
-    def __init__(self, import_path: str, type_name: str, ros_path: str, agent: Agent) -> None:
+    def __init__(self, priority: int,
+                 import_path: str, type_name: str, ros_path: str, agent: Agent) -> None:
         """Initialize Handle base class."""
         self.agent: Agent = agent
         self.import_path: str = import_path
-        self.type_name: str = type_name
         self.key: HandleKey = HandleKey(import_path, type_name, ros_path)
+        self.priority: int = priority
         self.ros_path: str = ros_path
+        self.type_name: str = type_name
 
     # Handle.agent_get():
     def agent_get(self) -> Agent:
@@ -1162,8 +1267,13 @@ class Handle(object):
 
     # Handle.packet_type_lookup():
     def packet_type_lookup(self, packet_id) -> Any:
-        """Return the packet type for an a given packet ide."""
+        """Return the packet type for an a given packet id."""
         raise NotImplementedError
+
+    # Handle.priority_get():
+    def priority_get(self) -> int:
+        """Return the priority for this Handle."""
+        return self.priority
 
     # Handle.type_import():
     def type_import(self, import_path: str, type_name: str, ros_path: str) -> Any:
@@ -1199,6 +1309,7 @@ class IOChannel:
         # Start with all value set to *False*:
         self.create: bool = False
         self.device: bool = False
+        self.log: bool = False
         self.pipe: bool = False
         self.read: bool = False
         self.write: bool = False
@@ -1245,14 +1356,8 @@ class IOChannel:
                 if not stat.S_ISFIFO(os.stat(file_name).st_mode):
                     raise RuntimeError(f"'{file_name}' already exists and is not a named pipe")
 
-        # Finish loading up I/O handle.  Note that both *read_file* and *write_file* are only
-        # opened on the first read or write.  This has to do with a peculiar "feature" of
-        # named pipes.  Each end of a named pipe is needs to be opened before the two open()
-        # calls will return.  The first open() does not return until after the second open()
-        # is invoked:
+        # Save the *file_name*:
         self.file_name: str = file_name
-        self.read_file: Optional[IO[bytes]] = None
-        self.write_file: Optional[IO[bytes]] = None
 
     # IOChannel.__str__():
     def __str__(self):
@@ -1260,45 +1365,39 @@ class IOChannel:
         return (f"IOCHannel(create={self.create}, device={self.device}, read={self.read}, "
                 f"pipe={self.pipe} write={self.write}, file_name='{self.file_name}')")
 
-    # IOChannel.open():
-    def open(self):
-        """Open an I/O channel."""
-        # Now open it the channel:
+    # IOChannel.open_for_reading():
+    def open_for_reading(self) -> IO[bytes]:
+        """Open IOChannel for reading in raw (unbuffered) mode."""
+        # Do a sanity check:
+        file_name: str = self.file_name
+        if not self.read:
+            raise RuntimeError("IOChannel('{file_name}') is not enabled for reading")
+
+        # Open and return the raw unbuffered *read_file*:
+        read_file: IO[bytes]
         try:
-            file_name: str = self.file_name
-            if self.read and self.write:
-                # "w+" is explained here:
-                #     https://stackoverflow.com/questions/1466000/
-                #         difference-between-modes-a-a-w-w-and-r-in-built-in-open-function
-                read_write_file: IO[bytes] = open(file_name, "w+b")
-                self.read_file = read_write_file
-                self.write_file = read_write_file
-            elif self.read:
-                # This will stall until the other end of the pipe is opened for writing:
-                self.read_file = open(file_name, "rb")
-            else:
-                # This will stall until the other end of the pipe is opened for reading:
-                self.write_file = open(file_name, "wb")
+            # If *file_name* is a pipe, this open will block until another process
+            # opens the other end for writing:
+            read_file = open(file_name, "rb", buffering=0)
         except FileNotFoundError:
-            raise RuntimeError("File '{file_name}' does not exist")
+            raise RuntimeError("File '{file_name}' can not be opened.")
+        return read_file
 
-    # IOChannel.data_read():
-    def data_read(self, amount: int) -> bytes:
-        """Read some data from an I/O channel."""
-        if not self.read_file:
-            self.open()  # This will stall until both sides of a named pipe are opened.
-            if not self.read_file:
-                raise RuntimeError("Can not read from '{self.file_name}'")
-        return self.read_file.read(amount)
+    # IOChannel.open_for_writing():
+    def open_for_writing(self, force: bool = False) -> IO[bytes]:
+        """Open IOChannel for writing in raw (unbuffered) mode."""
+        # Do a sanity check:
+        file_name: str = self.file_name
+        if not self.write and not force:
+            raise RuntimeError("IOChannel('{file_name}') is not enabled for writing")
 
-    # IOChannel.data_write(data: bytes) -> None:
-    def data_write(self, data: bytes) -> None:
-        """Write some data to an I/O channel."""
-        if not self.write_file:
-            self.open()  # This will stall until both sides of a named pipe are opened.
-            if not self.write_file:
-                raise RuntimeError("Can not write to '{self.file_name}'")
-        self.write_file.write(data)
+        # Open and return the raw unbuffered *write_file*:
+        write_file: IO[bytes]
+        try:
+            write_file = open(file_name, "wb", buffering=0)
+        except FileNotFoundError:
+            raise RuntimeError("File '{file_name}' can not be opened.")
+        return write_file
 
 
 # TimerHandle:
@@ -1306,13 +1405,14 @@ class TimerHandle(object):
     """A handle for dealing with ROS timers."""
 
     # TimerHandle.__init__():
-    def __init__(self,
-                 agent_node_name: str, timer_name: str, agent: Optional[Agent] = None) -> None:
+    def __init__(self, agent_node_name: str, priority: int,
+                 timer_name: str, agent: Optional[Agent] = None) -> None:
         """Init a TimeHandle."""
         self.agent: Optional[Agent] = agent
         self.agent_node_name: str = agent_node_name
-        self.timer_name: str = timer_name
+        self.priority: int = priority
         self.key: Tuple[str, str] = (agent_node_name, timer_name)
+        self.timer_name: str = timer_name
 
     # TimerHandle.agent_get():
     def agent_get(self) -> Agent:
@@ -1355,15 +1455,20 @@ class TimerHandle(object):
 
         # print(f"<=TimerHandle('{key}').callback()")
 
+    # TimerHandle.key_get():
+    def key_get(self) -> Tuple[str, str]:
+        """Return the TimerHandle key."""
+        return self.key
+
     # TimerHandle.match():
     def match(self, agent_node_name: str, timer_name: str) -> bool:
         """Return True if TimerHandle's match."""
         return self.agent_node_name == agent_node_name and self.timer_name == timer_name
 
-    # TimerHandle.key_get():
-    def key_get(self) -> Tuple[str, str]:
-        """Return the TimerHandle key."""
-        return self.key
+    # TimerHandle.priority_get():
+    def priority_get(self) -> int:
+        """Return the priority for a TimerHandle."""
+        return self.priority
 
 
 # TopicHandle:
@@ -1371,10 +1476,11 @@ class TopicHandle(Handle):
     """Tracking class for publish/subscribe topic."""
 
     # TopicHandle.__init__():
-    def __init__(self, import_path: str, type_name: str, ros_path: str, agent: Agent) -> None:
+    def __init__(self, priority: int,
+                 import_path: str, type_name: str, ros_path: str, agent: Agent) -> None:
         """Initialize a TopicHandle."""
         # Initialize base class:
-        super().__init__(import_path, type_name, ros_path, agent)
+        super().__init__(priority, import_path, type_name, ros_path, agent)
 
         # Import the relevant information about the topic:
         message_type: Any = self.type_import(import_path, type_name, ros_path)
@@ -1420,7 +1526,7 @@ class TopicHandle(Handle):
         assert publisher, "Publisher not set yet."
         message_type: Any = self.message_type
         assert isinstance(message, message_type), f"Message is not of type {message_type}"
-        print(f"Topic('{self.ros_path}): Published: {message}'")
+        # print(f"Topic('{self.ros_path}): Published: {message}'")
         publisher.publish(message)
         self.publisher_count += 1
         # print(f"<=TopicHandle.publish('{message}')")
@@ -1479,7 +1585,7 @@ class TopicHandle(Handle):
     def subscription_callback(self, message: Any) -> None:
         """Process a subscription callback."""
         # print("=>TopicHandle.subscription_callback()")
-        print(f"Topic('{self.ros_path}'): Got Message: {message}")
+        # print(f"Topic('{self.ros_path}'): Got Message: {message}")
 
         agent: Optional[Agent] = self.agent
         assert isinstance(agent, Agent), "Agent is not set!"
@@ -1490,22 +1596,25 @@ class TopicHandle(Handle):
         message_packet: Packet = self.message_packet
         partial_packet_bytes: bytes = message_packet.partial_encode(message,
                                                                     self.subscription_packet_id)
+        pending_queue: Queue[bytes] = self.agent.pending_queue
+        print("Sending subscritpion to writer...")
+        pending_queue.put(partial_packet_bytes)
+
         # print(f"partial_packet={repr(partial_packet_bytes)}")
         control: Tuple[int, int, int] = (1, 2, 3)
         full_packet_bytes: bytes = message_packet.full_encode(partial_packet_bytes, control)
-        extracted_packet_id: int
-        extracted_partial_packet: bytes
-        extracted_control: Tuple[int, int, int]
-        extracted_packet_id, extracted_partial_packet, extracted_control = (
-            message_packet.full_decode(full_packet_bytes))
-        assert self.subscription_packet_id == extracted_packet_id, (
-            f"Deisred packet id ({self.subscription_packet_id}) "
-            f"is not actual packet id ({extracted_packet_id})")
+        decoded_packet: DecodedPacket = message_packet.full_decode(full_packet_bytes)
+        assert self.subscription_packet_id == decoded_packet.from_packet_id, (
+            f"Desired packet id ({self.subscription_packet_id}) "
+            f"is not actual packet id ({decoded_packet.from_packet_id})")
+        extracted_control: Tuple[int, int, int] = (decoded_packet.from_sequence,
+                                                   decoded_packet.to_sequence,
+                                                   decoded_packet.to_missing)
         assert control == extracted_control, f"Mismatch control {control} != {extracted_control}"
-        assert partial_packet_bytes == extracted_partial_packet, (
+        assert partial_packet_bytes == decoded_packet.from_partial_packet, (
             "partial packet decode problem: "
-            f"{repr(partial_packet_bytes)} != {repr(extracted_partial_packet)}")
-        print(f"full_packet={repr(full_packet_bytes)}")
+            f"{repr(partial_packet_bytes)} != {repr(decoded_packet.from_partial_packet)}")
+        # print(f"full_packet={repr(full_packet_bytes)}")
 
         # Decode *packet_types* into *unescaped_packet_bytes*:
         unescaped_bytes: bytes = message_packet.unescape(partial_packet_bytes)
@@ -1521,7 +1630,7 @@ class TopicHandle(Handle):
         assert message.data == decode_content.data, (
             f"message.data ({message.data}) does not match "
             f"decode_content.data ({decode_content.data})")
-        print("Yahoo! They match!")
+        # print("Yahoo! They match!")
 
         if self.ros_path == "echo":
             add_two_ints_agent_node: AgentNode
@@ -1541,10 +1650,11 @@ class ServiceHandle(Handle):
     """Tracking class for clientserver service."""
 
     # ServiceHandle.__init__():
-    def __init__(self, import_path: str, type_name: str, ros_path: str, agent: Agent) -> None:
+    def __init__(self, priority: int,
+                 import_path: str, type_name: str, ros_path: str, agent: Agent) -> None:
         """Initialize Handle class."""
         # Initialize base class:
-        super().__init__(import_path, type_name, ros_path, agent)
+        super().__init__(priority, import_path, type_name, ros_path, agent)
 
         # Import the relevant information about the topic:
         service_type: Any = self.type_import(import_path, type_name, ros_path)
@@ -1661,7 +1771,7 @@ class ServiceHandle(Handle):
         response_future: Future = client.call_async(request)
         response_future.add_done_callback(self.response_callback)
         self.request_count += 1
-        print(f"Service('{self.ros_path}'): Sent request: {request}")
+        # print(f"Service('{self.ros_path}'): Sent request: {request}")
         # print(f"<=ServiceHandle.request_send({request}):")
 
     # ServiceHandle.response_callback():
@@ -1675,19 +1785,322 @@ class ServiceHandle(Handle):
             assert False, error
         else:
             assert isinstance(response, self.response_type)
-        print(f"Service('{self.ros_path}'): Got response: {response}')")
+        # print(f"Service('{self.ros_path}'): Got response: {response}')")
         # print(f"<=ServiceHandle.response_callback()=>{response}")
         return response
 
     # ServiceHandle.response_count_get()
     def response_count_get(self) -> int:
-        """Return the number of reponses proceesed."""
+        """Return the number of responses processed."""
         return self.response_count
 
     # ServiceHandle.response_create():
     def response_create(self) -> Any:
         """Return a ne response object."""
         return self.response_type()
+
+
+# SerialLine:
+class SerialLine(object):
+    """Class to that messages I/O the microcontroller serial line.
+
+    This class manages the serial line communication.  It consists of two threads:
+    * reader:
+      This simple thread blocks waiting for serial data from the microcontroller, which it
+      then reads and forwards to the writer thread.
+    * writer: This the workhouse thread reads requests from a pending queue and performs actions
+      that result in serial data being sent to the microcontroller.  This thread does packet
+      prioritization, missing packet recovery, etc.
+    """
+
+    # SerialLine.__init__():
+    def __init__(self, read_io_channel: IOChannel, write_io_channel: IOChannel,
+                 priorities: Tuple[int, ...], pending_queue: "Queue[bytes]") -> None:
+        """Init the SerialLine."""
+        # Construct *pending_packets* queues that keep packets in priority order:
+        maximum_priority: int = max(priorities)
+        pending_packets: List[List[bytes]] = []
+        for _ in range(maximum_priority):
+            pending_packets.append([])
+
+        # Load values into *self*:
+        self.slip: SLIP = Agent.slip_get()
+        self.byte_time: float = 10 * (1.0 / 115300.)  # 8N1 (i.e. 10-bits/byte)
+        self.from_packets: List[bytes] = []
+        self.last_control: Tuple[int, int] = (0, 0)
+        self.to_packets: List[bytes] = []
+        self.pending_queue: Queue[bytes] = pending_queue
+        self.priorities: Tuple[int, ...] = priorities
+        self.latest_to_sequence: int = 0
+        self.to_packet_cache: Dict[int, bytes] = {}
+        self.read_file: Optional[IO[bytes]] = None
+        self.read_io_channel: IOChannel = read_io_channel
+        self.write_file: Optional[IO[bytes]] = None
+        self.write_io_channel: IOChannel = write_io_channel
+
+    # SerialLine.reader():
+    def reader(self) -> None:
+        """Forward full packets from microcontroller serial line input to a pending queue."""
+        print("=>SerialLine.reader()")
+        # Grab some values from *self*:
+        slip: SLIP = self.slip
+        pending_queue: Queue[bytes] = self.pending_queue
+        read_io_channel: IOChannel = self.read_io_channel
+
+        # Open *in_file* in unbuffered raw mode.  If *read_io_channel* points to a pipe (FIFO),
+        # this will block until some other thread/process opens the pipe for writing:
+        read_file: IO[bytes]
+        with read_io_channel.open_for_reading() as read_file:
+            # Compute the *block_flags* and *non_block_flags* needed to switching between
+            # blocking/non-blocking IO:
+            self.read_file = read_file
+            print("SerialLine.reader(): read_file set")
+            fd: int = read_file.fileno()
+            block_flags: int = fcntl.fcntl(fd, fcntl.F_GETFL)
+            non_block_flags: int = block_flags | os.O_NONBLOCK
+            print("SerialLine.reader(): "
+                  f"fd={fd} block_flags={hex(block_flags)} non_block_flags={hex(non_block_flags)}")
+
+            # Read bytes from *read_file* until it is closed.
+            start: int = slip.start
+            stop: int = slip.stop
+            input_buffer: bytearray = bytearray()
+            in_packet: bool = False
+            packet_buffer: bytearray = bytearray()
+            done: bool = False
+            while not done:
+                # Read some *data* into *buffer*, first byte blocks, renaming bytes non-blocking:
+                input_buffer.clear()
+                amount: int
+                for amount, flags in ((1, block_flags), (10000, non_block_flags)):
+                    # print(f"SerialLine.reader(): Setting flags to {hex(flags)}")
+                    if fcntl.fcntl(fd, fcntl.F_SETFL, flags) != 0:
+                        raise OSError()
+                    # print(f"SerialLine.reader(): Reading amount {amount}")
+                    data: bytes = read_file.read(amount)
+                    if len(data) == 0:
+                        # On end-of-file, send a 1 byte stop message to *pending_queue*:
+                        print("SerialLine.reader(): End-of-file")
+                        pending_queue.put(bytes([slip.stop]))
+                        done = True
+                        break
+                    input_buffer.extend(data)
+
+                # Process the bytes that have arrived:
+                byte: int
+                for byte in input_buffer:
+                    if byte == start:
+                        in_packet = True
+                        del packet_buffer[:]
+                        packet_buffer.append(byte)
+                    elif in_packet:
+                        packet_buffer.append(byte)
+                        if byte == stop:
+                            in_packet = False
+                            pending_queue.put(bytes(packet_buffer))
+
+        # Shut down occurs here:
+        print("<=SerialLine.reader()")
+
+    # SerialLine.writer():
+    def writer(self) -> None:
+        """Received messages from reader thread *and* forward messages to microcontroller."""
+        # Unpack values from *self*:
+        print("=>SerialLine.writer()")
+        write_file: IO[bytes]
+        with self.write_io_channel.open_for_writing() as write_file:
+            print("=>SerialLine.writer(): write_file is open")
+            self.write_file = write_file
+            block: bool = True
+            while True:
+                from_packets: List[bytes]
+                to_packets: List[bytes]
+                done: bool
+                print("SerialLine.writer(): Calling pending_queue_drain()")
+                from_packets, to_packets, done = self.pending_queue_drain(block)
+                if done:
+                    break
+                self.from_packets_process(from_packets)
+                self.to_packets_process(to_packets)
+                write_file = write_file
+        # Do any shutdown stuff here:
+        self.write_file = None
+        print("<=SerialLine.writer()")
+
+    # SerialLine.pending_queue_drain():
+    def pending_queue_drain(self, block: bool) -> Tuple[List[bytes], List[bytes], bool]:
+        """Drain the pending queue and transfer into prioritized pending packets."""
+        # Unpack some values from *self*:
+        print(f"=>SerialLine.pending_queue_drain(*, {block})")
+        pending_queue: Queue[bytes] = self.pending_queue
+        to_packets: List[bytes] = self.to_packets
+        from_packets: List[bytes] = self.from_packets
+        slip: SLIP = self.slip
+        start: int = slip.start
+        stop: int = slip.stop
+
+        # Read in packets from queue until it is empty:
+        from_packets.clear()
+        to_packets.clear()
+        done: bool = False
+        while True:
+            # Get the next *packet*:
+            packet: bytes
+            if block:
+                print("SerialLine.pending_queue_drain(): block on pending queue")
+                packet = pending_queue.get()
+            else:
+                print("SerialLine.pending_queue_drain(): non-block on pending queue:)")
+                try:
+                    packet = pending_queue.get_nowait()
+                except queue.Empty:
+                    # *pending_queue* is currently drained:
+                    break
+
+            # Do an initial sort of *packet* base on the first byte:
+            if not packet or packet[0] == stop:
+                done = True
+                break
+            if packet[0] == start:
+                from_packets.append(packet)
+            else:
+                to_packets.append(packet)
+        print(f"<=SerialLine.pending_queue_drain(*, {block}) => *, *, {done}")
+        return from_packets, to_packets, done
+
+    # SerialLine.from_packets_process():
+    def from_packets_process(self, received_full_packets: List[bytes]) -> None:
+        """Process any packets received from microcontroller."""
+        # Drain *control_queue* and return updated *last_control*:
+        pass
+
+    # SerialLine.shutdown():
+    def shutdown(self):
+        """Shutdown the serial line."""
+        print("=>SerialLine.shutdown()")
+        read_file: Optional[IO[bytes]] = self.read_file
+        if read_file:
+            print("SerialLine.shutdown(): Closing read_file")
+            read_file.close()
+        else:
+            print("SerialLine.shutdown(): Reader stalled in open()")
+            read_io_channel: Optional[IOChannel] = self.read_io_channel
+            if read_io_channel and read_io_channel.pipe:
+                print("SerialLine.shutdown(): Opening other end of pipe")
+                write_file: IO[bytes]
+                with read_io_channel.open_for_writing(force=True) as write_file:
+                    print("SerialLine.shutdown: Opened other end of pipe")
+                    write_file.write(bytes())
+                print("SerialLine.shutdown(): Closed other end of pipe")
+
+        # An empty packet gracefully shuts down the writer.
+        self.pending_queue.put(bytes())
+        print("<=SerialLine.shutdown()")
+
+    # SerialLine.from_packets_decode():
+    def from_packets_decode(
+            self, from_full_packets: List[bytes]) -> Tuple[DecodedPacket, ...]:
+        """Return the packets that can be decoded."""
+        decoded_packets: List[DecodedPacket] = []
+        from_full_packet: bytes
+        for from_full_packet in from_full_packets:
+            # Try to decode *full_packet*:
+            try:
+                decoded_packet: DecodedPacket = Packet.full_decode(from_full_packet)
+            except ValueError as value_error:
+                print(f"Problem with received packet{repr(from_full_packet)}: {value_error}")
+            else:
+                decoded_packets.append(decoded_packet)
+        return tuple(decoded_packets)
+
+    # SerialLine.missing_to_sequences_get():
+    def missing_to_sequences_get(
+            self, decoded_packets: Tuple[DecodedPacket, ...]) -> Tuple[int, ...]:
+        """Return the sequence numbers for messages that have not been acknowledged yet."""
+        missing_to_sequences: List[int] = []
+        decoded_packet: DecodedPacket
+        if decoded_packets:
+            # Find the *best_decoded_packet* that has the highest *to_sequence*:
+            best_decoded_packet: DecodedPacket = decoded_packets[0]
+            for decoded_packet in decoded_packets[1:]:
+                if decoded_packet.to_sequence > best_decoded_packet.to_sequence:
+                    best_decoded_packet = decoded_packet
+
+            # Extract the *missing_to_sequences*::
+            to_sequence: int = best_decoded_packet.to_sequence
+            to_missing: int = best_decoded_packet.to_missing
+            for index in range(8):
+                if to_missing & (1 << index):
+                    missing_to_sequences.append(to_sequence + 1 + index)
+        return tuple(missing_to_sequences)
+
+    # SerialLine.to_packet_cache_cull():
+    def sent_packet_cache_clear(self, cull_to_sequence: int) -> None:
+        """Clear the sent packet cache up to specified sequence."""
+        to_packet_cache: Dict[int, bytes] = self.to_packet_cache
+        to_sequence: int
+        for to_sequence in sorted(to_packet_cache.keys()):
+            if to_sequence < cull_to_sequence and len(to_packet_cache) > 1:
+                del to_packet_cache[to_sequence]
+
+    # SerialLine.masked_sequence_recover():
+    def masked_sequence_recover(self, masked_sequence: int, close_sequence: int) -> int:
+        """Extend high order bits of a sequence using a close sequence."""
+        # *masked_sequence* is sequence that has been down to the low order 8-bits
+        # Recover the higher order bits by using *close_sequence*:
+        high_mask: int = (close_sequence | 0xff) + 1
+        low_mask: int = high_mask - 0x100
+        high_sequence: int = high_mask | masked_sequence
+        low_sequence: int = low_mask | masked_sequence
+        high_error: int = abs(high_sequence - masked_sequence)
+        low_error: int = abs(low_sequence - masked_sequence)
+        # Now update *recovered_sequence* with the extended bits:
+        recovered_sequence: int = high_sequence if high_error < low_error else low_sequence
+        return recovered_sequence
+
+    # SerialLine.to_packets_process():
+    def to_packets_process(self, to_packets: List[bytes]) -> None:
+        """Process any packets pending packets from the rest of the agent to be sent."""
+        print("=>to_packets_process()")
+        print("<=to_packets_process()")
+
+    """
+    def misc(self):
+        if False:
+            if partial_packet:
+                # Unpack the *packet_id* from the front of the partial packet:
+                assert isinstance(partial_packet, bytes), (
+                    f"Received bad partial packet {partial_packet}")
+                packet_id: int = Packet.unescape(partial_packet[:2])[0]
+                priority_queues[packet_id].append(partial_packet)
+                partial_packet = None  # Forget the packet we just got off the queue:
+
+            # Unpack the *packet_id* from the front of the partial packet:
+            assert isinstance(partial_packet, bytes), (
+                f"Received bad partial packet {partial_packet}")
+            packet_id: int = Packet.unescape(partial_packet[:2])[0]
+            priority_queues[packet_id].append(partial_packet)
+            partial_packet = None  # Forget the packet we just got off the queue:
+
+            # Grab the highest priority *partial_packet*:
+            index: int
+            for index in range(priority_queues_size -1, -1):
+                priority_queue: List[int] = priority_queues[index]
+                if priority_queue:
+                    partial_packet = priority_queue.pop(0)
+                    break
+
+            # Send partial_packet on its way:
+            if partial_packet:
+                send_sequence: int = self.sent_sequence
+                full_packet: bytes = Packet.full_encode(partial_packet, (send_sequence, 0, 0))
+                # write_io_channel.write(full_packet)
+                self.sent_messages[send_sequence] = full_packet
+                self.send_sequence = send_sequence + 1
+
+                # Delay until the packet should be clear of the buffer:
+                time.sleep(len(full_packet) & byte_type)
+    """
 
 
 if __name__ == "__main__":
