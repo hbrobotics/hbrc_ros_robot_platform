@@ -361,6 +361,41 @@ class Agent:
         agent_node: AgentNode = agent_nodes[agent_node_name]
         return agent_node
 
+    # Agent.arguments_empty_expand():
+    def arguments_empty_expand(self, arguments: Tuple[str, ...]) -> Tuple[str, ...]:
+        """Expand an empty arguments list."""
+        if not arguments:
+            # Create some default arguments.
+            arguments += (
+                "--publisher=serial_agent:0:std_msgs.msg:String:topic",
+                "--subscription=serial_agent:0:std_msgs.msg:String:topic",
+                "--publisher=serial_agent:0:std_msgs.msg:String:echo",
+                "--subscription=serial_agent:0:std_msgs.msg:String:echo",
+                "--client=serial_agent:0:example_interfaces.srv:AddTwoInts:add_two_ints",
+                "--server=serial_agent_server1:0:example_interfaces.srv:AddTwoInts:add_two_ints",
+            )
+            if self.is_stand_alone:
+                # In stand alone mode, just dump output to a file:
+                arguments += (
+                    "--timer=serial_agent_timer:10:timer:0.5",
+                    "--io=/tmp/agent2micro:device,write",  # Dump to file.
+                    "--io=/tmp/micro2agent:create,pipe,read",
+                )
+            elif self.is_agent:
+                # In agnent mode, use two pipes:
+                arguments += (
+                    "--timer=serial_agent_timer:10:timer:0.5",
+                    "--io=/tmp/agent2micro:create,pipe,write",
+                    "--io=/tmp/micro2agent:create,pipe,read",
+                )
+            elif self.is_micro:
+                # In *is_micro_mode*, there is no timer and pipe reads/write are flipped:
+                arguments += (
+                    "--io=/tmp/agent2micro:create,pipe,read",
+                    "--io=/tmp/micro2agent:create,pipe,write",
+                )
+        return arguments
+
     # Agent.argument_files_read():
     def argument_files_read(self, arguments: Tuple[str, ...]) -> Tuple[str, ...]:
         """Read in arguments files that start with '@'."""
@@ -388,67 +423,28 @@ class Agent:
                 expanded_arguments.append(argument)
         return tuple(expanded_arguments)
 
-    # Agent.arguments_mode_extract():
-    def argument_mode_extract(self, arguments: Tuple[str, ...]) -> Tuple[str, ...]:
-        """Process the --agent and --micro flags."""
-        remaining_arguments: List[str] = []
-        arguement: str
-        for argument in arguments:
-            if argument == "--is_agent":
-                self.is_agent = True
-            elif argument == "--is_micro":
-                self.is_micro = True
+    # Agent.arguments_io_process():
+    def arguments_io_process(self, argument: str, flag_name: str,
+                             colon_split: Tuple[str, ...]) -> None:
+        """Process the --io flag."""
+        # Extract *colon_split* into *file_name* and *flags*:
+        io_channel: IOChannel = IOChannel(argument, colon_split)
+        if io_channel.read:
+            if self.read_io_channel:
+                raise ValueError(f"Command line argument '{argument}' tries to open "
+                                 "more than one read I/O channel")
             else:
-                remaining_arguments.append(argument)
+                self.read_io_channel = io_channel
+        if io_channel.write:
+            if self.write_io_channel:
+                raise ValueError(f"Command line argument '{argument}' tries to open "
+                                 "more than one writeI/O channel")
+            else:
+                self.write_io_channel = io_channel
 
-        # Perform mode sanity checks:
-        self.is_stand_alone = False
-        if self.is_agent and self.is_micro:
-            raise ValueError("Setting both --agent and --micro is not allowed.")
-        elif not self.is_agent and not self.is_micro:
-            # If neither are specified, default to *is_agent* and mark *is_stand_alone*:
-            self.is_agent = True
-            self.is_stand_alone = True
-        return tuple(remaining_arguments)
-
-    # Agent.arguments_empty_expand():
-    def arguments_empty_expand(self, arguments: Tuple[str, ...]) -> Tuple[str, ...]:
-        """Expand an empty arguments list."""
-        if not arguments:
-            # Create some default arguments.
-            arguments += (
-                "--publisher=serial_agent:0:std_msgs.msg:String:topic",
-                "--subscription=serial_agent:0:std_msgs.msg:String:topic",
-                "--publisher=serial_agent:0:std_msgs.msg:String:echo",
-                "--subscription=serial_agent:0:std_msgs.msg:String:echo",
-                "--client=serial_agent:0:example_interfaces.srv:AddTwoInts:add_two_ints",
-                "--server=serial_agent_server1:0:example_interfaces.srv:AddTwoInts:add_two_ints",
-            )
-            if self.is_stand_alone:
-                # In stand alone mode, just dump output to a file:
-                arguments += (
-                    "--timer=serial_agent_timer:10:timer:0.5",
-                    "--io=/tmp/agent2micro:device,write",  # Dump to file.
-                    "--io=/tmp/micro2agent:create,pipe,read",
-                )
-            elif self.is_agent:
-                # In agnent mode, use two pipes:
-                arguments += (
-                    "--timer=serial_agent_timer:10:timer:0.5",
-                    "--io=/tmp/agent2micro:create:pipe,write",
-                    "--io=/tmp/micro2agent:create,pipe,read",
-                )
-            elif self.is_micro:
-                # In *is_micro_mode*, there is no timer and pipe reads/write are flipped:
-                arguments += (
-                    "--io=/tmp/agent2micro:create,pipe,read",
-                    "--io=/tmp/micro2agent:create,pipe,write",
-                )
-        return arguments
-
-    # Agent.argument_message_process():
-    def argument_message_process(self, argument: str, flag_name: str,
-                                 colon_split: Tuple[str, ...]) -> None:
+    # Agent.arguments_message_process():
+    def arguments_message_process(self, argument: str, flag_name: str,
+                                  colon_split: Tuple[str, ...]) -> None:
         """Process --publisher, --subscription, --client, and --server flags."""
         # Unpack *colon_split* into *agent_name*, *priority*, *import_path*,
         # *type_name*, and *ros_path*:
@@ -483,9 +479,89 @@ class Agent:
         elif flag_name == "--server":
             self.server_create(agent_node_name, priority_value, import_path, type_name, ros_path)
 
-    # Agent.argument_timer_process():
-    def argument_timer_process(self, argument: str, flag_name: str,
-                               colon_split: Tuple[str, ...]) -> None:
+    # Agent.arguments_mode_extract():
+    def arguments_mode_extract(self, arguments: Tuple[str, ...]) -> Tuple[str, ...]:
+        """Process the --agent and --micro flags."""
+        print("=>Agent.mode_extract({arguments})")
+        remaining_arguments: Tuple[str, ...] = ()
+        arguement: str
+        for argument in arguments:
+            if argument == "--is-agent":
+                self.is_agent = True
+            elif argument == "--is-micro":
+                self.is_micro = True
+            else:
+                remaining_arguments += (argument,)
+
+        # Perform mode sanity checks:
+        self.is_stand_alone = False
+        if self.is_agent and self.is_micro:
+            raise ValueError("Setting both --agent and --micro is not allowed.")
+        elif not self.is_agent and not self.is_micro:
+            # If neither are specified, default to *is_agent* and mark *is_stand_alone*:
+            self.is_agent = True
+            self.is_stand_alone = True
+        print(f"<=Agent.mode_extract({arguments})=>{remaining_arguments}")
+        return tuple(remaining_arguments)
+
+    # Agent.arguments_parse():
+    def arguments_parse(self, arguments: Tuple[str, ...]) -> None:
+        """Parse the command line arguments."""
+        # Prescan arguments to set *is_agent* and *is_micro* flags.
+        # Also, deal with indirect flags file (i.e. "@args_file_name"):
+        original_arguments: Tuple[str, ...] = arguments
+        print(f"=>Agent.arguments_parse({original_arguments})")
+        arguments = self.argument_files_read(arguments)
+        print(f"Agent.arguments_parse: after files_read: arguments={arguments}")
+        arguments = self.arguments_mode_extract(arguments)
+        print(f"Agent.arguments_parse: after mode extract: arguments={arguments}")
+        arguments = self.arguments_empty_expand(arguments)
+        print(f"Agent.arguments_parse: after empty expand: arguments={arguments}")
+
+        # Now do the full scan of *culled_arguments*:
+        for argument in arguments:
+            # Split out the *flag_name*, *flag_options*, *colon_split*:
+            if not argument.startswith("--"):
+                raise ValueError(f"Command line argument '{argument}' does not start with '--'")
+            equals_split: Tuple[str, ...] = tuple(argument.split("="))
+            assert len(equals_split) == 2, (
+                f"More than one '=' in command line argument '{argument}'")
+            flag_name: str
+            flag_options: str
+            flag_name, flag_options = equals_split
+            colon_split: Tuple[str, ...] = tuple(flag_options.split(":"))
+
+            # Dispatch on *flag_name*:
+            agent_node_name: str
+            priority: str
+            priority_value: int
+            if flag_name in ("--client", "--publisher", "--server", "--subscription"):
+                self.arguments_message_process(argument, flag_name, colon_split)
+            elif flag_name == "--timer":
+                self.arguments_timer_process(argument, flag_name, colon_split)
+            elif flag_name == "--io":
+                self.arguments_io_process(argument, flag_name, colon_split)
+            else:
+                raise ValueError(f"Unrecognized flag '{flag_name}'")
+        self.arguments_sanity_check()
+        print(f"<=Agent.arguments_parse({original_arguments})")
+
+    # Agent.arguments_sanity_check():
+    def arguments_sanity_check(self):
+        """Perform a sanity check of the command line arguments."""
+        # Open the I/O channels:
+        # print(f"read_io_channel:{self.read_io_channel}")
+        # print(f"write_io_channel:{self.write_io_channel}")
+        if self.read_io_channel and not self.write_io_channel:
+            raise ValueError(f"Read channel '{self.read_io_channel.file_name}' is specified "
+                             "but no write channel is specified")
+        if self.write_io_channel and not self.read_io_channel:
+            raise ValueError(f"Write channel '{self.write_io_channel.file_name}' is specified "
+                             "but no read channel is specified")
+
+    # Agent.arguments_timer_process():
+    def arguments_timer_process(self, argument: str, flag_name: str,
+                                colon_split: Tuple[str, ...]) -> None:
         """Process the --timer flag."""
         # Unpack *colon_split* into *node_name*, *priority*, and *rate*:
         if len(colon_split) != 4:
@@ -513,76 +589,6 @@ class Agent:
 
         # Create the timer:
         self.timer_create(agent_node_name, priority_value, timer_name, 1 / rate_value)
-
-    # Agent.argument_io_process():
-    def argument_io_process(self, argument: str, flag_name: str,
-                            colon_split: Tuple[str, ...]) -> None:
-        """Process the --io flag."""
-        # Extract *colon_split* into *file_name* and *flags*:
-        io_channel: IOChannel = IOChannel(argument, colon_split)
-        if io_channel.read:
-            if self.read_io_channel:
-                raise ValueError(f"Command line argument '{argument}' tries to open "
-                                 "more than one read I/O channel")
-            else:
-                self.read_io_channel = io_channel
-        if io_channel.write:
-            if self.write_io_channel:
-                raise ValueError(f"Command line argument '{argument}' tries to open "
-                                 "more than one writeI/O channel")
-            else:
-                self.write_io_channel = io_channel
-
-    # Agent.arguments_sanity_check():
-    def arguments_sanity_check(self):
-        """Perform a sanity check of the command line arguments."""
-        # Open the I/O channels:
-        # print(f"read_io_channel:{self.read_io_channel}")
-        # print(f"write_io_channel:{self.write_io_channel}")
-        if self.read_io_channel and not self.write_io_channel:
-            raise ValueError(f"Read channel '{self.read_io_channel.file_name}' is specified "
-                             "but no write channel is specified")
-        if self.write_io_channel and not self.read_io_channel:
-            raise ValueError(f"Write channel '{self.write_io_channel.file_name}' is specified "
-                             "but no read channel is specified")
-
-    # Agent.arguments_parse():
-    def arguments_parse(self, arguments: Tuple[str, ...]) -> None:
-        """Parse the command line arguments."""
-        # Prescan arguments to set *is_agent* and *is_micro* flags.
-        # Also, deal with indirect flags file (i.e. "@args_file_name"):
-        print("=>Agent.arguments_parse(*)")
-        arguments = self.argument_files_read(arguments)
-        arguments = self.argument_mode_extract(arguments)
-        arguments = self.arguments_empty_expand(arguments)
-
-        # Now do the full scan of *culled_arguments*:
-        for argument in arguments:
-            # Split out the *flag_name*, *flag_options*, *colon_split*:
-            if not argument.startswith("--"):
-                raise ValueError(f"Command line argument '{argument}' does not start with '--'")
-            equals_split: Tuple[str, ...] = tuple(argument.split("="))
-            assert len(equals_split) == 2, (
-                f"More than one '=' in command line argument '{argument}'")
-            flag_name: str
-            flag_options: str
-            flag_name, flag_options = equals_split
-            colon_split: Tuple[str, ...] = tuple(flag_options.split(":"))
-
-            # Dispatch on *flag_name*:
-            agent_node_name: str
-            priority: str
-            priority_value: int
-            if flag_name in ("--client", "--publisher", "--server", "--subscription"):
-                self.argument_message_process(argument, flag_name, colon_split)
-            elif flag_name == "--timer":
-                self.argument_timer_process(argument, flag_name, colon_split)
-            elif flag_name == "--io":
-                self.argument_io_process(argument, flag_name, colon_split)
-            else:
-                raise ValueError(f"Unrecognized flag '{flag_name}'")
-        self.arguments_sanity_check()
-        print("<=Agent.arguments_parse(*)")
 
     # Agent.client_create():
     def client_create(self, agent_node_name: str, priority: int,
@@ -1405,6 +1411,7 @@ class IOChannel:
     def __init__(self, argument: str, colon_split: Tuple[str, ...]) -> None:
         """Init an IOChannel."""
         # Start with all value set to *False*:
+        print(f"=>IOChannel.__init__(*, '{argument},', '{colon_split}')")
         self.create: bool = False
         self.device: bool = False
         self.log: bool = False
@@ -1448,14 +1455,27 @@ class IOChannel:
 
         # Create the named pipe (FIFO) it it does not already exist:
         if self.create and self.pipe:
-            try:
-                os.mkfifo(file_name)
-            except FileExistsError:
+            print("IOChannel.__init__(): Create Pipe")
+            if os.path.exists(file_name):
                 if not stat.S_ISFIFO(os.stat(file_name).st_mode):
+                    print(f"IOChannel.__init__(): '{file_name}' exists and is not a named pipe")
+                    try:
+                        os.remove(file_name)
+                        if os.path.exists(file_name):
+                            raise RuntimeError(f"'{file_name}' not succesfully deleted")
+                    except PermissionError:
+                        raise RuntimeError(f"'{file_name}' not removed due to permission error")
+            else:
+                try:
+                    os.mkfifo(file_name)
+                except FileExistsError:
                     raise RuntimeError(f"'{file_name}' already exists and is not a named pipe")
+                except PermissionError:
+                    raise RuntimeError(f"Unable to create '{file_name}' named pipe")
 
         # Save the *file_name*:
         self.file_name: str = file_name
+        print(f"<=IOChannel.__init__(*, '{argument},', '{colon_split}')")
 
     # IOChannel.__str__():
     def __str__(self):
