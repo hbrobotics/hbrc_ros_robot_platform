@@ -284,6 +284,7 @@ class SLIP:
     start: int  # Start byte
     escape: int  # Escape byte
     stop: int  # Stop byte
+    minimum: int  # Minimum of (start, escape, stop)
     twiddle: int  # Slip twiddle bit
 
 
@@ -296,7 +297,7 @@ class Agent:
     """Class that implements a ROS serial agent Node."""
 
     # This is the only place the *slip* object is defined.
-    slip: ClassVar[SLIP] = SLIP(start=0xfc, escape=0xfd, stop=0xfe, twiddle=0x80)
+    slip: ClassVar[SLIP] = SLIP(start=0xfc, escape=0xfd, stop=0xfe, twiddle=0x80, minimum=0xfc)
 
     # Agent.__init__():
     def __init__(self, executor: Executor, arguments: Tuple[str, ...]) -> None:
@@ -857,7 +858,7 @@ class AgentNode(Node):
 
 
 # encoder_create():
-def encoder_create(slip: SLIP) -> Tuple[Tuple[int, ...], ...]:
+def xencoder_create(slip: SLIP) -> Tuple[Tuple[int, ...], ...]:
     """Return the escape encoder tuple table."""
     twiddle: int = slip.twiddle
     escape: int = slip.escape
@@ -976,7 +977,7 @@ class Packet(object):
     # Define the SLIP (originally stood for Serial Line Internet Protocol) characters.
     # The concept is the same, but different characters are used than the original SLIP protocol:
     slip: SLIP = Agent.slip_get()
-    encoder: ClassVar[Tuple[Tuple[int, ...], ...]] = encoder_create(slip)
+    # encoder: ClassVar[Tuple[Tuple[int, ...], ...]] = encoder_create(slip)
 
     # The Python struct library is used to pack and unpack data to/from bytes:
     struct_endian: ClassVar[str] = "!"  # "!" stands for network which happens to be big-endian
@@ -1101,47 +1102,48 @@ class Packet(object):
             raise ValueError(f"packet {repr(full_packet)} has an actual CRC of {hex(actual_crc)}, "
                              f"but the desired CRC is {hex(crc)}")
 
-        # Extract the transmission *control* tuple.  This is three bytes of information that can
-        # expand up to 6 bytes with escape characters (i.e. all 3 bytes have the 8th bit set.)
-        # Rather unescaping the *full_packet* from the beginning, some cleverness is used instead.
-        # Instead the last 6 bytes are grabbed, unescaped, and the last 3 bytes of the result
-        # are the transmission control values:
-        escaped_control: bytes = full_packet[-9:-3]
-        unescaped_control: bytes = cls.unescape(escaped_control)
-        if len(unescaped_control) < 3:
-            raise ValueError(f"packet {repr(full_packet)} does not have 3 transmission "
-                             "control bytes")
-        control: Tuple[int, int, int] = (
-            unescaped_control[-3], unescaped_control[-2], unescaped_control[-1])
+        # Unpack *full_packet* (which is still escaped) into *packet_id* (1 byte),
+        # *partial_packet* (variable length) and *control* (3 bytes):
+        unescaped_packet: bytes = Packet.unescape(full_packet)
+        packet_id: int = unescaped_packet[3]  # Skip over start and length.
+        control: bytes = unescaped_packet[-6:-3]  # 3 bytes before CRC and stop.
+        partial_packet: bytes = unescaped_packet[3:-6]  # The remaining bytes between.
 
-        # Unpack the values from control:
+        # Unpack the values from *control*:
         from_sequence: int
         to_sequence: int
         to_mask: int
         from_sequence, to_sequence, to_mask = control
 
-        # Now the *control* values are entered into the *reescaped_control* to that
-        # the final length the the escaped control bytes can be determined:
-        encoder: Tuple[Tuple[int, ...], ...] = cls.encoder
-        reescaped_control: bytearray = bytearray()
-        for byte in control:
-            reescaped_control.extend(encoder[byte])
-        control_escaped_size: int = len(reescaped_control)
-
-        # Extract *frompartial_packet* now that *control_escaped_size* is known:
-        from_partial_packet: bytes = full_packet[3:-(control_escaped_size + 3)]
-
-        # Now extract the *packet_id* from *partial_packet*:
-        from_packet_id: int = Packet.partial_packet_id_get(from_partial_packet)
-
-        decoded_packet: DecodedPacket = DecodedPacket(from_sequence, from_packet_id,
-                                                      from_partial_packet, to_sequence, to_mask)
+        decoded_packet: DecodedPacket = DecodedPacket(from_sequence, packet_id,
+                                                      partial_packet, to_sequence, to_mask)
         # print(f"<=Packet.full_decode({repr(full_packet)})=>({decoded_packet})")
         return decoded_packet
 
+    # Packet.escape():
+    @classmethod
+    def escape(self, unescaped_packet: bytes) -> bytes:
+        """Convert an unescaped packet into an escaped one."""
+        # Grap some values from *slip*:
+        slip: SLIP = self.slip
+        start: int = slip.start
+        escape: int = slip.escape
+        stop: int = slip.stop
+        twiddle: int = slip.stop
+        # We assume that *start*, *escape*, and *stop* both together and ordered:
+
+        escaped_packet: bytearray = bytearray()
+        for byte in unescaped_packet:
+            if start <= byte <= stop:
+                escaped_packet.append(escape)
+                escaped_packet.append(byte ^ twiddle)
+            else:
+                escaped_packet.append(byte)
+        return bytes(escaped_packet)
+
     # Packet.full_encode():
     def full_encode(self,
-                    partial_packet_bytes: bytes, control_bytes: Tuple[int, int, int]) -> bytes:
+                    partial_packet: bytes, control_bytes: Tuple[int, int, int]) -> bytes:
         """Convert a partial Packet into a full Packet."""
         # print("=>Packet.full_encode("
         #       f"{repr(partial_packet_bytes)}, {control_bytes})")
@@ -1149,20 +1151,15 @@ class Packet(object):
         # Create *crc_bytes* which contains all of the bytes to be CRC'ed.
         # This the *partial_packet* (already_escaped) and the *control_bytes*
         # (which are not escaped yet:
-        crc_bytes: bytearray = bytearray(partial_packet_bytes)
+
         assert len(control_bytes) == 3, (
             "Length of transmission control bytes ({len(control_bytes)}) is not 3")
-        encoder: Tuple[Tuple[int, ...], ...] = self.encoder
-        control_byte: int
-        for control_byte in control_bytes:
-            crc_bytes.extend(encoder[control_byte])
+
+        byte: int
+        crc_bytes: bytearray = bytearray(Packet.escape(partial_packet + bytes(control_bytes)))
 
         # Compute the *crc* and associated *crc_high* and *crc_low* bytes over *crc_bytes*:
         global crc_compute
-        slip: SLIP = Agent.slip_get()
-
-        # crc_compute: Callable[[bytes], int] = self.crc_compute
-        # crc_compute: Callable[[bytes], int] = crcmod.mkCrcFun(0x11021, initCrc=0, xorOut=0xffff)
         crc: int = crc_compute(bytes(crc_bytes)) & 0x7f7f
         crc_high: int = (crc >> 8) & 0x7f
         crc_low: int = crc & 0x7f
@@ -1176,6 +1173,7 @@ class Packet(object):
         low_length: int = total_length & 0x7f
 
         # Construct the *full_packet*:
+        slip: SLIP = self.slip
         full_packet: bytearray = bytearray((slip.start, high_length, low_length))
         assert len(full_packet) == front_length, f"Packet header is {len(full_packet)} long"
         full_packet.extend(crc_bytes)
@@ -1255,18 +1253,27 @@ class Packet(object):
 
     # Packet.partial_encode():
     def partial_encode(self, packet_content: Any, packet_id: int) -> bytes:
-        """Encode packet content into partial bytes packet."""
+        """Encode packet content into partial bytes packet that is not escaped yet."""
         # print(f"=>Packet.partial_encode({packet_content}, {packet_id})")
         assert isinstance(packet_content, self.packet_type), (
             f"Packet content is {type(packet_content)} rather than {type(self.packet_type)}")
         packet_bytes: bytearray = bytearray()
 
         # Start with the *packet_id*:
-        encoder: Tuple[Tuple[int, ...], ...] = self.encoder
-        assert 0 <= packet_id <= 255, f"Packet id ({packet_id} does not fit in a byte.)"
-        packet_bytes.extend(encoder[packet_id])
+        # encoder: Tuple[Tuple[int, ...], ...] = self.encoder
+        slip: SLIP = self.slip
+        assert 0 <= packet_id < slip.minimum, f"Packet id ({packet_id} is too big.)"
+        packet_bytes.append(packet_id)
 
-        # Put all of the strings in next because they have a length byte:
+        # Extract the *struct_values* from *packet_content*, convert them into *struct_bytes*,
+        # and append to *packet_bytes*:
+        struct_name: str
+        struct_values: List[int] = [getattr(packet_content, struct_name)
+                                    for struct_name in self.struct_names]
+        struct_bytes: bytes = struct.pack(self.struct_format, *struct_values)
+        packet_bytes.extend(struct_bytes)
+
+        # Next output each string:
         string_name: str
         for string_name in self.string_names:
             # Do some sanity checking:
@@ -1282,25 +1289,14 @@ class Packet(object):
                 string_size = 255
 
             # Append *string_size* first, followed by the *content_content*:
-            packet_bytes.extend(encoder[string_size])
+            packet_bytes.append(string_size)
             string_chr: str
             for string_chr in string_content:
                 string_byte: int = ord(string_chr)
                 if string_byte > 255:
                     print(f"Converting character {hex(string_byte)} to 0xff")
                     string_byte = 255
-                packet_bytes.extend(encoder[string_byte])
-
-        # Extract the *struct_values* from *packet_content* in *struct_names* order:
-        struct_name: str
-        struct_values: List[int] = [getattr(packet_content, struct_name)
-                                    for struct_name in self.struct_names]
-
-        # Convert *struct_values* to *struct_bytes* and then append them to *packet_bytes*:
-        struct_bytes: bytes = struct.pack(self.struct_format, *struct_values)
-        struct_byte: int
-        for struct_byte in struct_bytes:
-            packet_bytes.extend(encoder[struct_byte])
+                packet_bytes.append(string_byte)
 
         final_packet_bytes: bytes = bytes(packet_bytes)
         # print(f"<=Packet.partail_encode({packet_content}, "
