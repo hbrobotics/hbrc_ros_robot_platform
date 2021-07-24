@@ -119,13 +119,27 @@ The classes are:
 
 * AgentNode: A subclass of rclpy.Node.  This is the rclpy approved way of managing ROS nodes.
 
+* Handles:
+
+  There is a class hierarchy that represents different message types:
+
+  * Handle: The Base class for the following sub-classes:
+
+    * PingHandle: A message used to keep the serial line alive and trigger re-transmission.
+
+    * TimerHandle: A generic timer event handle.
+
+    * ROSHandle: The class for all ROS topic and service messages.
+
+      * TopicHandle: The class that represents ROS publish/subscribe topics.
+
+      * ServiceHandle: The class that represents ROS client/server topics.
+
+* SerialLine: Represents a serial line.
+
+  * IOChannel:  Represents either a read or write serial line.
+
 * Packet: A class for encoding decoding packages over a serial line.
-
-* Handle, TopicHandle, ServiceHandle: These 3 classes uniquely define either a ROS Topic
-  (using TopicHandle) or a ROS service (using ServiceHandle).  These classes can
-  read in the appropriate type information to support packet encoding and decoding.
-
-* TimerHandle: Similar to the Handle base class, but for managing timers.
 
 ## Execution Model
 
@@ -195,10 +209,10 @@ import queue
 import stat
 import struct
 import sys
-# import time
+import time
 from dataclasses import dataclass
 from queue import Queue
-from typing import Any, Callable, ClassVar, Dict, IO, List, Optional, Tuple, Union
+from typing import Any, Callable, ClassVar, Dict, IO, List, Optional, Tuple
 
 import crcmod  # type:ignore
 
@@ -306,9 +320,9 @@ class Agent:
         # for final shut-down:
         self.agent_nodes: Dict[str, AgentNode] = {}
         self.executor: Executor = executor
-        self.service_handles: Dict[HandleKey, ServiceHandle] = {}
+        self.service_handles: Dict[ROSKey, ServiceHandle] = {}
         self.timer_handles: Dict[Tuple[str, str], TimerHandle] = {}
-        self.topic_handles: Dict[HandleKey, TopicHandle] = {}
+        self.topic_handles: Dict[ROSKey, TopicHandle] = {}
 
         self.clients_table: Dict[Tuple[str, str], Tuple[AgentNode, ServiceHandle]] = {}
         self.publishers_table: Dict[Tuple[str, str], Tuple[AgentNode, TopicHandle]] = {}
@@ -316,18 +330,29 @@ class Agent:
         self.subscriptions_table: Dict[Tuple[str, str], Tuple[AgentNode, TopicHandle]] = {}
         self.timers_table: Dict[Tuple[str, str], Tuple[AgentNode, TimerHandle]] = {}
 
-        self.priorities: List[int] = []
-        self.packet_handles: "List[Union[Handle, TimerHandle]]" = []
+        # Table to map a packet id to a tagged handle:
+        self.packet_id_to_handle: List[Tuple[Handle, str]] = []
         self.packet_id: int = 0
 
+        # Define this before creating *ping_packet*:
+        self.prioritized_packets: List[List[bytes]] = []
+
+        # The first packet id is for ping packets:
+        self.ping_handle: PingHandle = PingHandle()
+        self.ping_packet_id: int = self.packet_id_get(self.ping_handle, "")
+        self.ping_packet: bytes = bytes(self.ping_packet_id)  # Empty packet with just a packet id.
+
+        # Command line argument stuff:
         self.is_agent: bool = False
         self.is_micro: bool = False
         self.is_stand_alone: bool = False
         self.read_io_channel: Optional[IOChannel] = None
         self.write_io_channel: Optional[IOChannel] = None
+
+        # The queue that runs evertyhing:
         self.pending_queue: Queue[bytes] = Queue()
 
-        # This is where everything is configured:
+        # Configrute evertyhing using *argumentes*:
         self.arguments_parse(arguments)
 
         # Create the *serial_line*:
@@ -337,8 +362,9 @@ class Agent:
             raise ValueError("No read channel specified")
         if not write_io_channel:
             raise ValueError("No write channel specified")
-        self.serial_line: SerialLine = SerialLine(read_io_channel, write_io_channel,
-                                                  tuple(self.priorities), self.pending_queue)
+        self.serial_line: SerialLine = SerialLine(
+            read_io_channel, write_io_channel, tuple(self.packet_id_to_handle),
+            self.pending_queue, self.prioritized_packets, self.ping_packet)
 
     # Agent.agent_node_create_once():
     def agent_node_create_once(self, agent_node_name: str) -> "AgentNode":
@@ -379,7 +405,7 @@ class Agent:
                 # In stand alone mode, just dump output to a file:
                 arguments += (
                     "--timer=serial_agent_timer:10:timer:0.5",
-                    "--io=/tmp/agent2micro:device,write",  # Dump to file.
+                    "--io=/tmp/agent2micro:device,write",  # Dump to file rather than pipe.
                     "--io=/tmp/micro2agent:create,pipe,read",
                 )
             elif self.is_agent:
@@ -501,6 +527,7 @@ class Agent:
         elif not self.is_agent and not self.is_micro:
             # If neither are specified, default to *is_agent* and mark *is_stand_alone*:
             self.is_agent = True
+            # This flag is only used in Agent.empty_expand().
             self.is_stand_alone = True
         print(f"<=Agent.mode_extract({arguments})=>{remaining_arguments}")
         return tuple(remaining_arguments)
@@ -596,37 +623,37 @@ class Agent:
                       import_path: str, type_name: str, ros_path: str) -> None:
         """Create a client for a ROS service."""
         # print(f"=>client_create()")
-        agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        service_handle: ServiceHandle = (
-            self.service_handle_get(priority, import_path, type_name, ros_path))
-        agent_node.client_create(service_handle)
+        if self.is_agent:
+            agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
+            service_handle: ServiceHandle = (
+                self.service_handle_get(priority, import_path, type_name, ros_path))
+            agent_node.client_create(service_handle)
 
-        # Record information into the *clients_table*:
-        key: Tuple[str, str] = (agent_node_name, ros_path)
-        clients_table: Dict[Tuple[str, str],
-                            Tuple[AgentNode, ServiceHandle]] = self.clients_table
-        assert key not in clients_table, f"Duplicate client {key}"
-        clients_table[key] = (agent_node, service_handle)
+            # Record information into the *clients_table*:
+            key: Tuple[str, str] = (agent_node_name, ros_path)
+            clients_table: Dict[Tuple[str, str],
+                                Tuple[AgentNode, ServiceHandle]] = self.clients_table
+            assert key not in clients_table, f"Duplicate client {key}"
+            clients_table[key] = (agent_node, service_handle)
         # print(f"<=client_create(): key={key})")
 
     # Agent.packet_id_get():
-    def packet_id_get(self, handle: "Union[Handle, TimerHandle]") -> int:
+    def packet_id_get(self, handle: "Handle", tag: str) -> int:
         """Return the next packet id."""
         # Update *packet_id*:
         packet_id: int = self.packet_id
         self.packet_id += 1
 
-        # Insert *priority* into *priorities*:
+        # Ensure that there is a slot in *prioritized_packets* for *priority*:
         priority: int = handle.priority_get()
-        priorities: List[int] = self.priorities
-        while len(priorities) <= packet_id:
-            priorities.append(-1)
-        priorities[packet_id] = priority
+        prioritized_packets: List[List[bytes]] = self.prioritized_packets
+        while len(prioritized_packets) < priority + 1:
+            prioritized_packets.append([])
 
-        # Append *handle* to *packet_handles*:
-        packet_handles: List[Union[Handle, TimerHandle]] = self.packet_handles
-        assert len(packet_handles) >= packet_id, "packet_handles is broken"
-        packet_handles.append(handle)
+        # Tack *handle* onto the *packet_id_to_handle*:
+        packet_id_to_handle: List[Tuple[Handle, str]] = self.packet_id_to_handle
+        packet_id_to_handle.append((handle, tag))
+        assert len(packet_id_to_handle) == packet_id + 1
         return packet_id
 
     # Agent.nodes_destroy():
@@ -647,48 +674,50 @@ class Agent:
                          import_path: str, type_name: str, ros_path: str) -> None:
         """Create a publisher."""
         # Create the publisher:
-        agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        topic_handle: TopicHandle = (
-            self.topic_handle_get(priority, import_path, type_name, ros_path))
-        agent_node.publisher_create(topic_handle)
+        if self.is_agent:
+            agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
+            topic_handle: TopicHandle = (
+                self.topic_handle_get(priority, import_path, type_name, ros_path))
+            agent_node.publisher_create(topic_handle)
 
-        # Record information into *publishers_table*:
-        key: Tuple[str, str] = (agent_node_name, ros_path)
-        publishers_table: Dict[Tuple[str, str],
-                               Tuple[AgentNode, TopicHandle]] = self.publishers_table
-        assert key not in publishers_table, f"Duplicate publisher {key}"
-        publishers_table[key] = (agent_node, topic_handle)
+            # Record information into *publishers_table*:
+            key: Tuple[str, str] = (agent_node_name, ros_path)
+            publishers_table: Dict[Tuple[str, str],
+                                   Tuple[AgentNode, TopicHandle]] = self.publishers_table
+            assert key not in publishers_table, f"Duplicate publisher {key}"
+            publishers_table[key] = (agent_node, topic_handle)
 
     # Agent.server_create():
     def server_create(self, agent_node_name: str, priority: int,
                       import_path: str, type_name: str, ros_path: str) -> None:
         """Create a server for a ROS service."""
         # Create the server:
-        agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        service_handle: ServiceHandle = (
-            self.service_handle_get(priority, import_path, type_name, ros_path))
-        agent_node.server_create(service_handle)
+        if self.is_agent:
+            agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
+            service_handle: ServiceHandle = (
+                self.service_handle_get(priority, import_path, type_name, ros_path))
+            agent_node.server_create(service_handle)
 
-        # Record informatin into the *servers_table*:
-        key: Tuple[str, str] = (agent_node_name, ros_path)
-        servers_table: Dict[Tuple[str, str],
-                            Tuple[AgentNode, ServiceHandle]] = self.servers_table
-        assert key not in servers_table, f"Duplicate server {key}"
-        servers_table[key] = (agent_node, service_handle)
+            # Record informatin into the *servers_table*:
+            key: Tuple[str, str] = (agent_node_name, ros_path)
+            servers_table: Dict[Tuple[str, str],
+                                Tuple[AgentNode, ServiceHandle]] = self.servers_table
+            assert key not in servers_table, f"Duplicate server {key}"
+            servers_table[key] = (agent_node, service_handle)
 
     # Agent.service_handle_get():
     def service_handle_get(self, priority: int,
                            import_path: str, type_name: str, ros_path: str) -> "ServiceHandle":
         """Get a ServiceHandle for a ROS Server."""
-        service_handles: Dict[HandleKey, ServiceHandle] = self.service_handles
+        service_handles: Dict[ROSKey, ServiceHandle] = self.service_handles
 
         service_handle: ServiceHandle
-        handle_key: HandleKey = HandleKey(import_path, type_name, ros_path)
-        if handle_key not in service_handles:
+        key: ROSKey = ROSKey(import_path, type_name, ros_path)
+        if key not in service_handles:
             service_handle = ServiceHandle(priority, import_path, type_name, ros_path, self)
             service_handles[service_handle.key_get()] = service_handle
         else:
-            service_handle = service_handles[handle_key]
+            service_handle = service_handles[key]
         return service_handle
 
     # Agent.slip_get():
@@ -702,17 +731,18 @@ class Agent:
                             import_path: str, type_name: str, ros_path: str) -> None:
         """Create a subscription."""
         # print("=>agent.subscription_create()")
-        agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        topic_handle: TopicHandle = (
-            self.topic_handle_get(priority, import_path, type_name, ros_path))
-        agent_node.subscription_create(topic_handle)
+        if self.is_agent:
+            agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
+            topic_handle: TopicHandle = (
+                self.topic_handle_get(priority, import_path, type_name, ros_path))
+            agent_node.subscription_create(topic_handle)
 
-        # Record information into *subscriptions_table*:
-        key: Tuple[str, str] = (agent_node_name, ros_path)
-        subscriptions_table: Dict[Tuple[str, str],
-                                  Tuple[AgentNode, TopicHandle]] = self.subscriptions_table
-        assert key not in subscriptions_table, f"Duplicate subscription {key}"
-        subscriptions_table[key] = (agent_node, topic_handle)
+            # Record information into *subscriptions_table*:
+            key: Tuple[str, str] = (agent_node_name, ros_path)
+            subscriptions_table: Dict[Tuple[str, str],
+                                      Tuple[AgentNode, TopicHandle]] = self.subscriptions_table
+            assert key not in subscriptions_table, f"Duplicate subscription {key}"
+            subscriptions_table[key] = (agent_node, topic_handle)
         # print("<=agent.subscription_create()")
 
     # Agent.timer_create():
@@ -720,9 +750,10 @@ class Agent:
                      timer_name: str, timer_period: float) -> None:
         """Create a timer."""
         # print("=>Agent.timer_create()")
-        agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
-        timer_handle: TimerHandle = self.timer_handle_get(agent_node_name, priority, timer_name)
-        agent_node.timer_create(timer_handle, timer_period)
+        if self.is_agent:
+            agent_node: AgentNode = self.agent_node_create_once(agent_node_name)
+            timer_handle: TimerHandle = self.timer_handle_get(agent_node_name, priority, timer_name)
+            agent_node.timer_create(timer_handle, timer_period)
         # print("<=Agent.timer_create()")
 
     # Agent.timer_handle.get():
@@ -744,8 +775,8 @@ class Agent:
     def topic_handle_get(self, priority: int,
                          import_path: str, type_name: str, ros_path: str) -> "TopicHandle":
         """Get a unique TopicHandle for a ROS topic."""
-        handle_key: HandleKey = HandleKey(import_path, type_name, ros_path)
-        topic_handles: Dict[HandleKey, TopicHandle] = self.topic_handles
+        handle_key: ROSKey = ROSKey(import_path, type_name, ros_path)
+        topic_handles: Dict[ROSKey, TopicHandle] = self.topic_handles
 
         topic_handle: TopicHandle
         if handle_key not in topic_handles:
@@ -805,17 +836,17 @@ class AgentNode(Node):
         super().__init__(agent_node_name)
         self.agent: Agent = agent
         self.agent_node_name: str = agent_node_name
-        self.clients_table: Dict[HandleKey, Client] = {}
-        self.publishers_table: Dict[HandleKey, Publisher] = {}
-        self.servers_table: Dict[HandleKey, Server] = {}
-        self.subscriptions_table: Dict[HandleKey, Subscription] = {}
+        self.clients_table: Dict[ROSKey, Client] = {}
+        self.publishers_table: Dict[ROSKey, Publisher] = {}
+        self.servers_table: Dict[ROSKey, Server] = {}
+        self.subscriptions_table: Dict[ROSKey, Subscription] = {}
         self.timers_table: Dict[Tuple[str, str], Timer] = {}
 
     # AgentNode.client_create():
     def client_create(self, service_handle: "ServiceHandle") -> None:
         """Create a client for a ROS service."""
-        clients_table: Dict[HandleKey, Client] = self.clients_table
-        service_key: HandleKey = service_handle.key_get()
+        clients_table: Dict[ROSKey, Client] = self.clients_table
+        service_key: ROSKey = service_handle.key_get()
         assert service_key not in clients_table, f"Duplicate server {service_key}"
         client: Client = service_handle.client_create(self)
         clients_table[service_key] = client
@@ -823,8 +854,8 @@ class AgentNode(Node):
     # AgentNode.publisher_create():
     def publisher_create(self, topic_handle: "TopicHandle") -> None:
         """Create a ROS topic publisher."""
-        publishers_table: Dict[HandleKey, Publisher] = self.publishers_table
-        topic_key: HandleKey = topic_handle.key_get()
+        publishers_table: Dict[ROSKey, Publisher] = self.publishers_table
+        topic_key: ROSKey = topic_handle.key_get()
         assert topic_key not in self.publishers_table, f"Duplicate publisher {topic_key}"
         publisher: Publisher = topic_handle.publisher_create(self)
         publishers_table[topic_key] = publisher
@@ -832,8 +863,8 @@ class AgentNode(Node):
     # AgentNode.server_create():
     def server_create(self, service_handle: "ServiceHandle") -> None:
         """Create a server for a ROS service."""
-        servers_table: Dict[HandleKey, Server] = self.servers_table
-        service_key: HandleKey = service_handle.key_get()
+        servers_table: Dict[ROSKey, Server] = self.servers_table
+        service_key: ROSKey = service_handle.key_get()
         assert service_key not in self.servers_table, f"Duplicate server {service_key}"
         server: Server = service_handle.server_create(self)
         servers_table[service_key] = server
@@ -841,8 +872,8 @@ class AgentNode(Node):
     # AgentNode.subscription_create():
     def subscription_create(self, topic_handle: "TopicHandle") -> None:
         """Create a ROS topic subscription."""
-        subscriptions_table: Dict[HandleKey, Subscription] = self.subscriptions_table
-        topic_key: HandleKey = topic_handle.key_get()
+        subscriptions_table: Dict[ROSKey, Subscription] = self.subscriptions_table
+        topic_key: ROSKey = topic_handle.key_get()
         assert topic_key not in self.subscriptions_table, f"Duplicate subscription {topic_key}"
         subscription: Subscription = topic_handle.subscription_create(self)
         subscriptions_table[topic_key] = subscription
@@ -1334,48 +1365,78 @@ class Packet(object):
 
 # Handle:
 class Handle(object):
-    """Base class for publish/subscribe topics and client/server services."""
+    """Base class for all dispatchable messages."""
 
     # Handle.__init__():
+    def __init__(self) -> None:
+        """Init the base Dispatch."""
+        pass
+
+    def priority_get(self) -> int:
+        """Return the priority."""
+        raise NotImplementedError()
+
+
+# PingHandle:
+class PingHandle(Handle):
+    """Class for ping messages for serial line transmission error recovery."""
+
+    # PingHandle.__init__()(:
+    def __init__(self) -> None:
+        """Initialzie PingHandle."""
+        super().__init__()
+
+    # PingHnadle.priority_get():
+    def priority_get(self) -> int:
+        """Return priority for PingHandle's."""
+        return 0
+
+
+# ROSHandle:
+class ROSHandle(Handle):
+    """Base class for publish/subscribe topics and client/server services."""
+
+    # ROSHandle.__init__():
     def __init__(self, priority: int,
                  import_path: str, type_name: str, ros_path: str, agent: Agent) -> None:
         """Initialize Handle base class."""
+        super().__init__()
         self.agent: Agent = agent
         self.import_path: str = import_path
-        self.key: HandleKey = HandleKey(import_path, type_name, ros_path)
+        self.key: ROSKey = ROSKey(import_path, type_name, ros_path)
         self.priority: int = priority
         self.ros_path: str = ros_path
         self.type_name: str = type_name
 
-    # Handle.agent_get():
+    # ROSHandle.agent_get():
     def agent_get(self) -> Agent:
         """Return the Handle Agent."""
         agent: Optional[Agent] = self.agent
         assert isinstance(agent, Agent), "No agent is available"
         return agent
 
-    # Handle.key_get():
-    def key_get(self) -> "HandleKey":
-        """Return the Handle key."""
+    # ROSHandle.key_get():
+    def key_get(self) -> "ROSKey":
+        """Return the ROSKey."""
         return self.key
 
-    # Handle.match():
+    # ROSHandle.match():
     def match(self, import_path: str, type_name: str, ros_path: str) -> bool:
         """Return True if TopicHandle's match."""
         return (self.import_path == import_path and (
                 self.type_name == type_name and self.ros_path == ros_path))
 
-    # Handle.packet_type_lookup():
+    # ROSHandle.packet_type_lookup():
     def packet_type_lookup(self, packet_id) -> Any:
         """Return the packet type for an a given packet id."""
         raise NotImplementedError
 
-    # Handle.priority_get():
+    # ROSHandle.priority_get():
     def priority_get(self) -> int:
         """Return the priority for this Handle."""
         return self.priority
 
-    # Handle.type_import():
+    # ROSHandle.type_import():
     def type_import(self, import_path: str, type_name: str, ros_path: str) -> Any:
         """Import a topic."""
         # Read the *import_path* into *module*:
@@ -1389,10 +1450,10 @@ class Handle(object):
         return actual_type
 
 
-# HandleKey:
+# ROSKey:
 @dataclass(order=True, frozen=True)
-class HandleKey:
-    """Class that represents a topic name."""
+class ROSKey:
+    """Class that represents a ROS topic/service name."""
 
     import_path: str
     type_name: str
@@ -1401,7 +1462,7 @@ class HandleKey:
 
 # IOChannel:
 class IOChannel:
-    """A handle for deal with serial I/O."""
+    """A handle for dealing with serial I/O."""
 
     # IOChannel.__init__():
     def __init__(self, argument: str, colon_split: Tuple[str, ...]) -> None:
@@ -1515,13 +1576,14 @@ class IOChannel:
 
 
 # TimerHandle:
-class TimerHandle(object):
+class TimerHandle(Handle):
     """A handle for dealing with ROS timers."""
 
     # TimerHandle.__init__():
     def __init__(self, agent_node_name: str, priority: int,
                  timer_name: str, agent: Optional[Agent] = None) -> None:
         """Init a TimeHandle."""
+        super().__init__()
         self.agent: Optional[Agent] = agent
         self.agent_node_name: str = agent_node_name
         self.priority: int = priority
@@ -1586,7 +1648,7 @@ class TimerHandle(object):
 
 
 # TopicHandle:
-class TopicHandle(Handle):
+class TopicHandle(ROSHandle):
     """Tracking class for publish/subscribe topic."""
 
     # TopicHandle.__init__():
@@ -1600,17 +1662,17 @@ class TopicHandle(Handle):
         message_type: Any = self.type_import(import_path, type_name, ros_path)
 
         # Load values into the TopicHandle:
-        self.key: HandleKey = HandleKey(import_path, type_name, ros_path)
+        self.key: ROSKey = ROSKey(import_path, type_name, ros_path)
         self.message_packet: Packet = Packet(message_type)
         self.message_type: Any = message_type
         self.publisher: Optional[Publisher] = None
         self.publisher_agent_node: Optional[AgentNode] = None
         self.publisher_count: int = 0
-        self.publisher_packet_id: int = agent.packet_id_get(self)
+        self.publisher_packet_id: int = agent.packet_id_get(self, "pub")
         self.subscription_agent_node: Optional[AgentNode] = None
         self.subscription_count: int = 0
         self.subscription: Optional[Subscription] = None
-        self.subscription_packet_id: int = agent.packet_id_get(self)
+        self.subscription_packet_id: int = agent.packet_id_get(self, "sub")
 
     # TopicHandle.__repr__():
     def __str__(self) -> str:
@@ -1619,7 +1681,7 @@ class TopicHandle(Handle):
                 f"{self.message_packet})")
 
     # TopicHandle.key_get():
-    def key_get(self) -> HandleKey:
+    def key_get(self) -> ROSKey:
         """Return the TopicHandle key."""
         return self.key
 
@@ -1760,7 +1822,7 @@ class TopicHandle(Handle):
 
 
 # ServiceHandle:
-class ServiceHandle(Handle):
+class ServiceHandle(ROSHandle):
     """Tracking class for clientserver service."""
 
     # ServiceHandle.__init__():
@@ -1776,14 +1838,14 @@ class ServiceHandle(Handle):
         response_type: Any = service_type.Response
 
         # Load values into the TopicHandle:
-        self.key: HandleKey = HandleKey(import_path, type_name, ros_path)
+        self.key: ROSKey = ROSKey(import_path, type_name, ros_path)
         self.service_type: Any = service_type
         self.request_count: int = 0
-        self.request_packet_id: int = agent.packet_id_get(self)
+        self.request_packet_id: int = agent.packet_id_get(self, "req")
         self.request_type: Any = request_type
         self.request_packet: Packet = Packet(request_type)
         self.response_count: int = 0
-        self.response_packet_id: int = agent.packet_id_get(self)
+        self.response_packet_id: int = agent.packet_id_get(self, "resp")
         self.response_packet: Packet = Packet(response_type)
         self.response_type: Any = response_type
 
@@ -1815,7 +1877,7 @@ class ServiceHandle(Handle):
         return client
 
     # ServiceHandle.key_get():
-    def key_get(self) -> HandleKey:
+    def key_get(self) -> ROSKey:
         """Return the ServiceHandle key."""
         return self.key
 
@@ -1929,22 +1991,18 @@ class SerialLine(object):
 
     # SerialLine.__init__():
     def __init__(self, read_io_channel: IOChannel, write_io_channel: IOChannel,
-                 priorities: Tuple[int, ...], pending_queue: "Queue[bytes]") -> None:
+                 packet_id_to_handle: Tuple[Tuple[Handle, str], ...], pending_queue: "Queue[bytes]",
+                 prioritized_packets: List[List[bytes]], ping_packet: bytes) -> None:
         """Init the SerialLine."""
-        # Construct *pending_packets* queues that keep packets in priority order:
-        maximum_priority: int = max(priorities)
-        pending_packets: List[List[bytes]] = []
-        for _ in range(maximum_priority):
-            pending_packets.append([])
-
         # Load values into *self*:
         self.slip: SLIP = Agent.slip_get()
         self.byte_time: float = 10 * (1.0 / 115300.)  # 8N1 (i.e. 10-bits/byte)
         self.from_packets: List[bytes] = []
         self.last_control: Tuple[int, int] = (0, 0)
         self.to_packets: List[bytes] = []
+        self.ping_packet: bytes = ping_packet
         self.pending_queue: Queue[bytes] = pending_queue
-        self.priorities: Tuple[int, ...] = priorities
+        self.prioritized_packets: List[List[bytes]] = prioritized_packets
         self.latest_to_sequence: int = 0
         self.to_packet_cache: Dict[int, bytes] = {}
         self.read_file: Optional[IO[bytes]] = None
@@ -2018,34 +2076,87 @@ class SerialLine(object):
 
     # SerialLine.writer():
     def writer(self) -> None:
-        """Received messages from reader thread *and* forward messages to microcontroller."""
+        """Deal with messages both sent to and received from the micorcontroller."""
         # Unpack values from *self*:
         print("=>SerialLine.writer()")
         write_file: IO[bytes]
         with self.write_io_channel.open_for_writing() as write_file:
             print("=>SerialLine.writer(): write_file is open")
             self.write_file = write_file
-            block: bool = True
-            while True:
+            done: bool = False
+            send_done_time: float = 0.0
+            ping_timeout: float = 1.0  # Should be configurable!
+            while done:
+                # Drain the *pending_queue* blocking b
                 from_packets: List[bytes]
                 to_packets: List[bytes]
-                done: bool
-                print("SerialLine.writer(): Calling pending_queue_drain()")
-                from_packets, to_packets, done = self.pending_queue_drain(block)
-                if done:
-                    break
-                self.from_packets_process(from_packets)
-                self.to_packets_process(to_packets)
-                write_file = write_file
+                now: float = time.time()
+                from_packets, to_packets, done = self.pending_queue_drain(now - send_done_time)
+                if not done:
+                    # Forward *from_packets* and priotize *to_packets*:
+                    self.from_packets_forward(from_packets)
+                    self.to_packets_prioritize(to_packets)
+
+                    # If not already transmitting a packet, pick one and send it:
+                    if now > send_done_time:
+                        # Do resend packets 1st, priortized packets 2nd, pings 3rd:
+                        send_packet: Optional[bytes] = self.resend_packet_select()
+                        if not send_packet:
+                            send_packet = self.prioritized_packet_select()
+                        if not send_packet and now > send_done_time + ping_timeout:
+                            send_packet = self.ping_packet
+
+                        # Send *send_packet* (if present) and estimate the *send_done_time*:
+                        if send_packet:
+                            send_done_time = now + len(send_packet) * self.byte_time
+                            self.packet_send(send_packet, write_file)
+                        else:
+                            send_done_time = 0.0  # Forces an indefinite block.
+
         # Do any shutdown stuff here:
         self.write_file = None
         print("<=SerialLine.writer()")
 
+    # SerialLine.from_packets_forward():
+    def from_packets_forward(self, from_packets: List[bytes]) -> None:
+        """Forward packets from the microcontroller towards the destinations."""
+        self.packet_id_to_handles: Dict[int, Handle] = self.packet_id_to_handles
+        from_packet: bytes
+        for from_packet in from_packets:
+            # decoded_packet: DecodedPacket = Packet.full_decode(from_packet)
+            # packet_id: int = decode_packet.packet_id
+            # if packet_id in packet_id_to_handles[packet_id]:
+            #     handle: Handle = packet_id_to_handles[packet_id]
+            pass
+        assert False
+
+    # SerialLIne.to_packets_priortize():
+    def to_packets_priortize(self, to_packets: List[bytes]) -> None:
+        """Sort packets into priority queues."""
+        assert False
+
+    # SerialLine.resend_packet_select():
+    def resend_packet_select(self) -> Optional[bytes]:
+        """Seleect a packet to resend."""
+        assert False
+        return None
+
+    # SerialLine.prioritized_packet_select():
+    def prioritized_packet_select(self) -> Optional[bytes]:
+        """Select the highest priority packet to send."""
+        assert False
+        return None
+
+    # SerialLine.packet_send():
+    def packet_send(self, send_packet: bytes, write_file: IO[bytes]) -> None:
+        """Send a packet to the microcontroller."""
+        assert False
+
     # SerialLine.pending_queue_drain():
-    def pending_queue_drain(self, block: bool) -> Tuple[List[bytes], List[bytes], bool]:
+    def pending_queue_drain(self, time_out: float) -> Tuple[List[bytes], List[bytes], bool]:
         """Drain the pending queue and transfer into prioritized pending packets."""
         # Unpack some values from *self*:
-        print(f"=>SerialLine.pending_queue_drain(*, {block})")
+        print(f"=>SerialLine.pending_queue_drain(*, {time_out})")
         pending_queue: Queue[bytes] = self.pending_queue
         to_packets: List[bytes] = self.to_packets
         from_packets: List[bytes] = self.from_packets
@@ -2057,29 +2168,25 @@ class SerialLine(object):
         from_packets.clear()
         to_packets.clear()
         done: bool = False
-        while True:
+        while not done:
             # Get the next *packet*:
             packet: bytes
-            if block:
-                print("SerialLine.pending_queue_drain(): block on pending queue")
-                packet = pending_queue.get()
-            else:
-                print("SerialLine.pending_queue_drain(): non-block on pending queue:)")
-                try:
-                    packet = pending_queue.get_nowait()
-                except queue.Empty:
-                    # *pending_queue* is currently drained:
-                    break
-
-            # Do an initial sort of *packet* base on the first byte:
-            if not packet or packet[0] == stop:
-                done = True
+            print("SerialLine.pending_queue_drain(): block on pending queue")
+            try:
+                packet = pending_queue.get(block=True, timeout=time_out)
+            except queue.Empty:
+                # *pending_queue* is currently drained:
                 break
-            if packet[0] == start:
+
+            # Do an initial sort of *packet* based on the first byte:
+            if not packet or packet[0] == stop:
+                # A shut down is requested.
+                done = True
+            elif packet[0] == start:
                 from_packets.append(packet)
             else:
                 to_packets.append(packet)
-        print(f"<=SerialLine.pending_queue_drain(*, {block}) => *, *, {done}")
+        print(f"<=SerialLine.pending_queue_drain(*, {time_out}) => *, *, {done}")
         return from_packets, to_packets, done
 
     # SerialLine.from_packets_process():
@@ -2172,10 +2279,11 @@ class SerialLine(object):
         recovered_sequence: int = high_sequence if high_error < low_error else low_sequence
         return recovered_sequence
 
-    # SerialLine.to_packets_process():
-    def to_packets_process(self, to_packets: List[bytes]) -> None:
+    # SerialLine.to_packets_prioritize():
+    def to_packets_prioritize(self, to_packets: List[bytes]) -> None:
         """Process any packets pending packets from the rest of the agent to be sent."""
         print("=>to_packets_process()")
+        assert False
         print("<=to_packets_process()")
 
     """
